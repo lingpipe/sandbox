@@ -1,0 +1,1250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>Named Entity Annotation Tutorial</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="web/tutorial.css"
+      type="text/css"
+      rel="stylesheet"
+      title="tutorial style"
+      media="screen,projection,tv"/>
+</head>
+
+<body>
+<div id="header">
+<h1 id="product">LingPipe</h1><h1 id="pagetitle">Chunk Annotator</h1>
+<a id="logo"
+   href="http://www.alias-i.com/"
+  ><img src="web/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+<div id="navig">
+<ul>
+<li><a href="http://www.alias-i.com/lingpipe"><b>LingPipe Home</b></a></li>
+<li><a href="http://www.alias-i.com/lingpipe/web/sandbox.html"><b>Sandbox</b></a></li>
+</ul>
+<br />
+<ul>
+<li style="font-size:small">This project resides in the LingPipe Sandbox.  
+Visit the LingPipe home page or sandbox page, linked above, for more information.
+</li>
+</ul>
+&nbsp;
+</div>
+<div id="content" class="content">
+
+<h2>Introduction</h2>
+
+<div class="sidebar">
+<h2>Sandbox Status</h2>
+<p>This project is residing in the 
+<a href="">LingPipe Sandbox</a> until more people
+have tried it out and given us feedback. 
+</p>
+<p>
+Any feedback on the annotation process or
+annotator you could give us would be most
+appreciated.  As always, send correspondence
+to <a href="mailto:lingpipe@alias-i.com">lingpipe@alias-i.com</a>.
+</p>
+</div>
+
+<div class="sidebar">
+<h2>Java 1.6 Required</h2>
+<p>
+This sandbox demo, unlike the rest of LingPipe,
+requires Java 1.6 (<a href="http://java.sun.com/javase/downloads/index.jsp">download here</a>).  This is because we use the new
+<a href="http://java.sun.com/javase/6/docs/api/javax/swing/SwingWorker.html"><code>javax.swing.SwingWorker</code></a> for
+managing worker threads that play nicely with
+the Swing event thread (Swing is Java's desktop
+GUI framework). For more info, see
+Sun's <a href="http://java.sun.com/docs/books/tutorial/uiswing/concurrency/index.html">tutorial on concurrency in Swing</a>.
+</p>
+</div>
+
+<p> In this sandbox tutorial, you will learn how to create a named entity
+recognizer for a new task from scratch.  Specifically, the
+tutorial covers how to:
+</p>
+
+<ul>
+<li>Define a named entity recognition task</li>
+<li>Create a corpus of unlabeled data</li>
+<li>Semi-automaticaly annotate the corpus with named entity tags</li>
+<li>Train and evaluate a named entity recognizer over the resulting corpus</li>
+</ul>
+
+<p>The most important step in the process involves selecting a
+named entity extraction task that is possible from a practical
+standpoint.  Specifically, the entities and their types must
+be recognizable from their local context -- the strings that
+make up the named entity mention and the sequence of characters
+on either side of the enitity.</p>
+
+<h3>Extended Case Study</h3>
+<p>
+We're provided an ongoing, more extensive case study of
+annotating bibliographies in conference papers in:
+</p>
+<ul>
+<li><a href="citations.html">Citation Annotation Case Study</a></li>
+</ul>
+<div style="margin:1.25em"></div>
+
+<h2>Document Requirements and Workflow</h2>
+
+<div class="sidebar"> 
+<h2>One Level at a Time</h2> 
+
+<p> A major
+inconvenience in the interface of which we are well aware is the
+inability to do hierarchical annotation in a single annotator.
+Instead, we require a cascading process where a different annotator
+instance is used for each level.  The main problem that arises
+is when a higher-level annotation is discovered to be wrong
+while annotating smaller pieces.  For instance, a sentence boundary
+is wrong when annotating entities.</p>
+
+<p>A fundamental problem with
+hierarchical annotation is that different levels of annotation often
+involve different tokenizers.  Document-level zoning is often
+naturally tokenized line-by-line, whereas entity-level zoning requires
+word level tokenization.</p> 
+
+<p>Another aspect of the problem is
+overall complexity of a multi-level annotator.  If you try standard
+annotators based on text editors, such as MITRE's <a
+href="http://callisto.mitre.org/">Callisto</a> or Tom Morton's
+<a href="http://wordfreak.sourceforge.net/">WordFreak</a>, you will
+find they have a hard time visualizing overlapping annotations, as
+they use color highlighting.</p> 
+
+<p> Our most promising idea to date,
+and one we plan to explore, is to pull up parallel columns of tagger
+controls and link their behavior to each other to maintain a purely
+hierarchical encoding.  We hardwired such an
+interface a few years ago for paragraph, sentence and entity
+annotation.  In this flow, higher level annotations could be made in
+their own annotators, then finer-grained annotations may be fired
+up that would be able to override the higher level
+</p>
+</div>
+
+<h3>XML Documents</h3>
+
+<p>
+The annotator assumes documents to annotate are well-formed XML.
+Attempts to annotate ill-formed XML will result in the file
+not being openable for editing in the interface.  A dialog box
+will pop up informing you of the file that caused the error and
+the character set being used.  A full stack trace will be output
+on the console that started the application.
+</p>
+
+
+<h3>Directory Structure and Workflow</h3>
+
+<p> The annotation GUI consumes documents in XML form from a single
+directory and produces documents in XML form in a second directory.
+The annotator only considers files directly under the specified
+directories, so it is best to keep the directories entirely flat.
+Files that end in <code>.xml</code> are considered files to annotate.
+</p>
+<p>
+Whether a file exists in the output directory determines whether
+or not it is considered fully annotated by the annotation system.
+If partial annotations are saved in the output directory, it will
+be up to the user to re-open them and finish annotation.
+</p>
+<p>
+Several directories may be chained together in this fashion to
+produce nested annotations or a series of different kinds of
+annotations.
+</p>
+
+<h3>Character Encodings</h3>
+
+<p> Like Java, the annotator runs internally on Unicode character
+representations, but is configurable for arbitrary character encodings
+in input and output files.
+</p>
+
+<p>
+In the current version of the application, all documents in 
+the input directory must be encoded with a single character
+set.  And all output files are produced in a single character
+set.  These character sets may be different.  In the demo,
+we have provided Latin1 (<code>ISO-8859-1</code>) input
+documents and UTF-8 encoded Unicode (<code>UTF-8</code>)
+output.
+</p>
+
+<p>Recall that arbitrary unicode character content may
+be represented in an XML document using unicode entities.
+So the input and output character sets do not constrain
+the set of characters which may occur in a document's content.
+</p>  
+
+
+<h3>Elements to Annotate</h3>
+<p>
+The type of elements within which to annotate must be specified.  These elements
+must all be tagged <code>chunk</code>, with the value of 
+attribute <code>type</code> being used to select the elements to
+annotate within.
+</p>
+
+<p>The set of chunk types that may be produced is also provided.  In
+this release, there is no way to have the set of chunks allowed depend
+on the containing element's type attribute.</p>
+
+<h3>Tokenizer</h3>
+
+<p> Annotation is constrained to be relative to a tokenization of the
+input.  Specifically, each chunk must start on the first character of
+a token and each chunk must end on the last character of a token.
+This is a general requirement inherited from LingPipe's token-based
+chunkers.  Note that the tokens produced by the tokenizer are
+not explicitly represented in the system output.</p>
+
+<p>The tokenizer will be used for offset annotation and therefore must
+not remove any characters.  Characters may be modified by the
+tokenizer on a one-for-one basis.  For instance, they may all be
+lowercased or de-accented.  The modified view of the tokens is visible
+in the interface, but the output file will contain the original
+characters.  </p>
+
+<p>The main consideration for choosing a tokenizer is that it be
+fine-grained enough but not too fine.  For instance, a tokenizer that
+treats each character as a token will allow arbitrary tokenizations,
+but will not be an efficient notation for annotation, as will become
+apparent from its layout.  </p>
+
+<p>In this tutorial, we will consider an ordinary LingPipe
+Indo-European tokenizer.
+In the <a href="citations.html">Citation Annotation Case Study</a>, we consider
+hierarchical annotation with line-based tokenizer.
+</p>
+
+
+
+<h2>Command-Line Invocation</h2>
+
+<p><b>Notice:</b>  This demo requires Java 1.6 (<a href="http://java.sun.com/javase/downloads/index.jsp">download here</a>).</p>
+
+<p>
+The chunk annotator is a Java program that runs in Java's
+Swing GUI framework. </p>
+
+<h3>Command-Line Arguments</h3>
+<p>
+ It is configured to run as a command
+line, and takes the following arguments, in the following
+order, all required:
+</p>
+
+<pre class="code">
+com.aliasi.annotate.gui.CorpusAnnotator <i>indir</i> <i>incharset</i> <i>outdir</i> <i>outcharset</i> <i>inChunks</i> <i>outChunks</i> <i>tokenizer</i> <i>font-size</i> <i>auto-annotate</i>
+</pre>
+
+<p>Here is a description of the arguments, with examples taken
+from the Ant <code>news-anno</code> demo target.</p>
+
+<table>
+<tr><th>Argument</th><th>Example</th><th>Description</th></tr>
+<tr><td><i><code>indir</code></i></td>
+    <td><code>data/demo/in</code></td>
+    <td>directory for input; must exist</td></tr>
+<tr><td><i><code>incharset</code></i></td>
+    <td><code>ISO-8859-1</code></td>
+    <td>charset for input</td></tr>
+<tr><td><i><code>outdir</code></i></td>
+    <td><code>data/demo/out</code></td>
+    <td>directory for output; must exist</td></tr>
+<tr><td><i><code>outcharset</code></i></td>
+    <td><code>UTF-8</code></td>
+    <td>output charset</td></tr>
+<tr><td><i><code>inchunks</code></i></td>
+    <td><code>title,p</code></td>
+    <td>comma-separated input chunk types</td></tr>
+<tr><td><i><code>outchunks</code></i></td>
+    <td><code>PERSON,LOCATION,ORGANIZATION</code></td>
+    <td>comma-separated output chunk types</td></tr>
+<tr><td><i><code>tokenizer</code></i></td>
+    <td><code>com.aliasi.tokenizer.IndoEuropeanTokenizerFactory</code></td>
+    <td>tokenizer class; must have no-arg constructor</td></tr>
+<tr><td><i><code>font-size</code></i></td>
+    <td><code>12</code></td>
+    <td>font size in points</td></tr>
+<tr><td><i><code>auto-annotate</code></i></td>
+    <td><code>true</code></td>
+    <td>flag indicating whether or not to auto-annotate
+        input documents (optional argument)</td></tr>
+</table>
+
+<h3>Classpath</h3>
+<p>
+The annotator requires the following jars on the classpath:
+</p>
+
+<table>
+<tr><th>Jar</th><th>Description</th></tr>
+<tr><td><code>lp-chunk-anno-alpha.0.jar</code></td><td>This project's jar</td></tr>
+<tr><td><code>lingpipe-3.6.0.jar</code></td><td>LingPipe jar</td></tr>
+<tr><td><code>jdom-1.0.jar</code></td><td>JDom XML parser/generator jar</td></tr>
+</table>
+
+<h3>Ant Target</h3>
+<p>
+Several examples are provided in the <a href="build.xml"><code>build.xml</code></a> file.
+For instance, the target <code>news-anno</code> is the one we discuss in this
+tutorial, and expand in the next section as a command.
+</p>
+
+<h3>Example Command</h3>
+<p>
+Putting the pieces together, the demo is invoked with the following
+commands, which as usual, only differ in the classpath separator
+character.  Note that we are assuming here that the interface is
+started from the root directory for the <code>citationEntities</code>
+project.
+</p>
+
+<h4>Windows</h4>
+
+<pre class="code">
+&gt; cd citationEntities
+&gt; mkdir data\demo\out
+&gt; java -cp lp-chunk-anno-alpha.0.jar;lib/jdom-1.0.jar;lib/lingpipe-3.6.0.jar com.aliasi.annotate.gui.CorpusAnnotator data/demo/in ISO-8859-1 data/demo/out UTF-8 "title,p" "person,location,organization" "com.aliasi.tokenizer.IndoEuropeanTokenizerFactory" 14
+</pre>
+
+<h4>Unix</h4>
+<pre class="code">
+&gt; cd citationEntities
+&gt; mkdir data/demo/out
+&gt; java -cp lp-chunk-anno-alpha.0.jar:lib/jdom-1.0.jar:lib/lingpipe-3.6.0.jar com.aliasi.annotate.gui.CorpusAnnotator data/demo/in ISO-8859-1 data/demo/out UTF-8 "title,p" "person,location,organization" "com.aliasi.tokenizer.IndoEuropeanTokenizerFactory" 14
+</pre>
+
+<h2>Running</h2>
+
+<p><b>Notice:</b>  This demo requires Java 1.6 (<a href="http://java.sun.com/javase/downloads/index.jsp">download here</a>).</p>
+
+<p>We've provided a simple example to start with in case you haven't downloaded
+and processed the running corpus.  It involves tagging two text documents.
+</p>
+
+<h3>Starting with Ant</h3>
+
+<p>
+There is an Ant target, <code>demo-anno</code>, which may be used to start
+the demo annotation session.
+</p>
+
+<pre class="code">
+&gt; ant news-demo
+</pre>
+
+<p>The annotator may be started directly from the command-line by
+invoking Java with a command mirroring the ant target.
+</p>
+
+
+<h2>GUI Walkthrough</h2>
+
+<h3>Auto Document Feed</h3>
+<p>
+One unusual aspect of the interface worth mentioning is that
+it is set up to automatically open documents.  When the application
+pops up, it opens a document automatically.  Every time the
+current document is closed, the next document in the queue
+of documents to annotate is popped up.  This saves the user
+from having to select documents.  At any time, users may
+select their own documents, which simply closes the
+automatically popped up documents.</p>
+
+<h3>Initial Screen Shot</h3>
+<p>
+Invoking the demo target will pop up the following GUI
+window (though much larger, as it defaults to taking up
+the full screen):
+</p>
+
+<img src="web/ss1.png" alt="Opening Screen Shot"/>
+
+<p>In the rest of this section, we'll walk through the
+various controls offered by the GUI.</p>
+
+
+<h3>Main Window Controls</h3>
+
+<p>The main window is controlled just like any other window
+in whatever native operating system is hosting Java.
+</p>
+
+<h4>Window Title</h4>
+<p>
+The title of the menu lists the directory from which
+the source files are generated, in this case, the
+relative Windows path <code>data\demo\in</code>. 
+</p>
+
+<h4>Minimization, Maximization and Resizing</h4>
+<p>
+The standard window controls are available, including
+minimization and maximization.  Minimization typically
+hides the window offscreen, whereas maximization typically
+causes the window to fill the entire screen.  When the GUI
+is launched, Java asks the operating system to maximize
+the window, so it typically starts maximized.  It may be
+unmaximized (which is not the same as being minimized)
+and resized to whatever size is convenient.
+</p>
+
+<h4>Closing the Application</h4>
+<p>
+The only way to close the GUI gracefully is through its
+window close control (here a white <code>X</code> on
+a red background in the upper right corner).  Attempting to
+close the window may cause the following dialog to
+appear:
+</p>
+
+<img src="web/ss2.png" alt="Close Warning Dialog"/>
+
+<p>
+This dialog should only appear if there are uncommitted edits.
+Clicking <code>OK</code> closes the application, whereas
+<code>Cancel</code> cancels the exit operation and thus leaves
+the GUI running.
+</p>
+
+<blockquote><p><b>Warning:</b> If you close the application from the
+operating system by killing the JVM (e.g. by using Ctrl+C
+in the calling window), data that is being output may be
+lost.  I/O is relatively fast, so this shouldn't be a problem.</p>
+</blockquote>
+
+<h4>Main Window Split Pane</h4>
+<p>
+The main application window is divided into two parts.  On
+the left is a representation of the files remaining, files
+done and overall corpus progress.  On the right is the currently
+active document.  The textured gray bar dividing the two halves
+may be moved back and forth for greatever visibility of one side
+or the other.
+</p>
+
+<h3>Directory Listings and Progress</h3>
+<p>
+The left-hand of the top split pane contains three pieces of
+information.  
+</p>
+
+<h4>Files Remaining</h4>
+<p>
+At the top is the listing of files remaining.
+This is just the names of the files in the input directory
+that do not have committed versions in the output directory.
+</p>
+
+<h4>Files Finished</h4>
+<p>
+Below the files remaining listing is a list of the files
+which have been finished (by being committed from the editor
+control, as we describe in the next section).
+These are files that exist in the output directory
+with names matching files in the input directory.  Any such
+files are considered fully annotated.
+</p>
+
+<h4>Corpus Progress</h4>
+<p>
+The progress bar on the bottom is just the percentage of the
+total number of files in the finished list.  This indicates
+progress on the corpus as a whole.
+</p>
+
+<h4>Directly Opening a File to Edit</h4>
+<p>
+A file in either of the remaining files or finished files lists
+may be opened by double clicking.  This will pull up that file
+for annotation.  This will implicitly close the file that is currently
+open, which may spawn a warning dialog that any edits in the
+current file will be lost.  
+</p>
+
+<h3>Document Editor</h3>
+
+<p>
+The right-hand side of the GUI window contains the editor control.
+</p>
+
+<h4>Name of File Being Edited</h4>
+<p>
+At the top of the editor control is the name of the document currently
+being edited.  This name is just the name of the file as defined
+by <code>java.io.File.getName()</code>; this is just the last
+name in the file's path.  The file name is the same in both the
+input and output directories.
+</p>
+
+<h4>Input Chunk Displays</h4>
+<p>
+Each element of the input file that is to be annotated is displayed.
+Each such element is displayed with its chunk type at the top, followed
+by the editor controls.    For
+<code>doc1.xml</code>, that's a chunk of type <code>title</code>,
+followed by several chunks of type <code>p</code> (for paragraph).
+The source of this document may be found in the input directory of the
+distribution: <a
+href="data/demo/in/doc1.xml"><code>data/demo/in/doc1.xml</code></a>.
+</p>
+
+<h4>Input Scrolls</h4>
+
+<p> The scroll bar on the right-hand side of the display will control
+which slice of the text and associated tag editors are visible.  There
+will only be slider controls if the text of the document being edited
+does not fit in the available space either vertically or horizontally.
+</p>
+
+<h4>Tag Control and Token Display Columns</h4>
+<p>
+Within each chunk to be annotated, there is a two-column display.  The
+right-hand column contains the tokens in the content to be annotated, one token per line.
+The left-hand column contains pull-down &quot;combo boxes&quot; which may be
+used to assign tags to a given entity, as described in the next section.
+</p>
+
+<h4>Tagging Controls</h4>
+
+<p> The main action in the interface is in the set of tagging
+controls, one for each token.  Each such control is a pull-down menu
+that allows a tag to be assigned to the token to its right.  In the
+initial configuration, all tags will show the minus sign
+(<code>-</code>), which indicates that the token on that row is not
+part of a chunk.  </p>
+
+<p>
+The tag control that contains the keyboard/mouse focus will be
+highlighted in a bluish gray, as shown on the initial screen
+shot above, where the very first token's control is highlighted (token=<code>UK</code>).
+</p>
+
+<p>
+Left-clicking on a control brings up its menu, as shown here (sorry, I
+don't know how to get the cursor in the screen save -- it was just to
+the right of the location selection):
+</p>
+
+<img src="web/ss3.png" alt="pulldown annotation in action"/>
+
+<p>
+Moving the mouse up and down will highlight the chosen selection.
+Single (left) clicking on the chosen selection will close the menu, which
+will now display the item selected.  Choose <code>location</code>
+and left click on it, and the interface will now display as:
+</p>
+
+<img src="web/ss4.png" alt="pulldown after making selection"/>
+
+<p>Note how the token itself (<code>UK</code>) is highlighted in a
+medium gray.  The control is still highlighted in a bluish gray because
+the control still has the application focus.
+</p>
+
+<p>
+The set of tags that may be assigned to a token depends on its
+context.  In particular, there are continuation tags represented
+as ellipses, that is, three adjacent periods
+(<code>...</code>). For instance, scroll down to the first
+paragraph, annotate the token <code>Gordon</code> as a person,
+then pull down the menu next to the token <code>Brown</code>.
+It now shows the ellipsis as an option:
+</p>
+
+<img src="web/ss5.png" alt="context sensitivity of continuation tags"/>
+
+<p>
+Selecting the ellipsis tag by highlighting it and left clicking
+produces the following display:
+</p>
+
+<img src="web/ss6.png" alt="highlighting for two-token chunk"/>
+
+<p>
+The result is that the two-token phrase <code>Gordon&nbsp;Brown</code>
+is now annotated as a person chunk.  The first token in a chunk
+is labeled with the chunk type and subsequent tokens are labeled
+with ellipses.  Like the first token in a chunk, subsequent tokens
+in a chunk are higlighted, only the subsequent chunks have a lighter
+color, so it's possible to tell where the chunks start and end
+simply by looking at the token highlighting.  
+</p>
+<p>
+There is no limit to how many tokens may make up a chunk.  But
+chunks being annotated may not cross containing chunk boundaries.
+That is, the resulting annotation must be purely hierarchical.
+This is enforced through the GUI by only making legal values available
+through all controls.
+</p>
+
+<h3>Committing and Related Buttons</h3>
+
+
+<p>
+Rather than provide a generic &quot;save&quot; button, the interface
+provides four choices through buttons below the chunks being
+annotated.</p>
+
+<h4>Commit</h4>
+
+<p>First and largest is the <code>Commit</code> button.
+Pressing this button writes the resulting document to the output file,
+with XML chunk elements with appropriate type attributes representing
+the text of each chunk.  Commit always writes the currently
+displayed annotation to the output directory.
+</p>
+
+<h4>Revert</h4>
+
+<p>The <code>Revert</code> button may be used to replace whatever
+the current state of the annotation is with the on-disk representation.
+Whether that is the on-disk representation from the input directory
+or output directory will depend on whether the document had already
+been committed before being opened.  If it had been committed previously,
+then the existing annotation from the output directory is redisplayed
+when the revert button is pressed.  If the document has never been
+committed, then the input form is presented.  Typically, the input
+form will have no chunks annotated, though there is nothing to
+prevent starting in the input directory with partially or tentatively
+annotated data.
+</p>
+
+<p>Reversion may pop up a dialog box with a warning that reverting
+deletes any edits that haven't been committed.</p>
+
+
+<h4>Auto-Annotate Button</h4>
+
+<p>The tagger operates by default in a tag-a-little, learn-a-little
+mode.  As documents are annotated, they are used to train a LingPipe
+chunker built into the GUI.  Auto annotation may pop up a warning
+that any uncommitted edits will be lost.  
+</p>
+
+<p>Whenever a new document is displayed from
+the input directory automatically (that is, not by pressing
+the revert button), it is mechanically annotated by the
+auto-annotator.  
+</p>
+
+<p>The demo is set up to show how auto-annotation works.  The first
+few paragrphs of three different news articles about the same story
+are included as the first three documents in the demo data.  </p>
+
+<div class="sidebar">
+<h2>CREW Synchronization for <br />Tag-a-Little, Learn-a-Little</h2>
+<p>
+This demo provides a good example of the synchronization
+required by a LingPipe annotator, almost all of which
+are configurable to interleave training and annotation.
+</p>
+<p>
+These models require concurrent read/exclusive write (CREW)
+synchronization.  Luckily, in Java 1.5, <a href="http://g.oswego.edu/dl/">Doug Lea</a>'s
+wonderful <code>util.concurrent</code> library become
+part of the language after an extensive redesign.  This
+package contains the following lock:
+</p>
+<ul>
+<li><a href="http://java.sun.com/javase/6/docs/api/java/util/concurrent/locks/ReentrantReadWriteLock.html"><code>java.util.concurrent.<br />locks.RenetrantReadWriteLock</code></a></li>
+</ul>
+<p>Before running analysis on a thread, grab a read lock.
+Before training, grab a write lock.  Of course, you need
+to remember to release them.  See the actual code for
+exact usage:
+</p>
+<ul><li><a href="src/com/aliasi/annotate/gui/CorpusAnnotator.java"><code>src/com/aliasi/annotate/<br />gui/CorpusAnnotator.java</code></a></li></ul>
+<p>Here's the <code>trainTagger</code> method body:
+</p>
+<pre class="code">
+try {
+  mTaggerRwLock.writeLock().lock();
+  mAnnotatorTrainingParser.parse(file);
+} catch (IOException e) {
+  e.printStackTrace(System.out);
+} finally {
+  mTaggerRwLock.writeLock().unlock();
+}
+</pre>
+<p>Note that we are careful to release the lock in a <code>finally</code>
+block in case there was an exception during training.
+The read lock is acquired and released with the same pattern.
+</p>
+<pre class="code">
+try {
+  mTaggerRwLock.readLock().lock();
+  annotator.autoAnnotate();
+} finally {
+  mTaggerRwLock.readLock().unlock();
+}
+</pre>
+
+<p>We configured the lock be fair in the constructor:</p>
+<pre class="code">
+ReentrantReadWriteLock mTaggerRwLock
+  = new ReentrantReadWriteLock(true); 
+</pre>
+<p>but this isn't strictly
+necessary for this application; it will merely insure
+that training happens in commit order.</p>
+</div>
+
+<p>
+To make the GUI responsive, auto-annotation happens in a background thread
+as you edit documents.  An unfortunate side-effect of this concurrency
+is that automatic auto-annotation for GUI popped-up documents is
+typically a few documents behind the annotation process.  Pressing the
+auto-annotate button will always annotate with the latest trained
+version of the auto-annotator.
+</p>
+
+<p>
+You may see the affect of auto-annotation with the small demo
+corpus, because the first three documents are roughly about
+the same topic.  If you annotate the first document, then
+press the auto-annotate button on the second to reannotate
+it, you will see that entities annotated in the first document
+are likely to be auto-annotated in the second document.
+Auto-annotation will get better and better as more and more
+documents are trained.  Initially, you may need to revert
+documents to remove spurious auto-annotation.</p>
+
+<h4>Startup Auto-Annotate Progress Monitor</h4>
+
+<p>
+When many documents have been annotated in the output directory,
+the GUI may show a progress monitor when it starts up, indicating
+the progress being made in training the auto-annotator
+from the underlying data:</p>
+
+<img src="web/ss7.png" alt="progress bar for training"/>
+
+<p>Even though we're using LingPipe's most CPU- and memory-intensive
+chunker (<code>chunk.CharLmRescoringChunker</code>),
+ training the annotator should only take a few seconds, but may
+take as much as a few minutes in cases where there is a great deal of
+text.  If the tagger training is canceled, training will have still
+visited as many documents as were shown on the progress bar.
+</p> 
+
+<h4>Discard Button</h4>
+
+<p>The last button, labeled <code>Discard</code>, simply throws away
+any current annotations and moves on to the next document.  It will
+likely put up a warning dialog saying you are about to throw away any
+current edits.  Discarding a document's edits does not delete the
+document, it merely leaves it in whatever state it was in before
+editing.  Specifically, if it is an uncommitted input file, it will
+remain that way.  If it is an already committed output file being
+edited, discarding current edits leaves it in the output directory as
+it was before being opened.  The only way to remove a committed file
+from the input or output directory altogether is by hand.</p>
+
+
+<h3>Keyboard Shortcuts</h3>
+
+<p>
+There are a number of keyboard shortcuts defined in the interface.
+Keyboard shortcuts are bound to components and typically only work
+when certain application focus requirements are met.  
+</p>
+
+<p> The following shortcuts are available no matter what the focus is
+in the application (with the exception of not working when a modal
+dialog box is being displayed): </p>
+
+<table>
+<tr><th class="title" colspan="2">Globally Active Shortcuts</th></tr>
+<tr><th>Shortcut</th><th>Action</th></tr>
+<tr><td>Ctrl+S</td><td>Commits current document</td></tr>
+<tr><td>Ctrl+E</td><td>Auto-annotates current document</td></tr>
+<tr><td>Del</td><td>Discards current document</td></tr>
+</table>
+
+<p>There are also shortcuts which only work when a particular 
+tag selector (combo box) is focused, and have an effect relative
+to that combo box.</p>
+
+<table>
+<tr><th class="title" colspan="2">Application-Specific Tag Control Shortcuts</th></tr>
+<tr><th>Shortcut</th><th>Action</th></tr>
+<tr><td>+</td><td>Set next token to continue current token's tag. 
+
+<ul>
+<li>If current token is tagged with an entity or entity continuation, the next token is tagged as an entity continuation, else</li>
+<li>If current token is tagged as not being in an entity, the next token is tagged as not being in an entity.</li>
+</ul>
+</td></tr>
+<tr><td>=</td><td>Equivalent to plus (+)</td></tr>
+<tr><td>-</td><td>Mark current token as no-entity and move to previous token.</td></tr>
+<tr><td>Backspace</td><td>Move to previous token. Does not wrap.</td></tr>
+<tr><td>Ctrl+L</td><td>Roughly centers display on current token.</td></tr>
+<tr><td>0 (zero)</td><td>Move to start of next entity.  Wraps if necessary.</td></tr>
+</table>
+
+<p>Note that hitting the minus (<code>-</code>) keyboard shortcut
+reverses the action of the plus (<code>+</code>) keyboard shortcut.</p>
+
+<p>There are several controls built into Swing's components, which we have
+left alone for this interface.  The tab key controls focus in Swing:
+</p>
+
+<table>
+<tr><th class="title" colspan="2">Swing's Tab Focus Control</th></tr>
+<tr><th>Shortcut</th><th>Action</th></tr>
+<tr><td>Tab</td><td>Move to next focusable item, wrapping if necessary.
+The order of focus for this application is: 
+<ul>
+<li>files remaining</li>
+<li>files finished</li>
+<li>tag controls</li>
+<li>buttons</li>
+</ul>
+Within each group, items are focused in screen order.</td></tr>
+</table>
+
+<p>There are also built-in Swing keyboard shortcuts for the tag
+control combo boxes: </p>
+
+<table>
+<tr><th class="title" colspan="2">Swing's Tag Control Keyboard Shortcuts</th></tr>
+<tr><th>Shortcut</th><th>Action</th></tr>
+<tr><td>Space</td><td>Open tag control's popup menu.</td></tr>
+<tr><td>Up arrow</td><td>Open tag control's popup menu, or if open, 
+move to previous tag in popup menu.</td></tr>
+<tr><td>Down arrow</td><td>Open tag control's popup menu, or if open,
+move to next tag in popup menu.</td></tr>
+<tr><td>Return</td><td>Closes tag control popup menu.</td></tr>
+</table>
+
+<p>Note that the tag controls actually override the containing
+scroll pane's keyboard shortcuts for the up and down arrow.  The
+left arrow and right arrow remain active.</p>
+
+<table>
+<tr><th class="title" colspan="2">Swing's Scroll Pane Keyboard Shortcuts</th></tr>
+<tr><th>Shortcut</th><th>Action</th></tr>
+<tr><td>Left Arrow</td><td>Scroll Right</td></tr>
+<tr><td>Right Arrow</td><td>Scroll Left</td></tr>
+</table>
+
+<p>It may sound counter-intuitive, but scrolls work by moving their
+contents in the opposite direction of the scrolling.</p>
+
+<h3>Beyond ASCII</h3>
+<p>
+As an example of non-ASCII character set handling, the fourth
+document in the demo input directory, <a href="data/demo/in/doc4.xml"><code>data/demo/in/doc4.xml</code></a> contains several Latin1 characters
+outside of the ASCII range (that is, unicode points between 128
+and 255 inclusive).  The input files are encoded as Latin1,
+as indicated in their XML declarations.  The output files are
+specified to be in UTF-8.  Note that when annotating the fourth
+document and committing it, the output is generated in UTF-8.
+Note that characters in the range 128-255 are encoded using
+one byte in Latin1 (matching the unicode code point), but
+are encoded with two bytes in UTF-8.  All characters are preserved
+after this transcoding, as is evident when opening either the
+input our output version of the document in a web browser.  Either
+Firefox or IE will auto-detect the charset from the XML specification,
+and you will be able to see its choice by pulling down the 
+<code>View&nbsp;&gt;&gt;&nbsp;Character&nbsp;Encoding</code> menu
+in Firefox or the <code>View&nbsp;&gt;&gt;&nbsp;Encoding</code> menu in IE.
+</p>
+
+
+
+<h2>Training with the Annotated Data</h2>
+
+<p>The point of creating an annotated corpus is usually to train
+and/or test an automatic chunker, neither of which are possible
+without annotated data.</p>
+
+<h3>Background Reading: Named Entity Tutorial</h3>
+
+<p>The first thing to read is the <a
+href="http://www.alias-i.com/lingpipe/demos/tutorial/ne/read-me.html">LingPipe
+Named Entity Tutorial</a>.  This shows how to train and test named
+entity detectors given an annotated corpus and an appropriate parser.
+</p>
+
+<h3>Corpus Format</h3>
+
+<p>The on-disk format for the corpus created by the annotator is in
+XML.  It uses a general-purpose <code>chunk</code> element, with 
+an attribute <code>type</code> that determines the type of chunks.
+</p>
+
+<p>Here is an example document:</p>
+
+<pre class="code">
+&lt;document&gt;
+  &lt;head&gt;
+    &lt;chunk type=&quot;title&quot;&gt;&lt;chunk type=&quot;PERSON&quot;&gt;John&lt;/chunk&gt; and &lt;chunk type=&quot;ANIMAL&quot;&gt;Spot&lt;chunk&gt;&lt;/chunk&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;chunk type=&quot;p&quot;&gt;
+      &lt;chunk type=&quot;s&quot;&gt;See &lt;chunk type=&quot;PERSON&quot;&gt;John&lt;/chunk&gt;.&lt;/chunk&gt;
+      &lt;chunk type=&quot;s&quot;&gt;See &lt;chunk type=&quot;PERSON&quot;&gt;John&lt;/chunk&gt; run.&lt;/chunk&gt;
+    &lt;/chunk&gt;
+    &lt;chunk type=&quot;p&quot;&gt;
+      &lt;chunk type=&quot;s&quot;&gt;See &lt;chunk type=&quot;ANIMAL&quot;&gt;Spot&lt;/chunk&gt;.&lt;/chunk&gt;
+      &lt;chunk type=&quot;s&quot;&gt;See &lt;chunk type=&quot;ANIMAL&quot;&gt;Spot&lt;/chunk&gt; jump.&lt;/chunk&gt;
+    &lt;/chunk&gt;
+  &lt;/body&gt;
+&lt;/document&gt;
+</pre>
+
+<p>Note that there are three levels of nesting with <code>chunk</code> tags in
+this document. Paragraphs (<code>p</code>) contain sentences (<code>s</code>)
+and sentences contain entities (<code>PERSON</code>, <code>ANIMAL</code>).
+Further note that there is document structure above the chunk types of interest.
+There is also a chunk of type title (<code>title</code>) which contains named
+entity chunks.
+</p>
+
+<p>The corpus parser only handles a single level of
+embedding.  With the data above, this means we will be able to train
+entity tags within both sentences and titles, but we will not be able to
+use the corpus to train sentence chunks within paragraphs. For that, we 
+wold need to strip the underlying chunks out, which is fairly straightforward
+with XML.</p>
+
+
+<h3>Corpus Parser</h3>
+
+<p>We supply a parser for the output file format as part of this
+distribution.  Its class is
+<code>com.aliasi.annotate.corpora.AnnotatorCorpusParser</code>; the
+source is in the following file: </p>
+
+<ul>
+<li>
+<a href="src/com/aliasi/annotate/corpora/AnnotatorCorpusParser.java"><code>src/com/aliasi/annotate/corpora/AnnotatorCorpusParser.java</code></a></li>
+</ul>
+
+<p>We will not step through the source of the parser in this tutorial. Instead,
+we jump straight to its use, which is just like any other chunk parser.  To
+construct the parser, you will need to provide the set of containing chunk
+types to the constructor.  For a corpus of documents with structure like the
+one above, the following is required:
+</p>
+
+<pre class="code">
+Set&lt;String&gt; containingTypeSet = new HashSet&lt;String&gt;();
+containingTypeSet.add("title");
+containingTypeSet.add("s");
+	
+AnnotatorCorpusParser parser
+  = new AnnotatorCorpusParser(containingTypeSet);
+...
+</pre>
+
+<p>This constructs a chunk parser.  Note that <code>AnnotatorCorpusParser</code>
+extends <code>XMLParser&lt;ChunkHandler&gt;</code>, and thus implements
+<code>Parser&lt;ChunkHandler&gt;</code>.  This means that the corpus parser
+needs a handler of type <code>com.aliasi.corpus.ChunkHandler</code>, such
+as any of the chunker trainers.
+</p>
+
+<p>
+At this stage, the corpus parser may be used just like any other
+parser.  General instructions may be found in the 
+<a href="http://www.alias-i.com/lingpipe/demos/tutorial/ne/read-me.html">LingPipe
+Named Entity Tutorial</a>. 
+</p>
+
+<h3>Training the Annotated Demo Corpus</h3>
+
+<p>We've provided an Ant target that trains the demo corpus:
+</p>
+
+<pre class="code">
+&gt; ant news-model
+Buildfile: build.xml
+
+compile:
+
+news-model:
+     [java] Input data directory=data\demo\out
+     [java] Containing chunk types=[title, p]
+     [java] Training.
+     [java] Compiling to file=models\news-demo.CharLmRescoringChunker
+
+BUILD SUCCESSFUL
+Total time: 2 seconds
+C:\carp\sandbox\citationEntities>
+</pre>
+
+<p>As the output shows, it compiles the model from the demo output
+directory, looks for chunks within title and paragraph type chunks,
+and compiles the output model, which is of type 
+<code>com.aliasi.chunk.CharLmRescoringChunker</code> to a newly
+created <code>models</code> directory.
+</p>
+
+<h3>Training Code Walkthrough</h3>
+
+<p>In this section, we walk through the 
+code for the class <code>com.aliasi.annotate.corpora.TrainChunker</code>, which is
+in the file <a href="src/com/aliasi/annotate/corpora/TrainChunker.java"><code>src/com/aliasi/annotate/corpora/TrainChunker.java</code></a>.  This class provides two static methods
+and a <code>main()</code> method for command-line invocation. 
+</p>
+
+<p>
+Working from the top, we start with the <code>main</code> method:
+</p>
+
+<pre class="code">
+public static void main(String[] args) throws IOException, SAXException {
+
+    File inputDir = new File(args[0]);
+
+    File modelFile = new File(args[1]);
+
+    Set&lt;String&gt; containingTypes = new HashSet&lt;String&gt;();
+    for (int i = 2; i &lt; args.length; ++i)
+        containingTypes.add(args[i]);
+
+    CharLmRescoringChunker chunker
+        = trainChunker(inputDir,containingTypes);
+
+    AbstractExternalizable.compileTo(chunker,modelFile);
+}
+</pre>
+
+<p>This method creates from the first two command-line arguments, the
+input directory from which training files are read and output model
+file to which the compiled model is written.  The remaining arguments
+are added to a set of strings representing the containing types for
+tagging.  Next, a chunker is created by calling the
+<code>trainChunker</code> method.  Finally, the trained chunker is
+compiled to a file using the <code>compileTo</code> utility method of
+<code>com.aliasi.util.AbstractExternalizable</code>.</p>
+
+<p>The real work happens in the chunker training method, which 
+constructs the chunker from its rather daunting set of parameters.
+This is the chunker that is returned at the end of the method.
+</p>
+
+<pre class="code">
+public static CharLmRescoringChunker trainChunker(File inputDir,
+                                                  Set&lt;String&gt; containingTypes)
+    throws IOException, SAXException {
+
+    int numChars = 128;
+
+    int hmmNGramSize = 8;
+    double hmmInterpolation = 8.0;
+    boolean hmmSmootheTags = false;
+
+    int numTaggingsToRescore = 64;
+    int rescoringNGramSize = 12;
+    double rescoringInterpolation = 12.0;
+
+    TokenizerFactory tokenizerFactory
+        = IndoEuropeanTokenizerFactory.FACTORY;
+
+    HmmCharLmEstimator lmEstimator
+        = new HmmCharLmEstimator(hmmNGramSize,
+                                 numChars,
+                                 hmmInterpolation,
+                                 hmmSmootheTags);
+
+
+    CharLmRescoringChunker chunkerEstimator
+        = new CharLmRescoringChunker(tokenizerFactory,
+                                     numTaggingsToRescore,
+                                     rescoringNGramSize,
+                                     numChars,
+                                     rescoringInterpolation);
+
+    handle(inputDir,containingTypes,chunkerEstimator);
+
+    return chunkerEstimator;
+}
+</pre>
+
+<p>After construction, the chunker is simply passed to the
+static <code>handle</code> method for actually visiting the files.
+Here is the code for <code>handle</code>:</p>
+
+<pre class="code">
+public static void handle(File inputDir,
+                          Set&lt;String&gt; containingTypes,
+                          ChunkHandler handler)
+    throws IOException, SAXException {
+
+    Parser&lt;ChunkHandler&gt; parser = new AnnotatorCorpusParser(containingTypes);
+    parser.setHandler(handler);
+
+    File[] files
+        = inputDir.listFiles(new FileExtensionFilter(&quot;.xml&quot;,false));
+
+    for (File file : files)
+        parser.parse(file);
+}
+</pre>
+
+<p>The visitor first creates a parser from the set of containing types.
+Then it sets the parser's handler, which in this case will be the
+rescoring chunker passed in from the <code>trainChunker</code> method.
+Next, we list all of the files that end with <code>.xml</code> in the
+input directory (always watch out for CVS files, backups, etc.); the
+<code>false</code> parameters means the list should exclude directories
+whose name does not end in <code>.xml</code>.  Finally, the list of files
+is enumerated and each one is parsed.  The final write out happens back
+in the <code>main</code> method.</p>
+
+<h3>Evaluation</h3>
+<p>
+Rather than going over the procedure for evaluating a named
+entity annotator, we refer the reader to our existing
+tutorial:
+</p>
+<ul>
+<li><a href="">LingPipe Named Entity Tutorial</a></li>
+</ul>
+
+<p>The only thing that is different is the chunk parser.
+</p>
+
+<h2>Starting with Labeled Data</h2>
+
+<p>You can start the labeling process with already labeled data.  Just
+put labeled data into the input directory rather than unlabeled data.
+Then, when the document is opened in the interface, it will already
+have the annotations in place.</p>
+
+<p>In order to actually see the original annotation, you need to
+do one of two things.  First, you can press the &quot;revert&quot;
+button on the interface.  This will pull up the original version of
+the file without auto-annotation.  Second, you can set a flag on
+the command line that turns off auto-annotation, so that any
+existing annotation will be seen without having to revert.</p>
+
+<p><i>Warning:</i> Labeled must be in the same format as the output data to be
+recognized.</p>
+
+<p>Starting with labeled data is useful in the following two
+scenarios.</p>
+
+<h3>Labeling with an External Program</h3>
+
+<p>It is possible to use another program to provide the initial
+annotations.  This might be useful if a program already exists
+for annotation.  It might also be useful if there is a gazetteer
+of names; seeding the annotation with these, say recognized by
+a dictionary chunker, might provide a useful leg up for annotation.</p>
+
+
+<h3>Annotation Vetting</h3>
+
+<p>Take the output of one person's hand labeling and use it to
+start labeling for a second person.  The second person will
+effectively check the work of the first person, with the ability
+to easily make corrections.  If the first person's accuracy is
+high, this can be much faster than starting from scratch to get
+two eyes on the same data.  The second annotator must be
+vigilant, though; it's easy to get careless if the data being
+vetted is mostly correct.</p>
+
+
+<h2>Case Study</h2>
+<p>
+Following on from this tutorial is a detailed case study
+of corpus creation and evaluation.  It uses three annotator
+to annotate three levels of structure (bibligraphy within
+document, citations within bibliography, fields within
+citatinos) using multiple tokenizers and data gathered
+from PDFs.</p>
+<p>
+Check it out at:
+</p>
+<ul>
+<li><a href="citations.html">Citation Annotation Case Study</a></li>
+</ul>
+
+<h2>Standard Entity Annotation Tasks</h2>
+
+<p>
+The annotation tool may also be used for less dense annotation tasks, such as
+the common person, location and organization annotation tasks of MUC-7 and
+MUC-7.
+</p>
+
+<ul>
+<li>Ralph Grishman.  1995.  <a href="http://www.cs.nyu.edu/cs/faculty/grishman/NEtask20.book_1.html">MUC-6 Named Entity Task Definition Version 2.0</a>.</li>
+<li>Nancy Chinchor. 1997.  <a href="http://www.itl.nist.gov/iaui/894.02/related_projects/muc/proceedings/ne_task.html">MUC-7 Named Entity Task Definition Version 3.5</a>.</li>
+</ul>
+
+
+<p>Following MUC, the Automatic Content Extraction (ACE) evaluations
+employed a much richer set of entities, including both common nouns
+and an ontology of subtypes for entities.  The entity tagging manual
+was 67 pages long in 2005.</p>
+
+<ul>
+<li>Linguistic Data Consortium.  2005-2006.
+<a href="http://projects.ldc.upenn.edu/ace/annotation/2005Tasks.html">ACE 2005 Annotation Tasks</a></li>
+</ul>
+
+<p>It is interesting to consider the data in the context of its
+evaluation:</p>
+
+<ul>
+<li>U.S. National Institute of Standards.  2007.  <a href="http://www.nist.gov/speech/tests/ace/ace08/doc/ace08-evalplan.v1.1.pdf">ACE08 Evaluation Plan</a></li>
+</ul>
+
+<p>In the bio-informatics domain, here's a discussion of the GeneTag
+corpus, created by the U.S. National Center for Biotechnology Information
+(NCBI), a part of the U.S. National Library of Medicine (NLM),
+itslef a part of the U.S. National Insitutes of Health (NIH):</p>
+
+<ul>
+<li>Tanabe, Lorraine, Natalie Xie, Lynne H Thom, Wayne Matten and W.
+John Wilbur. 2005.  
+<a href="http://www.pubmedcentral.nih.gov/picrender.fcgi?artid=1869017&amp;blobtype=pdf">GENETAG: 
+a tagged corpus for gene/protein named entityrecognition</a>.
+<i>BMC Bioinformatics</i> <b>6</b>(suppl 1):S3.</li>
+</ul>
+
+<h2>Feedback</h2>
+<p>
+We would love to hear from you about this application.  Drop
+us a line with comments, suggestions, bugs or any other thoughts
+you might have at <a href="mailto:lingpipe@alias-i.com"><code>lingpipe@alias-i.com</code></a>.
+</p>
+
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2006 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+
+</body>
+
+</html>
+
+

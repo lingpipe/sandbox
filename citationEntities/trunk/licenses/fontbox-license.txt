@@ -1,0 +1,3 @@
+FontBox is licensed under the BSD license.
+
+Home page:  http://sourceforge.net/projects/fontbox/

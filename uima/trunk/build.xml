@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+
+<project name="UIMA Integration Tutorial" 
+         default="compile" basedir=".">
+
+<property name="inputDir"
+          value="C:\Documents and Settings\Bob Carpenter\Desktop\Foo"/>
+
+<property name="outputDir"
+          value="C:\Documents and Settings\Bob Carpenter\Desktop\xcaswriter"/>
+
+<property name="uima.home"
+          value="c:\program files\ibm\uima"/>
+
+<path id="classpath.standard">
+  <pathelement location="build/classes"/>
+  <pathelement location="c:\mycvs\lingpipe\lingpipe-2.3.0.jar"/> 
+  <pathelement location="${uima.home}\docs\examples\resources"/>
+  <pathelement location="${uima.home}"/>
+  <pathelement location="${uima.home}\lib\uima_core.jar"/>
+  <pathelement location="${uima.home}\lib\uima_cpe.jar"/>
+  <pathelement location="${uima.home}\lib\uima_jcas_builtin_types.jar"/>
+  <pathelement location="${uima.home}\lib\uima_jcasgen_gen.jar"/>
+  <pathelement location="${uima.home}\lib\uima_tools.jar"/>
+  <pathelement location="${uima.home}\lib\uima_examples.jar"/>
+  <pathelement location="${uima.home}\lib\uima_adapter_messaging.jar"/>
+  <pathelement location="${uima.home}\lib\uima_adapter_soap.jar"/>
+  <pathelement location="${uima.home}\lib\uima_cvd.jar"/>
+  <pathelement location="${uima.home}\lib\juru.jar"/>
+  <pathelement location="${uima.home}\lib\siapi.jar"/>
+  <pathelement location="${uima.home}\lib\vinci\jVinci.jar"/>
+  <pathelement location="${uima.home}\lib\xml.jar"/>
+  <pathelement location="${uima.home}\lib\icu4j.jar"/>
+  <pathelement location="${uima.home}\lib\xsdbeans.jar"/>
+</path>
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete file="uimaDemo.jar"/>
+  <delete file="sentimentDemo.jar"/>
+  <delete file="subjectivity.model"/>
+</target>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+	 destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="uimaDemo.jar">
+    <fileset dir="build/classes" 
+             includes="**/*.class"/>
+  </jar>
+</target>
+
+<target name="polarity"
+        depends="jar">
+  <java classname="com.ibm.uima.reference_impl.application.cpm.CpmFrame"
+        maxMemory="512M"
+        fork="true">
+    <sysproperty key="uima.home" value="${uima.home}"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="${polarityDir}"/>     
+  </java>
+</target>
+
+</project>
+
+

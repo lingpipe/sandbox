@@ -1,0 +1,93 @@
+
+1. 500 Word Writeup
+
+Alias-i submitted two systems based on our LingPipe natural language
+processing software, a first-best system and a confidence-based one.
+Both submissions used LingPipe out of the box without any
+domain-specific parameter tuning or external resources.
+
+Both submissions are based on an underlying first-order HMM with
+emissions modeled by boundary-padded character language models.  The
+chunking problem is encoded using begin/middle/end/whole tags for
+tokens in gene mentions and those not in gene mentions, producing an
+implicit second-order context coding.  For example:
+
+  [BOS] p53/W-Gn regulates/W-O human/B-Gn insulin/M-Gn -/M-Gn
+  like/M-Gn growth/M-Gn factor/M-gn II/E-Gn gene/B-O expression/M-O
+  through/M-O active/E-O P4/B-Gn promoter/E-Gn in/B-O
+  rhabdomyosarcoma/M-O cells/M-O ./E-O [EOS]
+
+For instance, tagging gene as B-O means it is generated from a
+distribution of first words after a gene name.  Inference in the
+confidence-based system is based on a generalization of the
+forward-backward algorithm for HMMs commonly used in speech
+recognition phrase detection; it uses the forward and backward
+estimates to the chunk's boundary along with the emission and
+transition probabilities chunk internally.
+
+Confidence-based results by gene for a single sentence look like:
+
+  p53 regulates human insulin-like growth factor II gene expression
+  through active P4 promoter in rhabdomyosarcoma cells.
+
+  Rank Pr      Span      Type  Phrase
+  ---- ------  -------   ----  ----------------------------------------
+  0    0.9999  (0,   3)  GENE  p53
+  1    0.7328  (81, 92)  GENE  P4 promoter
+  2    0.6055  (20, 54)  GENE  insulin-like growth factor II gene
+  3    0.3817  (14, 54)  GENE  human insulin-like growth factor II gene
+  4    0.1395  (74, 92)  GENE  active P4 promoter
+  5    0.0916  (81, 83)  GENE  P4
+  6    0.0088  (74, 83)  GENE  active P4
+  7    0.0070  (20, 49)  GENE  insulin-like growth factor II
+  8    0.0044  (14, 49)  GENE  human insulin-like growth factor II
+
+Confidence-based gene extraction, including sentence detection and
+input/output runs at 330,000 characters/second on a modest desktop,
+allowing all of MEDLINE's titles and abstracts to be analyzed in 8
+hours.
+
+Recall/precision operating points for high-recall were 95% recall at 18%
+precision, 99% recall at 11% precision, and 99.99% recall at 7% precision.
+
+Our first-best submissions involved rescoring n-best sequence output
+from the HMM decoder (Viterbi forward, exact A* backward).  N-best output
+on a per-sentence basis looks like:
+
+ Rank  log Pr  Chunks
+ ----  ------  ----------------------------------
+   0   -182.7  [0-3:GENE, 20-54:GENE, 81-92:GENE]
+   1   -183.3  [0-3:GENE, 14-54:GENE, 81-92:GENE]
+   2   -185.1  [0-3:GENE, 20-54:GENE, 74-92:GENE]
+   3   -185.7  [0-3:GENE, 20-54:GENE, 81-83:GENE]
+   4   -185.8  [0-3:GENE, 14-54:GENE, 74-92:GENE]
+
+The rescoring model was also generative, producing entire spans with
+encoded boundary transitions as character language models.  Full
+details of LingPipe's HMM rescoring model are provided in (Carpenter
+2006).  Rescoring n-best output is considerably slower than
+confidence-based gene-extraction, requiring an additional 1/10,000 of
+a second per character to rescore 100-best outputs.
+
+
+
+2.  Author:
+
+Bob Carpenter
+
+
+
+3.  Biocreative paper:
+
+Bob Carpenter. LingPipe for 99.99% Recall of Gene Mentions.
+
+
+I don't know the rest of the details, because I can't manage to get
+anyone to send me a copy!
+
+
+External Citation:
+
+Bob Carpenter. 2006.  Character language models for Chinese word segmentation
+and named entity recogntion. Proceedings of the 5th ACL Chinese
+Special Interest Group (SIGHan). Sydney, Austrlia.

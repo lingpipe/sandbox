@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+
+<project name="SigHan 2006 Data" default="compile" basedir=".">
+
+<target name="all"
+        depends="unpack"/>
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete dir="results"/>
+  <delete dir="unpacked"/>
+  <delete file="carp.tar.gz"/>
+</target>
+
+<target name="unpack">
+  <!-- Word Segmentation Train -->
+  <untar src="dist/train/WS/CKIP.tar.gz"
+         dest="unpacked/train/WS"
+         compression="gzip"/>
+  <untar src="dist/train/WS/CityU.tar.gz"
+         dest="unpacked/train/WS"
+         compression="gzip"/>
+  <untar src="dist/train/WS/MSRA.tar.gz"
+         dest="unpacked/train/WS"
+         compression="gzip"/>
+  <untar src="dist/train/WS/UColorado_UPenn.tar.gz"
+         dest="unpacked/train/WS"
+         compression="gzip"/>
+
+  <!-- NER Train -->
+  <untar src="dist/train/NER/CityU.tar.gz"
+         dest="unpacked/train/NER"
+         compression="gzip"/>
+  <untar src="dist/train/NER/MSRA.tar.gz"
+         dest="unpacked/train/NER"
+         compression="gzip"/>
+
+  <!-- Word Segmentation Test -->
+  <untar src="dist/test/WS/CKIP.tar.gz"
+         dest="unpacked/test/WS"
+         compression="gzip"/>
+  <untar src="dist/test/WS/CityU.tar.gz"
+         dest="unpacked/test/WS"
+         compression="gzip"/>
+  <untar src="dist/test/WS/MSRA.tar.gz"
+         dest="unpacked/test/WS"
+         compression="gzip"/>
+  <untar src="dist/test/WS/UColorado_UPenn.tar.gz"
+         dest="unpacked/test/WS"
+         compression="gzip"/>
+
+  <!-- NER Test -->
+  <untar src="dist/test/NER/CityU.tar.gz"
+         dest="unpacked/test/NER"
+         compression="gzip"/>
+  <untar src="dist/test/NER/MSRA.tar.gz"
+         dest="unpacked/test/NER"
+         compression="gzip"/>
+</target>
+
+
+<path id="classpath.standard">
+  <pathelement location="build/classes"/>
+  <pathelement location="lib/lingpipe-3.6.0.a.jar"/> 
+</path>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <mkdir dir="results"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+	 destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="ws-cityu"
+        depends="compile">
+  <java classname="WordSegmentation"
+        maxmemory="512M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked/train/WS/CityU/PART1_U8.ws.flat"/>
+    <arg value="unpacked/train/WS/CityU/PART2_U8.ws.flat"/>
+    <arg value="unpacked/train/WS/CityU/PART3_U8.ws.flat"/>
+    <arg value="unpacked/test/WS/CityU/CityU_test_U8.flat"/>
+    <arg value="results/cityu_test_result_WS_C.utf8"/>
+  </java>
+</target>
+
+<target name="ws-ckip"
+        depends="compile">
+  <java classname="WordSegmentation"
+        maxmemory="512M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked/train/WS/CKIP/SIGHAN_TrainingData_UTF8.flat"/>
+    <arg value="unpacked/test/WS/CKIP/CKIP_Test_UTF8.flat"/>
+    <arg value="results/ckip_test_result_WS_C.utf8"/>
+  </java>
+</target>
+
+<target name="ws-msra"
+        depends="compile">
+  <java classname="WordSegmentation"
+        maxmemory="512M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked/train/WS/MSRA/msra-bakeoff3-training-utf8.flat"/>
+    <arg value="unpacked/test/WS/MSRA/MSRA_Test_U8.flat"/>
+    <arg value="results/msra_test_result_WS_C.utf8"/>
+  </java>
+</target>
+
+<target name="ws-upuc"
+        depends="compile">
+  <java classname="WordSegmentation"
+        maxmemory="256M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked/train/WS/UColorado_UPenn/UColorado_UPenn-training-utf8.flat"/>
+    <arg value="unpacked/test/WS/UColorado_UPenn/UC_UP_Test_U8.flat"/>
+    <arg value="results/upuc_test_result_WS_C.utf8"/>
+  </java>
+</target>
+
+<target name="ner-cityu"
+        depends="compile">
+  <java classname="NamedEntityRecognition"
+        maxmemory="1400M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked/train/NER/CityU/PART1_U8.2col"/>
+    <arg value="unpacked/train/NER/CityU/PART2_U8.2col"/>
+    <arg value="unpacked/train/NER/CityU/PART3_U8.2col"/>
+    <arg value="unpacked/test/NER/CityU/CityU_test_U8.flat"/>
+    <arg value="results/cityu_test_result_NER_C.utf8"/>
+  </java>
+</target>
+
+<target name="ner-msra"
+        depends="compile">
+  <java classname="NamedEntityRecognition"
+        maxmemory="1400M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked/train/NER/MSRA/msra-bakeoff3-training-utf8.2col"/>
+    <arg value="unpacked/test/NER/MSRA/MSRA_Test_U8.flat"/>
+    <arg value="results/msra_test_result_NER_C.utf8"/>
+  </java>
+</target>
+
+
+<target name="bake"
+        depends="all,ws-cityu,ws-ckip,ws-msra,ws-upuc,ner-cityu,ner-msra">
+  <mkdir dir="results"/>
+  <tar tarfile="carp.tar.gz"
+       basedir="results"
+       compression="gzip"/>
+</target>
+
+<target name="ner-eval-cityu"
+        depends="compile">
+  <java classname="NEEval"
+        maxmemory="1400M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked/train/NER/CityU/PART1_U8.2col"/> <!-- shortest -->
+    <arg value="unpacked/train/NER/CityU/PART2_U8.2col"/>
+    <arg value="unpacked/train/NER/CityU/PART3_U8.2col"/>
+    <arg value="unpacked/test/NER/CityU/CityU_test_U8.flat"/>
+    <arg value="results/cityu_test_result_NER_C.utf8"/>
+  </java>
+</target>
+
+<target name="train-cityu-ner"
+        depends="compile">
+  <java classname="Train"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="ne-zh-cityu-sighan06.Chunker"/>
+    <arg value="e:/data/sighan2006/unpacked/train/NER/CityU/PART1_U8.2col"/>
+    <arg value="e:/data/sighan2006/unpacked/train/NER/CityU/PART2_U8.2col"/>
+    <arg value="e:/data/sighan2006/unpacked/train/NER/CityU/PART3_U8.2col"/>
+    <arg value="e:/data/sighan2006/dist/gold/NER/cityu_NER.utf8"/>
+    <arg value="e:/data/sighan2006/dist/gold/NER/cityu_NER2.utf8"/>
+  </java>
+</target>
+
+<target name="train-msr-ner"
+        depends="compile">
+  <java classname="Train"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="ne-zh-msr-sighan06.Chunker"/>
+    <arg value="E:\data\sighan2006\unpacked\train\NER\MSRA\msra-bakeoff3-training-utf8.2col"/>
+    <arg value="E:\data\sighan2006\dist\gold\NER\msra_NER.utf8"/>
+  </java>
+</target>
+
+
+<target name="anno"
+        depends="compile">
+  <java classname="AnnotateCommand"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <!-- <arg value="ne-zh-cityu-sighan06.Chunker"/> -->
+    <arg value="ne-zh-msr-sighan06.Chunker"/>
+    <arg value="${in}/data/testData/text"/>
+    <arg value="${in}/data/testOutput/text"/>
+  </java>
+</target>
+
+</project>

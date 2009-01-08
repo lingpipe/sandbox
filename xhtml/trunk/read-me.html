@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>LingPipe: XHTML Package</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="../../../web/css/lp-site.css"
+      type="text/css"
+      rel="stylesheet"
+      title="lp-site"
+      media="screen,projection,tv"/>
+<link href="../../../web/css/lp-site-print.css"
+      title="lp-site"
+      type="text/css"
+      rel="stylesheet"
+      media="print,handheld,tty,aural,braille,embossed"/>
+</head>
+
+<body>
+
+<div id="header">
+<h1 id="product">LingPipe</h1><h1 id="pagetitle">XHTML Package Tutorial</h1>
+<a id="logo"
+   href="http://www.alias-i.com/"
+  ><img src="../../../web/img/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+
+<div id="navig">
+
+<!-- set class="current" for current link -->
+<ul>
+<li><a href="../../../index.html">home</a></li>
+
+<li><a href="../../../web/demos.html">demos</a></li>
+
+<li><a href="../../../web/licensing.html">license</a></li>
+
+<li>download
+<ul>
+<li><a href="../../../web/download.html">lingpipe core</a></li>
+<li><a href="../../../web/models.html">models</a></li>
+</ul>
+</li>
+
+<li>docs
+<ul>
+<li><a href="../../../web/install.html">install</a></li>
+<li><a class="current" href="../read-me.html">tutorials</a>
+<ul>
+<li><a href="../classify/read-me.html">classification</a></li>
+<li><a href="../ne/read-me.html">named entity recognition</a></li>
+<li><a href="../cluster/read-me.html">clustering</a></li>
+<li><a href="../posTags/read-me.html">part of speech</a></li>
+<li><a href="../sentences/read-me.html">sentences</a></li>
+<li><a href="../querySpellChecker/read-me.html">spelling correction</a></li>
+<li><a href="../interestingPhrases/read-me.html">significant phrases</a></li>
+<li><a href="../lm/read-me.html">character language models</a></li>
+<li><a href="../medline/read-me.html">medline parsing and indexing</a></li>
+<li><a href="../db/read-me.html">database text mining</a></li>
+<li><a href="../chineseTokens/read-me.html">chinese word segmentation</a></li>
+<li><a href="../sentiment/read-me.html">sentiment analysis</a></li>
+<li><a href="../langid/read-me.html">language identification</a></li>
+<li><a class="current" href="../xhtml/read-me.html">xhtml dom</a></li>
+</ul>
+</li>
+<li><a href="../../../docs/api/index.html">javadoc</a></li>
+<li><a href="../../../web/faq.html">faq</a></li>
+</ul>
+</li>
+
+<li>community
+<ul>
+<li><a href="../../../web/customers.html">customers</a></li>
+<li><a href="http://groups.yahoo.com/group/LingPipe/">newsgroup</a></li>
+<li><a href="http://alias-i.com/blog/">blogs</a></li>
+<li><a href="../../../web/bugs.html">bugs</a></li>
+<li><a href="../../../web/sandbox.html">sandbox</a></li>
+<li><a href="../../../web/competition.html">competition</a></li>
+</ul>
+</li>
+
+<li><a href="../../../web/contact.html">contact</a></li>
+
+<li><a href="../../../web/about.html">about alias-i</a></li>
+</ul>
+
+<div class="search">
+<form action="http://www.google.com/search">
+<p>
+<input type="hidden" name="hl" value="en" />
+<input type="hidden" name="ie" value="UTF-8" />
+<input type="hidden" name="oe" value="UTF-8" />
+<input type="hidden" name="sitesearch" value="www.alias-i.com" />
+<input class="query" size="10%" name="q" value="" />
+<br />
+<input class="submit" type="submit" value="search" name="submit" />
+<span style="font-size:.6em; color:#888">by&nbsp;Google</span>
+</p>
+</form>
+</div>
+
+</div><!-- navig -->
+
+
+
+
+<div id="content" class="content">
+
+<h2>HTML in Java</h2>
+
+<p>
+This demo is under construction.  Look for it in the next release.
+</p>
+
+
+<div class="sidebar">
+<h2>POJO: Plain Old Java Object</h2>
+<p>
+There's been somewhat of a recent backlash against elaborate
+configuration-based frameworks involving extensive reflection.
+Simple objects are having somewhat of a renaissance, as
+programmers discover the benefits of running everything as
+code.
+</p>
+<ul>
+<li><a href="http://www.martinfowler.com/bliki/POJO.html">POJO Etymology</a></li>
+</div>
+
+<div class="sidebar">
+<h2>ECS: Element Construction Set</h2>
+<p>
+Our <code>com.aliasi.xhtml</code> package is based loosely on moribund
+Jakarta ECS project.  The main difference is that we only allow valid
+XHTML objects to be constructed.  Other differences include more flexible
+SAX output.
+</p>
+<ul>
+<li>
+<a href="http://jakarta.apache.org/ecs/index.html">ECS Project Home Page</a>
+</li>
+</ul>
+</div>
+
+<p>
+This tutorial provides an overview of the
+<code>com.aliasi.xhtml</code> package, the primary prupose of which is
+representing a well-formed HTML document as a
+plain old Java object (POJO).
+</p>
+<h3>Well-Formedness Guarantees</h3>
+<p>
+The primary benefit of object-orientation is a compile-time guarantee
+of XHTML well-formedness.  Guaranteeing well-formedness is tricky in
+any other framework (e.g. Java server pages (JSPs), Jakarta's element
+construction set (ECS), XML's document object model (DOM), etc.)
+Well-formedness is particulary important for downstream rendering and
+document analysis.
+</p>
+<h3>Reusable Composite Objects</h3>
+<p>
+A secondary benefit is the ability to structure and manage documents
+composed of objects.  These may be structured using ordinary Java
+classes.  Objects may be reused if they are treated as immutable.
+</p>
+
+<h2>Hello World</h2>
+
+<div class="sidebar">
+<h2>W3C: World Wide Web Consortium</h2>
+<p>
+The W3C is the standards body governing the alphabet soup discussed
+in the rest of this document: XML, DTD, HTML, XHTML, and DOM.
+</p>
+<ul>
+<li><a href="http://www.w3.org/">W3C Home Page</a></li>
+</ul>
+</div>
+
+
+<div class="sidebar">
+<h2>XML: Extensible Markup Language</h2>
+<p>
+The extensible markup language (XML) provides a generic
+format for hierarchically organized documents.  Documents are
+organized into nested elements and text, where each element has
+a tag and a set of attribute/value pairs.
+</p>
+<ul>
+<li><a href="http://www.w3.org/TR/2004/REC-xml-20040204/">XML 1.0 Specification</a> (third edition)</li>
+</ul>
+</div>
+
+<div class="sidebar">
+<h2>DTD: Document Type Definition</h2>
+<p>
+A document type definition (DTD) defines a subset of XML documents
+with a particular structure.  DTDs provide restrictions on permissible
+attributes and values for elements, as well as restrictions on the
+content of a given element.
+</p>
+<ul>
+<li><a href="http://www.w3.org/TR/2004/REC-xml-20040204/#sec-prolog-dtd">DTD Specification</a> (part of XML 1.0)</li>
+</div>
+
+<div class="sidebar">
+<h2>HTML: Hypertext Markup Language</h2>
+<p>HTML is a W3C standard for
+structuring documents.  The goal is to abstract structure from
+presentation.  HTML documents are typically presented in a web
+browser, e-mail reader, on a mobile phone, or on paper through a printer.
+</p>
+<ul>
+<li><a href="http://www.w3.org/TR/REC-html40/">HTML 4.01 Specification</a></li>
+</div>
+
+<div class="sidebar">
+<h2>XHTML: Extensible HyperText Markup Language</h2>
+<p>
+XHTML supports the encoding of an HTML 4.0 document as an
+XML 1.0 document.
+</p>
+<ul>
+<li><a href="http://www.w3.org/TR/xhtml1/">XHTML 1.0 Specification</a> (second edition)</li>
+</ul>
+</div>
+
+<p>
+The easiest way to explain how a DOM works is by example.  The
+following example constructs the smallest well-formed XHTML object
+possible.  The full source is in <a
+href="src/example/HelloWorld.java">example/HelloWorld.java</code></a>.
+</p>
+
+<h3>Importing Elements</h3>
+<p>
+As usual, the code starts with the imports.  For XHTML, there's
+an import for each HTML element used:
+</p>
+<pre class="code">
+import com.aliasi.xhtml.Body;
+import com.aliasi.xhtml.Html;
+import com.aliasi.xhtml.Head;
+import com.aliasi.xhtml.Title;
+</pre>
+<p>
+If you import the entire package using
+<code>com.aliasi.xhtml.*</code>, be careful, because there is a class
+<code>com.aliasi.xhtml.Object</code> for the XHTML <code>object</code>
+element.  With the above import, every use of <code>Object</code>
+must be qualified as either <code>java.lang.Object</code> or
+<code>com.aliasi.xhtml.Object</code>.
+</p>
+
+<h3>Constructing an HTML Object</h3>
+<p>
+The <code>main</code> method starts by constructing
+an HTML object.
+</p>
+<pre class="code">
+Title title
+  = new Title("Hello World");
+Head head = new Head(title);
+body.add(paragraph);
+Html html = new Html(head,body);
+</pre>
+
+<p>
+Note that HTML objects are constructed with objects corresponding
+to their elements.  They are added to other elements during construction
+or with an <code>add</code> method.  We'll cover attributes in the next section.
+</p>
+
+<h3>Output with a SAX Writer</h3>
+<p>
+The output can be streamed to any
+<code>org.xml.sax.ContentHandler</code>.  In the demo, we use the
+LingPipe <code>com.aliasi.xml.SAXWriter</code> to send Latin1-encoded
+output to the system output:
+</p>
+
+<pre class="code">
+SAXWriter writer
+  = new SAXWriter(System.out,"ISO-8859-1");
+writer.setDTDString(Html.DOCTYPE);
+html.writeTo(writer,true);
+</pre>
+
+<h3>Running Hello World</h3>
+
+<p>
+Running it using the command:
+</p>
+<pre class="code">
+cd $LINGPIPE/demos/tutorial/xhtml
+ant run-hello
+</pre>
+<p>
+produces the following output:
+</p>
+<pre class="code">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;ISO-8859-1&quot;?&gt;&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;Hello World: A Demonstration&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;Hello World&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+</pre>
+
+<p>
+Note that the output is a well-formed XHTML document.
+</p>
+
+<p>
+LingPipe's <code>SAXWriter</code> class is providing the rendering
+from SAX events to a byte stream.  Like the standard
+<code>java.io.InputStreamReader</code>, a SAX writer is constructed
+with an output stream and a character set name.
+</p>
+<p>
+The encoding into the character set is
+handled by the SAX writer, with appropriate escaping for less-than
+(<code>&lt;</code>), greater-than (<code>&gt;</code>), and quote
+(<code>&quot;</code>), as well as for any characters out of range of
+the specified character set.
+</p>
+<p>
+Note that DTDs are required for XHTML.
+A SAX writer may be provided with a
+document type declaration, as shown in the example above.
+The strict document type for XHTML 1.0 is provided as
+a constant in <code>Html.STRICT_1_0_DTD</code>.
+</p>
+
+<h2>Element Prohibitions</h2>
+
+
+<h3>DTDs are Inexpressive</h3>
+<p>
+DTDs provide a very weak mechanism for specifying well-formedness.
+They are essentially context-free grammars.  While this mechanism
+is expressive, it is often difficult to neatly capture distinctions
+without greatly complicating the set of types.
+</p>
+
+<h3>Element Prohibitions</h3>
+<p>As a result of the limited expressiveness of DTDs, XHTML places
+further requirements on well-formedness.  These additional constraints
+all prohibit given elements from containing other elements as content.
+For instance, the following example validates with respect to the DTD
+(as an <code>a</code> element), but is ruled out due to the prohibition against an <code>a</code> occurring inside of another <code>a</code>:
+</p>
+
+<pre class="code">
+&lt;a href=&quot;nyc&quot;&gt;New York &lt;a href=&quot;yanks&quot;&gt;Yankees&lt;/a&gt;&lt;/a&gt;
+</pre>
+
+<p>
+These prohibitions extend to embedded content, so the following
+is also prohibited, even though the <code>a</code> element is
+not directly contained by another <code>a</code> element:
+</p>
+
+<pre class="code">
+&lt;p&gt;The &lt;a href=&quot;nyc&quot;&gt;New York &lt;i&gt;&lt;a href=&quot;yanks&quot;&gt;Yankees&lt;/a&gt;&lt;/i&gt;&lt;/a&gt;&lt;/p&gt;
+</pre>
+
+<p>
+The prohibitions are detailed in the XHTML 1.0
+specification's <a
+href="http://www.w3.org/TR/xhtml1/#prohibitions">Appendix B. Element
+Prohibitions</a>.  Here is the complete list in table form:
+</p>
+
+<table>
+<tr><th class="title" colspan="2">XHTML 1.0 Element Prohibitions</th></tr>
+<tr><th>Element</th><th>Must Not Contain Elements</th></tr>
+<ul>
+<tr><td><code>a</code></td><td><code>a</code></td></tr>
+<tr><td><code>pre</code></td><td><code>img, object, big, small, sub, sup</code></td></tr>
+<tr><td><code>button</code></td><td><code>input, select, textarea, label, button, form, fieldset</code></td></tr>
+<tr><td><code>label</code></td><td><code>label</code></td></tr>
+<tr><td><code>form</code></td><td><code>form</code></td></tr>
+</table>
+
+<h3>Java Types are Inexpressive</h3>
+<p>
+Unfortunately, the Java 1.0 type system is even less expressive.  Not
+only is it context free in the same sense as DTDs, it prohibits
+multiple inheritance of implementations, which is used heavily in the
+form of macro-like entity definitions in the XHTML 1.0 DTD.  Building
+in the element prohibitions would be possible, but would require
+thousands of types (split by whether or not they contained any
+possibly prohibited elements). Therefore, the element prohibitions
+are not enforced by the compile-time type system.
+</p>
+<p>
+Because the elements allow content to be added via their various
+<code>add</code> methods, it is also difficult to check at run time
+without walking up and down the entire depth of the document.  An
+element gets new ancestors when it is added to another element; an
+element gets new descendants when an element is added to it.  This
+means that tests for element prohibitions cannot be restricted just to
+the above-listed elements, but also all of their containers all the
+way up and all of their content all the way down.  For instance, the
+following XML is a well-formed <code>p</code> element
+according to the DTD:
+</p>
+
+<pre class="code">
+&lt;p&gt;The &lt;a href=&quot;ny&quot;&gt;&lt;i&gt;NY <b>&lt;b&gt;&lt;a href=&quot;nyy&quot;&gt;Yankees&lt;/a&gt;&lt;/b&gt;</b>&lt;/i&gt;&lt;/a&gt;&lt;/p&gt;
+</pre>
+
+<p>
+The following code builds the top-level <code>p</code>
+element in two parts, the second corresponding to the
+text in bold above.  The pieces cannot be put together
+because of the prohibition against nesting <code>a</code>
+elements.  Thus the last step in the following code is
+probmeatic:
+</p>
+
+<pre class="code">
+// top level element
+A a = new A();
+a.setHref("ny");
+I i = new I();
+i.add("NY ");
+P p = new P();
+p.add("The ");
+
+// nested element
+A a2 = new A();
+a2.setHref("nyy");
+a2.add("Yankees");
+B b = new B();
+b.add(a2);
+
+// violates element prohibition
+i.add(b);
+</pre>
+
+<p>
+The very last statement violates the element prohibition restriction
+by nesting an <code>a</code> inside of an <code>a</code>.  But
+the <code>a</code> arises as a container of the <code>i</code>
+and as contained content of the <code>b</code>.
+</p>
+
+<h3>Element Prohibitions Throw Exceptions</h3>
+
+<p>
+An attempt to construct an element or add content to an element that
+would result in an element containment prohibition instead
+results in an
+an instance of <code>java.lang.IllegalArgumentException</code>
+being thrown.
+</p>
+
+
+<h2>Cyclic Documents</h2>
+<p>
+Java creates a new problem that doesn't arise in the DTD setting.
+It's not a problem in the DTD setting because XML documents are
+required to be finite.  Consider what should happen when the following
+code is executed:
+</p>
+
+<pre class="code">
+ContentHandler handler = ...;
+...
+B b = new B();
+b.add(b);
+b.writeTo(handler,false);
+</pre>
+
+<p>In a naive implementation, an infinite sequence of
+<code>startElement()</code> method calls would be made to
+the SAX content handler.
+</p>
+
+<p>
+Because there's no way to rule out cyclicity in the Java type system,
+this illegal situation must be checked at run time.  We have two
+alternatives.  Either we can check that we never get a cycle during
+element construction or through a call to <code>add()</code>.  That
+is, constructors with required content and <code>add()</code> methods
+would throw an exception if a cycle were created.  The second way to
+handle this would be to throw an exception during the invocation of
+<code>writeTo()</code>.
+</p>
+
+<h2>Document Object Models</h2>
+
+<div class="sidebar">
+<h2>DOM: Document Object Model</h2>
+<p>
+A document object model (DOM) provides object-oriented representation
+of a particular kind of document.  The value of a DOM stems from the
+ability of the representation to construct valid structured documents
+as objects.
+</p>
+<p>
+The W3C's <a href="http://www.w3.org/DOM/">Document Object
+Model</a> reflects the structure of a general XML document.
+</p>
+</div>
+
+
+
+
+<h2>References</h2>
+<ul>
+<li>W3C. 2002. <a href="http://www.w3.org/TR/xhtml1/">XHTML 1.0: The Extensible HyperText Markup Language (Second Edition)</a>.
+<br />
+<span class="smallnote">The offical specification</span>
+</li>
+<li>Apache Jakarta Project. 2004.
+<br />
+<span class="smallnote">Jakarta's original DOM for HTML.</span>
+</li>
+</ul>
+
+
+
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2003&ndash;2006 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+</body>
+</html>
+
+

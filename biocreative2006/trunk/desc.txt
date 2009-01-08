@@ -1,0 +1,120 @@
+Alias-i's Gene Mention Tagger for BioCreative 2006
+==================================================
+Bob Carpenter
+Alias-i, Inc.
+
+We submitted three runs, using two different systems, both based on
+character language models.
+
+Runs 2 & 3
+---------------------------------------------------------------
+
+Runs 2 and 3 were based on an HMM encoding of chunking.  Tags used
+were:
+
+ B-GENE   first token of a multi-token gene mention
+ I-GENE   internal token in a multi-token gene mention
+ E-GENE   last token of a multi-token gene mention
+ W-GENE   single token gene mention
+ B-O      first token not in a gene mention following a gene mention
+ O        token not in a gene mention and not adjacent to a gene mention
+ E-O      last token not in a gene mention
+
+Bigram state transitions were estimated by maximum likelihood.
+State emissions were estimated with character language models.
+
+Runs 2 and 3 ranked genes by conditional probability given text, which
+is computed using the forward-backward algorithm modified for chunks.
+Run 2 set a low threshold to allow high recall, whereas Run 3 set a
+high probability threshold, for high precision.  Run 2, because of
+its low threshold, may potentially produce overlapping entity hypotheses.
+
+Here's an example of output using data from the last BioCreative:
+
+  p53 regulates human insulin-like growth factor II gene expression
+  through active P4 promoter in rhabdomyosarcoma cells.
+
+  Rank Conf Span Type Phrase
+  0 0.9999   (0, 3) GENE  p53
+  1 0.7328 (81, 92) GENE  P4 promoter
+  2 0.6055 (20, 54) GENE  insulin-like growth factor II gene
+  3 0.3817 (14, 54) GENE  human insulin-like growth factor II gene
+  4 0.1395 (74, 92) GENE  active P4 promoter
+  5 0.0916 (81, 83) GENE  P4
+  6 0.0088 (74, 83) GENE  active P4
+  7 0.0070 (20, 49) GENE  insulin-like growth factor II
+  8 0.0044 (14, 49) GENE  human insulin-like growth factor II
+
+A cross-validated precision/recall curve for the corpus is as follows:
+
+  Recall Precision
+  .02 .83
+  .10 .76
+  .20 .72
+  .30 .69
+  .40 .65
+  .50 .61
+  .60 .54
+  .70 .46
+  .80 .36
+  .90 .25
+  .95 .18
+  .99 .11
+  .999 .08
+  .9999 .07
+
+
+Run 1
+---------------------------------------------------------------
+
+Run 1 used the model in Run 2 and 3 as a baseline for rescoring
+The n-best whole string results were found using Viterbi forward
+and (exact) A* backward.  The top 64 of these were then rescored
+using a longer-distance character language model.  Here's an
+example of n-best output for the same sentence as above:
+
+  p53 regulates human insulin-like growth factor II gene expression
+  through active P4 promoter in rhabdomyosarcoma cells.
+
+  0 -182.7325747972808  [0-3:GENE, 20-54:GENE, 81-92:GENE]
+  1 -183.39842051103167 [0-3:GENE, 14-54:GENE, 81-92:GENE]
+  2 -185.1133085819252  [0-3:GENE, 20-54:GENE, 74-92:GENE]
+  3 -185.73246504074297 [0-3:GENE, 20-54:GENE, 81-83:GENE]
+  4 -185.77915429567608 [0-3:GENE, 14-54:GENE, 74-92:GENE]
+  5 -186.39831075449385 [0-3:GENE, 14-54:GENE, 81-83:GENE]
+  6 -187.47968583511886 [0-3:GENE, 20-54:GENE]
+  7 -188.14553154886974 [0-3:GENE, 14-54:GENE]
+
+This model involved a language model for genes and one for
+non-genes.  per tag and one for the out tag, as well as distinguished
+characters for genes (GENE), other text (OUT) and begin and end of
+speech (BOS, EOS).  The model was then set up as follows:
+
+   p_out([GENE]|[BOS])
+*  p_gene(p53[OUT]|[OUT])
+*  p_out( regulates human [GENE]|[GENE])
+*  p_gene(insulin-like growth factor II gene[OUT]|[OUT])
+*  p_out( through active [GENE]|[GENE])
+*  p_gene(P4 promoter[OUT]|[OUT])
+*  p_out( in rhabdomyosarcoma cells.[EOS]|[GENE])
+
+
+References
+---------------------------------------------------------------
+The full source code for the Biocreative bakeoff is available
+from the LingPipe CVS sandbox (project "biocreative2006"):
+
+  http://www.alias-i.com/web/sandbox.html
+
+The latest LingPipe, including extensive documentation of the models,
+is available from:
+
+  http://www.alias-i.com/lingpipe
+
+The full details of the model are also available in paper form,
+as the model we used for BioCreative 2006 is the same one we
+used for SIGHan 2006:
+
+  Bob Carpenter. 2006. Character language models for Chinese word
+       segmentation and named entity recogntion. SIGHAN 5.
+  http://www.colloquial.com/carp/Publications/alias-i-sighan06.pdf

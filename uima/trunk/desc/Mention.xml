@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taeDescription xmlns="http://uima.watson.ibm.com/resourceSpecifier">
+  <frameworkImplementation>com.ibm.uima.java</frameworkImplementation>
+  <primitive>true</primitive>
+  <annotatorImplementationName>com.aliasi.uima.NamedEntity</annotatorImplementationName>
+  <analysisEngineMetaData>
+    <name>Named Entity Annotator</name>
+    <description>An example annotator that discovers Person Titles in text and classifies them
+    into three categories - Civilian (e.g. Mr.,Ms.), Military (e.g. Lt. Col.) , and 
+    Government (e.g. Gov., Sen.).  This annotator can be configured to only look for 
+    titles within existing annotations of a particular type (for example, Person Name 
+    annotations).</description>
+    <version>1.0</version>
+    <vendor>IBM</vendor>
+    <configurationParameters>
+      <configurationParameter>
+        <name>CivilianTitles</name>
+        <description>List of Civilian Titles to be annotated.</description>
+        <type>String</type>
+        <multiValued>true</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>MilitaryTitles</name>
+        <description>List of Military Titles to be annotated.</description>
+        <type>String</type>
+        <multiValued>true</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>GovernmentTitles</name>
+        <description>List of Government Titles to be annotated.</description>
+        <type>String</type>
+        <multiValued>true</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>ContainingAnnotationType</name>
+        <description>Annotation type within which to search for Person Titles.  If no value is specified,
+        the entire document will be searched.</description>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
+    </configurationParameters>
+    <configurationParameterSettings>
+      <nameValuePair>
+        <name>CivilianTitles</name>
+        <value>
+          <array>
+            <string>Mr.</string>
+            <string>Ms.</string>
+            <string>Mrs.</string>
+            <string>Dr.</string>
+          </array>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>MilitaryTitles</name>
+        <value>
+          <array>
+            <string>Gen.</string>
+            <string>Col.</string>
+            <string>Maj.</string>
+            <string>Capt.</string>
+            <string>Lt. Gen.</string>
+            <string>Lt Col.</string>
+            <string>Lt.</string>
+          </array>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>GovernmentTitles</name>
+        <value>
+          <array>
+            <string>Vice President</string>
+            <string>President</string>
+            <string>Vice Pres.</string>
+            <string>Pres.</string>
+            <string>Governor</string>
+            <string>Lt. Governor</string>
+            <string>Gov.</string>
+            <string>Lt. Gov.</string>
+            <string>Senator</string>
+            <string>Sen.</string>
+          </array>
+        </value>
+      </nameValuePair>
+    </configurationParameterSettings>
+    <typeSystemDescription>
+ 		<imports>
+			<import location="TypeSystem.xml"/>
+		</imports>
+    </typeSystemDescription>
+    <capabilities>
+      <capability>
+        <inputs/>
+        <outputs>
+          <type>example.PersonTitle</type>
+          <feature>example.PersonTitle:Kind</feature>
+        </outputs>
+        <languagesSupported>
+          <language>en</language>
+        </languagesSupported>
+      </capability>
+    </capabilities>
+  </analysisEngineMetaData>
+</taeDescription>

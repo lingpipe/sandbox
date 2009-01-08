@@ -1,0 +1,249 @@
+FUNCTIONAL SPECIFICATIONS
+======================================================================
+
+
+LingBlast
+======================================================================
+
+Link Entrez-Gene identifiers to Entrez-Pubmed identifiers with
+confidence scores.
+
+Analogy to BLAST
+----------------------------------------------------------------------
+Altschul et al.'s Basic Local Alignment Search Tool (BLAST) finds
+homologous (approximately matching) genes or proteins given a set of
+samples to match.  LingBlast finds homologous gene or protein names
+(mentions) in text given a set of samples (aliases) to match.
+
+
+Input Data
+----------------------------------------------------------------------
+Input data is accessible via distributed DAOs:
+
+  * 15M MEDLINE citations in Entrez-PubMed
+
+  * 30K Human Genes in Entrez-Gene
+
+  * MEDLINE Citations for Genes from:
+      - Entrez-Gene
+      - [NICE] GO
+      - [NICE] OMIM
+
+  * Aliases for Human Genes from:
+      - Entrez-Gene
+      - [NICE] Homologene
+      - [NICE] OMIM
+
+This data will all be frozen for the project -- no updates
+are being considered.
+
+
+Step 1: Tracker Data Extraction
+----------------------------------------------------------------------
+For each entry with an ID in the current Entrez-Gene, we must be able
+to extract: (a) set of all aliases, and (b) set of PubMed citations.
+
+
+Step 1: Possible Mention Spotting
+----------------------------------------------------------------------
+For each citation, find all possible gene mentions.  This
+is known as "blocking" in the database linkage literature.
+
+The approach we'll use will be to do case-sensitive exact matching
+after throwing out aliases with very high document frequencies.
+
+This will be implemented as an exact dictionary matcher.
+Simplest approach is to treat dictionary entries as
+comma-separated values of IDs.  Scores will all be 1.0.
+
+If this doesn't fit in memory, then either the names
+need to be extracted and then linked back in a separate
+process, or the dictionary needs to be broken into
+multiple pieces.
+
+Dictionary should find all matches, not just longest.
+
+[NICE] Do alias expansion using protein- and gene-name specific
+transformations.  Some of these may be found in Breck's old code,
+and some in a paper with Tsujii as one of the authors (I'm guessing
+it's Tsuroaka and Tsujii's:
+    http://www-tsujii.is.s.u-tokyo.ac.jp/~tsuruoka/papers/acl03bio.pdf
+
+[NICE] Use approximate dictionary chunker to relax matches.
+
+Output:  A serializable dictionary that matches all the genes,
+plus, if it doesn't fit into memory on a big machine, a DB
+join table mapping aliases to gene IDs.
+
+
+
+Step 2: Contextual Ranking
+----------------------------------------------------------------------
+Score each citation against each gene by how well the gene's
+surrounding context matches that of the known references for that
+gene.
+
+Context scoring uses a generic genomics model:
+
+  * Genomics
+      - Model trained on cited gene articles
+
+and a model for the specific gene being scored:
+
+  * Gene[id]
+      - Model trained on a specified gene's citations
+
+Scores should be cross-entropy rate (in bits):
+
+  * - (log2 p(text|lm)) / length(text)
+
+
+Overall approach is to run by document, pulling out possible mentions
+and then scoring the doc with the genome model and all the models for
+genes.
+
+Language models for genes will need to be serialized and read in if
+they can't all be fit in memory.
+
+Start with process character 5-gram models with default
+parameters.
+
+[NICE] uning these models for things
+like n-gram length -- don't have testing data.  One thing
+we could measure is cross-entropy rate and variance
+using leave-one-out or a simpler 10-fold cross-validation.
+
+
+[NICE] Implement caching in FastCache for models.
+
+Output:
+
+Database table with following:
+
+  * (Entrez-PubMed x Entrez-Gene)
+    --> ( Mention-Score x Genomics-Score x Gene[id]-Score )
+
+For now, single table with double index.  
+
+[NICE] If too slow, break into duplicate tables each with a
+single index.
+
+[NICE] Display output for PubMed vs. Gene in HTML with paging
+
+[NICE] Given Entrez-Gene id, return ranked list of docs
+      - rank by sum of scores, which are all on log scale
+      - allow a range for paging
+
+[NICE] Accept fresh documents in some sort of API.
+
+[NICE] Handle full text documents as part of input.
+
+[NICE] Updating with new MEDLINE
+
+FINAL PRODUCT:
+Chunker implementation that produces chunks containing types that
+indicate their Entrez-Gene ID and scores that are the sum of the
+genomics model and the per-gene model for the identified gene.  There
+is NO dependency here on document structure.  It's just a chunker.
+
+
+LingArray
+==================================================================
+
+Extract comparative expression levels for a set of PubMed queries
+and output as clustered heatmap.
+
+Analogy to MicroArrays
+----------------------------------------------------------------------
+
+Micro-arrays take tissue samples and return expression levels of genes
+in that sample.  LingArray takes text samples and returns expression
+levels of mentions of genes in that sample.
+
+Input
+----------------------------------------------------------------------
+
+List of PubMed queries: q[0], q[1], ..., q[n-1]
+Bound on number of hits: K
+Bound on total number of genes: J
+Threshold on genomics model: tGenomics
+Threshold on per-gene model: tPerGene[k]  (where k is a gene ID)
+
+Setting Thresholds
+----------------------------------------------------------------------
+For now, thresholds can be set two ways based on
+cross-validtion of genomics and per-gene models:
+
+1) a multiple of the standard deviation
+2) an exact threshold computed for recall=R
+   (e.g. 90% recall sets threshold to capture 90% of docs
+    under x-validation)
+
+X-validation can be 10-way, or it could go all the way
+to leave-one-out.
+
+
+
+Output
+----------------------------------------------------------------------
+
+  * Gene Mention Expression levels: q[i] --> (GeneID x PubMedID)
+
+From this, you can compute:
+
+     q[i] -> GeneID -> count
+
+where the count is an integer <= K representing the number of 
+hits.  
+
+Output format must be readable by R.
+
+[NICE] format as a generic CSV spreadsheet
+
+
+Visualizations
+----------------------------------------------------------------------
+
+Drop into R to do the visualization.  This can be scripted or just
+done by hand [that is, it doesn't need to be in any kind of standalone
+app or web service].
+
+  * Table with <= J genes labeling rows and N queries labeling columns
+
+  * Cluster Genes & sort rows
+
+  * Cluster Queries & sort columns
+
+  * Visualize as Heatmap with Dendrograms
+
+
+[NICE] More Like This
+----------------------------------------------------------------------
+
+Take a paper or set of papers and compute more-like this on MEDLINE
+using character LM trained on papers and sorted by cross-entropy rate.
+Top rated papers fed into LingArray just like any other queries.
+
+[NICE] Gene Drug / Gene Malignancy / Gene x ???
+----------------------------------------------------------------------
+
+Set up queries to be related to drugs or to diseases.
+
+
+[NICE] Gene Clustering
+----------------------------------------------------------------------
+
+Take set of genes as queries and usetheir set of citations to feed
+into LingArray.
+
+
+[NICE] Link to Bench Experiments
+----------------------------------------------------------------------
+
+Take set of hypothesis genes, perhaps indicated by location
+and do gene clustering.
+
+
+
+
+

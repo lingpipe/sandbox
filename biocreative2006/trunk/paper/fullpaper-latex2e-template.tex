@@ -1,0 +1,283 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Full Paper LaTeX2e Template for ``Genome Informatics Vol. 17''        %
+% Universal Academy Press, Inc.                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%  Read General Remarks  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1. 11pt fonts should be used.                                      %
+% 2. When special style files are used (e.g. epsf.sty),              %
+%    please send the style files together.                           %
+% 3. Even if color images are used, only black/white images          %
+%    will be used for publication.                                   %
+% 4. If you want to include figures in your article, please          %
+%    use graphicx.sty or graphics.sty. You can take these macros     %
+%    from our site in the same directory.(graphics.tar.gz)           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%  BEGIN Do not change  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[twoside,11pt]{article}
+\usepackage{graphicx}
+\usepackage{url}
+\setlength{\topmargin}{-1cm}
+\setlength{\oddsidemargin}{-0.5cm}
+\setlength{\evensidemargin}{-0.5cm}
+\setlength{\textwidth}{17cm}
+\setlength{\textheight}{24cm}
+\pagestyle{myheadings}
+\author{}
+\date{}
+\setcounter{page}{1}
+%%%%%  END Do not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%     \title    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{\bf
+Full Paper LaTeX2\boldmath{$\varepsilon$} Template for \\
+Genome Informatics 2006
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%   \markboth    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\markboth{LastName1 {\em et al.}}
+         {Full Paper LaTeX2$\varepsilon$ Template}
+% First  parameter: Single author         -> LastName1
+%                   Two authors           -> LastName 1 and LastName2
+%                   More than two authors -> LastName1 {\em et al.}
+% Second parameter: Provide a short running head with length not
+%                   greater than 45 letters.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%  BEGIN Do not change  %%%%%
+\begin{document}
+\maketitle
+\thispagestyle{myheadings}
+\vspace{-1.8cm}
+%%%%%  END Do not change %%%%%%%%
+
+%%%%%%%%%% Author(s) and Email Address(es) %%%%%%%%%%%%%%%
+% Remark: When paper is single authored, the affiliation %
+%         need not be footmarked.                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+%\begin{tabular}[t]{c}                      % One person in one line
+\begin{tabular}[t]{c@{\extracolsep{2em}}c}  % two persons in one line
+%\begin{tabular}[t]{c@{\extracolsep{2em}}c@{\extracolsep{2em}}c}
+                                            % three persons in one line
+  \bf    FirstName1 MiddleName  LastName1\footnotemark[1]
+ &\bf    FirstName2             LastName2\footnotemark[2]
+%&\bf    FirstName3 MiddleName3 LastName3\footnotemark[1]
+\\
+  \small\tt lastname1@ims.u-tokyo.ac.jp
+ &\small\tt lastname2@ims.u-tokyo.ac.jp
+%&\small\tt lastname3@ims.u-tokyo.ac.jp
+\end{tabular}
+\smallskip
+
+%%%%%%%%%%%%% More Authors, if any %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tabular}[t]{c}                        % 1 person/line
+%\begin{tabular}[t]{c@{\extracolsep{2em}}c}  % 2 persons/line
+%\begin{tabular}[t]{c@{\extracolsep{2em}}c@{\extracolsep{2em}}c}
+                                             % 3 persons/line
+  \bf    FirstName3             LastName3\footnotemark[3]
+%&\bf    FirstName5 MiddleName5 LastName5\footnotemark[3]
+%&\bf    FirstName6             LastName6\footnotemark[3]
+\\
+  \small\tt lastname3@jsbi.org
+%&\small\tt lastname5@jsbi.org
+%&\small\tt lastname6@jsbi.org
+\end{tabular}
+\smallskip
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%% Affiliation(s) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{small}
+\begin{tabular}{rl}
+\footnotemark[1] & \parbox[t]{13cm}{
+%%%%%%%%%% Affiliation for footnotemark[1] %%%%%%%%%%%%%%%%%%%%
+Human Genome Center, Institute of Medical Science, University of
+Tokyo, 4-6-1 Shirokanedai, Minato-ku, Tokyo 108-8639, Japan
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+}\\
+\footnotemark[2] & \parbox[t]{13cm}{
+%%%%%%%%%% Affiliation for footnotemark[2] %%%%%%%%%%%%%%%%%%%%
+San Diego Supercomputer Center, University of California at San Diego,
+9500 Gilman Dr., La Jolla, CA 92093, USA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+}\\
+\footnotemark[3] & \parbox[t]{13cm}{
+%%%%%%%%%% Affiliation for footnotemark[3] %%%%%%%%%%%%%%%%%%%%
+Institute for Infocomm Research, 21 Hen Mui Keng, Terrace, Singapore
+119613
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+}\\
+\end{tabular}
+\end{small}
+\bigskip
+\end{center}
+
+%%%%%%%%%%%%%%%%%%     Abstract   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+This document is a LaTeX2$\varepsilon$ template file for
+preparing a full paper.   Please read the instructions
+carefully and prepare your manuscript.
+\end{abstract}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\noindent {\bf Keywords:}
+%%%%%%%%%%%%%%%%%%%%%%%%  Keywords %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+aberrant splicing, database, point mutation, scanning model
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%% BEGIN CONTENTS %%%
+\section{Introduction}
+
+The page limit for full paper is TEN.  In case the number
+of pages still exceeds this limit after your efforts, please contact
+giw2004@ims.u-tokyo.ac.jp for advice.
+
+Do not change the text width, text height, baseline, font size, etc.,
+specified in LaTeX2e/LaTeX/MS Word templates.
+
+\section{Method and Results}
+
+Of course you can create more sections with any section titles.
+
+\subsection{Tables}
+
+Table~\ref{table:sample} is an example of a table.
+
+\begin{table}[h]
+\caption{Bioinformatics conferences in 2003.}
+\label{table:sample}
+\begin{center}
+\begin{tabular}{lll} \hline
+Conference  & Date          & Site \\ \hline
+RECOMB      & April 2-5     & Venice \\
+ISMB        & August 6-10   & Fortaleza \\
+GIW         & December 18-20& Yokohama \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{Figures}
+
+When you use figures (Fig.~\ref{figure:sample}, Fig.~\ref{figure:color})
+with a special style file, please provide it.
+
+Printed version of ``Genome Informatics Vol. 17, No. 2'' is
+monochromatic and has a page limit. But, the electronic version (PDF,
+HTML) does not have such restrictions. Therefore, we encourage the
+author(s) to send any hypermedia files which can be attached to your
+paper. The electronic version will be also published at JSBi Home Page
+(\url{http://www.jsbi.org/jsbi_new/gioinfo.html}).
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{cc}
+\begin{minipage}[t]{7cm}
+\begin{center}
+\includegraphics[scale=0.8]{sample.eps}
+\end{center}
+\caption{This is a sample figure. }
+\label{figure:sample}
+\end{minipage}
+&
+\begin{minipage}[t]{8cm}
+\begin{center}
+\includegraphics[width=7cm]{JSBi.eps}
+\end{center}
+\caption{This is a color sample figure. }
+\label{figure:color}
+\end{minipage}
+\end{tabular}
+\end{center}
+\end{figure}
+
+
+\subsection{Citation and References}
+
+Reference style and citation should strictly follow this
+template~\cite{akutsu98,doi99,motowani94,sw81,JSBi}.
+
+\begin{enumerate}
+\item References should be arranged in the alphabetical order of
+authors and all references SHOULD be cited.
+\item  Style (see examples in {\bf References} below).
+\begin{enumerate}
+\item Journal: author(s), title, journal name,
+vol(issue):startpage-endpage, year.
+\item Proceedigns: author(s), title, Proc. conference name, publisher
+(if possible), startpage-endpage, year.
+\item  Book: author(s), title, publisher, year.
+\item  Other: author(s), title, any helpful information, year.
+\item  URL: \url{http://(URL site)}.  URLs should be listed in the last.
+\end{enumerate}
+\item Provide all author names.  If the number of authors is
+too large, you may reduce appropriately (such as
+Venter, J.C., Adams, M.D., Myers, E.W., Li, P.W., {\em et al.},
+The sequence of the human genome,
+{\em Science}, 291(5507):1304--1351, 2001.)
+\end{enumerate}
+
+\section{Discussions}
+
+Authors are recommended to use spell checker program and grammar check
+program for improving your final version.
+
+\begin{thebibliography}{99}
+%%%%%%%% Proceedings %%%%%%%%%%%%%%%%%%
+\bibitem{akutsu98}
+Akutsu, T., Kuhara, S., Maruyama, O., and Miyano, S.,
+Identification of gene regulatory networks by strategic gene
+disruptions and gene overexpressions,
+{\em Proc. 9th ACM-SIAM Symp. Discrete Algorithms}, 695--702, 1998.
+
+%%%%%%%% Genome Informatics Series %%%%
+\bibitem{doi99}
+Doi, K. and Imai, H.,
+A greedy algorithm for minimizing the number of primers in
+multiple PCR experiments,
+{\em Genome Informatics}, 10:73--82, 1999.
+
+%%%%%%%% Book %%%%%%%%%%%%%%%%%%%%%%%%%
+\bibitem{motowani94}
+Motowani, R. and Raghavan, P.,
+{\em Randomized Algorithms}, Cambridge University Press, 1994.
+
+%%%%%%%% Journal article %%%%%%%%%%%%%%
+\bibitem{sw81}
+Smith, T.F. and Waterman, M.S.,
+Identification of common molecular subsequences,
+{\em J. Mol. Biol.}, 147(1):195--197, 1981.
+
+%%%%%%%% URL %%%%%%%%%%%%%%
+\bibitem{JSBi}
+\url{http://www.jsbi.org/}
+
+\end{thebibliography}
+\end{document}
+%%% END CONTENTS %%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
