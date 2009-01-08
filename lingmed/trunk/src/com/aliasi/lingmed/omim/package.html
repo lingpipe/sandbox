@@ -1,0 +1,28 @@
+<body>
+
+<P>
+Classes for manipulating data from the 
+<A href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=omim">
+OMIM</A>, Online Mendelian Inheritance in Man Database.
+<P>
+This database is maintained and distributed as part of the
+<A href="http://www.ncbi.nlm.nih.gov/sites/gquery">
+NCBI Entrez</A> search engine.
+It is available for FTP download from
+<A href="ftp://ftp.ncbi.nih.gov/repository/OMIM/omim.txt.Z">
+ftp://ftp.ncbi.nih.gov/repository/OMIM/omim.txt.Z</A>
+See the <A href="http://www.ncbi.nlm.nih.gov/Omim/omimfaq.html#download">
+OMIM FAQ</A> for more information.
+<P>
+The file omim.txt is an ASCII text file
+containing a set of records.
+Each record contains a number of fields.
+Records begin with the header: 
+<CODE>*RECORD*</CODE> on its own line.
+Fields begin with the header: 
+<CODE>*FIELD* &lt;FIELD KEY&gt;</CODE> also on its own line.
+The class {@link com.aliasi.lingmed.omim.OmimParser} parses this file
+into its constituent {@link com.aliasi.lingmed.omim.OmimRecord}s.
+
+</body>
+

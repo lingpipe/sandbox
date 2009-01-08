@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- A simple CAS consumer that writes an inline XML representation of the
+	CAS to the filesystem.  The Java class for this CAS consumer is in uima_core.jar. -->
+
+<casConsumerDescription xmlns="http://uima.watson.ibm.com/resourceSpecifier" xmlns:xi="http://www.w3.org/2001/XInclude">
+	<frameworkImplementation>com.ibm.uima.java</frameworkImplementation>
+	<implementationName>com.ibm.uima.examples.cpe.XCasWriterCasConsumer</implementationName>
+
+	<processingResourceMetaData>
+
+		<name>XCAS Writer CAS Consumer</name>
+		<description>Writes the CAS to a stand-off XML format (XCAS)</description>
+		<version>1.0</version>
+		<vendor>IBM</vendor>
+
+		<configurationParameters>
+			<configurationParameter>
+				<name>OutputDirectory</name>
+				<type>String</type>
+				<description>Directory where the XCAS files will be written</description>
+				<multiValued>false</multiValued>
+				<mandatory>true</mandatory>
+			</configurationParameter>
+		</configurationParameters>
+
+		<configurationParameterSettings>
+			<nameValuePair>
+				<name>OutputDirectory</name>
+				<value>
+					<string>C:\DOCUME~1\BOBCAR~1\Desktop\xcaswriter</string>
+				</value>
+			</nameValuePair>
+		</configurationParameterSettings>
+
+
+		<typeSystemDescription>
+			<imports>
+ 	           <import name="com.ibm.uima.examples.SourceDocumentInformation"/>
+			</imports>
+		</typeSystemDescription>
+
+		<capabilities>
+			<capability>
+				<inputs>
+          			<type allAnnotatorFeatures="true">com.ibm.uima.examples.SourceDocumentInformation</type>
+				</inputs>
+			</capability>
+		</capabilities>
+
+	</processingResourceMetaData>
+
+</casConsumerDescription>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>LingMed: LingPipe for Entrez-Pubmed</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="lp-site.css"
+      type="text/css"
+      rel="stylesheet"
+      title="lp-site"
+      media="screen,projection,tv"/>
+<link href="lp-site-print.css"
+      title="lp-site"
+      type="text/css"
+      rel="stylesheet"
+      media="print,handheld,tty,aural,braille,embossed"/>
+</head>
+
+<body>
+<div id="header">
+<h1 id="product">LingMed</h1><h1 id="pagetitle">LingBlast</h1>
+<a id="logo" href="http://alias-i.com/">
+<img src="http://alias-i.com/lingpipe/web/img/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+<div id="navig">
+<!-- set class="current" for current link -->
+<ul>
+<li><a href="../read-me.html">lingmed</a>
+<ul>
+<li><a href="dao.html">search and indexing</a></li>
+<li><a href="medline.html">medline processing</a></li>
+<li><a href="more_entrez.html">entrez databases</a></li>
+<li><a class="current" href="lingblast.html">lingblast</a></li>
+<li><a href="genelinkage.html">putting it together: genelinkage</a></li>
+</ul>
+</li>
+<li><a href="http://alias-i.com/lingpipe/index.html">lingpipe</a></li>
+</ul>
+</div><!-- navig -->
+
+<div id="content" class="content">
+
+<h2>Overview</h2>
+
+<p>
+LingBlast is an app which links Entrez Gene identifiers 
+to Entrez PubMed identifiers with confidence scores.
+The idea behind this app is based on an analogy to BLAST:
+Altschul et al.'s Basic Local Alignment Search Tool, which finds
+homologous (approximately matching) genes or proteins given a set of
+samples to match.  LingBlast finds homologous gene or protein names
+(mentions) in text given a set of samples (aliases) to match.
+The confidence score is based on how well the gene's surrounding context 
+matches that of the known references for that gene.
+The components needed for this app are:
+</p>
+
+<p>
+<ul>
+<li>
+An exact-match dictionary, where all matches are scored 1.0.
+</li>
+<li>
+A set of language models, 1 per gene, built from the set of
+pubmed citations found in the entrez-gene entry.
+</li>
+</ul>
+
+<h2>Building the exact-match dictionary</h2>
+
+<p>
+The <code>DictionaryBuilder</code> 
+command creates an exact-match dictionary over 
+a set of gene names from Entrez Gene where all matches are scored 1.0. 
+The category assigned to a dictionary entry 
+is the set of all geneIds for which the entry is a name or alias.
+</p>
+
+<h2>Building the language models</h2>
+
+<p>
+The <code>ModelCompiler</code> command builds a set of 
+language models for the genes in EntrezGene. 
+A gene-specific language model is created for 
+those genes which have descriptive text.
+A general genomics language model is created 
+from the union of all these descriptive texts.
+</p>
+
+<h2>Processing MEDLINE</h2>
+
+<p>
+The <code>LingBlastMedline</code> command processes all of MEDLINE.
+It runs each medline citation through 
+<code>LingBlast.lingblast(java.lang.CharSequence)</code>  
+and outputs its results as a set of tables in tab-delimited text file format.
+</p>
+
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2003&ndash;2006 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+
+</body>
+
+</html>
+
+

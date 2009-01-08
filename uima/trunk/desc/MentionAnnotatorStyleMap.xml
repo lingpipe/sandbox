@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<styleMap>
+<rule>
+<pattern>com.aliasi.uima.Mention</pattern>
+<label>Mention</label>
+<style>color:black;background:lightblue;checked:true;hidden:false;</style>
+</rule>
+<rule>
+<pattern>com.aliasi.uima.Sentence</pattern>
+<label>com.aliasi.uima.Sentence</label>
+<style>color:black;background:#ff9900;checked:true;hidden:false;</style>
+</rule>
+<rule>
+<pattern>com.aliasi.uima.Mention[@chunkType='']</pattern>
+<label>com.aliasi.uima.Mention:chunkType</label>
+<style>color:black;background:white;checked:true;hidden:false;</style>
+</rule>
+</styleMap>

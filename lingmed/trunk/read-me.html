@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>LingMed: LingPipe for Entrez-Pubmed</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="docs/lp-site.css"
+      type="text/css"
+      rel="stylesheet"
+      title="lp-site"
+      media="screen,projection,tv"/>
+
+<link href="docs/lp-site-print.css"
+      title="lp-site"
+      type="text/css"
+      rel="stylesheet"
+      media="print,handheld,tty,aural,braille,embossed"/>
+
+</head>
+
+<body>
+<div id="header">
+<h1 id="product">LingMed</h1><h1 id="pagetitle">Home</h1>
+<a id="logo" href="http://alias-i.com/">
+<img src="http://alias-i.com/lingpipe/web/img/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+<div id="navig">
+<!-- set class="current" for current link -->
+<ul>
+<li><a class="current" href="read-me.html">lingmed</a>
+<ul>
+<li><a href="docs/dao.html">search and indexing</a></li>
+<li><a href="docs/medline.html">medline processing</a></li>
+<li><a href="docs/more_entrez.html">entrez databases</a></li>
+<li><a href="docs/lingblast.html">lingblast</a></li>
+<li><a href="docs/genelinkage.html">putting it together: genelinkage</a></li>
+</ul>
+</li>
+<li><a href="http://alias-i.com/lingpipe/index.html">lingpipe</a></li>
+</ul>
+</div><!-- navig -->
+
+<div id="content" class="content">
+<h2>Overview</h2>
+<p>
+LingMed is a top-level project in the Alias-i sandbox, 
+comprising tools and Java packages for
+search and indexing over several major
+<a href="http://www.ncbi.nlm.nih.gov/sites/gquery">NCBI Entrez databases</a>:
+<ul>
+<li><a href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=pubmed">MEDLINE</a>
+- the PubMed citation index of biomedical journal article citations and abstracts</li>
+<li><a href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=gene">Entrez Gene</a>
+- gene-specific information</li>
+<li><a href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=omim">
+OMIM: Online Mendelian Inheritance in Man</a>
+- a compendium of human genes and genetic phenotypes.</li>
+<li><a href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=homologene">HomoloGene</a>
+- eukaryotic homology groups.</li>
+</ul>
+</p>
+<p>
+The <a href="http://www.ncbi.nlm.nih.gov/">NCBI</a>
+distributes these databases via ftp download.
+Each database has its own distribution format.
+LingMed provides a set of programs which store the records 
+from each distribution in a Lucene index.
+A data access layer maps Lucene documents into Java objects
+which model the logical structure a database entry.
+The LingMed API provides methods for structured cross-database search, 
+as well as the option of running arbitrary Lucene queries over an index.
+It also provides methods so that the Lucene indexes 
+can be stored on a central server, and accessed remotely
+by client programs.
+Because LingMed maps the search results into Java objects, 
+we can use LingPipe for further analysis.
+</p>
+<p>
+These databases contain large amounts of free text:
+MEDLINE contains article titles and abstracts;
+OMIM records contain full-text descriptions of
+genes and genotypes; and Entrez Gene entries contain
+gene summaries.
+These databases cross-reference each other, both explicitly,
+by database entry ids, and implicitly, through gene mentions.
+Gene names are ambiguous, and one gene can have many aliases.
+Entrez Gene, Homologene, and OMIM entries contain
+sets of aliases for a gene.
+</p>
+<p>
+Detecting gene mentions in MEDLINE citations is challenging;
+resolving the gene mention to a specific gene is very challenging.
+LingMed provides the infrastructure upon which we can build
+applications for gene linkage and gene disambiguation.
+</p>
+
+<h2>Road Map</h2>
+
+<p>
+The LingMed documentation consists of the following sections:
+
+<ul>
+<li><a href="docs/dao.html">search and indexing</a>
+LingMed classes and interfaces used for searching Lucene and MySQL data stores.  
+Code samples show how to use existing search functions,
+how to search remote indexes, and
+how to extend these classes to add more search functionality.
+</li>
+<li><a href="docs/medline.html">medline processing</a>
+LingMed tools and packages for downloading, indexing, and
+searching the MEDLINE citation index.
+Code samples show how to parse and index MEDLINE 
+using LingPipe and Lucene.
+</li>
+<li><a href="docs/more_entrez.html">entrez databases</a>
+LingMed tools and packages for indexing and
+searching the Entrez Gene, Homologene, and OMIM databases.
+</li>
+<li><a href="docs/lingblast.html">lingblast</a>
+The lingblast package contains programs which use LingPipe to
+build dictionaries and language models over the Entrez-Gene
+and Entrez-PubMed databases.
+These components are used to link Entrez-Gene identifiers 
+to Entrez-Pubmed identifiers with confidence scores.
+</li>
+<li><a href="docs/genelinkage.html">putting it together: genelinkage</a>
+GeneLinkage performs searches over a MySQL database of 
+scored gene mentions in MEDLINE citations, and uses this to compile
+an HTML page of search results.
+A simple servlet wrapper is provided, as well as 
+a command-line program which accepts lists of geneIds as input.
+</li>
+</ul>
+</p>
+
+<h2>External tools</h2>
+<p>
+<a href="http://ant.apache.org/">Apache Ant</a> 
+is used to build and run LingMed applications,
+and a <a href="build.xml"><code>build.xml</code></a> file is 
+included with this distribution.
+LingMed uses several 3rd party libraries:
+<ul>
+<li><a href="http://lucene.apache.org/java/docs/">apache lucene</a> text search engine</li>
+<li><a href="http://logging.apache.org/log4j/1.2/index.html">apache log4j</a> 
+ logging facility </li>
+<li><a href="http://www.mysql.com/products/connector/j/">mysql connector/j</a>
+JDBC driver for MySQL databases</li>
+<li><a href="http://commons.apache.org/net/">apache commons net</a>
+ftp client.</li>
+<li><a href="http://java.sun.com/products/servlet/2.1/index.html">javax.servlet</a>
+the Java Servlet package</li>
+</ul>
+</p>
+<p>
+The jarfiles are included with this distribution.
+</p>
+
+
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2003&ndash;2006 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+
+</body>
+
+</html>
+
+

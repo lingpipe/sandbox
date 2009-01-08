@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>LingMed: LingPipe for Entrez-Pubmed</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="lp-site.css"
+      type="text/css"
+      rel="stylesheet"
+      title="lp-site"
+      media="screen,projection,tv"/>
+<link href="lp-site-print.css"
+      title="lp-site"
+      type="text/css"
+      rel="stylesheet"
+      media="print,handheld,tty,aural,braille,embossed"/>
+</head>
+
+<body>
+<div id="header">
+<h1 id="product">LingMed</h1><h1 id="pagetitle">Search and Indexing</h1>
+<a id="logo" href="http://alias-i.com/">
+<img src="http://alias-i.com/lingpipe/web/img/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+<div id="navig">
+<!-- set class="current" for current link -->
+<ul>
+<li><a href="../read-me.html">lingmed</a>
+
+<ul>
+<li><a class="current" href="dao.html">search and indexing</a>
+<ul>
+<li><a href="#core">core concepts</a></li>
+<li><a href="#remote">remote search</a></li>
+<li><a href="#ex1">a simple search client</a></li>
+<li><a href="#ex2">extending class DaoSearcher</a></li>
+<li><a href="#mysql">mysql search</a></li>
+</ul>
+</li>
+
+<li><a href="medline.html">medline processing</a></li>
+<li><a href="more_entrez.html">entrez databases</a></li>
+<li><a href="lingblast.html">lingblast</a></li>
+<li><a href="genelinkage.html">putting it together: genelinkage</a></li>
+</ul>
+</li>
+<li><a href="http://alias-i.com/lingpipe/index.html">lingpipe</a></li>
+</ul>
+</div><!-- navig -->
+
+<div id="content" class="content">
+
+<h2>Data Access Layer</h2>
+<p>
+The LingMed data access layer brokers the communication
+between applications and 
+Lucene and MySQL-backed data stores
+using the 
+<a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data Access Object (DAO) pattern</a>.
+It provides an extensible API 
+for search and indexing of individual Entrez databases,
+as well as for cross-database searches.
+</p>
+<p>
+LingMed also provides methods for remote access of central data stores.
+This allows client applications to run analyses over MEDLINE
+and other Entrez databases without having to have a local
+copy of the repository.
+</p>
+<p>
+Code samples show how to use existing search functions, 
+how to search remote indexes, 
+and how to extend these classes to add more search functionality.
+</p>
+
+<a name="core"><h2>Core search: <code>com.aliasi.lingmed.dao</code></h2></a>
+<p>
+The package 
+<a href="api/com/aliasi/lingmed/dao/package-summary.html"><code>com.aliasi.lingmed.dao</code></a>
+contains the core classes and interfaces which are used by all data access objects.
+There is a LingMed package corresponding to each Entrez database, 
+and for each package there is a class which 
+defines the object model for a database entry.
+The interfaces and classes in the <code>com.aliasi.lingmed.dao</code> package are 
+specified in terms of operations on generic objects.
+</p>
+<p>
+The interface 
+<a href="api/com/aliasi/lingmed/dao/SearchResults.html"><code>SearchResults&lt;E&gt;</code></a>
+provides the mapping from Lucene documents to objects.
+Searches over Entrez databases return a <code>SearchResults</code>
+containing objects of the generic type ranked by Lucene score.
+</p>
+<p>
+The interface 
+<a href="api/com/aliasi/lingmed/dao/DaoSearcher.html"><code>DaoSearcher</code></a>
+specifies the baseline search functionality for any Lucene-backed data store.
+<code>DaoSearcher</code> extends the 
+<a href="http://java.sun.com/javase/6/docs/api/java/lang/Iterable.html"><code>Iterable</code></a>
+interface.
+The function 
+<a href="http://java.sun.com/javase/6/docs/api/java/lang/Iterable.html#iterator()"><code>iterator()</code></a>
+returns an 
+<a href="http://java.sun.com/javase/6/docs/api/java/util/Iterator.html"><code>Iterator</code></a>
+of the generic type which can be used to walk over the entire index.
+</p>
+<p>
+<code>DaoSearcher</code> specifies 2 basic search methods:
+search by id, and search by query.
+Lucene indexes created by LingMed always contain an id field,
+which stores the Entrez database id.
+The method 
+<a href="api/com/aliasi/lingmed/dao/DaoSearcher.html#getById()"><code>getById(String&nbsp;id)</code></a>
+performs a search against this field, and
+returns an object of the generic type which matches that ID, 
+or null if no object with that ID is found in the index.
+The methods 
+<a href="api/com/aliasi/lingmed/dao/DaoSearcher.html#search(org.apache.lucene.search.Query)"><code>search(Query&nbsp;query)</code></a>
+and 
+<a href="api/com/aliasi/lingmed/dao/DaoSearcher.html#search(java.lang.String)"><code>search(String&nbsp;queryString)</code></a>
+execute the Lucene search specified by the query argument, and return 
+a <code>SearchResults</code> of objects of the generic type.
+</p>
+<p>
+The interface 
+<a href="api/com/aliasi/lingmed/dao/Codec.html"><code>Codec</code></a>
+specifies the methods used to convert Lucene documents to Java objects and visa versa.
+The name <a href="http://en.wikipedia.org/wiki/Codec">codec</a> is borrowed
+from the signal processing domain, and is used here to indicate that this
+class handles both the mapping from the lingmed Java objects to Lucene documents
+during indexing (<i>encoding</i>) and
+the mapping from Lucene documents to Java objects as search results (<i>decoding</i>).
+Codecs also contain a Lucene
+<a href="http://lucene.apache.org/java/2_3_0/api/org/apache/lucene/analysis/Analyzer.html">
+<code>Analyzer</code></a>,
+which ensures that the Analyzer used to parse queries 
+is the same as the one used to index the documents.
+</p>
+<p>
+The class
+<a href="api/com/aliasi/lingmed/dao/DaoSearcherImpl.html"><code>DaoSearcherImpl</code></a>
+provide basic search functionality over all Entrez databases,
+and can be extended to implement database-specific search, as well
+as cross-database search.
+The constructor takes 2 arguments:
+a <code>Codec</code> of the appropriate generic type,
+and a Lucene
+<a href="http://lucene.apache.org/java/2_3_0/api/org/apache/lucene/search/Searcher.html">
+<code>Searcher</code></a> over the Lucene index for that Entrez database.
+</p>
+
+
+
+<a name="remote"><h2>Remote search: <code>com.aliasi.lingmed.server</code></h2></a>
+<p>
+The package 
+<a href="api/com/aliasi/lingmed/server/package-summary.html"><code>com.aliasi.lingmed.server</code></a>
+contain classes which allow remote searches over a central Lucene index.
+Lucene uses RMI for search over remote indexes.
+For details see Chapter 5, p180 of
+<A href="http://www.manning.com/hatcher2/"><i>Lucene in Action</i></a>:
+&quot;Searching Multiple Indexes Remotely&quot;.
+A good starting point for learning about RMI is the 
+<A href="http://java.sun.com/docs/books/tutorial/rmi/index.html">
+Sun RMI tutorial</A>
+</p>
+<p>
+Applications running on a remote machine must instantiate a
+<a href="api/com/aliasi/lingmed/server/SearchClient.html"><code>SearchClient</code></a>.
+The arguments to the constructor are the server name,
+server port, and name of the search service.
+Once instantiated, the method
+<a href="api/com/aliasi/lingmed/server/SearchClient.html#getSearcher()"><code>getSearcher()</code></a>
+method is used to get a searcher over the Lucene index.
+</p>
+<p>
+The 
+<a href="api/com/aliasi/lingmed/server/SearchService.html"><code>SearchService</code></a> 
+class instantiates a remote searcher over a local Lucene index and 
+registers this object with RMI,  via a 
+<a href="api/com/aliasi/lingmed/server/SearchServer.html"><code>SearchServer</code></a>,
+which communicates with the local RMI registry.
+<code>SearchService</code> extends the LingPipe 
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/util/AbstractCommand.html">
+AbstractCommand</a> utility class,
+which allows us to pass in local configuration information as
+a set of command-line name-value pairs.
+The required arguments are:
+the port on which the RMI registry service is listening;
+the name of service used by RMI clients; 
+the path to the local directory which contains the Lucene index.
+</p>
+<a name="ex1"><h2>Code sample: a simple search client</code></h2></a>
+<p>
+The 
+program <a href="../src/com/aliasi/lingmed/server/TestClient.java"><code>TestClient</code></a> 
+searches a remote Lucene index over Medline.
+It requires 2 command-line arguments: 
+the name of the search host, and the name of a file of PubMed ids.
+The name of the service is hardcoded as &quot;medline&quot;,
+and the port is set to 1099.
+(In a real-world application these would be configurable).
+The search host must have an RMI registry listening on port 1099, 
+and must have be running a <code>SearchService</code>
+that has registered a <code>Searcher</code> 
+over a Lucene index of MEDLINE citations with the name &quot;medline&quot;.
+</p>
+<p>
+Here is the code which looks up each PubMed id in the remote citation index:
+</p>
+<pre class="code">
+MedlineCodec medlineCodec = new MedlineCodec();
+SearchClient medlineClient = new SearchClient("medline",hostname,1099);
+...
+String id;
+LineNumberReader in = new LineNumberReader(new BufferedReader(new FileReader(fileName)));
+while ((id = in.readLine()) != null) {
+    ...
+    Searcher medlineRemoteSearcher = medlineClient.getSearcher();
+    MedlineSearcher medlineSearcher = new MedlineSearcherImpl(medlineCodec,medlineRemoteSearcher);
+    ...
+    MedlineCitation mc = medlineSearcher.getById(id);
+    ...
+</pre>
+<p>
+We use a 
+<a href="api/com/aliasi/lingmed/medline/MedlineSearcher.html"><code>MedlineSearcher</code></a>
+to search the Lucene Medline citation index.
+The class 
+<a href="api/com/aliasi/lingmed/medline/MedlineSearcherImpl.html"><code>MedlineSearcherImpl</code></a>
+extends <code>DaoSearcherImpl</code>.
+Its constructor takes a Lucene <code>Searcher</code> and a 
+<a href="api/com/aliasi/lingmed/medline/MedlineCodec.html"><code>MedlineCodec</code></a>.
+First we instatiate the <code>MedlineCodec</code> and the <code>SearchClient</code>.
+Then we obtain a <code>Searcher</code>
+and pass this and the <code>MedlineCodec</code> in to the <code>MedlineSearcher</code>.
+We call <code>getSearcher()</code> and construct a new <code>MedlineSearcher</code> before each search
+in order to ensure that search is over the current version of the index on the server.
+</p>
+
+<a name="ex2"><h2>Code sample: extending <code>DaoSearcher</code> for Entrez Gene entries</h2></a>
+<p>
+The package
+<a href="api/com/aliasi/lingmed/entrezgene/package-summary.html"><code>com.aliasi.lingmed.entrezgene</code></a>
+contains classes for manipulating data from the 
+<a href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=gene">
+NCBI Entrez Gene database</a>.
+The class
+<a href="api/com/aliasi/lingmed/entrezgene/EntrezGene.html"><code>EntrezGene</code></a>
+is the object model for one database entry.
+</p>
+<p>
+An Entrez Gene entry may contain one or more references to MEDLINE citations.
+In order to be able to find PubMed ids in the Entrez Gene index we must:
+<ul>
+<li>
+Index the PubMed ids when creating a Lucene <code>Document</code> from an <code>EntrezGene</code> object.
+<li>
+Create the appropriate Lucene query used to search the index.
+</ul>
+</p>
+<p>
+Indexing is carried out by the
+<a href="api/com/aliasi/lingmed/entrezgene/EntrezGeneCodec.html#toDocument(com.aliasi.lingmed.entrezgene.EntrezGene)">
+<code>toDocument(EntrezGene e)</code></a>
+method in the class
+<a href="api/com/aliasi/lingmed/entrezgene/EntrezGeneCodec.html"><code>EntrezGeneCodec</code></a>.
+Here is the code which indexes the PubMed ids:
+</p>
+<pre class="code">
+public static final String PMID_FIELD = "PMID";
+    ...
+
+public Document toDocument(EntrezGene e) { 
+    Document doc = new Document(); 
+    ...
+    String[] pmidRefs = e.getUniquePubMedRefs();
+    for (String pmid : pmidRefs) {
+        Field pmidField = new Field(PMID_FIELD,pmid,
+	                            Field.Store.YES,
+                                    Field.Index.TOKENIZED);
+        doc.add(pmidField);
+    }
+    ...
+</pre>
+<p>
+The interface <code>EntrezGeneSearcher</code> extends the 
+interface <code>DaoSearcher</code> by adding one additional function:
+<a href="api/com/aliasi/lingmed/entrezgene/EntrezGeneSearcher.html#getGenesForPubmedId(java.lang.String)">
+<code>getGenesForPubmedId(String pubmedId)</code></a>.
+Here is the implementation of this function, in class
+<a href="api/com/aliasi/lingmed/entrezgene/EntrezGeneSearcherImpl.html"><code>EntrezGeneSearcherImpl</code></a>:
+</p>
+<pre class="code">
+public class EntrezGeneSearcherImpl extends DaoSearcherImpl<EntrezGene> implements EntrezGeneSearcher {
+    ...
+    public SearchResults<EntrezGene> getGenesForPubmedId(String pubmedId) throws DaoException {
+        Term term = new Term(EntrezGeneCodec.PMID_FIELD,pubmedId);
+        Query query = new TermQuery(term);
+        return search(query);
+    }
+    ...
+</pre>
+<p>
+This code creates a Lucene <code>Query</code> over the PubMed id field, and calls the
+<a href="api/com/aliasi/lingmed/dao/DaoSearcher.html#search(java.lang.String)"><code>search(String&nbsp;queryString)</code></a>
+method in the super-class <code>DaoSearcherImpl</code>.
+</p>
+
+
+<a name="mysql"><h2>MySQL Data Access Objects</h2></a>
+<p>
+The 
+<a href="api/com/aliasi/lingmed/dao/package-summary.html"><code>com.aliasi.lingmed.dao</code></a> 
+package contains the interface 
+<a href="api/com/aliasi/lingmed/dao/MysqlDao.html"><code>MysqlDao</code></a>
+and a base implementation class
+<a href="api/com/aliasi/lingmed/dao/MysqlDaoImpl.html"><code>MysqlDaoImpl</code></a>.
+This class provides functions which manage the connection between applications and a MySQL database.
+Applications which have a MySQL database as a backing store extend this class to provide
+application-specific DAOs.
+For examples of how this class is used, see the section
+<a href="genelinkage.html">putting it together: genelinkage</a>,
+which finds mentions of Entrez Gene entries
+in Medline abstracts, and stores this information in a MySQL database.
+</p>
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2003&ndash;2006 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+
+</body>
+
+</html>
+
+

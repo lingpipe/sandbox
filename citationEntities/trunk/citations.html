@@ -1,0 +1,772 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>Case Study: LingPipe Citation Annotation</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="web/tutorial.css"
+      type="text/css"
+      rel="stylesheet"
+      title="tutorial style"
+      media="screen,projection,tv"/>
+</head>
+
+<body>
+
+<div id="header">
+<h1 id="product">LingPipe</h1><h1 id="pagetitle">Study: Citation Annotation</h1>
+<a id="logo"
+   href="http://www.alias-i.com/"
+  ><img src="web/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+<div id="navig">
+<ul>
+<li><a href="http://www.alias-i.com/lingpipe"><b>LingPipe Home</b></a></li>
+<li><a href="http://www.alias-i.com/lingpipe/web/sandbox.html"><b>Sandbox</b></a></li>
+</ul>
+<br />
+<ul>
+<li style="font-size:small">This project resides in the LingPipe Sandbox.  
+Visit the LingPipe home page or sandbox page, linked above, for more information.
+</li>
+</ul>
+&nbsp;
+</div>
+
+
+
+
+<div id="content">
+
+
+<h2>Introduction</h2>
+
+<p> This tutorial will follow the running example of extracting and
+analyzing bibliographic citations from conference papers in the areas
+of natural language processing (ACL), search (TREC) and machine
+learning (NIPS).</p>
+
+<h3>Before you Begin</h3>
+<p>
+This document presupposes the reader is familiar with the basic
+annotation tutorial:
+</p>
+<ul>
+<li><a href="read-me.html">LingPipe Annotation Tutorial</a></li>
+</ul>
+
+
+<h2>BibTex-like Bibliograophies</h2>
+
+<h3>BibTeX Output Target</h3>
+
+<p>The target of analysis is a fully specified <a
+href="http://www.bibtex.org">BibTeX</a> bibliography for each
+paper in the corpus.
+</p>
+
+<div class="sidebar">
+<h2>About BibTeX</h2>
+<p>
+BibTeX is a widely-used file format for bibliographic entries,
+especially in computer science.  It was developed as a front-end for
+the LaTeX formatting system, itself a front-end for the TeX formatting
+system.  Bibliographic resources such as <a
+href="http://citeseer.ist.psu.edu/">CiteSeer</a> provide canonical
+citation forms in the BibTeX format.  </p>
+<p>The best place to learn about BibTeX is:
+</p>
+
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/BibTeX">Wikipedia: BibTeX</a>.
+</li>
+</ul>
+</div>
+
+<p>BibTeX uses a two-level organization of bibliographies.  At the top
+level is a citation with a given type, such as book or journal
+article.  Each citation is then divided into fields, such as
+author(s), title, and year.  The Wikipedia entry above provides
+a nice concise overview of the different citation types and their
+legal fields. 
+</p>
+
+<p>We will not enforce the creation of strictly legal BibTeX entries,
+though we discuss the problem and some approaches to it later.  One
+issue is that not all entries will have been created with BibTeX,
+and secondly, we wanted to extend the set of types to include web sites,
+software, and other types of citations found in our corpus.  
+</p>
+
+<p>We will also not worry about providing LaTeX-formatted
+output for the BibTeX entries we do generate.
+</p>
+
+
+
+
+<h3>Raw Input: Conference Paper PDFs</h3>
+
+<p>Our raw input is conference papers from three 2006 conferences: ACL
+(computational linguistics), TREC (information retrieval) and NIPS
+(machine learning).
+</p>
+
+<div class="sidebar">
+<h2>A PDF'n Mess</h2>
+<p>
+Rather than repeat my (Bob Carpenter's) rant about
+PDFs, I'll direct you to my blog post on the topic:
+</p>
+<ul>
+<li>LingPipe Blog: <a href="http://www.alias-i.com/blog/?p=48">A PDF'n Mess</a></li>
+</ul>
+</div>
+
+<p>We take in the papers in Adobe's <a
+href="http://en.wikipedia.org/wiki/Portable_Document_Format">Portable
+Document Format</a> (PDF).  Unfortunately, this format is graphical in
+two dimensions, not linear in text.  Therefore, techniques akin to
+those used for optical character recognition are necessary to convert
+a PDF back into a linear sequence of text characters.  Not only is the
+conversion process noisy, it varies from converter to converter.  Even
+cutting and pasting text from Adobe's own <a href="http://www.adobe.com/products/acrobat/readstep2.html">Acrobat Reader</a>
+software produces a different result than saving the document as
+text (in Windows, anyway).
+</p>
+<p>
+See
+the next section 
+for a description
+of how we carried out the conversions programatically in Java.  </p>
+
+
+<h3>XML Input: Conference Paper Text</h3>
+<p>
+We extract the text of a PDF document into an XML document encoded
+using Unicode characters under the UTF-8 encoding.  For
+instance, the text extracted from the ACL paper
+<a href="http://acl.ldc.upenn.edu/P/P06/P06-1001.pdf">P06-1001</a>
+looks like:
+</p>
+
+<pre class="code">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;document url=&quot;http://acl.ldc.upenn.edu/P/P06/P06-1001.pdf&quot;&gt;<b>&lt;chunk type=&quot;document&quot;&gt;</b>Proceedings of the 21st International Conference on Computational Linguistics and 44th Annual Meeting of the ACL, pages 1–8,
+Sydney, July 2006. c©2006 Association for Computational Linguistics
+Combination of Arabic Preprocessing Schemes
+for Statistical Machine Translation
+Fatiha Sadat
+Institute for Information Technology
+National Research Council of Canada
+fatiha.sadat@cnrc-nrc.gc.ca
+Nizar Habash
+Center for Computational Learning Systems
+Columbia University
+habash@cs.columbia.edu
+Abstract
+Statistical machine translation is quite ro-
+...
+Texts, Ann Arbor, Michigan.
+A. Stolcke. 2002. Srilm - An Extensible Language
+Modeling Toolkit. In Proc. of International Confer-
+ence on Spoken Language Processing.
+8
+<b>&lt;/chunk&gt;</b>&lt;/document&gt;
+</pre>
+
+<p>
+It contains a top-level element <code>document</code>,
+with an attribute identifying the source URL from 
+which the document was downloaded.  Within that structure
+is a <code>chunk</code> element, the type of which
+is <code>document</code>.  Although redundant from an
+XML point of view, the annotator annotates within
+<code>chunk</code> elements, here highlighted in bold, leaving all other text
+alone.
+</p>
+
+<h3>Output 1: Bibliography Chunks</h3>
+
+<p>The annotation for a document will be hiearchical.  The first
+annotation is the bibliography itself, which must be isolated
+within the entire document.  Here's the bibliography of the
+previous example:
+</p>
+
+<pre class="code">
+...
+George Forster for helpful discussions and sup-
+port.
+References
+<b>&lt;chunk type=&quot;bibliography&quot;&gt;</b>S. Bangalore, G. Bordel, and G. Riccardi. 2001. Com-
+puting Consensus Translation from Multiple Ma-
+chine Translation Systems. In Proc. of IEEE Auto-
+...
+Modeling Toolkit. In Proc. of International Confer-
+ence on Spoken Language Processing.<b>&lt;/chunk&gt;</b>
+8
+&lt;/chunk&gt;&lt;/document&gt;
+</pre>
+
+<p>Note that the page number <code>8</code> was not included in the
+bibliography, nor was its title header <code>References</code>.  In
+some cases, figures appear within the running bibliography text, and
+these have not been annotated as part of the bibliography, resulting
+in documents with more than one bibliography chunk.
+</p>
+
+<p> Note that the annotation does not affect whitespace.  If the
+bibliography elements are removed, we are left with the original XML
+document.  </p>
+
+
+<h3>Output 2: Citation Chunks</h3>
+
+<p>Once the bibliography is found, we will annotate the individual
+citations.  Each citation is analyzed for its BibTeX type.  Here
+is an example, using our running example document:
+</p>
+
+<pre class="code">
+&lt;chunk type=&quot;bibliography&quot;&gt;<b>&lt;chunk type=&quot;inproceedings&quot;&gt;</b>S. Bangalore, G. Bordel, and G. Riccardi. 2001. Com-
+puting Consensus Translation from Multiple Ma-
+chine Translation Systems. In Proc. of IEEE Auto-
+matic Speech Recognition and Understanding Work-
+shop, Italy.<b>&lt;/chunk&gt;</b>
+<b>&lt;chunk type=&quot;software&quot;&gt;</b>T. Buckwalter. 2002. Buckwalter Arabic Mor-
+phological Analyzer Version 1.0. Linguistic Data
+Consortium, University of Pennsylvania. Catalog:
+LDC2002L49.<b>&lt;/chunk&gt;</b>
+<b>&lt;chunk type=&quot;inproceedings&quot;&gt;</b>C. Callison-Burch, M. Osborne, and P. Koehn. 2006.
+...
+Texts, Ann Arbor, Michigan.<b>&lt;/chunk&gt;</b>
+<b>&lt;chunk type=&quot;inproceedings&quot;&gt;</b>A. Stolcke. 2002. Srilm - An Extensible Language
+Modeling Toolkit. In Proc. of International Confer-
+ence on Spoken Language Processing.<b>&lt;/chunk&gt;</b>&lt;/chunk&gt;
+8
+&lt;/chunk&gt;&lt;/document&gt;
+</pre>
+
+<p>Again note that the original whitespace is not disturbed.  The
+individual citations are now marked, for instance as
+<code>inproceedings</code> for the conference paper,
+<code>software</code> for the Buckwalter analyzer, and so on.
+</p>
+
+<h3>Output 3: Field Chunks</h3>
+
+<p>Here is an example of a fully analyzed citation:</p>
+
+<pre class="code">
+
+&lt;chunk type=&quot;bibliography&quot;&gt;&lt;chunk type=&quot;inproceedings&quot;&gt;<b>&lt;chunk type=&quot;AUTHOR&quot;&gt;</b>S. Bangalore<b>&lt;/chunk&gt;</b>, <b>&lt;chunk type=&quot;AUTHOR&quot;&gt;</b>G. Bordel<b>&lt;/chunk&gt;</b>, and <b>&lt;chunk type=&quot;AUTHOR&quot;&gt;</b>G. Riccardi<b>&lt;/chunk&gt;</b>. <b>&lt;chunk type=&quot;YEAR&quot;&gt;</b>2001<b>&lt;/chunk&gt;</b>. <b>&lt;chunk type=&quot;TITLE&quot;&gt;</b>Com-
+puting Consensus Translation from Multiple Ma-
+chine Translation Systems<b>&lt;/chunk&gt;</b>. In <b>&lt;chunk type=&quot;BOOKTITLE&quot;&gt;</b>Proc. of IEEE Auto-
+matic Speech Recognition and Understanding Work-
+shop<b>&lt;/chunk&gt;</b>, <b>&lt;chunk type=&quot;ADDRESS&quot;&gt;</b>Italy<b>&lt;/chunk&gt;</b>.&lt;/chunk&gt;
+...
+</pre>
+
+<p>
+Here, the various fields are indicated, such as the individual authors,
+the paper title, the paper year, the book title (title of collection
+in which it appears), and the address of the conference.
+</p>
+
+
+<h2>Creating the Corpus from PDFs</h2>
+
+<p>The corpus is created in two stages.  First, it's downloaded
+from the web using <code>wget</code>, and then the text of its
+documents are converted to an XML format for annotation.
+</p>
+
+<h3>Downloading the Corpus</h3>
+
+<p> Some work is required to gather the materials together which are
+to be annotated.  For this task, we've provided a script based on the
+Unix <code>wget</code> command.  For windows, <code>wget</code> and a
+wealth of other Unix utilities are available through the GNU-based <a
+href="http://www.cygwin.com">Cygwin package</a>.</p>
+
+<p>Our corpus is based on the proceedings of the following
+three conferences (links are to online tables of contents):
+</p>
+<ul>
+<li><a href="http://acl.ldc.upenn.edu/P/P06/index.html">ACL 2006</a></li>
+<li><a href="http://books.nips.cc/nips19.html">NIPS 2006</a></li>
+<li><a href="http://trec.nist.gov/pubs/trec15/t15_proceedings.html">TREC 2006</a></li>
+</ul>
+
+<p>
+Luckily, the conferences all put their papers in a single
+directory of PDF files.  Thus the following command structure
+is sufficient in every case, here with the TREC directory filled in:
+</p>
+<pre class="code">
+wget -nc -w 5 -r -l 1 --accept "*.pdf" -P../data/citations/raw http://trec.nist.gov/pubs/trec15/papers/
+</pre>
+<p>
+The options used are as follows:
+</p>
+<table>
+<tr><th>Option</th><th>Explanation</th></tr>
+<tr><td><code>-nc</code></td>
+    <td>Don't clobber if already there; 
+        allows to rerun script after partial completion</td></tr>
+<tr><td><code>-w &lt;N&gt;</code></td>
+     <td>Wait <code>N</code> seconds between downloads</td></tr>
+<tr><td><code>-r</code></td>
+    <td>Download recursively through HTML and directories</td></tr>
+<tr><td><code>-l 1</code></td>
+    <td>Don't leave the specified directory on the server (one level of recursion)</td></tr>
+<tr><td><code>--accept &lt;pattern&gt;</code></td>
+    <td>Only accept files matching pattern</td></tr>
+<tr><td><code>-P&lt;dir&gt;</code></td>
+    <td>Write output to specified directory path</td></tr>
+<tr><td><code>&lt;url&gt;</code></td>
+    <td>Where to start the download</td></tr>
+</table>
+
+<p>There are Windows and Unix scripts to download
+all of the papers from all three corpora in the
+background:
+</p>
+
+<ul>
+<li>Windows: <a href="scripts/data-download.bat"><code>scripts/data-download.bat</code></a></li>
+<li>Unix: <a href="scripts/data-download.sh"><code>scripts/data-download.sh</code></a></li>
+</ul>
+
+<p>
+These must be executed from the <code>scripts/</code> directory
+to resolve their relative paths properly.  Here are the instructions
+for Windows in the DOS shell, Windows from the Explorer GUI, and
+from a Unix shell.
+</p>
+
+<h4>Download with Windows DOS</h4>
+
+<pre class="code">
+cd $PROJECT/scripts
+data-download.bat
+</pre>
+
+<h4>Download from Windows GUI</h4>
+<ul>
+<li>Navigate to $PROJECT/scripts using the explorer</li>
+<li>Double click <code>data-download.bat</code> (which may
+not show the extension <code>.bat</code> depending on how
+you have your explorer configured)</li>
+</ul>
+
+<h4>Download from Unix Shell</h4>
+
+<pre class="code">
+cd $PROJECT/scripts
+sh data-download.sh
+</pre>
+
+
+<h3>Converting the Corpus to XML</h3>
+
+<p>In this section, we show how to use <a
+href="http://www.pdfbox.org">PDFBox</a> to extract the text from PDFs.
+PDFBox is a <a href="licenses/pdfbox-license.txt">BSD-licensed</a>
+Java API for manipulating PDF files.  It has an <a
+href="http://www.pdfbox.org/javadoc/index.html">extensive API</a> for
+manipulating PDFs, of which we will barely scratch the surface.</p>
+
+<p>The conversion is done in a single Java program distributed
+with this demo: </p>
+
+<ul>
+<li>
+<a href="src/com/aliasi/annotate/corpora/PdfToXml.java"><code>src/com/aliasi/annotate/corpora/PdfToXml.java</code></a>
+</li>
+</ul>
+
+<p>
+We'll step through the important parts of the program
+in the following sections.  The entire conversion to
+XML may be done as a batch operation through the <code>ant</code> target
+<code>pdf2xml</code>:
+</p>
+
+<pre class="code">
+&gt; ant pdf2xml
+Buildfile: build.xml
+
+    [java] convert http://acl.ldc.upenn.edu/P/P06/P06-1000.pdf  data\citations\raw\acl.ldc.upenn.edu\P\P06\P06-1000.pdf -> data\citations\xml\P06-1000.xml
+ ...
+    [java] convert http://trec.nist.gov/pubs/trec15/papers/yorku.legal.pdf  data\citations\raw\trec.nist.gov\pubs\trec15\papers\yorku.legal.pdf -> data\citations\xml\yorku.legal.xml
+    [java]
+    [java] TOTAL FILE COUNT=632
+    [java]      #converted=627
+    [java]      #errors=5
+    [java]
+    [java]
+    [java] FILES NOT CONVERTED:
+    [java]
+    [java]
+    [java] data\citations\raw\acl.ldc.upenn.edu\P\P06\P06-1098.pdf
+    [java] java.io.IOException: Unknown encoding for 'H'
+    [java]     at org.pdfbox.encoding.EncodingManager.getEncoding(EncodingManager.java:82)
+...
+    [java]     at org.pdfbox.util.PDFTextStripper.getText(PDFTextStripper.java:149)
+    [java]     at com.aliasi.annotate.corpora.PdfToXml.extractText(PdfToXml.java:128)
+    [java]     at com.aliasi.annotate.corpora.PdfToXml.convert(PdfToXml.java:76)
+
+...
+    [echo] Validate XML
+[xmlvalidate] 627 file(s) have been successfully validated.
+
+BUILD SUCCESSFUL
+Total time: 1 minute 48 seconds
+</pre>
+
+<p>
+Each file is listed with its URL, local relative raw path,
+and local relative output XML path.  After all files have
+been processed, a total count is provided.   In this case,
+627 files were successfully converted to XML files, but 5
+had fatal exceptions during the conversion.  In all cases,
+this was due to the PDFBox's text extractor failing with
+an I/O exception.  Then the build script validates all of
+the resulting XML files, which was successful in this case.
+During development, the validation caught errors as they
+emerged, such as illegal characters.
+</p>
+
+<h4>Extracting Text from PDFs</h4>
+
+<p>
+The program walks over a directory of files, converting each PDF
+it finds into an XML document.  This is done in three steps.  First,
+the text is extracted from the PDF file using PDFBox, then it is
+normalized, and finally it is output in XML format.
+</p>
+
+<p>Here's the code for extracting the text from a PDF in
+a specified file.  </p>
+
+<pre class="code">
+static String extractText(File pdfFile) throws IOException {
+    PDDocument doc = PDDocument.load(pdfFile);
+    try {
+        PDFTextStripper stripper = new PDFTextStripper();
+        String text = stripper.getText(doc);
+        return text;
+    } finally {
+        if (doc != null)
+            doc.close();
+    }
+}
+</pre>
+
+<p> First, a <code>PDDocument</code> is created by calling the static
+<code>load</code> method on a file containing a PDF document.  Then, a
+<code>PDFTextStripper</code> is created and used to retrieve the text
+from the document.  Because the call to <code>getText(doc)</code>
+may throw an <code>IOException</code>, there is a <code>finally</code>
+block which makes sure the document object is closed.  Any exceptions
+found are simply propagated back to be stored for a final report by
+the calling method.
+</p>
+
+<h4>Normalizing Extracted Text</h4>
+
+<p>After the text is extracted, it is normalized to correct for
+systematic extraction errors introduced by PDFBox.  We found these
+errors with a mixture of visual inspection of the output
+and <code>grep</code>.  Here's the final set for this corpus:
+</p>
+
+<pre class="code">
+static String normalize(String text) {
+    // replace PDFBox errors
+    for (int k = 0; k &lt; TEXT_SUBSTITUTIONS.length; ++k)
+        text = text.replaceAll(TEXT_SUBSTITUTIONS[k][0],
+                               TEXT_SUBSTITUTIONS[k][1]);
+
+    // replace control chars not legal in XML
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i &lt; text.length(); ++i) {
+        char c = text.charAt(i);
+        sb.append((Character.isDefined(c) 
+                   &amp;&amp; (c &gt;= 0x20    // non-control
+                       || c == 0x9 // horizontal tab
+                       || c == 0xA // line feed
+                       || c == 0xD // cr
+                       )
+                   )
+                  ? c
+                  : '?');
+    }
+    return sb.toString();
+}
+
+static final String[][] TEXT_SUBSTITUTIONS
+    = new String[][]
+    {
+        { &quot;currency1a&quot;, &quot;\u00E4&quot; },
+        { &quot;currency1e&quot;, &quot;\u00EB&quot; },
+        { &quot;currency1o&quot;, &quot;\u00F6&quot; },
+        { &quot;currency1u&quot;, &quot;\u00FC&quot; },
+        { &quot;currency1b&quot;, &quot;\u00F6&quot; },
+        { &quot;currency1 &quot;, &quot;\u00EF&quot; }
+    };
+</pre>
+
+<p>
+The first loop uses a predefined set of text substitutions,
+in all cases just replacing a flubbed PDFBox conversion with
+the intended Latin1 character.  The second loop replaces
+illegal control characters, defined as characters with
+code points less than <code>0x20</code> (32 in decimal),
+excepting the three allowed control characters, tab,
+line-feed and carriage return.  Illegal characters are
+replaced with a '?', and though this choice is standard, it
+is rather questionable for text-processing purposes.
+</p>
+
+
+<h4>Generating XML Documents</h4>
+
+<p>Finally, the normalized text is embedded into an XML
+document representation.  The UTF-8 character set is used
+for the encoding.  
+</p>
+<p>
+The <code>wget</code> program
+stores downloads in a directory structure representing the URL
+from which the files were downloaded.  We use this to extract
+the URL for each file in creating an XML document.  Here we just
+show the main conversion step that skips all the name fiddling
+in the actual program and shows how to generate the XML:
+</p>
+
+<pre class="code">
+    FileOutputStream out = null;
+    BufferedOutputStream bufOut = null;
+    try {
+        out = new FileOutputStream(xmlFileOut);
+        bufOut = new BufferedOutputStream(out);
+
+        SAXWriter writer = new SAXWriter(bufOut,Strings.UTF8);
+
+        writer.startDocument();
+
+        writer.startSimpleElement(&quot;document&quot;,&quot;url&quot;,urlName);
+        writer.startSimpleElement(&quot;chunk&quot;,&quot;type&quot;,&quot;document&quot;);
+        writer.characters(normalizedText);
+        writer.endSimpleElement(&quot;chunk&quot;);
+        writer.endSimpleElement(&quot;document&quot;);
+
+        writer.endDocument();
+
+    } finally {
+        Streams.closeOutputStream(bufOut);
+        Streams.closeOutputStream(out);
+    }
+</pre>
+
+<p>After creating a file input stream and buffering it, the result is
+used to construct a <code>com.aliasi.xml.SAXWriter</code>; note the
+UTF-8 character set specification.  Then the XML document is generated
+programatically.  It is wrapped in a <code>startDocument()</code> and
+<code>endDocument()</code>, with content generated in between.  Here
+there is only a single element, tagged <code>document</code>, with a
+single attribute <code>url</code> whose value is the original URL from
+which the document was downloaded.  The content of this element is a
+<code>chunk</code> element of type <code>text</code>, the text content
+of which is just the normalized text extracted above.  The chunk
+element is provided to interface with the annotation interface, which
+works within chunk elements.  As usual, the output operations are
+wrapped in a <code>try/catch</code> block to ensure that the streams
+are closed and don't maintain handles on resources.  </p>
+
+<h2>Annotating the Corpus</h2>
+<p>
+The main trick in annotating the corpus, which you can see in the
+Ant tasks in <a href="build.xml"><code>build.xml</code></a> is
+the use of a sequence of input and output directories, which we
+describe in the following table:
+</p>
+
+<table>
+<tr><th colspan="3" class="title">Working Directories</th></tr>
+<tr><th>Directory</th><th>Chunk Types</th><th>Description</th></tr>
+<tr><td><code>data/citations/raw</code></td>
+    <td>n/a</td>
+    <td>Raw PDF data</td></tr>
+<tr><td><code>data/citations/xml</code></td>
+    <td><code>document</code></td>
+    <td>Initial XML data</td></tr>
+<tr><td><code>data/citations/bibliography</code></td>
+    <td><code>bibliography</code></td>
+    <td>Bibliography zoned out of document</td></tr>
+<tr><td><code>data/citations/citations</code></td>
+    <td><code>article, book, inproceedings, ...</code></td>
+    <td>Individual citations isolated and assigned a type</td></tr>
+<tr><td><code>data/citations/fields</code></td>
+    <td><code>author, title, journal, year, ...</code></td>
+    <td>Fully annotated bibliography, down to fields within ciations.</td></tr>
+</table>
+
+<p>The initial PDF directory is populated by downloading using raw
+documents (through <code>wget</code> if you follow the tutorial).  
+The initial XML files are created programatically using PDFBox.
+The subsequent directories are all created through annotation:
+</p>
+
+<table>
+<tr><th colspan="3" class="title">Ant Targets</th></tr>
+<tr><th>Target</th><th>Input Directory</th><th>Output Directory</th></tr>
+<tr><td>pdf2xml</td><td>data/citations/raw</td><td>data/citations/xml</td></tr>
+<tr><td>bibliography</td><td>data/citations/xml</td><td>data/citations/bibliography</td></tr>
+<tr><td>citations</td><td>data/citations/bibliography</td><td>data/citations/citations</td></tr>
+<tr><td>fields</td><td>data/citations/citations</td><td>data/citations/fields</td></tr>
+</table>
+
+<h2>To be continued...</h2>
+
+<p>
+As we make progress on the project, I'll return to fill out this
+section.  Right now (July 18, 2007), we have zoned all 625
+or so documents for bibliographies and are almost done with
+the citation annotation. 
+</p>
+<p>August 11, 2007:  Finished the citations and 5% or so of the fields,
+which are much slower going.  I (Bob) am hitting around 5000 tokens/hour
+in the field-by-field annotation.  Even after 5% of the data, the
+automatic zoner is performing quite well.  It's about five to ten times
+as fast to correct as it is to annotate directly according to my
+informal measurements.
+</p>
+
+<h2>References</h2>
+
+<p>
+Not surprisingly, we're not the first people to try this.  
+</p>
+
+<h3>CiteSeer</h3>
+
+
+<h4>Heuristic Data Extraction</h4>
+<p> The <a href="http://citeseer.ist.psu.edu/">Citeseer Scientific
+Literature Digital Library</a> project is perhaps the best-known
+application that parses citations.  Unlike the approach we're taking,
+CiteSeer is driven by heuristics tuned on large-scale data.
+The core article describing their heuristics is online at:
+</p>
+<ul>
+<li>
+Steve Lawrence,   C. Lee Giles, and Kurt Bollacker.
+1999.
+<a href="http://citeseer.ist.psu.edu/aci-computer/aci-computer99.html">Digital Libraries and Autonomous Citation Indexing</a>.
+IEEE Computer, Volume 32, Number 6, pp. 67-71.
+</li>
+</ul>
+
+
+<h4>Further Document Zoning</h4>
+
+<p>CiteSeer not only extracts bibliographies, citations and
+author fields, they also extract the header of the document itself.
+This extraction forms the basis of their linkage analysis.</p>
+
+<p>CiteSeer is now also
+<a href="http://citeseer.ist.psu.edu/giles04who.html">extracting acknowledgement sections</a>.  
+</p>
+
+<h4>Clustering and Link Analysis</h4>
+<p>
+Of course, the point of CiteSeer isn't to demonstrate text extraction,
+but to actually mine the web for docs and link them together into
+a citation graph.  The key problem here is clustering the various citations
+of the same document and the various versions of the document extracted
+from the web.
+</p>
+
+<h4>More Info</h4>
+
+<p>
+Although CiteSeer was originally a project of the <a href="http://en.wikipedia.org/wiki/NEC_Research_Institute">NEC Research
+Institute</a>, its base of operations moved to Penn State with its current
+directory, <a href="http://clgiles.ist.psu.edu/">C. Lee Giles</a>.  His
+web site contains many more relevant papers for large-scale online
+bibliography creation.  The other authors seem to have gone on to
+other projects.
+</p>
+
+
+<h3>Andrew McCallum's Citation and Zoning Data</h3>
+
+<p>
+Andrew McCallum, at UMass, has put together two data sets of
+interest, as well as a full application for citation analysis.
+These are available from:
+</p>
+
+<ul>
+<li><a href="http://www.cs.umass.edu/~mccallum/code-data.html">Cora Programs and Data</a></li>
+<li><a href="http://www.cs.umass.edu/~mccallum/publications-by-topic.html#Coreference">Andrew McCallum's Coref and Entity Publications</a></li>
+</ul>
+
+<p> For the data page, look for MALLET and Cora on the code side, and
+the Cora Citaiton Matching data set, the Cora Research Paper
+Classification data set and the Cora Information Extraction data set.
+For publications, most are in the Coreference, Object Correspondence
+and Entity Resolution sections.  
+</p>
+
+<p> There is also a related document zoning set for FAQs on the data page, the
+Frequently Asked Questions data set.  This zones FAQs into questions
+and answers.</p>
+
+
+
+<h3>The EMU E-mail Zoning System</h3>
+<p>
+Our original motivation was Richard Sproat et al.'s HMM-based approach
+to zoning email into quotes, tables, ASCII art, sig blocks and
+just regular text.
+</p>
+
+<ul>
+<li>
+Richard Sproat, Jianying Hu and Hao Chen.  1998.
+<a href="http://compling.ai.uiuc.edu/rws/mmsp98.html">Emu: An E-Mail Preprocessor For Text-To-Speech</a>.  IEEE Signal Processing Society Workshop on Multimedia Signal Processing.  Los Angeles.
+</li>
+</ul>
+
+<p>
+What we're doing with LingPipe is very similar to the EMU model.
+</p>
+
+
+
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2006 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+
+</body>
+
+</html>
+
+

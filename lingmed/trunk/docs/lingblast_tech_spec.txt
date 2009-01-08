@@ -1,0 +1,182 @@
+To-Do List
+======================================================================
+
+LingBlast
+----------------------------------------------------------------------
+
+1.1.  Get gene names from Entrez-Gene to create an exact-match dictionary
+where all matches are scored 1.0.   Dictionary entry format:
+
+   phrase: text
+   category: CSV array (as string) representation of GeneIDs with that text
+   score: 1.0
+
+   note: use dictionary only through Chunker interface
+
+implementation: DictionaryBuilder
+compiles TrieDictionary 
+uses AbstactCommand to pass in config via command-line parameters
+config choices:
+a. minimum name length
+b. maximum name length
+c. number of genes a name refers to - avoid very ambiguous names
+
+first implementation:  only get names from EntrezGene
+code exists to get information from Omim, Homologene as well. 
+(was in DictionaryBuilder.java r1.6,r1.7)
+
+1.2  Build models for each gene from its citations and serialize
+with some convention for finding them again.  
+Set up some kind of threshold (???)  [Bob's problem]
+
+1.3.  For each Entrez-PubMed citation, analyze title and body for 
+all exact dictionary matches of gene and record to produce
+blocking of possible genes.
+
+1.4  Score the article for genomics, and then for all genes
+found.  Keep genes above threshold for final output:
+
+   PubMedID x GeneID 
+      x (Mention-Score x Genomics-Score x Specific-Gene-Score)
+    
+
+
+LingArray
+----------------------------------------------------------------------
+
+2.1.  Add title and body and MeSH terms to our MEDLINE index, using any
+old analyzer.
+
+2.2.  Take set of queries as input and produce list of top K
+document IDs matching them.
+
+      QueryID x PubMedID
+
+2.3.  Join 1.4 and 2.2 to create the LingArray output:
+
+     QueryID x GeneID x Count
+
+where the count is the number of mentions of the gene in the top K
+docs for the query.
+
+
+
+
+
+
+
+
+
+LingBlast -
+Functional Requirement: 
+Link Entrez-Gene identifiers to Entrez-Pubmed identifiers with confidence scores.
+
+Process each Medline citation in Entrez-Pubmed to
+ 1. Find all possible Gene mentions in text
+ 2. Use mention context to assign score
+
+Input Data:
+ - 15M MEDLINE citations in Entrez-PubMed
+ - 30K human genes in Entrez-Gene 
+
+General Technical requirements:
+---------------------------------------------------------------------- 
+ *R* Keep steps loosely coupled
+
+ *R* Store intermediate results in a self-contained format 
+    to allow for inspection, tuning, reporting, etc.
+
+ *R* Analyzers, dictionaries, indexes, language models
+    should be named and if necessary, versioned and
+    documented so that they can be swapped in and out
+
+ *R* Results should reference specific versions of analyzers, etc
+    which were used to obtain them.
+
+
+Step 1. Mention Spotting
+----------------------------------------------------------------------
+Input:  article title, abstract text
+Output:  Entrez-PubMed x Entrez-Gene x Mention-Score
+      ( << 450G possible PubMed-Gene relations )
+
+ *R* Store intermediate results (Entrez-PubMed x Entrez-Gene x Mention-Score)
+    in a relational database which allows for queries such as:
+        - Retrieve all Entrez-Gene ids mentioned in PubMed article X
+        - Retrieve all Entrez-Gene ids mentioned in PubMed article X with score > Y
+        - Retrieve all PubMed articles which mention Entrez-Gene id X
+        - Retrieve all PubMed articles which mention Entrez-Gene id X with score > Y
+   
+Question: Do we want to store all possible mentions?  What threshold?
+
+ *R* Create a mapping from Entrez-gene ids to set of possible aliases
+    for that gene, using Entrez-Gene entry, and related OMIM, Homologene entries
+    that can be used either as the basis for a DictionaryChunker or a Lucene index.
+
+ *R* Develop tokenizer which is appropriate for biology (tweak Indo-European tokenizer?)
+
+Question: does it matter whether tokenizer is used with DictionaryChunker or Lucene?
+
+Mention-spotting using LingPipe ApproximateDictionaryChunker
+    - requires custom weighted edit distance scaled to log probabilities (Tsuji et al?)
+Output from ApproximateDictionary: set of scored chunkings
+
+Mention-spotting using Apache Lucene 
+    - requires normalizing Lucene Analyzer
+Output from Lucene: set of ranked results 
+
+Question:  what advantage to trying both?  how do scores compare?
+
+Step 2: Contextual Ranking
+----------------------------------------------------------------------
+Score each citation against each gene by how well the gene's
+surrounding context matches that of the known references for that
+gene.
+
+Rescoring uses two character language models:
+
+  * Genomics
+      - Model trained on cited gene articles
+
+  * Gene[id]
+      - Model trained on a specified gene's citations
+
+
+ *R* Create Gene[Id] models using the following kinds of texts:
+     - GeneRif sentences found in Entrez-Gene entry, 
+     - text of curated PubMed articles (excluding very general PubMed articles)
+     - (sections of) OMIM entries
+
+
+Scores should be cross-entropy rate (in bits): (log2 p(text|lm) / length(text))
+
+Output
+
+  * (Entrez-PubMed x Entrez-Gene)
+    --> ( Mention-Score x Genomics-Score x Gene[id]-Score )
+      - <<< 450G possible; pruned further on score
+      - table must be indexed by PubMed id and Gene id
+
+ *R* Store this information in relational database (see above)
+
+
+Two Approaches:
+
+  * For each gene, build LMs and run over docs.
+
+  * For each doc, for each possible mention, pull in LMs and run over doc.
+
+Services
+
+  * Display output in HTML with paging
+
+  * [NICE] Given Entrez-Gene id, return ranked list of docs
+      - rank by sum of scores, which are all on log scale
+      - allow a range for paging
+
+  * [NICE] Accept fresh documents
+
+[NICE] Handle full text documents as part of input.
+
+[NICE] Updating with new MEDLINE
+

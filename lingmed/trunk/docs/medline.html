@@ -1,0 +1,1181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>LingMed: LingPipe for Entrez-Pubmed</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="lp-site.css"
+      type="text/css"
+      rel="stylesheet"
+      title="lp-site"
+      media="screen,projection,tv"/>
+<link href="lp-site-print.css"
+      title="lp-site"
+      type="text/css"
+      rel="stylesheet"
+      media="print,handheld,tty,aural,braille,embossed"/>
+</head>
+
+<body>
+<div id="header">
+<h1 id="product">LingMed</h1><h1 id="pagetitle">MEDLINE Processing</h1>
+<a id="logo" href="http://alias-i.com/">
+<img src="http://alias-i.com/lingpipe/web/img/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+<div id="navig">
+<!-- set class="current" for current link -->
+<ul>
+<li><a href="../read-me.html">lingmed</a>
+<ul>
+<li><a href="dao.html">search and indexing</a></li>
+<li><a class="current" href="medline.html">medline processing</a>
+<ul>
+<li><a href="#files">distribution files</a></li>
+<li><a href="#repository">building the index</a></li>
+<li><a href="#downloading">downloading medline</a></li>
+<li><a href="#indexing">indexing medline</a></li>
+<li><a href="#codec">choosing a codec</a></li>
+<li><a href="#search">searching medline</a></li>
+</ul>
+</li>
+
+<li><a href="more_entrez.html">entrez databases</a></li>
+<li><a href="lingblast.html">lingblast</a></li>
+<li><a href="genelinkage.html">putting it together: genelinkage</a></li>
+</ul>
+</li>
+
+<li><a href="http://alias-i.com/lingpipe/index.html">lingpipe</a></li>
+</ul>
+</div><!-- navig -->
+
+<div id="content" class="content">
+<a name="overview"><h2>Overview</h2></a>
+
+<p>
+Building a local searchable repository over MEDLINE
+is more complicated than for the other Entrez databases 
+because of the number of files which make up
+the MEDLINE distribution, and the release schedule.
+A new version of the index is released once a year,
+and update files are released on a daily basis throughout the year.
+The yearly release of the index is called the baseline distribution.
+The baseline distribution of MEDLINE for 2008 contains 563 GZipped
+files containing over 16 million citations. 
+Updates are released daily, excepting weekends and holidays.
+Update files include new citations, revisions of existing citations,
+and deletion requests for existing records.
+</p>
+
+<a name="files"><h2>MEDLINE Distribution Files</h2></a>
+
+<p>
+MEDLINE is distributed via FTP download from the
+United States National Library of Medicine (NLM).
+MEDLINE data is free for most purposes, but requires a 
+<a href="http://www.nlm.nih.gov/databases/leased.html">
+license agreement</a>.
+You must register your IP address for downloading with the NLM,
+so you'll need a fixed IP address to keep up with MEDLINE.
+</p>
+
+<p>
+MEDLINE is distributed in 2 parts:  
+the baseline distribution,
+and a set of updates files.
+The differences between the baseline and update files are:
+</p>
+
+<p>
+<ul>
+<li> 
+All files in the baseline distribution become available at once.
+Baseline files contain unique citation entries.
+These files can be processed in any order, or in parallel.
+</li>
+<li> 
+A new updates file is released once a day (on most weekdays).
+Updates files contain new citation entries as well as
+revisions of existing entries.  Updates files may also
+contain instructions to delete existing entries.
+In order to maintain a single, coherent Lucene index
+over MEDLINE, each update must be processed in the order
+in which it is released.
+</li>
+</ul>
+</p>
+
+<p>
+The NLM repository contains seperate directories for 
+the baseline and updates files. 
+The file names encode the year and 
+the order in which the files are released.
+For 2008, the baseline files are named 
+<code>medline2008n0001.xml.gz</code>
+through 
+<code>medline2008n0563.xml.gz</code> 
+and 
+the first update file is named
+<code>medline2008n0564.xml.gz</code>.
+The 4 digit number preceeding the suffix <code>.xml</code>
+is the ordering.
+and this number is incremented with each subsequent update file.
+The LingMed downloading and indexing programs
+require a similar organization for the local repository:
+one directory contains all baseline files and
+another directory contains the updates files.
+</p>
+
+<a name="repository"><h2>Creating and maintaining an up-to-date MEDLINE citation index</h2></a>
+
+<p>
+In this section we outline the steps required to create and maintain 
+a MEDLINE citation index.
+The implementation details of the programs used are covered in the following sections.
+</p>
+
+<p>
+The LingMed distribution includes 
+an <a href="ant.apache.org">Ant</a> 
+<a href="../build.xml">build.xml</a> 
+file which defines the set of tasks needed to download and index the MEDLINE distribution files.
+We have defined separate targets for handling baseline and update files.
+We have also defined separate targets for processes which run on our
+production server, because of differences in machine configurations.
+</p>
+
+<p>
+To build a MEDLINE index from scrach these tasks 
+should be carried out in the following order:
+</p>
+
+<ul>
+<li>Download the MEDLINE baseline distribution
+</li>
+<li>Index the MEDLINE baseline distribution
+</li>
+<li>Download the MEDLINE updates file(s)
+</li>
+<li>Index the MEDLINE updates file(s)
+</li>
+</ul>
+
+<p>
+The <code>build.xml</code> file contains a number of variables
+which must be customized for your installation:
+</p>
+
+<pre class="code">
+&lt;!-- NLM password - e-mail of registered user  --&gt;
+&lt;property name="medline.pwd"
+	  <b>value="</b><i>YourEmail</i><b>"</b>/&gt;
+...
+
+&lt;!-- path where files are downloaded to - under our control --&gt;
+&lt;property name="medline.dir"
+          <b>value="</b><i>/full/path/to/local/repository</i><b>"</b>/&gt;
+&lt;property name="medline.baseline.dir"
+          value="${medline.dir}/baseline"/&gt;
+&lt;property name="medline.updates.dir"
+          value="${medline.dir}/updates"/&gt;
+...
+
+&lt;!-- index dir --&gt;
+&lt;property name="medline.lucene.index.dir"
+          <b>value="</b><i>IndexName</i><b>"</b>/&gt;
+...
+
+&lt;!-- codec used for indexing and search --&gt;
+&lt;property name="medline.codec.class"
+          <b>value="</b><i>com.aliasi.lingmed.medline.SearchableMedlineCodec</i><b>"</b>/&gt;
+</pre>
+
+<p>
+The property <code>medline.pwd</code> is used by the download tasks.
+File downloads from NLM are done via anonymous FTP.
+It's customary to give your e-mail address as the password, 
+but this is not checked by NLM.
+File access is limited to registered IP addresses,
+therefore you must register the address of the download server
+with NLM (and notify NLM when this changes).
+</p>
+
+<p>
+The property <code>medline.dir</code> is the full path to the
+local repository.
+We store the baseline files in one subdirectory, and
+the updates files in another.
+If you choose a different organization you can change
+the properties <code>medline.baseline.dir</code>
+and <code>medline.updates.dir</code>.
+These directories must exist and have read/write permissions
+for the LingMed programs.
+</p>
+
+<p>
+The property <code>medline.lucene.index.dir</code> is the name
+of the directory which contains the Lucene index.
+It can be either an absolute or relative path.
+The <code>indexMedlineBaseline</code> task will create
+this directory if it doesn't exist.
+The <code>indexMedlineUpdates</code> task requires
+that the index already exists.
+</p>
+
+<p>
+The property <code>medline.codec.class</code> specifies
+the class used by the <code>IndexMedline</code> program,
+and is discussed in the <a href="#indexing">Indexing MEDLINE</a>
+section below.
+LingMed contains two choices:
+<code>com.aliasi.lingmed.medline.MedlineCodec</code> or
+<code>com.aliasi.lingmed.medline.SearchableMedlineCodec</code>.
+The latter creates an index with a rich set of searchable fields,
+the former creates a compact index which only allows
+lookup by PubMed ID.
+</p>
+
+<p>
+First download the baseline distribution files:
+</p>
+
+<pre class="code">
+&gt; ant downloadBaseline
+</pre>
+
+<p>
+This may take some time.
+<b><i>Do not run multiple instances of this at once!</i></b>.
+</p>
+
+<p>
+The <code>downloadBaseline</code> task
+invokes the <code>DownloadMedline</code> program, which
+is discussed in the <a href="#downloading">Downloading MEDLINE</a>
+section below.
+Log messages look like this:
+</p>
+
+
+<pre class="code">
+...
+ Establishing FTP connection.
+ Connecting to NLM
+ Connected.
+ Logging in.
+ Logged in to NLM FTP Server.
+ Reading from FTP server path=/nlmdata/.medleasebaseline/gz
+ Reading list of file names from server.
+ Data files on NLM: 563
+ Data files=[[medline08n0454.xml.gz.md5, medline08n0084.xml.gz.md5, ...
+ Files to fetch: 563
+...
+</pre>
+
+<p>
+The <code>DownloadMedline</code> program is designed to
+run perpetually, sleeping for a specified
+interval between download attempts.
+When downloading the baseline distribution
+it is necessary to kill this task
+once all baseline distribution files
+have been successfully downloaded
+and the program reports: <code> Files to fetch: 0</code>.
+</p>
+
+<p>
+Next index the baseline distribution files:
+</p>
+
+<pre class="code">
+&gt; ant indexMedlineBaseline
+</pre>
+
+<p>
+This invokes the  <code>IndexMedline</code> program, which
+is discussed in the <a href="#indexing">Indexing MEDLINE</a>
+section below.
+This task will exit when all baseline files have been indexed.
+This too may take some time.
+</p>
+
+<p>
+Finally, download and index the updates files.
+When handling the updates files both
+the <code>DownloadMedline</code> and <code>IndexMedline</code>
+programs run continuously, sleeping for a specified interval
+between download and indexing attempts.
+</p>
+
+<pre class="code">
+&gt;  ant downloadUpdates &amp;
+&gt;  ant indexUpdates &amp;
+</pre>
+
+<p>
+In order to allow remote searches over the Lucene MEDLINE index
+you must start the RMI MEDLINE server, as well as the RMI registry itself.
+To start the RMI registry on a linux server use the command:
+
+<pre class="code">
+&gt nohup rmiregistry &amp;
+</pre>
+
+<p>
+Then start the RMI MEDLINE server:
+</p>
+
+<pre class="code">
+&gt ant rmiMedline &amp;
+</pre>
+
+
+
+<a name="downloading"><h2>Downloading MEDLINE</h2></a>
+
+<p>
+The challenge in downloading the baseline distribution is 
+getting hundreds of data files totalling many gigabytes worth of
+data via FTP robustly and efficiently.
+The challenge in downloading the updates is getting new
+updates files in a timely fashion, without generating too
+much traffic on the NLM servers.
+</p>
+<p>
+
+The program 
+<a href="../src/com/aliasi/lingmed/medline/DownloadMedline.java">
+<code>com.aliasi.lingmend.medline.DownloadMedline</code></a>
+handles downloading of both the baseline and updates files.
+Once started, it runs perpetually, sleeping for a specified
+interval between download attempts.
+On each attempt it compares the set of files in the local repository 
+against the files on the NLM server, and only
+downloads files from NLM that are missing from the local repository.
+In this way the program can handle transient network outages &mdash; 
+if it cannot conntect to the NLM FTP server during one attempt, 
+it simply goes back to sleep and tries again later.
+We use Apache's 
+<a href="http://logging.apache.org/log4j/1.2/index.html">log4j</a> 
+logging facility to provide regular feedback on download progress, 
+and to detect and diagnose 
+the multiple points of failure which are possible
+in network operations.
+On startup the program logs its ftp and directory information,
+and then it logs each file download attempt.
+</p>
+
+<p>
+The NLM repository contains pairs of files: a gzipped data file 
+and a corresponding md5 checksum file, 
+e.g. {medline2008n0001.xml.gz, medline2008n0001.xml.gz.md5}.
+A successful file download is one where both the data file 
+and the checksum file download without error, 
+and when the checksum is recomputed locally 
+the computed checksum matches the checksum in the checksum file.
+<code>DownloadMedline</code> first downloads the checksum file, and verifies its format.
+Next it downloads the data file, recomputes the checksum,
+and compares the expected checksum to the actual checksum.
+If they match, then the downloader moves the data file to the
+target download directory, else it removes both files.
+The checksum files are downloaded to a subdirectory of the target download directory
+named &quot;<code>md5</code>&quot;.
+</p>
+
+<p>
+<code>DownloadMedline</code> computes the set of files to download by comparing
+this list of files in the NLM repository with the 
+files already in the local repository.
+If the command line parameter <code>-strict</code> is set to <code>true</code>,
+then it will also re-verify the checksums on files that have 
+already been downloaded.
+When it finds a file with a checksum mismatch, it adds that filename to the 
+list of files to refetch.
+Verifying checksums on a large set of large datafiles may take a while.
+</p>
+
+<p>
+<code>DownloadMedline</code> extends the 
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/util/AbstractCommand.html">
+<code>com.aliasi.util.AbstractCommand</code></a> utility class,
+which allows us to pass in local configuration information as
+a set of command-line name-value pairs.
+The required arguments to this command are:
+</p>
+<p>
+<ul>
+<li>
+<b>domain</b>
+&mdash; Domain name from which to download the citations.
+</li>
+<li>
+<b>path</b>
+&mdash; Path on the domain from which to download the citations.
+</li>
+<li>
+<b>user</b>
+&mdash; User name assigned by NLM. 
+</li>
+<li>
+<b>password</b>
+&mdash; Password assigned by NLM. 
+</li>
+<li>
+<b>repositoryPath</b>
+&mdash; Name of NLM directory where the distribution files are found.
+</li>
+<li>
+<b>targetDir</b>
+&mdash; Name of directory where distribution files are downloaded to. 
+If downloading baseline files 
+target should be the local baseline directory, 
+and if downloading updates files
+target should be the local updates directory.
+</li>
+</ul>
+</p>
+<p>
+The following arguments are optional:
+</p>
+<p>
+<ul>
+<li>
+<b>maxTries</b>
+&mdash; Maximum number of download attempts per session. 
+</li>
+<li>
+<b>sleep</b>
+&mdash; Number of minutes to sleep between download sessions. 
+</li>
+<li>
+<b>strict</b>
+&mdash; If true verify md5 checksum on existing data files.
+</li>
+</ul>
+</p>
+
+
+<p>
+The 
+<a href="http://alias-i.com/lingpipe/demos/tutorial/medline/read-me.html">
+LingPipe MEDLINE tutorial</a>
+contains a similar version of the <code>DownloadMedline</code> program.
+The tutorial covers implementation details,
+and has in-depth discussion of the code that handles
+the FTP messaging and downloading and checksum verification.
+</p>
+
+<a name="indexing"><h2>Indexing MEDLINE</h2></a>
+
+<p>
+Each baseline XML file consists of a top-level
+<code>MedlineCitationSet</code> element which contains 
+one or more <code>MedlineCitation</code> elements.
+These individual citations are unique across the baseline distribution set,
+that is, they have a unique <code>PMID</code> (PubMed identifier) element
+which is a one to eight digit accession number without leading zeros.  
+To process the baseline distribution we create a new Lucene index,
+and process all baseline files.
+Lucene processing is straightforward:  we convert each citation
+into a Lucene 
+<a href="http://lucene.apache.org/java/2_4_0/api/org/apache/lucene/document/Document.html">
+<code>org.apache.lucene.document.Document</code></a>
+and add it to the index.
+</p>
+
+<p>
+The updates XML files contain a single top-level <code>MedlineCitationSet</code>
+element.
+This contains zero or more <code>MedlineCitation</code> elements
+and possibly a <code>DeleteCitation</code> element which lists
+the PubMed identifiers of the citations to be deleted.
+Both new citation entries and revisions of existing citations
+are encoded as <code>MedlineCitation</code>.
+In order to distinguish between the two we must check the index
+to see if there is already a citation entry in the index with the same PubMed identifier.
+Lucene processing is more complicated than for the baseline files
+because now we must delete documents as well as add them to the existing index.
+</p>
+
+<h3>The <code>IndexMedline</code> command</h3>
+
+<p>
+The 
+<a href="../src/com/aliasi/lingmed/medline/IndexMedline.java">
+<code>com.aliasi.lingmend.medline.IndexMedline</code></a> 
+program parses the distribution files
+and adds the citation entries that it finds to a Lucene index.
+Command line parameters are used to specify which type of
+distribution files are being processed, the directory they are in, 
+and the Lucene index to create or update.
+When processing the updates files it runs perpetually, 
+sleeping for a specified interval between indexing sessions.
+The required arguments are:
+</p>
+<p>
+<ul>
+<li>
+<b>distType</b>
+&mdash;  If value is "baseline" then distribution files
+are treated as baseline files: all citations entries are added to the index
+(no checking for revisions), and deletions are not allowed. 
+Otherwise the files will be processed as updates files. 
+</li>
+<li>
+<b>index</b>
+&mdash;  Path to the Lucene index file. 
+</li>
+<li>
+<b>distDir</b>
+&mdash;  Path to the directory containing the distribution files. 
+All files in this directory which end in ".xml" or ".xml.gz" will be processed.
+</li>
+<li>
+<b>codec</b>
+&mdash;    The name of the class which is used to transform 
+a MedlineCitation object to a Lucene Document. 
+This class must implement 
+<a href="api/com/aliasi/lingmed/dao/Codec.html">
+<code>com.aliasi.lingmed.dao.Codec</code></a>. 
+</li>
+</ul>
+</p>
+<p>
+The following arguments are optional:
+</p>
+<p>
+<ul>
+<li>
+<b>sleep</b>
+&mdash;Number of minutes to sleep between indexing sessions. 
+</li>
+</ul>
+</p>
+
+<p>
+The ant <a href="../build.xml">build.xml</a> file
+defines specific tasks to index the baseline and
+updates files.
+Here is the ant task which indexes the daily updates file
+on our server:
+</p>
+
+<pre class="code">
+&lt;target name="serverIndexUpdates"
+        description="add updates to Lucene MEDLINE Index" &gt;
+  &lt;java classname="com.aliasi.lingmed.medline.IndexMedline"
+        maxMemory="4G"
+        fork="true"&gt;
+    &lt;classpath refid="classpath.standard"/&gt;
+    &lt;arg value="-index=${server.medline.lucene.index.dir}"/&gt;
+    &lt;arg value="-distDir=${server.medline.updates.dir}"/&gt;
+    &lt;arg value="-distType=updates"/&gt;
+    &lt;arg value="-codec=${medline.codec.class}"/&gt;
+  &lt;/java&gt;
+&lt;/target&gt;
+</pre>
+
+<p>
+<code>IndexMedline</code> extends the 
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/util/AbstractCommand.html">
+<code>com.aliasi.util.AbstractCommand</code></a> utility class.
+Member variables are created from the command line parameters
+in the constructor, and methods from the  class
+<a href="../src/com/aliasi/lingmed/utils/FileUtils.java">
+<code>com.aliasi.lingmend.utils.FileUtils</code></a> 
+are invoked to check the validity of these arguments.
+The <b>distType</b> parameter is parsed into a <code>boolean</code> variable <code>sIsBaseline</code>.
+The <b>index</b> and <b>distDir</b> parameters are parsed into <code>File</code> variables.
+The <b>codec</b> parameter is used to instantiate a <code>MedlineCodec</code> 
+(see <a href="#codec">choosing a codec</a>).
+</p>
+
+<pre class="code">
+public class IndexMedline extends AbstractCommand {
+    ... 
+    private File mIndex;
+    private File mDistDir;
+    ... 
+    static boolean sIsBaseline;
+    ... 
+    private final MedlineCodec mCodec;
+
+    // Instantiate IndexMedline object and 
+    // initialize instance variables per command line args
+    private IndexMedline(String[] args) throws Exception {
+        super(args,DEFAULT_PARAMS);
+
+        mIndexName = getExistingArgument(LUCENE_INDEX);
+        mDistDirPath = getExistingArgument(DIST_DIR);
+        mType = getExistingArgument(DIST_TYPE);
+        ...
+        if (mType.equalsIgnoreCase("baseline")) sIsBaseline = true;
+        if (sIsBaseline) mIndex = FileUtils.checkIndex(mIndexName,true);
+        else mIndex = FileUtils.checkIndex(mIndexName,false);
+        mDistDir = new File(mDistDirPath);
+        FileUtils.ensureDirExists(mDistDir);
+
+        String codecClassName = getExistingArgument(CODEC_PARAM);
+        Class clss = Class.forName(codecClassName);
+        Constructor cons = clss.getConstructor();
+        mCodec = (MedlineCodec) cons.newInstance();
+</pre>
+
+<h3>Parsing the distribution files</h3>
+
+<p>
+Processing a distribution file requires parsing the XML file
+into its constituent entries and adding them to the Lucene index.
+The
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/package-summary.html"><code>com.aliasi.medline</code></a>
+package contains the classes used to parse the MEDLINE distribution files.
+Parsing is done by a 
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineParser.html">
+<code>MedlineParser</code></a>.
+We use a Lucene
+<a href="http://lucene.apache.org/java/2_4_0/api/org/apache/lucene/index/IndexWriter.html"><code>org.apache.lucene.index.IndexWriter</code></a>
+to build the index.
+Once all files have been processed the IndexWriter's
+<a href="http://lucene.apache.org/java/2_4_0/api/org/apache/lucene/index/IndexWriter.html#optimize()"><code>optimize</code></a>
+method is called to optimize the index file for search.
+</p>
+
+<p>
+The <code>IndexMedline.run()</code> method instantiates the <code>MedlineParser</code>
+and <code>IndexWriter</code> and processes each distribution file:
+</p>
+
+<pre class="code">
+public void run() {
+    ...
+        MedlineParser parser = new MedlineParser(true); // true = save raw XML
+        IndexWriter indexWriter 
+            = new IndexWriter(FSDirectory.getDirectory(mIndex),
+                              mCodec.getAnalyzer(),
+                              new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
+        for (File file: files) {
+            ...
+            MedlineIndexer indexer = new MedlineIndexer(indexWriter,mCodec);
+            parser.setHandler(indexer);
+            parseFile(parser,file);
+            indexer.close();
+            ...
+        }
+        indexWriter.optimize();
+        indexWriter.close();
+    ...
+</pre>
+
+<p>
+The <a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineParser.html">
+<code>MedlineParser</code></a> works through callbacks to a 
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineHandler.html"><code>MedlineHandler<code></a>.
+The MedlineParser invokes the <code>MedlineHandler</code>&apos;s
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineHandler.htmll#handle(com.aliasi.medline.MedlineCitation)">
+<code>handle(MedlineCitation)</code></a> method
+on each <code>MedlineCitation</code> element in the <code>MedlineCitationSet</code>,
+and for each PubMed identifier listed in the <code>DeleteCitation</code> element
+it calls the method 
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineHandler.htmll#delete(java.lang.String)">
+<code>delete(String)</code></a>.
+</p>
+
+<p>
+<code>IndexMedline</code> contains a static class called 
+<code>MedlineIndexer</code> which implements <code>MedlineHandler</code>
+and which does the work of updating the index.
+</p>
+
+<pre class="code">
+static class MedlineIndexer implements MedlineHandler {
+    final IndexWriter mIndexWriter;
+    final MedlineCodec mMedlineCodec;
+    final IndexReader mReader;
+    final IndexSearcher mSearcher;
+
+    public MedlineIndexer(IndexWriter indexWriter, MedlineCodec codec) 
+        throws IOException {
+        mIndexWriter = indexWriter;
+        mMedlineCodec = codec;
+	mReader = IndexReader.open(indexWriter.getDirectory(),true); // read-only
+	mSearcher = new IndexSearcher(mReader);
+    }
+    ...
+    public void close() throws IOException { 
+        mSearcher.close();
+        mReader.close();
+        mIndexWriter.commit();
+    }
+</pre>
+
+<p>
+Instantiating a <code>MedlineIndexer</code> automatically opens a fresh 
+<code>IndexReader</code> and <code>IndexSearcher</code> on the index.  
+The <code>MedlineIndexer.close()</code> method closes these objects and commits updates on the index.
+</p>
+
+<p>
+When processing updates files we need to check whether or not a citation 
+is already in the index.
+The <code>MedlineCodec</code> maps the <code>MedlineCitation.pmid()</code> to 
+its own field in the Lucene <code>Document</code>, so that we can
+uniquely identify documents by PubMed identifier.
+To lookup documents by PubMed id  we create a 
+<a href="http://lucene.apache.org/java/2_4_0/api/org/apache/lucene/index/Term.html">
+<code>org.apache.lucene.index.Term</code></a> 
+object:
+</p>
+
+<pre class="code">
+Term idTerm = new Term(Fields.ID_FIELD,citation.pmid());
+</pre>
+
+<p>
+If this term is already in the index, then the handler updates the citation,
+else it is added as a new document.
+Here is the <code>MedlineIndexer.handle()</code> method:
+</p>
+
+<pre class="code">
+public void handle(MedlineCitation citation) {
+    Document doc = mMedlineCodec.toDocument(citation);
+    try {
+        if (sIsBaseline) {
+           mIndexWriter.addDocument(doc);  
+        } else {
+            Term idTerm = new Term(Fields.ID_FIELD,citation.pmid());
+            if (mSearcher.docFreq(idTerm) > 0) {
+                mIndexWriter.updateDocument(idTerm,doc);
+            } else {
+                mIndexWriter.addDocument(doc);  
+            }
+         }
+    } catch (IOException e) {
+        mLogger.warn("index access error, term: "+citation.pmid());
+    }
+}
+</pre>
+
+
+<p>
+To delete a citation from the index we use the 
+<a href="http://lucene.apache.org/java/2_4_0/api/org/apache/lucene/index/IndexWriter.html#deleteDocuments(org.apache.lucene.index.Term)">
+<code>deleteDocuments</code></a> method.
+Here is the <code>MedlineIndexer.delete()</code> method:
+</p>
+
+<pre class="code">
+public void delete(String pmid) {
+    ...
+    Term idTerm = new Term(Fields.ID_FIELD,pmid);
+    mLogger.debug("delete citation: "+pmid);
+    try {
+        mIndexWriter.deleteDocuments(idTerm);
+    } catch (IOException e) {
+        mLogger.warn("index access error, term: "+pmid);
+    }
+}
+</pre>
+
+<p>
+Indexing the MEDLINE daily updates file is a  simple batch-oriented process. 
+The <code>IndexWriter</code> holds a write-lock on the index 
+(a file-system based lock, see the 
+<a href="http://lucene.apache.org/java/2_4_0/api/org/apache/lucene/store/LockFactory.html"><code>LockFactory</code></a>
+javadoc), 
+so only one <code>IndexMedline</code> process can ever be updating the index.
+</p>
+
+<h3>Storing index state information in index</h3>
+
+<p>
+To create a complete and consistent MEDLINE citation index
+from the set of distribution files 
+we must first process all of the files in the baseline distribution 
+before processing the updates, 
+and the updates files must be processed in the order in which they are released.
+Furthermore, if we process the same baseline file more than once using the
+<code>BaselineIndexer</code>, this will create duplicate documents in the index
+for the citations in that file.
+</p>
+
+<p>
+Because the <code>IndexMedline</code> program runs independently of
+the <code>DownloadMedline</code> program, we need to find a way of
+keeping track of which of the distribution files have already been processed.
+We do this by storing the name of the last file processed in
+the index itself.
+We create a special <code>Document</code> containing 2 fields:
+a tag field which uniquely identifies this document, 
+and a field which contains the name of the last file processed.
+The distribution files from NLM are named corresponding
+to the order in which they are released.
+By sorting the names of the files on disk
+and comparing them to the name of the last processed file
+we can easily determine which files have been processed already,
+and which files have yet to be indexed.
+</p>
+
+<p>
+When we are done parsing a distribution file we call the function <code>recordLastUpdate</code>:
+</p>
+
+<pre class="code">
+private void recordLastUpdate(IndexWriter indexWriter, String fileName)
+    throws IOException {
+    Term term = new Term(Fields.LAST_FILE_FIELD,
+                         Fields.LAST_FILE_VALUE);
+    Document doc = new Document(); 
+    Field tagField = new Field(Fields.LAST_FILE_FIELD,
+                               Fields.LAST_FILE_VALUE,
+                               Field.Store.YES,
+                               Field.Index.NOT_ANALYZED_NO_NORMS);
+    doc.add(tagField);
+    Field nameField = new Field(Fields.FILE_NAME_FIELD,
+                                fileName,
+                                Field.Store.YES,
+                                Field.Index.NO);
+    doc.add(nameField);
+    indexWriter.updateDocument(term,doc);
+}
+</pre>
+
+<p>
+This approach has one drawback:  
+the index no longer consists of a set of homogeneous documents.
+This is problematic for the <code>DaoSearcher</code> interface,
+which extends the
+<a href="http://java.sun.com/javase/6/docs/api/java/lang/Iterable.html"><code>Iterable</code></a>
+interface, in order to provide a natural mechanism for walking over all documents in the index.
+In our implementation, the <code>Iterator</code> returned by the <code>iterator()</code>
+function of the <code>DaoSearcher</code> only iterates over those documents which 
+can be successfully converted back to objects of the generic type.
+For the MEDLINE index the <code>Iterator</code> will return 
+all <code>MedlineCitation</code> documents, but not the document
+for the last file name.
+</p>
+
+
+
+<a name="codec"><h2>Choosing a Codec</h2></a>
+
+<p>
+The structure and contents of the Lucene documents in the index
+depends on the <code>Codec</code> implementation used by the indexer.
+The package 
+<a href="api/com/aliasi/lingmed/medline/package-summary.html"><code>com.aliasi.lingmed.medline</code></a>
+contains a base implementation
+<a href="api/com/aliasi/lingmed/medline/MedlineCodec.html"><code>MedlineCodec</code></a>,
+which is extended by the class
+<a href="api/com/aliasi/lingmed/medline/SearchableMedlineCodec.html"><code>SearchableMedlineCodec</code></a>.
+</p>
+
+<p>
+Documents created using a <code>MedlineCodec</code> are indexed by PubMed id.
+Running the <code>MedlineIndexer</code>
+with an instance of <code>MedlineCodec</code> 
+creates a compact data store over the entire MEDLINE distribution.
+This is useful for applications where lookup is done by PubMed id alone.
+Documents created using a <code>SearchableMedlineCodec</code> contain 
+a rich set of searchable fields.
+The resulting index allows searches over the 
+the contents of any elements of a <code>MedlineCitation</code>.
+</p>
+
+<p>
+Here is the base <code>MedlineCodec</code>&apos;s <code>toDocument(MedlineCitation)</code> method:
+</p>
+
+<pre class="code">
+public Document toDocument(MedlineCitation citation) {
+    Document doc = new Document(); 
+
+    // index pubmed id (as keyword)
+    Field idField = new Field(Fields.ID_FIELD,
+                              citation.pmid(),
+                              Field.Store.YES,
+                              Field.Index.NOT_ANALYZED_NO_NORMS);
+    doc.add(idField);
+
+    // store raw XML
+    Field xmlField = new Field(Fields.XML_FIELD,
+                               citation.xmlString(),
+                               Field.Store.COMPRESS,
+                               Field.Index.NO);
+    doc.add(xmlField);
+    return doc;
+}
+</pre>
+
+<p>
+The document created contains 2 fields:
+the ID field, which is indexed using the entire ID string as a keyword,
+and the field containing the raw XML for the MedlineCitation entry,
+which is not indexed for search, but which is stored in the index
+in a compressed format.
+</p>
+
+<p>
+A <code>SearchableMedlineCodec</code> 
+creates Lucene documents with a rich set of searchable fields.
+The <code>toDocument</code> method systematically indexes
+each subpart of the <code>MedlineCitation</code> object.
+Here is a snippet from <code>SearchableMedlineCodec</code>
+showing how the MEDLINE abstract title is indexed:
+</p>
+
+<pre class="code">
+public static final String TITLE_FIELD = "title";
+...
+
+public Document toDocument(MedlineCitation citation) {
+    // get doc with its basic fields
+    Document doc = super.toDocument(citation);
+
+    Article article = citation.article();
+    ...
+    String title = article.articleTitleText();
+    add(doc,TITLE_FIELD,title);
+    ...
+</pre>
+
+<p>
+As is evident, all work is done by the <code>add</code> method 
+(and its helper methods):
+</p>
+
+<pre class="code">
+static void add(Document doc, String fieldName, String text) {
+    if (text == null || text.length() == 0) return;
+    boolean appendToExisting = doc.getField(fieldName) != null;
+    if (appendToExisting)
+        text = " , " + text;
+    if (TEXT_FIELD_SET.contains(fieldName)) {
+        addTextField(doc,fieldName,text);
+        addTextField(doc,fieldName+EXACT_FIELD_SUFFIX,text);
+        addTextField(doc,fieldName+NGRAM_FIELD_SUFFIX,text);
+    } else if (SIMPLE_FIELD_SET.contains(fieldName)) {
+        addTextField(doc,fieldName,text);
+    } else {
+        addKeywordField(doc,fieldName,text);
+    }
+}
+
+static void addTextField(Document doc, String fieldName, String text) {
+    Field field = new Field(fieldName,text,
+                            Field.Store.NO,
+                            Field.Index.ANALYZED);
+    doc.add(field);
+}
+
+...
+static final String[] TEXT_FIELDS = new String[] {
+    ABSTRACT_FIELD,
+    ...
+    TITLE_FIELD,
+};
+
+...
+static final Set<String> TEXT_FIELD_SET 
+    = new HashSet<String>(Arrays.<String>asList(TEXT_FIELDS));
+</pre>
+
+<p>
+Text data is indexed 3 different ways:
+using a standard analyzer which tokenizes its inputs,
+strips off punctuation, lowercases, and filters out common stop words;
+using an analyzer which uses a
+<a href="http://www.alias-i.com/lingpipe/docs/api/com/aliasi/tokenizer/IndoEuropeanTokenizerFactory.html">
+<code>com.aliasi.tokenizer.IndoEuropeanTokenizer</code></a> to
+tokenize its inputs;
+and using an analyzer which uses a 
+<a href="http://www.alias-i.com/lingpipe/docs/api/com/aliasi/tokenizer/NGramTokenizer.html">
+<code>com.aliasi.tokenizer.NGramTokenizer</code></a>
+to create 3-gram tokens from its inputs.
+</p>
+
+<p>
+In the code snippet from the <code>toDocument</code> method above,
+the call:
+</p>
+
+<pre class="code">
+ add(doc,TITLE_FIELD,title);
+</pre>
+
+<p>
+ultimately adds 3 fields to the document:
+&quot;title&quot;: indexed by tokens which have been lower-cased, punctuation and stop words removed;
+&quot;titleX&quot;: indexed according to the LingPipe IndoEuropeanTokenizer rules;
+&quot;titleN&quot;: indexed by 3-grams.
+</p>
+
+<p>
+<code>MedlineCodec</code> contains a static class <code>MedlineAnalyzer</code>
+which sets up the appropriate tokenizers:
+</p>
+
+<pre class="code">
+static class MedlineAnalyzer extends LuceneAnalyzer {
+
+    static class StandardTokenizerFactory implements TokenizerFactory {     
+        public Tokenizer tokenizer(char[] cs, int start, int length) {
+            Tokenizer tokenizer = SIMPLE_TOKENIZER_FACTORY.tokenizer(cs,start,length);
+            tokenizer = new LowerCaseFilterTokenizer(tokenizer);
+            tokenizer = new EnglishStopListFilterTokenizer(tokenizer);
+            tokenizer = new PorterStemmerFilterTokenizer(tokenizer);
+            return tokenizer;
+        }
+    } // acts like Lucene's StandardAnalyzer
+    public TokenizerFactory TEXT_TOKENIZER_FACTORY
+        = new StandardTokenizerFactory();
+
+    // like Lucene's analysis.SimpleAnalyzer, but with digits, too
+    public static final TokenizerFactory SIMPLE_TOKENIZER_FACTORY
+        = new RegExTokenizerFactory("\\p{L}+|\\p{Digit}+");
+
+    public static final TokenizerFactory EXACT_TEXT_TOKENIZER_FACTORY 
+        = IndoEuropeanTokenizerFactory.FACTORY;
+
+    public static final TokenizerFactory NGRAM_TEXT_TOKENIZER_FACTORY
+        = new NGramTokenizerFactory(3,3);
+    ...
+    private MedlineAnalyzer() {
+        for (String field : SearchableMedlineCodec.TEXT_FIELDS) {
+            setTokenizer(field,TEXT_TOKENIZER_FACTORY);
+            setTokenizer(field + SearchableMedlineCodec.EXACT_FIELD_SUFFIX,
+                         EXACT_TEXT_TOKENIZER_FACTORY);
+            setTokenizer(field + SearchableMedlineCodec.NGRAM_FIELD_SUFFIX,
+                         NGRAM_TEXT_TOKENIZER_FACTORY);
+        }
+        for (String field : SearchableMedlineCodec.SIMPLE_FIELDS) {
+            setTokenizer(field,SIMPLE_TOKENIZER_FACTORY);
+        }
+    }
+}
+</pre>
+
+<a name="search"><h2>Searching MEDLINE</h2></a>
+
+<p>
+The interface
+<a href="api/com/aliasi/lingmed/medline/MedlineSearcher.html"><code>MedlineSearcher</code></a>
+defines the search functionality for Lucene MEDLINE citation index.
+In the previous section on
+<a href="dao.html">Search and Indexing</a> we present
+the program <a href="../src/com/aliasi/lingmed/server/TestClient.java"><code>TestClient</code></a>,
+which shows how to instantiate a <code>MedlineSearcher</code>
+and search the MEDLINE index by PubMed id:
+</p>
+
+<pre class="code">
+MedlineCodec medlineCodec = new MedlineCodec();
+...
+MedlineSearcher medlineSearcher = new MedlineSearcherImpl(medlineCodec,medlineRemoteSearcher);
+...
+MedlineCitation mc = medlineSearcher.getById(id);
+</pre>
+
+<p>
+Another example of search over the MEDLINE index is the
+<a href="api/com/aliasi/lingmed/lingblast/DictionaryBuilder.html">
+<code>DictionaryBuilder</code></a> command in the 
+<a href="api/com/aliasi/lingmed/lingblast/package-summary.html">
+com.aliasi.lingmed.lingblast</a> package.
+The DictionaryBuilder command creates an 
+exact-match dictionary over a set of gene names and 
+gene symbols from EntrezGene.
+This dictionary is used to identify putative gene mentions in text.
+Some gene names or symbols are the same as extremely frequent common
+words, such as "Is".
+We check to see how many times the gene name matches against 
+words in the title or abstract text of all citations in the MEDLINE index
+via the <code>MedlineSearcher</code>&apos;s
+<a href="api/com/aliasi/lingmed/medline/MedlineSearcher.html#numExactPhraseMatches(java.lang.String)">
+<code>numExactPhraseMatches(String)</code></a> method.
+Highly ambiguous names are not added to the dictionary
+(unless explicitly allowed).
+</p>
+
+<pre class="code">
+for (Iterator dictIt=mDictMap.entrySet().iterator(); dictIt.hasNext(); ) {
+    Entry&lt;String,Set&lt;String&gt;&gt; entry = (Entry&lt;String,Set&lt;String&gt;&gt;)dictIt.next();
+    String alias = entry.getKey();
+    ...
+    int pubmedHits = mMedlineSearcher.numExactPhraseMatches(alias);
+    if (pubmedHits &gt; mMaxPubmedHits &amp;&amp; !mAllowed.contains(alias)) {
+        continue;  // don't add this entry to dictionary
+    ...
+</pre>
+
+<p>
+This method is implemented by 
+<a href="api/com/aliasi/lingmed/medline/MedlineSearcherImpl"><code>com.aliasi.lingmed.medline.MedlineSearcherImpl</code></a>:
+</p>
+
+<pre class="code">
+/**      
+ * Return count for MedlineCitations which have an exact match for phrase
+ * in either the title or abstract field.
+ */
+public int numExactPhraseMatches(String phrase) throws DaoException {
+    String query = "abstractX:(+\"" + phrase + "\") titleX:(+\"" + phrase + "\")";
+    return numHits(query);
+}
+</pre>
+
+<p>
+First we create the query string which will be executed against the index.
+This query searches for  over two fields:  the exact-match title field and the
+exact-match abstract field.
+For example, a search for the phrase &quot;Your Favorite Gene&quot;
+will be coded up as the following Lucene query:
+</p>
+
+<pre class="code">
+abstractX:(+"Your Favorite Gene") titleX:(+"Your Favorite Gene")
+</pre>
+
+<p>
+The parenthesis deliminate the field searches, the plus sign indicates that the field
+must contain this item, and the double quotes enclose an entire phrase.
+For more information on the Lucene query parser syntax see the Lucene
+<a href="http://lucene.apache.org/java/2_4_0/queryparsersyntax.html">
+Query Parser Syntax</a> documentation.
+</p>
+
+<p>
+A natural addition to the <code>MedlineSearcher</code> interface would be the following method:
+</p>
+
+<pre class="code">
+/**      
+ * Find all MedlineCitations which have an exact match for phrase
+ * in either the title or abstract field.
+*/
+public SearchResults<MedlineCitation> getExactPhraseMatches(String phrase) throws DaoException;
+</pre>
+
+<p>
+Its implementation is left as an exercise to the reader.
+</p>
+
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2003&ndash;2006 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+
+</body>
+
+</html>

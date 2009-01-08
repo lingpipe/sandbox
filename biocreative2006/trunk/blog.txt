@@ -1,0 +1,102 @@
+We decided that BioCreative was a fairly low priority given the number
+of commercial projects we have going on and the number of research
+collaborations and grant applications we're putting in.
+
+But I figured it wouldn't take that long, so I started after lunch the
+Saturday afternoon before it was due.  Let's see how it goes...
+
+Saturday, 1:00 PM -- create sandbox project in CVS and add ant build
+file copied over from SIGHan.  You can check it out from our anonymous
+CVS sandbox:
+
+<pre>
+cvs -d :pserver:anonymous@alias-i.com:/usr/local/sandbox checkout biocreative2006
+</pre>
+
+See <a href="http://www.alias-i.com/lingpipe/web/sandbox.html">LingPipe Sandbox</a>
+for more information on checking projects out of the sandbox.
+
+Saturday, 1:10 PM -- Found data.  Downloaded into dist directory in
+project.
+
+Saturday, 1:30 PM -- Found our team ID; I need better mail search or
+organization (as do other people, judging by the list traffic).  Found
+the data file submission format, but not the actual format.
+
+Saturday, 1:35 PM -- Completed system description for submission.
+
+Saturday, 1:40 PM -- Ant task for unpacking data done.  
+
+Saturday, 1:45 PM -- Found data format.  It's different than Biocreative
+1, and it's different than the GeneTag format on NCBI, though pretty
+close.  I forgot they don't count spaces.  I have the parser for that
+already in LingPipe, but not the generator required for the bakeoff.
+More munging code.  
+
+Saturday, 1:55 PM -- Rewrote GeneTagChunkParser as
+Biocreative2006ChunkParser.
+
+Saturday, 2:00 PM -- Wrote top level run1 ant task.
+
+Saturday, 2:20 PM -- Found a bug in training data.   Or at least
+something I didn't expect -- overlapping entities:
+
+P01406630A0965|12 14|p50
+P01406630A0965|18 20|p65
+P01406630A0965|18 40|p65-selected kappa B motif
+P01406630A0965|139 167|heterodimeric NF-kappa B complex
+
+For now, I'll just catch an exception and see how many there are.
+
+Saturday, 2:25  Four, it turns out.  I'm going to leave the code as
+
+Saturday, 2:30 PM -- Sent the list email about the four overlapping cases.
+
+Saturday, 2:55 PM -- I always forget how to test overlap, then I had
+a problem with scope of an accumulator, so it took a while to get
+rid of overlaps.  I just keep the first one rather than the longest.
+
+Saturday, 3:00 PM -- Test run seems to work.  Taking a short break.
+
+Saturday, 3:15 PM -- Back from short break.  
+
+Saturday, 3:25 PM -- Finsihed test data parser.
+
+Saturday, 3:40 PM -- Wow, only took about 15 minutes to get the output
+parser working right.  It sure helps having done all this offset stuff
+about a gazillion times before.  I was tripped up on the reverse
+end-of-line computation and by the fact that it's [start,end]
+closed-closed notation and not [start,end) half-open interval notation.
+The half-open notation is what we use in LingPipe's chunkers and
+what Java uses for String, CharSequence and Array operations.
+I'm running the training data through the system.  The first lines
+look OK.  If the scoring works, I'll crank the n-gram length up to 8
+and let it rip on the official file.
+
+Saturday, 4:05 PM -- Verified against the perl eval.  I had to create
+a small test set manually.  The perl script wouldn't work in dos,
+though it took awhile to occur to me that maybe I should try it in
+Cygwin.  Don't know what's wrong here -- probably some crazy
+perl/windows thing I don't want to know about.   F=.968 with 5-gram
+models against the training data.  It takes about a minute to train
+and compile the model.  
+
+Saturday, 4:30 PM -- Took a break for lunch.
+
+Saturday, 4:35 PM -- Started run1.  The program involves four
+hyperparameters: length of n-gram=8, interpolation ratio=8, 128
+characters, number chunkings rescored=1024.
+
+Saturday, 4:45 PM -- That was pretty slow. I should've used estimate
+caching in the output run, but wanted to keep the code very simple.
+The whole train and run program's only 89 lines, including blank ones
+and per-class imports; the only other program is the data format
+parser, which is about 117 lines long because of the complexity of the
+data.
+
+Total time: 3 hours, 45 minutes
+Break time: 45 minutes
+<b>Net project time</b>: 3 hours
+
+We'll have to wait for the evaluation results, which I'll post as
+another blog entry.

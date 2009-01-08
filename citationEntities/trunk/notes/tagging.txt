@@ -1,0 +1,81 @@
+TAGGING GUIDELINES
+==================
+in short note form
+
+
+Bibliography
+------------
+
+do not include figures
+do not include footnotes
+do not include final page number
+
+do include interior page number if that's only separator
+
+
+Citations
+---------
+
+tags both half of a split citation as is
+tag software on web as software
+tag other things on web, such as blogs, as web
+
+do not make unpublished if url is provided
+
+
+Fields
+------
+
+volume 26
+ -- only include the number
+
+"In Proceedings of ..."
+  -- do not include "In"
+
+"D. Hartman, ed."
+  -- do not include ", ed." in editor field
+
+"pps 1-8"
+  -- do not include "pps", "pages", etc.
+
+may-june
+  -- just one month
+
+
+do no include surrounding brackets or quotes if they
+are around the whole entry; this goes for labels,
+quoted titles, years, etc.
+
+Proceedings of the Pacific Symposium on Biocomputing (PSB 2003), 2003, 8
+ -- include whole thing as a single title
+ -- second 2003 is date
+ -- 8 is volume (as in 8th instance of conference; usually part of title
+
+et al.
+ -- author
+
+in press
+  -- year
+
+corrected proof
+  -- note
+
+"pew internet & American Life Project"
+"stanford digital libraries project"
+  -- institution -- they include projects
+
+proceedings of ECIR - 2006
+  -- include year in booktitle -- it's being used as part of a title
+
+Singhal, A. 1995
+  -- treat period as part of name unless used as field delimeter in
+     other entries
+
+"techical report"
+  -- type (of tech report citation)
+
+nist special publication
+  -- series
+
+poster abstract
+  -- type

@@ -1,0 +1,36 @@
+ <typeSystemDescription>
+	 <types>
+	<typeDescription>
+		<name>com.aliasi.uima.Chunk</name>
+		<description>A chunk.</description>
+		<supertypeName>uima.tcas.Annotation</supertypeName>
+		<features>
+			<featureDescription>
+				<name>chunkType</name>
+				<description>The kind of chunk</description>
+				<rangeTypeName>uima.cas.String</rangeTypeName>
+			</featureDescription>
+			<featureDescription>
+				<name>score</name>
+				<description>The score for the chunk; interpretation depends on context, but higher is better.</description>
+				<rangeTypeName>uima.cas.Float</rangeTypeName>
+			</featureDescription>
+		</features>
+	</typeDescription>
+	<typeDescription>
+		<name>com.aliasi.uima.Sentence</name>
+		<description>A sentence</description>
+		<supertypeName>com.aliasi.uima.Chunk</supertypeName>
+	</typeDescription>
+	<typeDescription>
+		<name>com.aliasi.uima.Mention</name>
+		<description>A mention</description>
+		<supertypeName>com.aliasi.uima.Chunk</supertypeName>
+	</typeDescription>
+	<typeDescription>
+		<name>com.aliasi.uima.Phrase</name>
+		<description>A Phrase</description>
+		<supertypeName>com.aliasi.uima.Chunk</supertypeName>
+	</typeDescription>
+</types>
+ </typeSystemDescription>

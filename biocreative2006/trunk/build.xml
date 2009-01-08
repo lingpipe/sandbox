@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+
+<project name="BioCreative 2006" default="compile" basedir=".">
+
+<target name="clean">
+  <delete dir="build"/>
+  <!-- <delete dir="results"/> -->
+  <delete dir="unpacked"/>
+</target>
+
+<target name="unpack">
+  <!-- gene mention training data -->
+  <mkdir dir="unpacked/train"/>
+  <untar src="dist/bc2geneMention.tar.gz"
+         dest="unpacked/train/"
+         compression="gzip"/>
+  <unzip src="dist/BC2GM_Eval.zip"
+         dest="unpacked/test/"/>
+  <unzip src="dist/bc2gn-test-distrib.zip"
+         dest="unpacked/test/"/>
+</target>
+
+
+<path id="classpath.standard">
+  <pathelement location="build/classes"/>
+  <pathelement location="lib/lingpipe-2.3.0.jar"/> 
+</path>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <mkdir dir="results"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+	 destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="run1"
+        depends="compile">
+  <mkdir dir="results"/>
+  <java classname="NamedEntityRecognition"
+        maxmemory="1300M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked\train\bc2geneMention\train\train.in"/>  <!-- sentence text -->
+    <arg value="unpacked\train\bc2geneMention\train\GENE.eval"/>  <!-- gold std -->
+    <arg value="unpacked\test\BC2GM_Eval\test.in"/>  <!-- sentence text -->
+    <arg value="results/T008_BC2_GM_RUN1.taglist"/>
+  </java>
+</target>
+
+<target name="run2"
+        depends="compile">
+  <mkdir dir="results"/>
+  <java classname="NamedEntityRecognitionConf"
+        maxmemory="1300M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked\train\bc2geneMention\train\train.in"/>  <!-- sentence text -->
+    <arg value="unpacked\train\bc2geneMention\train\GENE.eval"/>  <!-- gold std -->
+    <arg value="unpacked\test\BC2GM_Eval\test.in"/> 
+    <arg value="results/T008_BC2_GM_RUN2.taglist"/>
+    <arg value="0.90"/>
+  </java>
+</target>
+
+<target name="run3"
+        depends="compile">
+  <mkdir dir="results"/>
+  <java classname="NamedEntityRecognitionConf"
+        maxmemory="1300M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="unpacked\train\bc2geneMention\train\train.in"/> 
+    <arg value="unpacked\train\bc2geneMention\train\GENE.eval"/> 
+    <arg value="unpacked\test\BC2GM_Eval\test.in"/>
+    <arg value="results/T008_BC2_GM_RUN3.taglist"/>
+    <arg value="0.0001"/>
+  </java>
+</target>
+
+<target name="bake"
+        depends="unpack,run1,run2,run3">
+</target>
+
+</project>

@@ -1,0 +1,50 @@
+System Description Questions
+
+RUN1
+
+- How would you summarize your overall approach?
+A two-stage model.  First stage is N-best using an HMM based on 
+character language models.  Second stage is longer-distance
+character language model based.
+
+- Did you use additional training data in addition to the provided one?
+No.
+
+- Did  you use machine learning (ML)  approaches? 
+Y
+
+--- In case you used ML techniques, which ones did you use ? (Just short 
+method names)
+See above.
+
+- Did you use NLP technique components (e.g. POS tagging, stemming, 
+ parsing)? 
+No.
+
+- Did you use Bio-NLP components (i.e. NLP tools adapted to the 
+biomedical literature, such as MedPost)? 
+No.
+
+- Did you use external lexical resources, such as dictionaries or 
+ontologies? (Y/N)
+No.
+
+- Did you use regular expression or pattern matching strategies? (Y/N)
+No.
+
+
+RUN2 and RUN3
+
+- How would you summarize your overall approach?
+Ran the first stage HMM model, returning all entities with
+conditional probabilities above a threshold (implemented using
+forward-backward).  The first best found 7593 mentions.
+
+RUN2
+Threshold=0.9.  Expect high precision with around 20% of
+the recall of the first-best.  Found 1581 mentions.
+
+RUN3
+Threshold=0.001 Expect high recall with around 20% of the
+precision of the first-best results.  Found 37,303 mentions.
+

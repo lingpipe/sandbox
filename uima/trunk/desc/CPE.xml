@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cpeDescription>
+    <collectionReader>
+        <collectionIterator>
+            <descriptor>
+                <include href="C:\Documents and Settings\Bob Carpenter\workspace\com.aliasi.uima\desc\FileSystemCollectionReader.xml"/>
+            </descriptor>
+        </collectionIterator>
+    </collectionReader>
+    <casProcessors>
+        <casProcessor deployment="integrated" name="Sentence Annotator">
+            <descriptor>
+                <include href="C:\Documents and Settings\Bob Carpenter\workspace\com.aliasi.uima\desc\SentenceAnnotator.xml"/>
+            </descriptor>
+            <deploymentParameters/>
+            <filter/>
+            <errorHandling>
+                <errorRateThreshold value="100/1000" action="terminate"/>
+                <maxConsecutiveRestarts value="30" action="terminate"/>
+                <timeout max="100000"/>
+            </errorHandling>
+            <checkpoint batch="10000"/>
+        </casProcessor>
+		   <casProcessor deployment="integrated" name="Mention Annotator">
+            <descriptor>
+                <include href="C:\Documents and Settings\Bob Carpenter\workspace\com.aliasi.uima\desc\MentionAnnotator.xml"/>
+            </descriptor>
+            <deploymentParameters/>
+            <filter/>
+            <errorHandling>
+                <errorRateThreshold value="100/1000" action="terminate"/>
+                <maxConsecutiveRestarts value="30" action="terminate"/>
+                <timeout max="100000"/>
+            </errorHandling>
+            <checkpoint batch="10000"/>
+        </casProcessor>
+        <casProcessor deployment="integrated" name="XCAS Writer CAS Consumer">
+            <descriptor>
+                <include href="C:\Documents and Settings\Bob Carpenter\workspace\com.aliasi.uima\desc\XCasWriterCasConsumer.xml"/>
+            </descriptor>
+            <deploymentParameters/>
+            <filter/>
+            <errorHandling>
+                <errorRateThreshold value="100/1000" action="terminate"/>
+                <maxConsecutiveRestarts value="30" action="terminate"/>
+                <timeout max="100000"/>
+            </errorHandling>
+            <checkpoint batch="10000"/>
+        </casProcessor>
+    </casProcessors>
+    <cpeConfig>
+        <numToProcess>-1</numToProcess>
+        <deployAs>immediate</deployAs>
+        <checkpoint file="" time="300000"/>
+        <timerImpl/>
+    </cpeConfig>
+</cpeDescription>

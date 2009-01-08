@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+
+<project name="Alias-i XHTML DOM"
+         default="compile"
+         basedir=".">
+
+<!-- XHTML API -->
+
+<property name="api.version"
+          value="1.0"/>
+<property name="api.jar"
+          value="xhtml-${api.version}.jar"/>
+
+
+<target name="api-clean">
+  <delete dir="build/classes/com"/>
+  <delete dir="docs/api"/>
+  <delete file="${api.jar}"/>
+</target>
+
+<target name="api-jar">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <src path="src/"/>
+    <include name="com/aliasi/xhtml/**"/>
+    <!-- completely standalone: no classpath -->
+  </javac>
+  <jar destfile="${api.jar}">
+    <fileset dir="build/classes"
+             includes="com/aliasi/xhtml/*.class"/>
+  </jar>
+</target>
+
+<target name="api-javadoc">
+  <mkdir dir="docs/api"/>
+  <javadoc destdir="docs/api"
+           author="true"
+           use="false"
+           version="true"
+           doctitle="Alias-i XHTML ${version.api}"
+           windowtitle="XHTML ${version.api} API">
+    <packageset dir="src">
+      <include name="com/aliasi/**"/>
+      <exclude name="com/aliasi/test/**"/>
+    </packageset>
+    <classpath refid="classpath.standard"/>
+    <link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
+  </javadoc>
+</target>
+
+
+<!-- DEMOS -->
+
+<path id ="classpath.standard">
+  <pathelement location="${api.jar}"/>
+  <pathelement location="build/classes"/>
+  <pathelement location="lingpipe-3.5.0.jar"/>
+  <pathelement location="lib/xercesImpl-2.9.0.jar"/>
+  <pathelement location="lib/xml-apis-2.9.0.jar"/>
+</path>
+
+<target name="clean"
+        depends="api-clean">
+  <delete dir="build"/>
+</target>
+
+<target name="compile"
+        depends="api-jar">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+    <include name="example/**"/>
+  </javac>
+</target>
+
+<target name="run-hello"
+        depends="compile">
+  <java classname="example.HelloWorld"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+  </java>
+</target>
+
+
+<target name="run-exceptions"
+        depends="compile">
+  <java classname="example.Exceptions"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+  </java>
+</target>
+
+</project>

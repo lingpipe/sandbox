@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<project name="Simple Corference Demo" 
+         default="compile" basedir=".">
+
+<path id="classpath.standard">
+  <pathelement location="build/classes"/>
+  <pathelement location="lib/lingpipe-2.2.1.jar"/> 
+</path>
+
+
+<target name="clean">
+  <delete dir="build"/>
+</target>
+
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+	 destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+
+<target name="coref"
+        depends="compile">
+  <java classname="Coref"
+        maxmemory="1G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="data/temp.txt"/>
+  </java>
+</target>
+
+
+</project>

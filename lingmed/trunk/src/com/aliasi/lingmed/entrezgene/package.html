@@ -1,0 +1,30 @@
+<BODY>
+<P>Classes for manipulating data from the 
+<A href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=gene">
+NCBI Entrez Gene database</A>.
+The classes in this package are able to read the
+XML formatted version of the database distribution.
+This database is available for FTP download from
+<A href="ftp://ftp.ncbi.nih.gov/gene/">ftp.ncbi.nih.gov/gene/</A>.
+Gene data is distributed in compressed binary ASN.1 format, together
+with a set of tools used to translate the data to XML.
+The ASN to XML converters are available for FTP download from
+<A href="ftp://ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/gene2xml/">
+ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/gene2xml/</A>.
+Documentation on the data values is found at
+<A href="http://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/lxr/source/src/objects/entrezgene/entrezgene.asn">
+www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/lxr/source/src/objects/entrezgene/entrezgene.asn</A>.
+</P>
+<P>
+Example of running the converter over an .ags file:
+</P>
+<P>
+<code>
+./linux.gene2xml -b &lt;All_Data.ags | grep -v 'NCBI_Entrezgene.dtd' &gt; allData.xml 
+</code>
+<P>
+The output of gene2xml is piped through grep because the EntrezGene DTDs 
+don't validate properly.
+</P>
+</BODY>
+

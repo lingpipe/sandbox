@@ -1,0 +1,394 @@
+<?xml version="1.0"?>
+
+<project name="Citation Entity Annotation" default="compile" basedir=".">
+
+<property name="text.font.size"
+          value="12"/>
+
+<property name="version"
+          value="alpha.0"/>
+
+<property name="jar"
+          value="lp-chunk-anno-${version}.jar"/>
+
+<path id="classpath.standard">
+  <pathelement location="${jar}"/>
+  <pathelement location="lib/lingpipe-3.6.0.jar"/> 
+  <pathelement location="lib/jdom-1.0.jar"/>
+  <pathelement location="lib/xml-apis-2.9.0.jar"/>
+  <pathelement location="lib/xercesImpl-2.9.0.jar"/>
+  <pathelement location="lib/nekohtml-0.9.5.jar"/>
+  <pathelement location="lib/icu4j-3.6.1.jar"/>
+  <!-- <pathelement location="lib/icu4j-charsets-3.6.1.jar"/> -->
+
+  <pathelement location="lib/PDFBox-0.7.4-dev-20070317.jar"/>
+  <pathelement location="lib/FontBox-0.2.0-dev.jar"/>
+</path>
+
+
+
+<target name="clean">
+  <delete dir="build"/>
+</target>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+	 destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="${jar}">
+    <fileset dir="build/classes"
+             includes="**/*.class"/>    
+  </jar>
+</target>
+
+
+<!-- ENTERTAINMENT -->
+
+<target name="ent-xml"
+          depends="jar"
+          description="Convert text reps to XML.">
+    <mkdir dir="data/entertainment/xml"/>
+    <java classname="com.aliasi.annotate.corpora.NewsToXml"
+          maxmemory="1G"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="data/entertainment/txt"/>
+      <arg value="data/entertainment/xml"/>
+    </java>
+    <xmlvalidate failonerror="no" lenient="yes" warn="yes">
+      <fileset dir="." includes="data/entertainment/xml/*.xml"/>
+    </xmlvalidate>
+</target>
+
+<target name="ent-anno"
+          depends="jar"
+          description="Annotate sentences and titles named entities.">
+    <mkdir dir="data/entertainment/ne"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="512M"
+          fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/entertainment/xml"/>
+      <arg value="UTF-8"/>
+      <arg value="data/entertainment/ne"/>
+      <arg value="UTF-8"/>
+      <arg value="title,s"/>
+      <arg value="person,location,organization,work,venue,award,character"/>
+      <arg value="com.aliasi.tokenizer.IndoEuropeanTokenizerFactory"/>
+      <arg value="14"/>  <!-- font size in points -->
+    </java>
+</target>
+
+<!-- WORLD -->
+
+<target name="world-xml"
+          depends="jar"
+          description="Convert text reps to XML.">
+    <mkdir dir="data/news-world/xml"/>
+    <java classname="com.aliasi.annotate.corpora.NewsToXml"
+          maxmemory="1G"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="data/news-world/txt"/>
+      <arg value="data/news-world/xml"/>
+    </java>
+    <xmlvalidate failonerror="no" lenient="yes" warn="yes">
+      <fileset dir="." includes="data/news-world/xml/*.xml"/>
+    </xmlvalidate>
+</target>
+
+<target name="world-anno"
+          depends="jar"
+          description="Annotate sentences and titles named entities.">
+    <mkdir dir="data/news-world/ne"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="512M"
+          fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/news-world/xml"/>
+      <arg value="UTF-8"/>
+      <arg value="data/news-world/ne"/>
+      <arg value="UTF-8"/>
+      <arg value="title,s"/>
+      <arg value="person,location,organization,work,venue,award,character"/>
+      <arg value="com.aliasi.tokenizer.IndoEuropeanTokenizerFactory"/>
+      <arg value="14"/>  <!-- font size in points -->
+    </java>
+</target>
+
+
+<!-- UNITYPE -->
+
+<target name="uni-xml"
+          depends="jar"
+          description="Convert text reps to XML.">
+    <mkdir dir="data/news-unitype/xml"/>
+    <java classname="com.aliasi.annotate.corpora.NewsToXml"
+          maxmemory="1G"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="data/news-unitype/txt"/>
+      <arg value="data/news-unitype/xml"/>
+    </java>
+    <xmlvalidate failonerror="no" lenient="yes" warn="yes">
+      <fileset dir="." includes="data/news-unitype/xml/*.xml"/>
+    </xmlvalidate>
+</target>
+
+<target name="uni-anno"
+          depends="jar"
+          description="Annotate sentences and titles named entities.">
+    <mkdir dir="data/news-unitype/ne"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="512M"
+          fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/news-unitype/xml"/>
+      <arg value="UTF-8"/>
+      <arg value="data/news-unitype/ne"/>
+      <arg value="UTF-8"/>
+      <arg value="title,s"/>
+      <arg value="entity"/>
+      <arg value="com.aliasi.tokenizer.IndoEuropeanTokenizerFactory"/>
+      <arg value="14"/>  <!-- font size in points -->
+    </java>
+</target>
+
+
+
+
+
+<target name="html-text"
+          depends="jar"
+          description="Converts HTML to text, auto-detect charset.">
+    <mkdir dir="data/demo/out"/>
+    <java classname="com.aliasi.html.HtmlToText"
+          maxmemory="512M"
+          fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/news/raw/samples"/>
+      <arg value="data/news/xml"/>
+    </java>
+</target>
+
+
+<target name="news-anno"
+          depends="jar"
+          description="Annotate sample documents with named entities.">
+    <mkdir dir="data/demo/out"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="512M"
+          fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/demo/in"/>
+      <arg value="ISO-8859-1"/>
+      <arg value="data/demo/out"/>
+      <arg value="UTF-8"/>
+      <arg value="title,p"/>
+      <arg value="person,location,organization"/>
+      <arg value="com.aliasi.tokenizer.IndoEuropeanTokenizerFactory"/>
+      <arg value="14"/>
+    </java>
+</target>
+
+
+<target name="news-model"
+        depends="jar"
+        description="Create compiled model from corpus.">
+  <mkdir dir="models"/>
+  <java classname="com.aliasi.annotate.corpora.TrainChunker"
+        maxmemory="512M"
+        fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/demo/out"/>
+      <arg value="models/news-demo.CharLmRescoringChunker"/>
+      <arg value="title"/>
+      <arg value="p"/>
+  </java>
+</target>
+
+<target name="news-body"
+          depends="jar"
+          description="Annotates bodies of news docs.">
+    <mkdir dir="data/citations/bibliography"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="1G"
+          fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/news/xml"/>
+      <arg value="UTF-8"/>
+      <arg value="data/news/body"/>
+      <arg value="UTF-8"/>
+      <arg value="doc"/>
+      <arg value="body,code,nav"/>
+      <arg value="com.aliasi.tokenizer.LineTokenizerFactory"/>
+      <arg value="${text.font.size}"/>
+    </java>
+</target>
+
+
+
+<!-- TARGETS FOR CITATION CASE STUDY -->
+
+<target name="pdf2xml"
+        depends="jar"
+        description="Converts raw PDFs to XML for annotation.">
+    <mkdir dir="data/citations/xml"/>
+    <java classname="com.aliasi.annotate.corpora.PdfToXml"
+          maxmemory="512M"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="data/citations/raw"/>
+      <arg value="data/citations/xml"/>
+    </java>
+    
+    <echo message=""/>
+    <echo message="Validate XML"/>
+    <xmlvalidate failonerror="no" lenient="yes" warn="yes">
+      <fileset dir="data/citations/xml" includes="**/*.xml"/>
+    </xmlvalidate>
+</target>
+
+
+<target name="bibliography"
+          depends="jar"
+          description="Annotate document with bibliography.">
+    <mkdir dir="data/citations/bibliography"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="1G"
+          fork="true">
+      <jvmarg value="-server"/> 
+      <classpath refid="classpath.standard"/>
+      <arg value="data/citations/xml"/>
+      <arg value="UTF-8"/>
+      <arg value="data/citations/bibliography"/>
+      <arg value="UTF-8"/>
+      <arg value="document"/>
+      <arg value="bibliography"/>
+      <arg value="com.aliasi.tokenizer.LineTokenizerFactory"/>
+      <arg value="${text.font.size}"/>
+    </java>
+</target>
+
+
+
+<target name="citations"
+          depends="jar"
+          description="Annotate bibliography with citations.">
+    <mkdir dir="data/citations/citations"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="1G"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="data/citations/bibliography"/>
+      <arg value="UTF-8"/>
+      <arg value="data/citations/citations"/>
+      <arg value="UTF-8"/>
+      <arg value="bibliography"/>
+      <arg value="article,book,caselaw,conference,booklet,inbook,inproceedings,manual,mastersthesis,misc,patent,phdthesis,proceedings,software,techreport,unpublished,web"/>
+      <!-- -incollection -->
+      <arg value="com.aliasi.tokenizer.LineTokenizerFactory"/>
+      <arg value="${text.font.size}"/>
+    </java>
+</target>
+
+
+<target name="fields"
+          depends="jar"
+          description="Annotate citations with fields.">
+    <mkdir dir="data/citations/fields"/>
+    <java classname="com.aliasi.annotate.gui.CorpusAnnotator"
+          maxmemory="1G"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="data/citations/citations"/>
+      <arg value="UTF-8"/>
+      <arg value="data/citations/fields"/>
+      <arg value="UTF-8"/>
+      <arg value="article,book,booklet,caselaw,conference,inbook,incollection,inproceedings,manual,mastersthesis,misc,phdthesis,proceedings,software,techreport,unpublished,web"/>
+      <arg value="address,author,booktitle,chapter,days,doi,edition,editor,howpublished,institution,isbn,issn,journal,key,label,month,note,number,organization,pages,publisher,school,series,title,type,url,volume,year"/>
+      <arg value="com.aliasi.annotate.corpora.NoisyTokenizerFactory"/>
+      <arg value="${text.font.size}"/>
+    </java>
+</target>
+
+
+<property name="data.dir" value="."/>
+<property name="bk.dir" value="\\Nas-01-37-17\photos\bob\data\citations"/>
+
+<target name="backup"
+        depends="tdata">
+  <copy file="${data.dir}/citations.tgz"
+        toFile="${bk.dir}/citations.tgz"/>
+</target>
+
+<target name="tdata"
+        description="Create tarball of data.">
+  <!--
+  <tar destfile="${data.dir}/citations-raw.tgz"
+       compression="gzip">
+    <tarfileset dir="data/citations"
+                mode="777">
+      <include name="raw/**"/>
+      <include name="xml/**"/>
+    </tarfileset>
+  </tar>
+  -->
+  <tar destfile="${data.dir}/citations.tgz"
+       compression="gzip">
+    <tarfileset dir="data/citations"
+                mode="777">
+      <!-- <include name="raw/**"/> -->
+      <include name="bibliography/**"/>
+      <include name="citations/**"/>
+      <include name="fields/**"/>
+    </tarfileset>
+  </tar>
+</target>
+
+<target name="udata">
+  <untar src="${data.dir}/citations.tgz"
+         dest="data/citations"
+         compression="gzip"/>
+  <untar src="${data.dir}/news.tgz"
+         dest="data/news"
+         compression="gzip"/>
+</target>
+
+
+<target name="ia"
+        depends="jar">
+    <java classname="com.aliasi.annotate.corpora.InterAnnotatorAgreement"
+          maxmemory="1G"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="s"/>
+      <arg value="data/entertainment/ne"/>
+      <arg value="data/entertainment/neLinnea"/>
+      <arg value="data/entertainment/neBreck"/>
+    </java>
+</target>
+
+
+</project>

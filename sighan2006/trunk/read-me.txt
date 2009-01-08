@@ -1,0 +1,20 @@
+Original site for bakeoff   http://www.sighan.org/bakeoff2006/
+SigHan Home Page            http://www.sighan.org/
+Conference Home Page        http://www.rcl.cityu.edu.hk/sighan5/
+
+By the agreements of the evaluation we cannot distribute the data or the models.
+Tasks are provided to unpack and train the models. Please refer 
+to build.xml for expected format and file locations. 
+
+To recreate this submission you will need to:
+
+1) Get the original data
+2) Place the files in dist/train/* and dist/test/* 
+   (you will need to consult the ant task for "unpack" for details)
+3) Run 'ant all'
+4) The results will be in results/ or in the file carp.tar.gz as submitted
+
+Questions? Contact lingpipe@alias-i.com
+
+The software used to do this evaluation is available at http://www.alias-i.com/lingpipe
+

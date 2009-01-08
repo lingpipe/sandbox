@@ -1,0 +1,153 @@
+BibTex
+=================================================================
+
+All Fields
+------------
+address
+author
+booktitle    [for inbook where there is other title]
+chapter
+edition
+editor
+howpublished [booklet, misc]
+institution  [tech report only]
+journal
+key          [?]
+month
+note
+number
+organization
+pages
+publisher
+school
+series       [book, inbook]
+title
+type         [tech report only]
+volume
+year
+
+
+
+Article
+Required fields: author, title, journal, year
+Optional fields: volume, number, pages, month, note, key
+
+Book
+Required fields: author or editor, title, publisher, year
+Optional fields: volume, series, address, edition, month, note, key
+
+Booklet
+Required fields: title
+Optional fields: author, howpublished, address, month, year, note, key
+
+Conference
+Required fields: author, title, booktitle, year
+Optional fields: editor, pages, organization, publisher, address, month, note, key
+
+InBook
+Required fields: author or editor, title, chapter and/or pages, publisher, year
+Optional fields: volume, series, address, edition, month, note, key
+
+InCollection
+Required fields: author, title, booktitle, year
+Optional fields: editor, pages, organization, publisher, address, month, note, key
+
+InProceedings
+Required fields: author, title, booktitle, year
+Optional fields: editor, pages, organization, publisher, address, month, note, key
+
+Manual
+Required fields: title
+Optional fields: author, organization, address, edition, month, year, note, key
+
+MastersThesis
+Required fields: author, title, school, year
+Optional fields: address, month, note, key
+
+Misc
+Required fields: none
+Optional fields: author, title, howpublished, month, year, note, key
+
+PhDThesis
+Required fields: author, title, school, year
+Optional fields: address, month, note, key
+
+Proceedings
+Required fields: title, year
+Optional fields: editor, publisher, organization, address, month, note, key
+
+TechReport
+Required fields: author, title, institution, year
+Optional fields: type, number, address, month, note, key
+
+Unpublished
+Required fields: author, title, note
+Optional fields: month, year, key
+
+
+
+MEDLINE
+==================================================================
+
+Article
+  String affiliation()            [first author]
+  ArticleDate articleDate()
+  String articleTitle()           [with markup; also get vernacularTitle()]
+  boolean articleTranslated()
+  AuthorList authorList()
+  boolean inBook();
+  Book book();                     book in which article appeared
+  boolean inJournal();
+  Journal journal()
+  String pagination()
+  String publicationModel();       print, print-elec, elec, elec-print
+  String[] publicationTypes()
+
+ArticleDate
+  Date date()                     not oft used
+
+AuthorList
+  Author[] authors();
+  boolean complete();
+
+Author
+  String affiliation()
+  String collectiveName()
+  boolean isCollective()
+  Name name()
+
+Name
+  String foreName();
+  String fullName();
+  String initials()
+  String lastName()
+  String middleName()
+  String suffix();
+
+Book
+  AuthorList authorList()
+  String collectionTitle()
+  String title()
+  PubDate pubDate()
+  String publisher()
+  String volume()
+
+PubDate
+  boolean isStructured()
+  String day()
+  String month()
+  String season()
+  String year()
+  String medlineDate()  // if not structured
+
+Journal
+  String title();
+  String isoAbbreviation();  // standard abbrev
+  String coden()             // abbreviated name
+  String issn();
+  JournalIssue journalIssue()
+
+JournalIssue
+  Sting volume();
+  String issue();
+  PubDate pubDate();
