@@ -20,12 +20,13 @@ import com.aliasi.lingmed.dao.Codec;
 import com.aliasi.lingmed.dao.DaoException;
 import com.aliasi.lingmed.dao.DaoSearcher;
 import com.aliasi.lingmed.dao.DaoSearcherImpl;
-
-// import com.aliasi.lingmed.lucene.NumHits;
+import com.aliasi.lingmed.dao.SearchResults;
 
 import com.aliasi.medline.MedlineCitation;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.search.ConstantScoreRangeQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 
 import java.io.IOException;
@@ -63,5 +64,36 @@ public class MedlineSearcherImpl extends DaoSearcherImpl<MedlineCitation>
 	return numHits(query);
     }
 
+    /**      
+     * Find all MedlineCitations published in the range fromYear, toYear, inclusive.
+     */
+    public SearchResults<MedlineCitation> getCitationsInYearRange(String fromYear, String toYear) 
+	throws DaoException {
+
+	if (!isYear(fromYear) || !isYear(toYear)
+	    || fromYear.compareTo(toYear) > 0) {
+	    throw new DaoException("bad year search range: "+fromYear+", "+toYear);
+	}
+	ConstantScoreRangeQuery rangeQuery = 
+	    new ConstantScoreRangeQuery(SearchableMedlineCodec.DATE_YEAR_FIELD,
+					fromYear,
+					toYear,
+					true,
+					true);
+	return search(rangeQuery);
+    }
+
+    // check that year is string of 4 digits
+    private boolean isYear(String s) {
+	if (s.length() != 4) {
+	    return false;
+	}
+	for (int i=0; i<s.length(); i++) {
+	    if (!Character.isDigit(s.charAt(i))) {
+		return false;
+	    }
+	}
+	return true;
+    }
 
 }
