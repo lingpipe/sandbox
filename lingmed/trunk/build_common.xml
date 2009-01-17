@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+
+<project>
+
+<!-- classpaths -->
+
+<path id="classpath.common">
+  <pathelement location="${jar}"/>
+  <pathelement location="${lingpipe-jar}"/>
+  <pathelement location="${lucene-jar}"/>
+</path>
+
+<path id="classpath.standard">
+  <path refid="classpath.common"/>
+  <pathelement location="lib/commons-net-1.4.1.jar"/>
+  <pathelement location="lib/log4j-1.2.15.jar"/>
+  <pathelement location="lib/mysql-connector-java-5.1.5-bin.jar"/>
+  <pathelement location="lib/servlet-api-6.0.16.jar"/>
+</path>
+
+<path id="classpath.test">
+  <path refid="classpath.standard"/>
+  <pathelement location="lib/junit-3.8.1.jar"/>
+</path>
+
+<path id="classpath.standalone.db">
+  <path refid="classpath.standard"/>
+  <pathelement location="lib/fscontext.jar"/>
+  <pathelement location="lib/providerutil.jar"/>
+</path>
+
+<!-- **** core development tasks **** -->
+
+<!--        description="delete build dir, jarfile"> -->
+<target name="clean">
+  <delete dir="build"/>
+  <delete file="${jar}"/>
+</target>
+
+<!--        description="compile java source, excluding tests"> -->
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+      <include name="com/aliasi/**"/>
+      <exclude name="com/aliasi/lingmed/test/**"/>
+  </javac>
+</target>
+
+<!--        description="create LingMed jarfile" -->
+<target name="jar"
+        depends="compile">
+  <copy todir="build/classes">
+    <fileset dir="${basedir}"
+             includes="*.properties" />
+  </copy>
+  <jar destfile="${jar}">
+    <fileset dir="build/classes"
+             includes="**/*.class **/*.properties" />
+  </jar>
+</target>
+
+<!--        description="Creates javadocs in docs/api"> -->
+<target name="javadoc">
+    <mkdir dir="docs/api"/>
+    <javadoc destdir="docs/api"
+             author="true"
+             use="false"
+             version="true"
+             doctitle="Alias-i LingMed ${version}"
+             windowtitle="LingMed API"
+             classpathref="classpath.standard">
+      <packageset dir="src">
+        <include name="com/aliasi/**"/>
+        <exclude name="com/aliasi/lingmed/test/**"/>
+      </packageset>
+      <link href="http://java.sun.com/javase/6/docs/api/"/>
+    </javadoc>
+</target>
+
+<!-- **** REMOTE SEARCH **** -->
+<macrodef name="searchService">
+  <attribute name="host"/>
+  <attribute name="port"/>
+  <attribute name="service"/>
+  <attribute name="index"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.server.SearchService"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <jvmarg value="-Djava.rmi.server.codebase=${rmijars} "/>
+      <jvmarg value="-Djava.rmi.server.hostname=@{host}"/>
+      <arg value="-port=@{port}"/>
+      <arg value="-service=@{service}"/>
+      <arg value="-index=@{index}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+<!-- **** MEDLINE **** -->
+<macrodef name="downloadMedline">
+  <attribute name="repository"/>
+  <attribute name="target"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.medline.DownloadMedline"
+        fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-repositoryPath=@{repository}"/>
+      <arg value="-targetDir=@{target}"/>
+      <arg value="-domain=ftp.nlm.nih.gov"/>
+      <arg value="-user=anonymous"/>
+      <arg value="-password=${medline.pwd}"/>
+      <arg value="-maxTries=${medline.download.retries}"/>
+      <arg value="-sleep=${medline.download.interval}"/>
+      <arg value="-strict=false"/>
+    </java>
+  </sequential>
+</macrodef>
+
+<macrodef name="indexMedline">
+  <attribute name="type"/>
+  <attribute name="distdir"/>
+  <attribute name="index"/>
+  <attribute name="codec"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.medline.IndexMedline"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distType=@{type}"/>
+      <arg value="-distDir=@{distdir}"/>
+      <arg value="-index=@{index}"/>
+      <arg value="-codec=@{codec}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+<!-- **** Entrez Gene **** -->
+<macrodef name="indexEntrezGene">
+  <attribute name="distFile"/>
+  <attribute name="index"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.entrezgene.IndexEntrezGene"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distFile=@{distFile}"/>
+      <arg value="-index=@{index}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+<!-- **** Homologene **** -->
+<macrodef name="indexHomologene">
+  <attribute name="distFile"/>
+  <attribute name="index"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.homologene.IndexHomologene"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distFile=@{distFile}"/>
+      <arg value="-index=@{index}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+<!-- **** OMIM **** -->
+<macrodef name="indexOmim">
+  <attribute name="distFile"/>
+  <attribute name="index"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.omim.indexOmim"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distFile=@{distFile}"/>
+      <arg value="-index=@{index}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+</project>
