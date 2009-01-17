@@ -8,509 +8,110 @@
 <property name="jar"
           value="lingmed-${version}.jar"/>
 
-<property file="user.properties"/>
+<property file="build.lingmed.properties"/>
+
+<import file="build_common.xml"/>
 
 
-<!-- jars and classpaths -->
+<!-- **** MEDLINE **** -->
 
-<property name="lingpipe-jar"
-          value="lib/lingpipe-3.7.0.jar"/>
-<property name="lucene-jar"
-          value="lib/lucene-core-2.4.0.jar"/>
-
-
-<path id="classpath.common">
-  <pathelement location="${jar}"/>
-  <pathelement location="${lingpipe-jar}"/>
-  <pathelement location="${lucene-jar}"/>
-</path>
-
-<path id="classpath.standard">
-  <path refid="classpath.common"/>
-  <pathelement location="lib/commons-net-1.4.1.jar"/>
-  <pathelement location="lib/log4j-1.2.15.jar"/>
-  <pathelement location="lib/mysql-connector-java-5.1.5-bin.jar"/>
-  <pathelement location="lib/servlet-api-6.0.16.jar"/>
-</path>
-
-<path id="classpath.test">
-  <path refid="classpath.standard"/>
-  <pathelement location="lib/junit-3.8.1.jar"/>
-</path>
-
-<path id="classpath.standalone.db">
-  <path refid="classpath.standard"/>
-  <pathelement location="lib/fscontext.jar"/>
-  <pathelement location="lib/providerutil.jar"/>
-</path>
-
-<!-- rmi properties -->
-<property name="absoluteBaseDir" value="/home/lucene"/>
-<property name="rmijars"
-          value="file:${absoluteBaseDir}/${lucene-jar}"/>
-<property name="server.address"
-          value="192.168.1.94"/>
-<property name="server.port"
-          value="1099"/>
-
-<!-- tomcat properties -->
-<property name="manager.url"
-          value="http://localhost:8080/manager/" />
-<property name="manager.username"
-          value="admin"/>
-<property name="manager.password"
-          value="admin"/>
-<property name="deploy.path"
-          value="C:/java/Tomcat 6.0/webapps" />
-
-<!-- **** dev tasks **** -->
-
-<target name="clean">
-  <delete dir="build"/>
-  <delete file="${jar}"/>
-</target>
-
-<target name="compile">
-  <mkdir dir="build/classes"/>
-  <javac optimize="on"
-         debug="yes"
-         debuglevel="source,lines,vars"
-         destdir="build/classes">
-    <classpath refid="classpath.standard"/>
-    <src path="src/"/>
-      <include name="com/aliasi/**"/>
-      <exclude name="com/aliasi/lingmed/test/**"/>
-  </javac>
-</target>
-
-<target name="jar"
-        depends="compile">
-  <copy todir="build/classes">
-    <fileset dir="${basedir}"
-             includes="*.properties" />
-  </copy>
-  <jar destfile="${jar}">
-    <fileset dir="build/classes"
-             includes="**/*.class **/*.properties" />
-  </jar>
-</target>
-
-<target name="javadoc"
-          description="Creates javadocs in docs/api">
-    <mkdir dir="docs/api"/>
-    <javadoc destdir="docs/api"
-             author="true"
-             use="false"
-             version="true"
-             doctitle="Alias-i LingMed ${version}"
-             windowtitle="LingMed API"
-             classpathref="classpath.standard">
-      <packageset dir="src">
-        <include name="com/aliasi/**"/>
-        <exclude name="com/aliasi/lingmed/test/**"/>
-      </packageset>
-      <link href="http://java.sun.com/javase/6/docs/api/"/>
-    </javadoc>
-</target>
-
-<target name="test-compile"
-          depends="jar"
-          description="Compiles test classes to build/testClasses.">
-  <javac optimize="on"
-         debug="yes"
-         debuglevel="source,lines,vars"
-         destdir="build/classes">
-    <classpath refid="classpath.standard"/>
-    <classpath refid="classpath.test"/>
-    <include name="com/aliasi/lingmed/test/**"/>
-    <src path="src"/>
-  </javac>
-</target>
-
-<!-- **** MEDLINE tasks **** -->
-
-<!-- NLM password - e-mail of registered user  -->
-<property name="medline.pwd"
-          value="carp@aliasi.com"/>
-
-<!-- medline repositiory locations on nlm - not under our control -->
-<property name="medline.updates.repository"
-          value="/nlmdata/.medlease/gz"/>
-<property name="medline.baseline.repository"
-          value="/nlmdata/.medleasebaseline/gz"/>
-
-<!-- path where files are downloaded to - under our control -->
-<property name="medline.dir"
-          value="C:/aliasi/data/medline"/>
-<property name="medline.baseline.dir"
-          value="${medline.dir}/baseline"/>
-<property name="medline.updates.dir"
-          value="${medline.dir}/updates"/>
-
-<property name="server.medline.dir"
-          value="/data1/nlm/medline/dist/2008"/>
-<property name="server.medline.baseline.dir"
-          value="${server.medline.dir}/baseline"/>
-<property name="server.medline.updates.dir"
-          value="${server.medline.dir}/updates"/>
-
-<!-- index dir -->
-<property name="medline.lucene.index.dir"
-          value="testMedline"/>
-<property name="server.medline.lucene.index.dir"
-          value="/data3/lucene/medline_2008"/>
-
-<!-- codec used for indexing and search -->
-<property name="medline.codec.class"
-          value="com.aliasi.lingmed.medline.SearchableMedlineCodec"/>
-
-<target name="downloadBaseline"
-        description="download baseline MEDLINE distribution files from NLM"
+<target name="downloadMedlineBaseline"
+        description="download MEDLINE baseline distribution from NLM"
         depends="jar">
-  <java classname="com.aliasi.lingmed.medline.DownloadMedline"
-        maxMemory="800M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-domain=ftp.nlm.nih.gov"/>
-    <arg value="-user=anonymous"/>
-    <arg value="-password=${medline.pwd}"/>
-    <arg value="-repositoryPath=${medline.baseline.repository}"/>
-    <arg value="-targetDir=${medline.baseline.dir}"/>
-    <arg value="-maxTries=3"/>
-    <arg value="-sleep=60"/>
-    <arg value="-strict=true"/>
-  </java>
+  <downloadMedline repository="${medline.baseline.repository}"
+                   target="${medline.baseline.dir}"/>
 </target>
 
-<target name="downloadUpdates"
+<target name="downloadMedlineUpdates"
         description="download MEDLINE update files from NLM"
         depends="jar">
-  <java classname="com.aliasi.lingmed.medline.DownloadMedline"
-        maxMemory="800M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-domain=ftp.nlm.nih.gov"/>
-    <arg value="-user=anonymous"/>
-    <arg value="-password=${medline.pwd}"/>
-    <arg value="-repositoryPath=${medline.updates.repository}"/>
-    <arg value="-targetDir=${medline.updates.dir}"/>
-    <arg value="-maxTries=3"/>
-    <arg value="-sleep=60"/>
-    <arg value="-strict=true"/>
-  </java>
+  <downloadMedline repository="${medline.updates.repository}"
+                   target="${medline.updates.dir}"/>
 </target>
 
 <target name="indexMedlineBaseline"
-        description="create Lucene MEDLINE Index"
+        description="create Lucene MEDLINE Index from Baseline"
         depends="jar">
-  <java classname="com.aliasi.lingmed.medline.IndexMedline"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${medline.lucene.index.dir}"/>
-    <arg value="-distDir=${medline.baseline.dir}"/>
-    <arg value="-distType=baseline"/>
-    <arg value="-codec=${medline.codec.class}"/>
-  </java>
+  <indexMedline type="baseline"
+                distdir="${medline.baseline.dir}"
+                index="${medline.lucene.index.searchable}"
+                codec="${medline.codec.class}" />
 </target>
 
 <target name="indexMedlineUpdates"
         description="add updates to Lucene MEDLINE Index"
         depends="jar">
-  <java classname="com.aliasi.lingmed.medline.IndexMedline"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${medline.lucene.index.dir}"/>
-    <arg value="-distDir=${medline.updates.dir}"/>
-    <arg value="-distType=updates"/>
-    <arg value="-codec=${medline.codec.class}"/>
-  </java>
+  <indexMedline type="updates"
+                distdir="${medline.updates.dir}"
+                index="${medline.lucene.index.searchable}"
+                codec="${medline.codec.class}" />
 </target>
 
 <target name="rmiMedline"
-        description="rmi MEDLINE search"
+        description="rmi MEDLINE search service"
         depends="jar">
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars} "/>
-    <jvmarg value="-Djava.rmi.server.hostname=localhost"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=medline"/>
-    <arg value="-index=${medline.lucene.index.dir}"/>
-  </java>
-</target>
-
-<target name="serverDownloadBaseline"
-        description="download update files from NLM" >
-  <java classname="com.aliasi.lingmed.medline.DownloadMedline"
-        maxMemory="800M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-domain=ftp.nlm.nih.gov"/>
-    <arg value="-user=anonymous"/>
-    <arg value="-password=${medline.pwd}"/>
-    <arg value="-repositoryPath=${medline.baseline.repository}"/>
-    <arg value="-targetDir=${server.medline.baseline.dir}"/>
-    <arg value="-maxTries=3"/>
-    <arg value="-sleep=60"/>
-    <arg value="-strict=false"/>
-  </java>
-</target>
-
-<target name="serverDownloadUpdates"
-        description="download update files from NLM" >
-  <java classname="com.aliasi.lingmed.medline.DownloadMedline"
-        maxMemory="800M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-domain=ftp.nlm.nih.gov"/>
-    <arg value="-user=anonymous"/>
-    <arg value="-password=${medline.pwd}"/>
-    <arg value="-repositoryPath=${medline.updates.repository}"/>
-    <arg value="-targetDir=${server.medline.updates.dir}"/>
-    <arg value="-maxTries=3"/>
-    <arg value="-sleep=60"/>
-    <arg value="-strict=false"/>
-  </java>
-</target>
-
-<target name="serverIndexBaseline"
-        description="create Lucene MEDLINE Index" >
-  <java classname="com.aliasi.lingmed.medline.IndexMedline"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${server.medline.lucene.index.dir}"/>
-    <arg value="-distDir=${server.medline.baseline.dir}"/>
-    <arg value="-distType=baseline"/>
-    <arg value="-codec=${medline.codec.class}"/>
-  </java>
-</target>
-
-<target name="serverIndexUpdates"
-        description="add updates to Lucene MEDLINE Index" >
-  <java classname="com.aliasi.lingmed.medline.IndexMedline"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${server.medline.lucene.index.dir}"/>
-    <arg value="-distDir=${server.medline.updates.dir}"/>
-    <arg value="-distType=updates"/>
-    <arg value="-codec=${medline.codec.class}"/>
-  </java>
-</target>
-
-<target name="serverRmiMedline"
-        description="rmi MEDLINE search" >
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars}"/>
-    <jvmarg value="-Djava.rmi.server.hostname=${server.address}"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=medline"/>
-    <arg value="-index=${server.medline.lucene.index.dir}"/>
-  </java>
+  <searchService host="localhost"
+                 port="1099"
+                 service="medline"
+                 index="${medline.lucene.index.searchable}" />
 </target>
 
 <!-- **** Entrez Gene tasks **** -->
 
-<property name="entrezgene.lucene.index.dir"
-          value="testluceneEntrezGene"/>
-<property name="entrezgene.dist.file"
-          value="C:\\aliasi\data\entrezgene\Homo_sapiens.xml"/>
-
-<property name="server.entrezgene.lucene.index.dir"
-          value="/data2/lucene/entrezgene"/>
-<property name="server.entrezgene.dist.file"
-          value="/data1/nlm/entrezgene/Homo_sapiens.xml"/>
-
 <target name="indexEntrezGene"
         description="create Lucene EntrezGene index"
         depends="jar">
-  <java classname="com.aliasi.lingmed.entrezgene.IndexEntrezGene"
-        maxMemory="800M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${entrezgene.lucene.index.dir}"/>
-    <arg value="-distFile=${entrezgene.dist.file}"/>
-  </java>
+  <indexEntrezGene distFile="${entrezgene.dist.file}"
+                   index="${entrezgene.lucene.index.dir}"/>
 </target>
 
 <target name="rmiEntrezGene"
-        description="start rmi EntrezGene search server"
+        description="rmi EntrezGene search serice"
         depends="jar">
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars} "/>
-    <jvmarg value="-Djava.rmi.server.hostname=localhost"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=entrezgene"/>
-    <arg value="-index=${entrezgene.lucene.index.dir}"/>
-  </java>
-</target>
-
-<target name="serverIndexEntrezGene"
-        description="create Lucene EntrezGene index" >
-  <java classname="com.aliasi.lingmed.entrezgene.IndexEntrezGene"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${server.entrezgene.lucene.index.dir}"/>
-    <arg value="-distFile=${server.entrezgene.dist.file}"/>
-  </java>
-</target>
-
-<target name="serverRmiEntrezGene"
-        description="start rmi EntrezGene search server" >
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars}"/>
-    <jvmarg value="-Djava.rmi.server.hostname=${server.address}"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=entrezgene"/>
-    <arg value="-index=${server.entrezgene.lucene.index.dir}"/>
-  </java>
+  <searchService host="localhost"
+                 port="1099"
+                 service="entrezgene"
+                 index="${entrezgene.lucene.index.dir}" />
 </target>
 
 <!-- **** Homologene tasks **** -->
 
-<property name="homologene.lucene.index.dir"
-          value="luceneHomologene"/>
-<property name="homologene.dist.file"
-          value="C:\\aliasi\data\homologene\homologene.xml"/>
-
-<property name="server.lucene.homologene.index.dir"
-          value="/data2/lucene/homologene"/>
-<property name="server.homologene.dist.file"
-          value="/data1/nlm/homologene/homologene.xml"/>
-
 <target name="indexHomologene"
-        description="create Lucene HomologeneGene index"
+        description="create Lucene Homologene index"
         depends="jar">
-  <java classname="com.aliasi.lingmed.entrezgene.IndexHomologene"
-        maxMemory="800G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${homologene.lucene.index.dir}"/>
-    <arg value="-distFile=${homologene.dist.file}"/>
-  </java>
+  <indexHomologene distFile="${homologene.dist.file}"
+                   index="${homologene.lucene.index.dir}"/>
 </target>
 
 <target name="rmiHomologene"
-        description="start rmi Homologene search server"
+        description="rmi Homologene search serice"
         depends="jar">
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars}"/>
-    <jvmarg value="-Djava.rmi.server.hostname=localhost"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=homologene"/>
-    <arg value="-index=${homologene.lucene.index.dir}"/>
-  </java>
+  <searchService host="localhost"
+                 port="1099"
+                 service="homologene"
+                 index="${homologene.lucene.index.dir}" />
 </target>
 
-<target name="serverIndexHomologene"
-        description="create Lucene HomologeneGene index" >
-  <java classname="com.aliasi.lingmed.entrezgene.IndexHomologene"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${server.homologene.lucene.index.dir}"/>
-    <arg value="-distFile=${server.homologene.dist.file}"/>
-  </java>
-</target>
-
-<target name="serverRmiHomologene"
-        description="start rmi Homologene search server" >
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars}"/>
-    <jvmarg value="-Djava.rmi.server.hostname=${server.address}"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=homologene"/>
-    <arg value="-index=${server.homologene.lucene.index.dir}"/>
-  </java>
-</target>
 
 <!-- **** OMIM tasks **** -->
-
-<property name="omim.lucene.index.dir"
-          value="luceneOMIM"/>
-<property name="omim.dist.file"
-          value="C:\\aliasi\data\mim\omim.txt"/>
-
-<property name="server.omim.lucene.index.dir"
-          value="/data2/lucene/omim"/>
-<property name="server.omim.dist.file"
-          value="/data1/nlm/omim/omim.txt"/>
 
 <target name="indexOmim"
         description="create Lucene OMIM index"
         depends="jar">
-  <java classname="com.aliasi.lingmed.omim.IndexOmim"
-        maxMemory="800M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${omim.lucene.index.dir}"/>
-    <arg value="-distFile=${omim.dist.file}"/>
-  </java>
+  <indexOmim distFile="${omim.dist.file}"
+                   index="${omim.lucene.index.dir}"/>
 </target>
 
 <target name="rmiOmim"
-        description="start rmi OMIM search server"
+        description="rmi OMIM search serice"
         depends="jar">
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars} "/>
-    <jvmarg value="-Djava.rmi.server.hostname=localhost"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=omim"/>
-    <arg value="-index=${omim.lucene.index.dir}"/>
-  </java>
+  <searchService host="localhost"
+                 port="1099"
+                 service="omim"
+                 index="${omim.lucene.index.dir}" />
 </target>
 
-<target name="serverIndexOmim"
-        description="create Lucene OMIM index" >
-  <java classname="com.aliasi.lingmed.omim.IndexOmim"
-        maxMemory="1G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${server.omim.lucene.index.dir}"/>
-    <arg value="-distFile=${server.omim.dist.file}"/>
-  </java>
-</target>
-
-<target name="serverRmiOmim"
-        description="start rmi OMIM search server" >
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars}"/>
-    <jvmarg value="-Djava.rmi.server.hostname=${server.address}"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=omim"/>
-    <arg value="-index=${server.omim.lucene.index.dir}"/>
-  </java>
-</target>
-
-
-<!-- **** LingBlast tasks **** -->
+<!-- **** LingBlast, GeneLinkage **** -->
 
 <target name="buildDict"
         description="compile exact match dictionary over all aliases in entrezgene"
@@ -519,7 +120,7 @@
         maxMemory="4G"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="-host=${server.address}"/>
+    <arg value="-host=${rmi.server.address}"/>
     <arg value="-dictFile=exactDictEntrezGene"/>
     <arg value="-allowedNames=hifreq_names.txt"/>
     <arg value="-genHtml=true"/>
@@ -534,30 +135,8 @@
         maxMemory="4G"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="-host=${server.address}"/>
+    <arg value="-host=${rmi.server.address}"/>
     <arg value="-modelDir=lmTexts2"/>
-  </java>
-</target>
-
-<target name="xval-genomics"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lingblast.XValidateGenomics"
-        maxMemory="8G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="${server.address}"/>
-    <arg value="${server.port}"/>
-  </java>
-</target>
-
-<target name="countEntrezRefs"
-        description="gen histogram of number of unique pubmed refs per gene"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.entrezgene.CountEntrezGene"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-host=${server.address}"/>
   </java>
 </target>
 
@@ -577,29 +156,6 @@
   </java>
 </target>
 
-<target name="testDict"
-        description="test compiled exact match dictionary"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lingblast.TestDictionary"
-        maxMemory="2G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="exactDictEntrezGene"/>
-    <arg value="lmTextHtml/114757.html"/>
-  </java>
-</target>
-
-<target name="testLM"
-        description="test compiled lm"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lingblast.TestLM"
-        maxMemory="2G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="lmTexts/genomic.ngram.lm"/>
-  </java>
-</target>
-
 <target name="gene-articles"
         description="generate html from genelinkage db"
         depends="jar">
@@ -611,79 +167,13 @@
     </classpath>
     <arg value="-geneIds=test_geneIds.txt"/>
     <arg value="-maxArticles=500"/>
-    <arg value="-host=${server.address}"/>
-    <arg value="-dbUrl=jdbc:mysql://192.168.1.94:3306/gene_linkage"/>
+    <arg value="-host=${rmi.server.address}"/>
+    <arg value="-dbUrl=${mysqlBaseURL}/gene_linkage"/>
     <arg value="-dbName=gene_linkage"/>
-    <arg value="-dbUserName=lingmed_user"/>
-    <arg value="-dbUserPassword=lingmed"/>
+    <arg value="-dbUserName=${mysql_gl_user}"/>
+    <arg value="-dbUserPassword=${mysql_gl_passwd}"/>
   </java>
 </target>
-
-<!-- **** web app **** -->
-<property name="app.name"
-          value="genelinkage"/>
-
-  <target name="war" depends="jar" description="bundle app into .war file">
-    <mkdir dir="build/war"/>
-    <copy todir="build/war">
-      <fileset dir="web"/>
-    </copy>
-    <mkdir dir="build/war/WEB-INF/lib"/>
-    <copy todir="build/war/WEB-INF/lib">
-      <fileset file="${jar}"/>
-    </copy>
-    <copy file="${lingpipe-jar}"
-          todir="build/war/WEB-INF/lib"/>
-    <copy file="${lucene-jar}"
-          todir="build/war/WEB-INF/lib"/>
-    <jar destfile="build/${app.name}.war">
-      <fileset dir="build/war"/>
-    </jar>
-  </target>
-
-
-<!--
-     for deploy and undeploy targets
-     copy Tomcat6.0/server/lib/catalina-ant.jar
-          to $ANT_HOME/lib/
-
-     then open URL: ${manager.url}/${app.name}/url-pattern
-     where url-pattern is defined in web/WEB-INF/web.xml
-     e.g. manager.url= http://localhost:8080/manager/
-          app.name = lingpipe-demo
-          url-pattern = /helloWorld
-          URL = http://localhost:8080/manager/lingpipe-demo/helloWorld
-
- -->
-
-  <taskdef name="stop"
-           classname="org.apache.catalina.ant.StopTask"/>
-
-  <taskdef name="start"
-           classname="org.apache.catalina.ant.StartTask"/>
-
-
-<target name="deploy" depends="war" description="(initial) deploy to Tomcat">
-  <taskdef name="deploy"
-           classname="org.apache.catalina.ant.DeployTask"/>
-  <deploy url="${manager.url}"
-          username="${manager.username}"
-          password="${manager.password}"
-          path="/${app.name}"
-          war="build/${app.name}.war"/>
-</target>
-
-<target name="undeploy" description="remove app from Tomcat">
-  <taskdef name="undeploy"
-           classname="org.apache.catalina.ant.UndeployTask"/>
-  <undeploy url="${manager.url}"
-            username="${manager.username}"
-            password="${manager.password}"
-            path="/${app.name}"/>
-</target>
-
-
-<target name="redeploy" depends="undeploy,deploy" description="redeploy app to Tomcat" />
 
 <!-- **** misc dev **** -->
 
@@ -694,93 +184,10 @@
     <arg value="-ro"/>  <!-- read only index -->
     <classpath>
       <path refid="classpath.standard"/>
-      <pathelement location="lib/luke-0.8.1.jar"/>
+      <pathelement location="${luke-jar}"/>
     </classpath>
   </java>
 </target>
-
-
-<target name="splitMedlineXml">
-  <java classname="com.aliasi.lingmed.medline.SplitMedlineXml" fork="true">
-    <arg value="medsamp2008.xml"/>
-    <arg value="tmp2"/>
-    <classpath>
-      <path refid="classpath.standard"/>
-    </classpath>
-  </java>
-</target>
-
-<target name="splitOmim">
-  <java classname="com.aliasi.lingmed.omim.SplitOmimDist" fork="true">
-    <arg value="C:\\aliasi\data\mim\omim.txt"/>
-    <arg value="tmp2"/>
-    <classpath>
-      <path refid="classpath.standard"/>
-    </classpath>
-  </java>
-</target>
-
-<target name="num-hits"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lucene.NumHits"
-        fork="true">
-    <classpath>
-      <path refid="classpath.standard"/>
-    </classpath>
-    <arg value="${medline.lucene.index.dir}"/>
-    <arg value="of the"/>
-    <arg value="p-53"/>
-    <arg value="p53"/>
-    <arg value="P53"/>
-    <arg value="the"/>
-    <arg value="The"/>
-    <arg value="and the"/>
-  </java>
-</target>
-
-<target name="test-app"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.medline.SearchableMedlineCodec"
-        fork="true">
-    <classpath>
-      <path refid="classpath.standard"/>
-    </classpath>
-  </java>
-</target>
-
-<target name="test-rmiMedline"
-        description="test rmi MEDLINE search"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.server.TestClient"
-        maxMemory="1G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="${server.address}"/>
-    <arg value="test_pmids.txt"/>
-  </java>
-</target>
-
-<target name="test-mysql"
-        description="test genelinkage db"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.genelinkage.TestDb"
-        fork="true">
-    <classpath>
-      <path refid="classpath.standalone.db"/>
-    </classpath>
-    <arg value="check_pmids.txt"/>
-  </java>
-</target>
-
-<target name="update-classname"
-        depends=""
-        description="Replace class name">
-    <replace dir="src"
-             includes ="**/*.java">
-      <replacetoken><![CDATA[FileSys]]></replacetoken>
-      <replacevalue><![CDATA[FileUtils]]></replacevalue>
-    </replace>
- </target>
 
 
 </project>
