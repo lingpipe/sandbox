@@ -18,7 +18,9 @@ package com.aliasi.lingmed.medline;
 
 import com.aliasi.lingmed.dao.DaoException;
 import com.aliasi.lingmed.dao.DaoSearcher;
+import com.aliasi.lingmed.dao.SearchResults;
 import com.aliasi.medline.MedlineCitation;
+
 
 /**
  * A <code>MedlineSearcher</code> provides search methods 
@@ -36,5 +38,18 @@ public interface MedlineSearcher extends DaoSearcher<MedlineCitation> {
      * in either the title or abstract field.
      */
     public int numExactPhraseMatches(String phrase) throws DaoException;
+
+//    /**      
+//     * Find all MedlineCitations which have an exact match for phrase
+//     * in either the title or abstract field.
+//     */
+//    public SearchResults<MedlineCitation> getExactPhraseMatches(String phrase) throws DaoException;
+
+    /**      
+     * Find all MedlineCitations published in the range fromYear, toYear, inclusive.
+     */
+    public SearchResults<MedlineCitation> getCitationsInYearRange(String fromYear, String toYear) throws DaoException;
+
+
 
 }
