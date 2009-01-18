@@ -6,8 +6,8 @@
 <import file="build_common.xml"/>
 
 <target name="test-compile"
-          depends="jar"
-          description="Compiles test classes to build/testClasses.">
+        depends="compile"
+        description="Compiles test classes">
   <javac optimize="on"
          debug="yes"
          debuglevel="source,lines,vars"
@@ -17,6 +17,18 @@
     <include name="com/aliasi/lingmed/test/**"/>
     <src path="src"/>
   </javac>
+</target>
+
+<target name="test-jar"
+        depends="test-compile">
+  <copy todir="build/classes">
+    <fileset dir="${basedir}"
+             includes="*.properties" />
+  </copy>
+  <jar destfile="${jar}">
+    <fileset dir="build/classes"
+             includes="**/*.class **/*.properties" />
+  </jar>
 </target>
 
 <target name="split-medline">
@@ -136,6 +148,31 @@
     </classpath>
   </java>
 </target>
+
+<target name="dump-medline-dates"
+        description="get pubdate for all citations in MEDLINE index"
+        depends="test-jar">
+  <java classname="com.aliasi.lingmed.medline.VerifyDates"
+        fork="true">
+    <classpath>
+      <path refid="classpath.standard"/>
+    </classpath>
+    <arg value="luceneMedline"/>
+  </java>
+</target>
+
+<target name="medline-search-dates"
+        description="test MEDLINE searcher getCitationsInYearRange"
+        depends="test-jar">
+  <java classname="com.aliasi.lingmed.medline.TestDateSearch"
+        fork="true">
+    <classpath>
+      <path refid="classpath.standard"/>
+    </classpath>
+    <arg value="luceneMedline"/>
+  </java>
+</target>
+
 
 <target name="update-classname"
         depends=""
