@@ -141,10 +141,6 @@ import org.apache.log4j.Logger;
  * <dd>Number of minutes to sleep between download sessions.
  * </dd>
  *
- * <dt><code>-strict</code></dt>
- * <dd>If true verify md5 checksum on existing data files.
- * </dd>
- *
  * </dl>
  *
  * <P>For information on obtaining the MEDLINE corpus, which is
@@ -178,7 +174,6 @@ public class DownloadMedline extends AbstractCommand {
     
     private int mMaxTries;
     private int mSleep;
-    private boolean mStrict;
 
     private FTPClient mFTPClient;
 
@@ -193,13 +188,11 @@ public class DownloadMedline extends AbstractCommand {
     private final static String TARGET_DIR_PARAM = "targetDir";
     private final static String MAX_TRIES_PARAM = "maxTries";
     private final static String SLEEP_PARAM = "sleep";
-    private final static String STRICT_PARAM = "strict";
 
     private final static Properties DEFAULT_PARAMS = new Properties();
     static {
         DEFAULT_PARAMS.setProperty(MAX_TRIES_PARAM,"1");
         DEFAULT_PARAMS.setProperty(SLEEP_PARAM,"60");
-        DEFAULT_PARAMS.setProperty(STRICT_PARAM,"false");
     }
 
     // Instantiate DownloadMedline object and 
@@ -212,7 +205,6 @@ public class DownloadMedline extends AbstractCommand {
         mPassword = getExistingArgument(PASSWORD_PARAM);
         mMaxTries = getArgumentInt(MAX_TRIES_PARAM);
         mSleep = getArgumentInt(SLEEP_PARAM);
-	mStrict = Boolean.valueOf(getArgument(STRICT_PARAM));
         mRepositoryPath = getArgument(REPOSITORY_PATH_PARAM);
         if (mRepositoryPath == null) {
             String msg = "Missing parameter "+REPOSITORY_PATH_PARAM;
@@ -231,23 +223,10 @@ public class DownloadMedline extends AbstractCommand {
         try {
 	    FileUtils.ensureDirExists(mTargetDir);
 	    mLogger.info("Writing to target directory=" + mTargetDir);
-
 	    mTargetMd5Dir = new File(mTargetDir.getAbsolutePath()+File.separator+"md5");
 	    FileUtils.ensureDirExists(mTargetMd5Dir);
 	    mLogger.info("Writing checksum data to directory=" + mTargetMd5Dir);
-
 	    Set<String> localMd5Names = filterByExtension(mTargetMd5Dir.list(),".gz.md5");
-	    if (mStrict) {
-		mLogger.info("Checking local data files, # files to check: "+localMd5Names.size());
-		Set<String> refetchFiles = new HashSet<String>();
-		for (String name: localMd5Names) { 
-		    if (!isGoodChecksum(name)) {
-			refetchFiles.add(name);
-			mLogger.warn("Checksum mismatch, will refetch: " + name);
-		    }
-		}
-		for (String name: refetchFiles) localMd5Names.remove(name);
-	    }
 
 	    mLogger.info("Establishing FTP connection.");
             initializeFTPClient();
@@ -376,31 +355,6 @@ public class DownloadMedline extends AbstractCommand {
 	return latch;
     }
 
-
-    // isGoodChecksum
-    // a. checksum file is OK
-    // b. data file exists
-    // c. verify checksum
-    private boolean isGoodChecksum(String fileName) {
-	File gzmd5 = new File(mTargetMd5Dir,fileName);
-	if (!checkChecksum(gzmd5)) return false;
-	File gz = new File(mTargetDir,Files.prefix(fileName));
-        if (!gz.exists()) return false;
-        if (!gz.isFile()) {
-            System.out.println("Data file not ordinary file. File=" + gz);
-            return false;
-        }
-	try {
-	    if (!verifyChecksum(gzmd5,gz)) {
-		mLogger.warn("Checksum file doesn't match data file: "+fileName);
-		return false;
-	    }
-	} catch (IOException ioe) {
-	    mLogger.warn("IOException: "+ioe.getMessage());
-	    return false;
-	}
-	return true;
-    }
 
     // /////// helper methods for ftp client
 
@@ -641,7 +595,6 @@ public class DownloadMedline extends AbstractCommand {
 		     + "\n\tTarget Directory=" + getArgument(TARGET_DIR_PARAM)
 		     + "\n\tMax tries=" + mMaxTries
 		     + "\n\tSleep interval in minutes=" + mSleep
-		     + "\n\tStrict verification of md5 checksum=" + mStrict
 		     );
     }
 
