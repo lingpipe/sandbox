@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <project>
 
 <!-- classpaths -->
@@ -31,14 +30,14 @@
 
 <!-- **** core development tasks **** -->
 
-<!--        description="delete build dir, jarfile"> -->
 <target name="clean">
+<!--    description="delete build dir, jarfile"> -->
   <delete dir="build"/>
   <delete file="${jar}"/>
 </target>
 
-<!--        description="compile java source, excluding tests"> -->
 <target name="compile">
+<!--    description="compile java source, excluding tests"> -->
   <mkdir dir="build/classes"/>
   <javac optimize="on"
          debug="yes"
@@ -51,9 +50,9 @@
   </javac>
 </target>
 
-<!--        description="create LingMed jarfile" -->
 <target name="jar"
         depends="compile">
+<!--    description="create LingMed jarfile" -->
   <copy todir="build/classes">
     <fileset dir="${basedir}"
              includes="*.properties" />
@@ -64,8 +63,8 @@
   </jar>
 </target>
 
-<!--        description="Creates javadocs in docs/api"> -->
 <target name="javadoc">
+<!--    description="Creates javadocs in docs/api"> -->
     <mkdir dir="docs/api"/>
     <javadoc destdir="docs/api"
              author="true"
@@ -116,7 +115,6 @@
       <arg value="-password=${medline.pwd}"/>
       <arg value="-maxTries=${medline.download.retries}"/>
       <arg value="-sleep=${medline.download.interval}"/>
-      <arg value="-strict=false"/>
     </java>
   </sequential>
 </macrodef>
