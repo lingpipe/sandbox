@@ -1,12 +1,10 @@
 <?xml version="1.0"?>
-
 <project name="lingmed" default="compile" basedir=".">
 
 <property file="build.lingmed.properties"/>
 
 <import file="build_common.xml"/>
 
-<!-- **** web app **** -->
 <!--
      for deploy and undeploy targets
      copy Tomcat6.0/server/lib/catalina-ant.jar
@@ -18,39 +16,35 @@
           app.name = lingpipe-demo
           url-pattern = /helloWorld
           URL = http://localhost:8080/manager/lingpipe-demo/helloWorld
-
  -->
-<!--  unused properties?
-  tomcat.base.dir=setme
-  tomcat.deploy.path=${tomcat.base.dir}/webapps
--->
 
 <property name="app.name"
           value="genelinkage"/>
 
-  <target name="war" depends="jar" description="bundle app into .war file">
-    <mkdir dir="build/war"/>
-    <copy todir="build/war">
-      <fileset dir="web"/>
-    </copy>
-    <mkdir dir="build/war/WEB-INF/lib"/>
-    <copy todir="build/war/WEB-INF/lib">
-      <fileset file="${jar}"/>
-    </copy>
-    <copy file="${lingpipe-jar}"
-          todir="build/war/WEB-INF/lib"/>
-    <copy file="${lucene-jar}"
-          todir="build/war/WEB-INF/lib"/>
-    <jar destfile="build/${app.name}.war">
-      <fileset dir="build/war"/>
-    </jar>
-  </target>
+<target name="war" depends="jar" description="bundle app into .war file">
+  <mkdir dir="build/war"/>
+  <copy todir="build/war">
+    <fileset dir="web"/>
+  </copy>
+  <mkdir dir="build/war/WEB-INF/lib"/>
+  <copy todir="build/war/WEB-INF/lib">
+    <fileset file="${jar}"/>
+  </copy>
+  <copy file="${lingpipe-jar}"
+        todir="build/war/WEB-INF/lib"/>
+  <copy file="${lucene-jar}"
+        todir="build/war/WEB-INF/lib"/>
+  <jar destfile="build/${app.name}.war">
+    <fileset dir="build/war"/>
+  </jar>
+</target>
 
-  <taskdef name="stop"
-           classname="org.apache.catalina.ant.StopTask"/>
+<taskdef name="stop"
+         classname="org.apache.catalina.ant.StopTask"/>
 
-  <taskdef name="start"
-           classname="org.apache.catalina.ant.StartTask"/>
+<taskdef name="start"
+         classname="org.apache.catalina.ant.StartTask"/>
+
 
 <target name="deploy" depends="war" description="(initial) deploy to Tomcat">
   <taskdef name="deploy"
@@ -71,6 +65,8 @@
             path="/${app.name}"/>
 </target>
 
+<target name="redeploy" 
+        depends="undeploy,deploy" 
+        description="redeploy app to Tomcat" />
 
-<target name="redeploy" depends="undeploy,deploy" description="redeploy app to Tomcat" />
 </project>
