@@ -240,7 +240,7 @@ public class EntrezGene {
       * Returns the count of unique PubMed ids from the list of PubMedRefs.
      */
     public int countUniquePubMedRefs() {
-	if (mPubMedRefs.length == 0) return 0;
+	if (mPubMedRefs == null || mPubMedRefs.length == 0) return 0;
 	HashSet<String> refs = new HashSet<String>();
 	for (Pair<String,String[]> ref : mPubMedRefs) {
 	    String[] pmids = ref.b();
@@ -325,7 +325,7 @@ public class EntrezGene {
       * Returns the set of unique PubMed ids from the list of PubMedRefs.
      */
     public String[] getUniquePubMedRefs() {
-	if (mPubMedRefs.length == 0) return new String[0];
+	if (mPubMedRefs == null || mPubMedRefs.length == 0) return new String[0];
 	HashSet<String> refs = new HashSet<String>();
 	for (Pair<String,String[]> ref : mPubMedRefs) {
 	    String[] pmids = ref.b();
