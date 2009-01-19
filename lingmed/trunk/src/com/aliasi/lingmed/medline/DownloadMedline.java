@@ -139,6 +139,7 @@ import org.apache.log4j.Logger;
  *
  * <dt><code>-sleep</code></dt>
  * <dd>Number of minutes to sleep between download sessions.
+ *     If &lt; 1, program will exit after one session.
  * </dd>
  *
  * </dl>
@@ -625,6 +626,7 @@ public class DownloadMedline extends AbstractCommand {
 		e2.setStackTrace(e.getStackTrace());
 		throw e2;
 	    }
+	    if (downloader.sleepMins() < 1) break;
 	    Thread.sleep(downloader.sleepMins()*MINUTE);
 	}
     }

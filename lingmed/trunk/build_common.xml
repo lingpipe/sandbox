@@ -104,17 +104,18 @@
 <macrodef name="downloadMedline">
   <attribute name="repository"/>
   <attribute name="target"/>
+  <attribute name="sleep"/>
   <sequential>
     <java classname="com.aliasi.lingmed.medline.DownloadMedline"
         fork="true">
       <classpath refid="classpath.standard"/>
-      <arg value="-repositoryPath=@{repository}"/>
-      <arg value="-targetDir=@{target}"/>
       <arg value="-domain=ftp.nlm.nih.gov"/>
       <arg value="-user=anonymous"/>
       <arg value="-password=${medline.pwd}"/>
       <arg value="-maxTries=${medline.download.retries}"/>
-      <arg value="-sleep=${medline.download.interval}"/>
+      <arg value="-repositoryPath=@{repository}"/>
+      <arg value="-targetDir=@{target}"/>
+      <arg value="-sleep=@{sleep}"/>
     </java>
   </sequential>
 </macrodef>
@@ -124,6 +125,7 @@
   <attribute name="distdir"/>
   <attribute name="index"/>
   <attribute name="codec"/>
+  <attribute name="sleep"/>
   <sequential>
     <java classname="com.aliasi.lingmed.medline.IndexMedline"
           maxMemory="${mxMem}"
@@ -133,6 +135,7 @@
       <arg value="-distDir=@{distdir}"/>
       <arg value="-index=@{index}"/>
       <arg value="-codec=@{codec}"/>
+      <arg value="-sleep=@{sleep}"/>
     </java>
   </sequential>
 </macrodef>

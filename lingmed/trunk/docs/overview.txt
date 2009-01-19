@@ -1,6 +1,5 @@
-Lingmed Overview
+LingMed Overview
 ================
-
 
 This document explains how to use the set of programs
 in the package com.aliasi.lingmed.
@@ -9,13 +8,113 @@ Lingmed is a top-level project in the aliasi sandbox.
 Commands and command parameters are illustrated via excerpts
 from the lingmed build.xml file.
 
-In some cases the build.xml file contains parallel targets
-for development and production.  The development targets
-depend on compilation tasks.  The production targets begin
-with the word "server" do not have any dependencies.
-To run lingmed on a production server it is sufficient
-to upload the lingmed jar, libraries, and build.xml file.
+Building and running LingMed
+==============
 
+Apache Ant is used to build and run LingMed applications.
+The top-level LingMed directory contains the following
+ant configuration files:
+
+build.lingmed.properties - local configuration variables
+build.xml - the default build file, runs core tasks
+build_common.xml - common tasks and macros for common tasks
+build_dev.xml - tasks used for testing and development
+build_prod.xml - targets that run on the production server
+build_web.xml - targets that launch the genelinkage webapp
+
+The ant -f flag is used to specify a particular build file,
+else ant will use the file "build.xml".
+
+The default build file, and the dev, prod, and web files 
+all start by accessing build.lingmed.properties and build_common.xml:
+
+ <property file="build.lingmed.properties"/>
+ <import file="build_common.xml"/>
+
+The build.lingmed.properties file contains properties in
+the Java key=value format.  These properties are referenced
+in the build xml files as ${key}.
+
+For example, the location of lingpipe jar file is specified
+in build.lingmed.properties as:
+ lingpipe-jar=lib/lingpipe-3.7.0.jar
+
+The lingpipe-jar property is referenced in the build_common.xml file:
+  <path id="classpath.common">
+    <pathelement location="${jar}"/>
+    <pathelement location="${lingpipe-jar}"/>
+    <pathelement location="${lucene-jar}"/>
+  </path>
+
+The LingMed programs use command line arguments
+to get configuration information.  Ant provides a
+simple way of invoking these programs.
+
+Here is the macro for the LingMed DownloadMedline program
+(from build_common.xml):
+
+<macrodef name="downloadMedline">
+  <attribute name="repository"/>
+  <attribute name="target"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.medline.DownloadMedline"
+        fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-repositoryPath=@{repository}"/>
+      <arg value="-targetDir=@{target}"/>
+      <arg value="-domain=ftp.nlm.nih.gov"/>
+      <arg value="-user=anonymous"/>
+      <arg value="-password=${medline.pwd}"/>
+      <arg value="-maxTries=${medline.download.retries}"/>
+      <arg value="-sleep=${medline.download.interval}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+Here are the targets which use it in default build.xml file:
+
+<target name="downloadMedlineBaseline"
+        description="download MEDLINE baseline distribution from NLM"
+        depends="jar">
+  <downloadMedline repository="${medline.baseline.repository}"
+                   target="${medline.baseline.dir}"/>
+</target>
+
+<target name="downloadMedlineUpdates"
+        description="download MEDLINE update files from NLM"
+        depends="jar">
+  <downloadMedline repository="${medline.updates.repository}"
+                   target="${medline.updates.dir}"/>
+</target>
+
+
+And here is how it is used in the build_prod.xml file:
+
+<property name="medline.dir"
+          value="/data1/nlm/medline/dist/2008"/>
+<property name="medline.baseline.dir"
+          value="${medline.dir}/baseline"/>
+<property name="medline.updates.dir"
+          value="${medline.dir}/updates"/>
+
+<target name="downloadMedlineBaseline"
+        description="download MEDLINE baseline distribution from NLM" >
+  <downloadMedline repository="${medline.baseline.repository}"
+                   target="${medline.baseline.dir}"/>
+</target>
+
+<target name="downloadMedlineUpdates"
+        description="download MEDLINE update files from NLM" >
+  <downloadMedline repository="${medline.updates.repository}"
+                   target="${medline.updates.dir}"/>
+</target>
+
+The production targets don't depend on the jar target,
+(which in turn depends on the compilede target).
+To run lingmed on a production server it is sufficient
+to upload the lingmed jar, libraries, and the files:
+lingmed.build.properties, build_common.xml, 
+and build_prod.xml.
 
 Lucene Indexes
 ==============
@@ -33,8 +132,8 @@ b. updates files, released every weekday.
 The baseline and updates files are stored in different
 directories on the NLM site, and so our local repository
 mirrors this structure:
-	medline/dist/2008/baseline
-	medline/dist/2008/updates
+	medline/dist/2009/baseline
+	medline/dist/2009/updates
 
 Baseline files contain unique citation entries.  
 Updates files contain new citation entries as well as
@@ -64,6 +163,8 @@ The required arguments to this command are:
     Password assigned by NLM. 
 -repositoryPath
     Name of NLM directory where the distribution files are found.
+    This is not under our control, and the path specified in 
+    build.lingmed.properties should work.
 -targetDir
     Name of directory where distribution files are downloaded to. 
     If downloading from baseline repository, 
@@ -76,43 +177,46 @@ The following arguments are optional:
     Maximum number of download attempts per session. 
 -sleep
     Number of minutes to sleep between download sessions. 
--strict
-    If true verify md5 checksum, (else just check timestamps) 
+    If this parameter is < 1, the program will only make one download attempt.
 
 There are explicit ant tasks to download the baseline and
 updates files, to avoid putting baseline files in the 
 updates directory, and visa-versa.
 
-Here is the ant task which downloads the daily updates file:
+Here is the ant macro:
 
-<target name="serverDownloadUpdates"
-        description="download update files from NLM" >
-  <java classname="com.aliasi.lingmed.medline.DownloadMedline"
-        maxMemory="800M"
+<macrodef name="downloadMedline">
+  <attribute name="repository"/>
+  <attribute name="target"/>
+  <attribute name="sleep"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.medline.DownloadMedline"
         fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-domain=ftp.nlm.nih.gov"/>
-    <arg value="-user=anonymous"/>
-    <arg value="-password=carp@aliasi.com"/>
-    <arg value="-repositoryPath=${medline.updates.repository}"/>
-    <arg value="-targetDir=${server.medline.updates.dir}"/>
-    <arg value="-maxTries=3"/>
-    <arg value="-sleep=60"/>
-    <arg value="-strict=false"/>
-  </java>
+      <classpath refid="classpath.standard"/>
+      <arg value="-domain=ftp.nlm.nih.gov"/>
+      <arg value="-user=anonymous"/>
+      <arg value="-password=${medline.pwd}"/>
+      <arg value="-maxTries=${medline.download.retries}"/>
+      <arg value="-repositoryPath=@{repository}"/>
+      <arg value="-targetDir=@{target}"/>
+      <arg value="-sleep=@{sleep}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+Here is the downloadMedlineUpdates target from the build.xml file:
+
+<target name="downloadMedlineUpdates"
+        description="download MEDLINE update files from NLM"
+        depends="jar">
+  <downloadMedline repository="${medline.updates.repository}"
+                   target="${medline.updates.dir}"
+                   sleep="60"/>
 </target>
 
-The "-repositoryPath" argument specifies the directory on the NLM ftp site
-where the distribution files live.  This is not under our control, and the
-variable value currently specified in the build.xml file should not need to be changed.
+Note:  to run the downloader indefinitely, use nohup:
 
-The "-targetDir" argument specifies the where the files should be downloaded to -
-this is a directory on the local machine (or network).
-
-Once started, the download program will run indefinitely, 
-if invoked via nohup:
-
->  nohup ant serverDownloadMedlineUpdates >/dev/null
+>  nohup ant downloadMedlineUpdates >/dev/null
 
 The console output is sent to /dev/null, else it will be appended to file nohup.out.
 Programs which generate a lot of output to the console can inadvertantly fill up
@@ -122,7 +226,7 @@ More documentation is in the DownloadMedline class-level javadoc.
 There is also discussion of the download approach in the LingPipe MEDLINE
 tutorial readme.html doc.
 
-1.2 Creating a searchable Lucene Index over all of MEDLINE.
+1.3 Creating a searchable Lucene Index over all of MEDLINE.
 ==============
 
 The IndexMedline program 
@@ -165,31 +269,59 @@ The following arguments are optional:
 -sleep
     Number of minutes to sleep between indexing sessions. 
 
-Here is the ant task which indexes the daily updates files:
+Here is the ant macro:
 
-<target name="serverIndexUpdates"
-        description="create Lucene Medline Index" >
-  <java classname="com.aliasi.lingmed.medline.IndexMedline"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${server.medline.lucene.index.dir}"/>
-    <arg value="-distDir=${server.medline.updates.dir}"/>
-    <arg value="-distType=updates"/>
-    <arg value="-codec=${medline.codec.class}"/>
-  </java>
-</target>
+<macrodef name="indexMedline">
+  <attribute name="type"/>
+  <attribute name="distdir"/>
+  <attribute name="index"/>
+  <attribute name="codec"/>
+  <attribute name="sleep"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.medline.IndexMedline"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distType=@{type}"/>
+      <arg value="-distDir=@{distdir}"/>
+      <arg value="-index=@{index}"/>
+      <arg value="-codec=@{codec}"/>
+      <arg value="-sleep=@{sleep}"/>
+    </java>
+  </sequential>
+</macrodef>
 
 The "-distDir" argument specifies the path to the medline distribution files,
 and corresponds to the "-targetDir" argument used in the download command.
 
-Once started, the download program will run indefinitely.
-If starting this program via a remote shell, use nohup:
 
->  nohup ant serverIndexUpdates >/dev/null
+Here is the downloadMedlineUpdates target from the build.xml file:
 
+<target name="downloadMedlineUpdates"
+        description="download MEDLINE update files from NLM"
+        depends="jar">
+  <downloadMedline repository="${medline.updates.repository}"
+                   target="${medline.updates.dir}"
+                   sleep="60"/>
+</target>
 
-1.3 Making the MEDLINE Lucene Index available via RMI
+Note:  to run the indexer indefinitely, use nohup:
+
+>  nohup ant indexMedlineUpdates >/dev/null
+
+The console output is sent to /dev/null, else it will be appended to file nohup.out.
+Programs which generate a lot of output to the console can inadvertantly fill up
+a disk.
+
+1.4 Handling MEDLINE daily updates
+==============
+
+To keep the local MEDLINE Lucene index up-to-date,
+both the ant tasks "downloadMedlineUpdates" and
+"indexMedlineUpdates" should be running on the server,
+invoked using nohup, (see above).
+
+1.5 Making the MEDLINE Lucene Index available via RMI
 ==============
 
 Lucene allows remote searches over an index via RMI.
@@ -227,34 +359,49 @@ Because the RMI registry is running in a separte JVM,
 classpath information about the remote functions must be passed in as a JVM arg.
 On Ubuntu systems, it is necessary to specify the hostname as well.
 
+Here is the ant macro which starts a remote search service:
+<macrodef name="searchService">
+  <attribute name="host"/>
+  <attribute name="port"/>
+  <attribute name="service"/>
+  <attribute name="index"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.server.SearchService"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <jvmarg value="-Djava.rmi.server.codebase=${rmijars} "/>
+      <jvmarg value="-Djava.rmi.server.hostname=@{host}"/>
+      <arg value="-port=@{port}"/>
+      <arg value="-service=@{service}"/>
+      <arg value="-index=@{index}"/>
+    </java>
+  </sequential>
+</macrodef>
+
 Here is the ant task which starts a remote search service for
 the MEDLINE index:
 
-<target name="serverRmiMedline"
-        description="rmi Medline search" >
-  <java classname="com.aliasi.lingmed.server.SearchService"
-        maxMemory="512M"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <jvmarg value="-Djava.rmi.server.codebase=${rmijars}"/>
-    <jvmarg value="-Djava.rmi.server.hostname=${server.address}"/>
-    <arg value="-port=1099"/>
-    <arg value="-service=medline"/>
-    <arg value="-index=${server.medline.lucene.index.dir}"/>
-  </java>
+
+<target name="rmiMedline"
+        description="rmi MEDLINE search service"
+        depends="jar">
+  <searchService host="localhost"
+                 port="1099"
+                 service="medline"
+                 index="${medline.lucene.index.searchable}" />
 </target>
 
 The values for the properties ${rmijars} and ${server.address}
-must be set in the buildfile in the section labeled "rmi properties":
+must be set in the build.lingmed.properties file:
 
-<!-- rmi properties -->
-<property name="absoluteBaseDir" value="setme"/>
-<property name="rmijars" 
-          value="file:${absoluteBaseDir}/${lucene-jar}"/>
-<property name="server.address"
-          value="192.168.1.94"/>
-<property name="server.port"
-          value="1099"/>
+# network ---------------------------------------------------------------
+localhost=192.168.1.XXX
+
+# rmi ---------------------------------------------------------------
+rmi.absolute.base.dir=/home/lucene
+rmi.jars=file:${rmi.absolute.base.dir}/${lucene-jar}
+rmi.server.address=${localhost}
+rmi.server.port=1099
 
 More information is available from Sun, both in the Java tutorials
 and in the user forums.  Here is a good starting point:

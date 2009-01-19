@@ -13,8 +13,6 @@
           value="${medline.dir}/baseline"/>
 <property name="medline.updates.dir"
           value="${medline.dir}/updates"/>
-<property name="medline.lucene.index.dir"
-          value="/data3/lucene/medline_2008"/>
 
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM" >
@@ -27,6 +25,9 @@
   <downloadMedline repository="${medline.updates.repository}"
                    target="${medline.updates.dir}"/>
 </target>
+
+<property name="medline.lucene.index.dir"
+          value="/data3/lucene/medline_2008"/>
 
 <target name="indexMedlineBaseline"
         description="create Lucene MEDLINE Index from Baseline" >
