@@ -28,8 +28,7 @@
   <indexMedline type="baseline"
                 distdir="${medline.baseline.dir}"
                 index="${medline.lucene.index.searchable}"
-                codec="${medline.codec.class}"
-                sleep="-1"/>
+                codec="${medline.codec.class}"/>
 </target>
 
 <target name="indexMedlineUpdates"
@@ -38,8 +37,7 @@
   <indexMedline type="updates"
                 distdir="${medline.updates.dir}"
                 index="${medline.lucene.index.searchable}"
-                codec="${medline.codec.class}"
-                sleep="60"/>
+                codec="${medline.codec.class}"/>
 </target>
 
 <target name="rmiMedline"

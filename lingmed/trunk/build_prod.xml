@@ -17,13 +17,15 @@
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM" >
   <downloadMedline repository="${medline.baseline.repository}"
-                   target="${medline.baseline.dir}"/>
+                   target="${medline.baseline.dir}"
+                   sleep="-1"/>
 </target>
 
 <target name="downloadMedlineUpdates"
         description="download MEDLINE update files from NLM" >
   <downloadMedline repository="${medline.updates.repository}"
-                   target="${medline.updates.dir}"/>
+                   target="${medline.updates.dir}"
+                   sleep="60"/>
 </target>
 
 <property name="medline.lucene.index.dir"
@@ -34,7 +36,7 @@
   <indexMedline type="baseline"
                 distdir="${medline.baseline.dir}"
                 index="${medline.lucene.index.searchable}"
-                codec="${medline.codec.class}" />
+                codec="${medline.codec.class}"/>
 </target>
 
 <target name="indexMedlineUpdates"
