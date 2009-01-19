@@ -378,7 +378,7 @@ public class IndexMedline extends AbstractCommand {
                 throw e2;
             }
             if (sIsBaseline) break;
-            if (indexer.sleepMins() < 0) break;
+            if (indexer.sleepMins() < 1) break;
             Thread.sleep(indexer.sleepMins()*MINUTE);
         }
     }

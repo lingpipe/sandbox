@@ -125,7 +125,6 @@
   <attribute name="distdir"/>
   <attribute name="index"/>
   <attribute name="codec"/>
-  <attribute name="sleep"/>
   <sequential>
     <java classname="com.aliasi.lingmed.medline.IndexMedline"
           maxMemory="${mxMem}"
@@ -135,7 +134,7 @@
       <arg value="-distDir=@{distdir}"/>
       <arg value="-index=@{index}"/>
       <arg value="-codec=@{codec}"/>
-      <arg value="-sleep=@{sleep}"/>
+      <arg value="-sleep=${medline.index.sleep}"/>
     </java>
   </sequential>
 </macrodef>
