@@ -36,6 +36,7 @@
 <ul>
 <li><a class="current" href="read-me.html">lingmed</a>
 <ul>
+<li><a href="docs/getting_started.html">getting started</a></li>
 <li><a href="docs/dao.html">search and indexing</a></li>
 <li><a href="docs/medline.html">medline processing</a></li>
 <li><a href="docs/more_entrez.html">entrez databases</a></li>
@@ -54,6 +55,7 @@ LingMed is a top-level project in the Alias-i sandbox,
 comprising tools and Java packages for
 search and indexing over several major
 <a href="http://www.ncbi.nlm.nih.gov/sites/gquery">NCBI Entrez databases</a>:
+</p>
 <ul>
 <li><a href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=pubmed">MEDLINE</a>
 - the PubMed citation index of biomedical journal article citations and abstracts</li>
@@ -65,11 +67,23 @@ OMIM: Online Mendelian Inheritance in Man</a>
 <li><a href="http://www.ncbi.nlm.nih.gov/sites/entrez?db=homologene">HomoloGene</a>
 - eukaryotic homology groups.</li>
 </ul>
+<p>
+These databases contain large amounts of free text:
+MEDLINE contains article titles and abstracts;
+OMIM records contain full-text descriptions of
+genes and genotypes; and Entrez Gene entries contain
+gene summaries.
+These databases cross-reference each other, both explicitly,
+by database entry ids, and implicitly, through gene mentions.
+Gene names are ambiguous, and one gene can have many aliases.
+Entrez Gene, Homologene, and OMIM entries contain
+sets of aliases for a gene.
+Detecting gene mentions in MEDLINE citations is challenging;
+resolving the gene mention to a specific gene is very challenging.
+LingMed provides the infrastructure upon which we can build
+applications for gene linkage and gene disambiguation.
 </p>
 <p>
-The <a href="http://www.ncbi.nlm.nih.gov/">NCBI</a>
-distributes these databases via ftp download.
-Each database has its own distribution format.
 LingMed provides a set of programs which store the records 
 from each distribution in a Lucene index.
 A data access layer maps Lucene documents into Java objects
@@ -83,22 +97,38 @@ Because LingMed maps the search results into Java objects,
 we can use LingPipe for further analysis.
 </p>
 <p>
-These databases contain large amounts of free text:
-MEDLINE contains article titles and abstracts;
-OMIM records contain full-text descriptions of
-genes and genotypes; and Entrez Gene entries contain
-gene summaries.
-These databases cross-reference each other, both explicitly,
-by database entry ids, and implicitly, through gene mentions.
-Gene names are ambiguous, and one gene can have many aliases.
-Entrez Gene, Homologene, and OMIM entries contain
-sets of aliases for a gene.
+<h3>Infrastructure: Lucene indexes </h3>
+<p>
+The base use case of LingMed is to allow researchers to maintain
+a local copy of one of more Entrez databases as a Lucene index.
 </p>
 <p>
-Detecting gene mentions in MEDLINE citations is challenging;
-resolving the gene mention to a specific gene is very challenging.
-LingMed provides the infrastructure upon which we can build
-applications for gene linkage and gene disambiguation.
+LingMed creates a set of Lucene indexes, 1 per NCBI Entrez database.
+The <a href="http://www.ncbi.nlm.nih.gov/">NCBI</a>
+distributes these databases via ftp download.
+Each database has its own distribution format: MEDLINE, Entrez Gene and
+Homologene are distributed as set of XML records, each with their own DTDs.
+OMIM has its own record format.
+For each database there is a corresponding LingMed package, containing
+at least the following classes: a Java object model for that database entry;
+a class which maps between the Java object model and a Lucene document;
+a SAX-style parser for the distribution file; and an indexer which uses
+these components to build the Lucene index from the distribution file.
+</p>
+
+<h3>Applications development: using LingMed with LingPipe</h3>
+<p>
+LingMed provides an extensible API for search and indexing of 
+individual Entrez databases, as well as for cross-database searches.
+The API provides methods to iterate over all entries in an index,
+as well as structured search queries which a set of results.
+Using Lucene as a backing store allows these queries to use Lucene
+scores to returned results ranked by relevancy.
+</p>
+<p>
+The LingMed packages LingBlast and GeneLinkage use LingMed search
+over EntrezGene and MEDLINE to extract lists of names and texts 
+which are compiled into LingPipe dictionaries and language models.
 </p>
 
 <h2>Road Map</h2>
@@ -107,6 +137,9 @@ applications for gene linkage and gene disambiguation.
 The LingMed documentation consists of the following sections:
 
 <ul>
+<li><a href="docs/getting_started.html">getting started</a>
+How to download and install LingMed and the Lucene indexes.
+</li>
 <li><a href="docs/dao.html">search and indexing</a>
 LingMed classes and interfaces used for searching Lucene and MySQL data stores.  
 Code samples show how to use existing search functions,
