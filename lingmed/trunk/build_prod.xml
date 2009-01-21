@@ -8,7 +8,7 @@
 <!-- **** MEDLINE **** -->
 
 <property name="medline.dir"
-          value="/data1/nlm/medline/dist/2008"/>
+          value="/data1/nlm/medline/dist/2009"/>
 <property name="medline.baseline.dir"
           value="${medline.dir}/baseline"/>
 <property name="medline.updates.dir"
@@ -29,13 +29,13 @@
 </target>
 
 <property name="medline.lucene.index.dir"
-          value="/data3/lucene/medline_2008"/>
+          value="/data3/lucene/medline_2009"/>
 
 <target name="indexMedlineBaseline"
         description="create Lucene MEDLINE Index from Baseline" >
   <indexMedline type="baseline"
                 distdir="${medline.baseline.dir}"
-                index="${medline.lucene.index.searchable}"
+                index="${medline.lucene.index.dir}"
                 codec="${medline.codec.class}"/>
 </target>
 
@@ -43,7 +43,7 @@
         description="add updates to Lucene MEDLINE Index" >
   <indexMedline type="updates"
                 distdir="${medline.updates.dir}"
-                index="${medline.lucene.index.searchable}"
+                index="${medline.lucene.index.dir}"
                 codec="${medline.codec.class}" />
 </target>
 
@@ -52,7 +52,7 @@
   <searchService host="${rmi.server.address}"
                  port="${rmi.server.port}"
                  service="medline"
-                 index="${medline.lucene.index.searchable}" />
+                 index="${medline.lucene.index.dir}" />
 </target>
 
 <!-- **** Entrez Gene tasks **** -->
