@@ -48,11 +48,126 @@
 
 <div id="content" class="content">
 
-<h2>LingMed Source files</h2>
+<h2>LingMed download</h2>
 
-<h2>NCBI Distributions</h2>
+<p>
+If you are here you're obviously managed to download LingMed from the
+Alias-i <a href="http://alias-i.com/lingpipe/web/sandbox.html">Development Sandbox</a>.
+Remember to check back periodically for updates.
+</p>
 
 <h2>Apache Ant</h2>
+
+<p>
+<a href="http://ant.apache.org/">Apache Ant</a> is used to build and run LingMed applications.
+The LingMed programs use command line arguments to get configuration information.  
+Using Ant targets allows us to fully specify these arguments in the build files,
+and then invoke them with the command: "ant <i>targetname</i>".
+This saves a lot of typing.
+If you're familiar with Ant, you can skip the rest of this section,
+which explains how to modify these files for your installation.
+</p>
+
+<p>
+The top-level LingMed directory contains a set of ant configuration files:
+</p>
+<ul>
+<li>build.lingmed.properties - local configuration variables</li>
+<li>build.xml - the default build file, runs core tasks</li>
+<li>build_common.xml - common tasks and macros for common tasks</li>
+<li>build_dev.xml - tasks used for testing and development</li>
+<li>build_prod.xml - targets that run on the production server</li>
+<li>build_web.xml - targets that launch the genelinkage webapp</li>
+</ul>
+
+
+<p>
+The default build file, and the dev, prod, and web files 
+all start by accessing build.lingmed.properties and build_common.xml:
+</p>
+
+<pre class="code">
+ &lt;property file="build.lingmed.properties"/&gt;
+ &lt;import file="build_common.xml"/&gt;
+</pre>
+
+<p>
+The build.lingmed.properties file contains properties in
+the Java key=value format.  These properties are referenced
+in the build xml files as ${key}.
+For example, the location of lingpipe jar file is specified
+in build.lingmed.properties as
+"lingpipe-jar=lib/lingpipe-3.7.0.jar".
+There are a few properties that you will want to change
+according to your installation, including paths to the
+directories for NLM distribution files and Lucene indexes.
+</p>
+
+<p>
+The ant -f flag is used to specify a particular build file,
+else ant will use the file <code>build.xml</code>.
+This file contains the basic LingMed infrastructure targets.
+This is all you need to build the indexes for each Entrez Gene
+database and run them as search servers.
+The build_dev.xml is used during applications development.
+The build_prod.xml is used in production server environments
+(which lack a JDK).
+</p>
+
+<p>
+Because of this proliferation of build files, we have used
+Ant macros, which are defined in <code>build_common.xml</code>.
+Macros are also useful for invoking LingMed programs which
+take a number of installation-dependent arguments and one
+task-specific argument, e.g. starting a remote search service,
+or handling MEDLINE distribution files, which may be either
+baseline or updates files.
+Here is the macro for the LingMed DownloadMedline program:
+</p>
+
+<pre class="code">
+&lt;macrodef name="downloadMedline"&gt;
+  &lt;attribute name="repository"/&gt;
+  &lt;attribute name="target"/&gt;
+  &lt;sequential&gt;
+    &lt;java classname="com.aliasi.lingmed.medline.DownloadMedline"
+        fork="true"&gt;
+      &lt;classpath refid="classpath.standard"/&gt;
+      &lt;arg value="-repositoryPath=@{repository}"/&gt;
+      &lt;arg value="-targetDir=@{target}"/&gt;
+      &lt;arg value="-domain=ftp.nlm.nih.gov"/&gt;
+      &lt;arg value="-user=anonymous"/&gt;
+      &lt;arg value="-password=${medline.pwd}"/&gt;
+      &lt;arg value="-maxTries=${medline.download.retries}"/&gt;
+      &lt;arg value="-sleep=${medline.download.interval}"/&gt;
+    &lt;/java&gt;
+  &lt;/sequential&gt;
+&lt;/macrodef&gt;
+</pre>
+
+<p>
+Here are the targets which use it in default build.xml file:
+</p>
+
+<pre class="code">
+&lt;target name="downloadMedlineBaseline"
+        description="download MEDLINE baseline distribution from NLM"
+        depends="jar"&gt;
+  &lt;downloadMedline repository="${medline.baseline.repository}"
+                   target="${medline.baseline.dir}"/&gt;
+&lt;/target&gt;
+
+&lt;target name="downloadMedlineUpdates"
+        description="download MEDLINE update files from NLM"
+        depends="jar"&gt;
+  &lt;downloadMedline repository="${medline.updates.repository}"
+                   target="${medline.updates.dir}"/&gt;
+&lt;/target&gt;
+</pre>
+
+
+
+<h2>NCBI Distributions</h2>
 
 <h2>Building the indexes</h2>
 <h3>Building MEDLINE</h3>
