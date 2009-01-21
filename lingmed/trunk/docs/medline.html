@@ -38,7 +38,6 @@
 <li><a href="dao.html">search and indexing</a></li>
 <li><a class="current" href="medline.html">medline processing</a>
 <ul>
-<li><a href="#files">distribution files</a></li>
 <li><a href="#repository">building the index</a></li>
 <li><a href="#downloading">downloading medline</a></li>
 <li><a href="#indexing">indexing medline</a></li>
@@ -68,71 +67,13 @@ the MEDLINE distribution, and the release schedule.
 A new version of the index is released once a year,
 and update files are released on a daily basis throughout the year.
 The yearly release of the index is called the baseline distribution.
-The baseline distribution of MEDLINE for 2008 contains 563 GZipped
+The baseline distribution of MEDLINE for 2009 contains 593 GZipped
 files containing over 16 million citations. 
 Updates are released daily, excepting weekends and holidays.
 Update files include new citations, revisions of existing citations,
 and deletion requests for existing records.
 </p>
 
-<a name="files"><h2>MEDLINE Distribution Files</h2></a>
-
-<p>
-MEDLINE is distributed via FTP download from the
-United States National Library of Medicine (NLM).
-MEDLINE data is free for most purposes, but requires a 
-<a href="http://www.nlm.nih.gov/databases/leased.html">
-license agreement</a>.
-You must register your IP address for downloading with the NLM,
-so you'll need a fixed IP address to keep up with MEDLINE.
-</p>
-
-<p>
-MEDLINE is distributed in 2 parts:  
-the baseline distribution,
-and a set of updates files.
-The differences between the baseline and update files are:
-</p>
-
-<p>
-<ul>
-<li> 
-All files in the baseline distribution become available at once.
-Baseline files contain unique citation entries.
-These files can be processed in any order, or in parallel.
-</li>
-<li> 
-A new updates file is released once a day (on most weekdays).
-Updates files contain new citation entries as well as
-revisions of existing entries.  Updates files may also
-contain instructions to delete existing entries.
-In order to maintain a single, coherent Lucene index
-over MEDLINE, each update must be processed in the order
-in which it is released.
-</li>
-</ul>
-</p>
-
-<p>
-The NLM repository contains seperate directories for 
-the baseline and updates files. 
-The file names encode the year and 
-the order in which the files are released.
-For 2008, the baseline files are named 
-<code>medline2008n0001.xml.gz</code>
-through 
-<code>medline2008n0563.xml.gz</code> 
-and 
-the first update file is named
-<code>medline2008n0564.xml.gz</code>.
-The 4 digit number preceeding the suffix <code>.xml</code>
-is the ordering.
-and this number is incremented with each subsequent update file.
-The LingMed downloading and indexing programs
-require a similar organization for the local repository:
-one directory contains all baseline files and
-another directory contains the updates files.
-</p>
 
 <a name="repository"><h2>Creating and maintaining an up-to-date MEDLINE citation index</h2></a>
 
@@ -140,16 +81,6 @@ another directory contains the updates files.
 In this section we outline the steps required to create and maintain 
 a MEDLINE citation index.
 The implementation details of the programs used are covered in the following sections.
-</p>
-
-<p>
-The LingMed distribution includes 
-an <a href="ant.apache.org">Ant</a> 
-<a href="../build.xml">build.xml</a> 
-file which defines the set of tasks needed to download and index the MEDLINE distribution files.
-We have defined separate targets for handling baseline and update files.
-We have also defined separate targets for processes which run on our
-production server, because of differences in machine configurations.
 </p>
 
 <p>

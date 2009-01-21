@@ -56,17 +56,18 @@ Here is the macro for the LingMed DownloadMedline program
 <macrodef name="downloadMedline">
   <attribute name="repository"/>
   <attribute name="target"/>
+  <attribute name="sleep"/>
   <sequential>
     <java classname="com.aliasi.lingmed.medline.DownloadMedline"
         fork="true">
       <classpath refid="classpath.standard"/>
-      <arg value="-repositoryPath=@{repository}"/>
-      <arg value="-targetDir=@{target}"/>
       <arg value="-domain=ftp.nlm.nih.gov"/>
       <arg value="-user=anonymous"/>
       <arg value="-password=${medline.pwd}"/>
       <arg value="-maxTries=${medline.download.retries}"/>
-      <arg value="-sleep=${medline.download.interval}"/>
+      <arg value="-repositoryPath=@{repository}"/>
+      <arg value="-targetDir=@{target}"/>
+      <arg value="-sleep=@{sleep}"/>
     </java>
   </sequential>
 </macrodef>
@@ -77,16 +78,17 @@ Here are the targets which use it in default build.xml file:
         description="download MEDLINE baseline distribution from NLM"
         depends="jar">
   <downloadMedline repository="${medline.baseline.repository}"
-                   target="${medline.baseline.dir}"/>
+                   target="${medline.baseline.dir}"
+                   sleep="-1"/>
 </target>
 
 <target name="downloadMedlineUpdates"
         description="download MEDLINE update files from NLM"
         depends="jar">
   <downloadMedline repository="${medline.updates.repository}"
-                   target="${medline.updates.dir}"/>
+                   target="${medline.updates.dir}"
+                   sleep="60"/>
 </target>
-
 
 And here is how it is used in the build_prod.xml file:
 
@@ -100,17 +102,19 @@ And here is how it is used in the build_prod.xml file:
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM" >
   <downloadMedline repository="${medline.baseline.repository}"
-                   target="${medline.baseline.dir}"/>
+                   target="${medline.baseline.dir}"
+                   sleep="-1"/>
 </target>
 
 <target name="downloadMedlineUpdates"
         description="download MEDLINE update files from NLM" >
   <downloadMedline repository="${medline.updates.repository}"
-                   target="${medline.updates.dir}"/>
+                   target="${medline.updates.dir}"
+                   sleep="60"/>
 </target>
 
 The production targets don't depend on the jar target,
-(which in turn depends on the compilede target).
+(which in turn depends on the compile target).
 To run lingmed on a production server it is sufficient
 to upload the lingmed jar, libraries, and the files:
 lingmed.build.properties, build_common.xml, 
