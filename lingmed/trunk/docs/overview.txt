@@ -15,11 +15,10 @@ Apache Ant is used to build and run LingMed applications.
 The top-level LingMed directory contains the following
 ant configuration files:
 
-build.lingmed.properties - local configuration variables
 build.xml - the default build file, runs core tasks
 build_common.xml - common tasks and macros for common tasks
 build_dev.xml - tasks used for testing and development
-build_prod.xml - targets that run on the production server
+build_linkage.xml - targets used to build the genelinkage app
 build_web.xml - targets that launch the genelinkage webapp
 
 The ant -f flag is used to specify a particular build file,
@@ -28,23 +27,7 @@ else ant will use the file "build.xml".
 The default build file, and the dev, prod, and web files 
 all start by accessing build.lingmed.properties and build_common.xml:
 
- <property file="build.lingmed.properties"/>
  <import file="build_common.xml"/>
-
-The build.lingmed.properties file contains properties in
-the Java key=value format.  These properties are referenced
-in the build xml files as ${key}.
-
-For example, the location of lingpipe jar file is specified
-in build.lingmed.properties as:
- lingpipe-jar=lib/lingpipe-3.7.0.jar
-
-The lingpipe-jar property is referenced in the build_common.xml file:
-  <path id="classpath.common">
-    <pathelement location="${jar}"/>
-    <pathelement location="${lingpipe-jar}"/>
-    <pathelement location="${lucene-jar}"/>
-  </path>
 
 The LingMed programs use command line arguments
 to get configuration information.  Ant provides a
@@ -112,13 +95,6 @@ And here is how it is used in the build_prod.xml file:
                    target="${medline.updates.dir}"
                    sleep="60"/>
 </target>
-
-The production targets don't depend on the jar target,
-(which in turn depends on the compile target).
-To run lingmed on a production server it is sufficient
-to upload the lingmed jar, libraries, and the files:
-lingmed.build.properties, build_common.xml, 
-and build_prod.xml.
 
 Lucene Indexes
 ==============
@@ -394,16 +370,7 @@ the MEDLINE index:
 </target>
 
 The values for the properties ${rmijars} and ${server.address}
-must be set in the build.lingmed.properties file:
-
-# network ---------------------------------------------------------------
-localhost=192.168.1.XXX
-
-# rmi ---------------------------------------------------------------
-rmi.absolute.base.dir=/home/lucene
-rmi.jars=file:${rmi.absolute.base.dir}/${lucene-jar}
-rmi.server.address=${localhost}
-rmi.server.port=1099
+must be set in the build.xml file.
 
 More information is available from Sun, both in the Java tutorials
 and in the user forums.  Here is a good starting point:
