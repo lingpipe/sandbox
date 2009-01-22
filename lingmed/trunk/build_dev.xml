@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
-<property file="build.lingmed.properties"/>
-
 <import file="build_common.xml"/>
 
 <target name="test-compile"
@@ -41,16 +39,6 @@
   </java>
 </target>
 
-<target name="split-omim">
-  <java classname="com.aliasi.lingmed.omim.SplitOmimDist" fork="true">
-    <arg value="${nlm.data}\mim\omim.txt"/>
-    <arg value="tmp2"/>
-    <classpath>
-      <path refid="classpath.standard"/>
-    </classpath>
-  </java>
-</target>
-
 <target name="count-entrez-refs"
         description="gen histogram of number of unique pubmed refs per gene"
         depends="jar">
@@ -58,7 +46,7 @@
         maxMemory="4G"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="-host=${rmi.server.address}"/>
+    <arg value="-host=localhost"/>
   </java>
 </target>
 
@@ -92,8 +80,8 @@
         maxMemory="8G"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="${rmi.server.address}"/>
-    <arg value="${rmi.server.port}"/>
+    <arg value="localhost"/>
+    <arg value="1099"/>
   </java>
 </target>
 
@@ -104,7 +92,7 @@
         maxMemory="1G"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="${rmi.server.address}"/>
+    <arg value="localhost"/>
     <arg value="test_pmids.txt"/>
   </java>
 </target>

@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<project name="lingmed" default="compile" basedir=".">
+
+<import file="build_common.xml"/>
+
+
+<!-- **** RMI CONFIG **** -->
+<property name="rmi.absolute.base.dir"
+          value="/home/lucene"/>
+<property name="rmi.jars"
+          value="file:${rmi.absolute.base.dir}/${lucene-jar}"/>
+<property name="rmi.server.address"
+          value="192.168.1.70"/>
+<property name="rmi.server.port"
+          value="1099"/>
+
+
+<!-- **** MEDLINE **** -->
+
+<property name="medline.lucene.index.searchable"
+          value="luceneMedline"/>
+
+<target name="rmiMedline"
+        description="rmi MEDLINE search service"
+        depends="jar">
+  <searchService host="localhost"
+                 port="1099"
+                 service="medline"
+                 index="${medline.lucene.index.searchable}" />
+</target>
+
+<!-- **** Entrez Gene tasks **** -->
+
+<property name="entrezgene.lucene.index.dir"
+          value="luceneEntrezGene"/>
+
+<target name="rmiEntrezGene"
+        description="rmi EntrezGene search serice"
+        depends="jar">
+  <searchService host="localhost"
+                 port="1099"
+                 service="entrezgene"
+                 index="${entrezgene.lucene.index.dir}" />
+</target>
+
+<!-- **** Homologene tasks **** -->
+
+<property name="homologene.lucene.index.dir"
+          value="luceneHomologene"/>
+
+<target name="rmiHomologene"
+        description="rmi Homologene search serice"
+        depends="jar">
+  <searchService host="localhost"
+                 port="1099"
+                 service="homologene"
+                 index="${homologene.lucene.index.dir}" />
+</target>
+
+
+<!-- **** OMIM tasks **** -->
+<property name="omim.lucene.index.dir"
+          value="luceneOMIM"/>
+
+<target name="rmiOmim"
+        description="rmi OMIM search serice"
+        depends="jar">
+  <searchService host="localhost"
+                 port="1099"
+                 service="omim"
+                 index="${omim.lucene.index.dir}" />
+</target>
+
+<!-- **** LingBlast, GeneLinkage **** -->
+<target name="buildDict"
+        description="compile exact match dictionary over all aliases in entrezgene"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.lingblast.DictionaryBuilder"
+        maxMemory="4G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="-host=${rmi.server.address}"/>
+    <arg value="-dictFile=exactDictEntrezGene"/>
+    <arg value="-allowedNames=hifreq_names.txt"/>
+    <arg value="-genHtml=true"/>
+    <arg value="-maxPubmedHitsPerAlias=10000"/>
+  </java>
+</target>
+
+<target name="compileModels"
+        description="compile per-gene language model"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.lingblast.ModelCompiler"
+        maxMemory="4G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="-host=${rmi.server.address}"/>
+    <arg value="-modelDir=lmTexts2"/>
+  </java>
+</target>
+
+<target name="lingblast"
+        description="run lingblast over pubmed repository"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.lingblast.LingBlastMedline"
+        maxMemory="4G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="-dictionary=exactDictEntrezGene"/>
+    <arg value="-modelDir=/data1/lingblast/models"/>
+    <arg value="-sqlDir=/data3/genelinkage/sql"/>
+    <arg value="-host=localhost"/>
+    <arg value="-medline=/data2/lucene/medline_2008"/>
+    <arg value="-genomicsThreshold=100"/>
+  </java>
+</target>
+
+<property name="mysqlHost"
+          value="localhost"/>
+<property name="mysqlPort"
+          value="3306"/>
+<property name="mysqlBaseURL"
+          value="jdbc:mysql://${mysqlHost}:${mysqlPort}"/>
+<property name="mysql_gl_user"
+          value="setme"/>
+<property name="mysql_gl_passwd"
+          value="setme"/>
+
+<target name="gene-articles"
+        description="generate html from genelinkage db"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.genelinkage.NBestArticles"
+        maxMemory="2G"
+        fork="true">
+    <classpath>
+      <path refid="classpath.standalone.db"/>
+    </classpath>
+    <arg value="-geneIds=test_geneIds.txt"/>
+    <arg value="-maxArticles=500"/>
+    <arg value="-host=${rmi.server.address}"/>
+    <arg value="-dbUrl=${mysqlBaseURL}/gene_linkage"/>
+    <arg value="-dbName=gene_linkage"/>
+    <arg value="-dbUserName=${mysql_gl_user}"/>
+    <arg value="-dbUserPassword=${mysql_gl_passwd}"/>
+  </java>
+</target>
+
+</project>

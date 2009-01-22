@@ -1,6 +1,22 @@
 <?xml version="1.0"?>
 <project>
 
+<!-- properties -->
+
+<property name="version"
+          value="1.2"/>
+
+<property name="jar"
+          value="lingmed-${version}.jar"/>
+
+<property name="lingpipe-jar"
+          value="lib/lingpipe-3.7.0.jar"/>
+<property name="lucene-jar"
+          value="lib/lucene-core-2.4.0.jar"/>
+<property name="luke-jar"
+          value="lib/luke-0.9.1.jar"/>
+
+
 <!-- classpaths -->
 
 <path id="classpath.common">
