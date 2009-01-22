@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+
+<!-- unpack if necessary for emacs -->
+
+<project name="Threat Tracker Pipeline" default="compile" basedir=".">
+
+  <description>
+    Builds, runs and tests threat tracker pipeline.
+  </description>
+
+  <property name="org.xml.sax.driver"
+            value="org.apache.xerces.parsers.SAXParser"/>
+
+  <path id="classpath.standard">
+    <pathelement location="build/classes"/>
+    <pathelement location="lib/lingpipe_1_0_4.jar"/>
+    <pathelement location="lib/xercesImpl.jar"/>
+    <pathelement location="lib/xml-apis.jar"/>
+  </path>
+
+  <path id="classpath.test">
+    <pathelement location="lib/junit-3.8.jar"/>
+  </path>
+
+  <target name="clean"
+	  description="Clean build and distribution directories.">
+    <delete dir="build"/>
+  </target>
+
+  <target name="compile" 
+	  description="Compile the src code into the build directory.">
+    <mkdir dir="build/classes"/>
+    <javac optimize="on"
+           debug="yes"
+           debuglevel="source,lines,vars"
+	   destdir="build/classes">
+      <classpath refid="classpath.standard"/>
+      <classpath refid="classpath.test"/>
+      <src path="src"/>
+    </javac>
+  </target>
+
+  <target name="javadoc" 
+	  depends="compile"
+          description="Generate the javadoc from the src.">
+    <mkdir dir="build/javadoc"/>
+    <javadoc packagenames="com.aliasi.*"
+             excludepackagenames="com.aliasi.test.*"
+	     destdir="build/javadoc"
+             author="true"
+             use="false"
+             version="true"
+             doctitle="Alias I ThreatTracker Pipeline"
+             windowtitle="Alias I ThreatTracker Pipeline">
+      <classpath refid="classpath.standard"/>
+      <classpath refid="classpath.test"/>
+      <link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
+
+      <fileset dir="src/com/aliasi"/>
+    </javadoc>
+  </target>
+
+  <target name="test"
+          depends="compile"
+          description="Run unit tests.">
+    <junit printsummary="withOutAndErr" 
+           showoutput="off"  
+           filtertrace="off"
+           fork="true">
+      <formatter type="brief" usefile="false"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <sysproperty key="log4j.configuration" 
+                   value="log4j_test.properties"/>
+
+      <classpath refid="classpath.test"/>
+      <classpath refid="classpath.standard"/>
+
+    </junit>
+  </target>
+
+  <target name="train"
+          depends="compile"
+          description="Trains a model.">
+    <java classname="biocreative.TrainCommand"
+          maxmemory="256M"
+          fork="true">
+      <jvmarg value="-server"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="data/TaskA/train/TAGGED_GENE_CORPUS"/>
+      <arg value="models/biocreative.model"/>
+      <arg value="C:\Documents and Settings\Bob Carpenter\Desktop\installs\swissprot_prots.xml"/>
+      <arg value="C:\mycvs\lingpipe\training_data\namedentity\en\genomics\genia\3_02\GENIAcorpus3.02.xml"/>
+    </java>
+  </target>
+
+  <target name="annotate"
+          depends="compile"
+          description="Annotates data using a model.">
+    <java classname="biocreative.AnnotateCommand"
+          maxmemory="256M"
+          fork="true">
+      <jvmarg value="-server"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="models/biocreative.model"/>
+      <arg value="data/TaskA/devtest/test.TOKENIZED_CORPUS"/>
+      <arg value="data/TaskA/devtest/OUTPUT"/>
+      <arg value="C:\Documents and Settings\Bob Carpenter\Desktop\installs\swissprot_prots.xml"/>
+    </java>
+  </target>
+
+  <target name="eval"
+          depends="clean,compile"
+          description="Trains and annotates data using a model.">
+    <java classname="biocreative.EvalCommand"
+          maxmemory="256M"
+          fork="true">
+      <jvmarg value="-server"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="models/biocreative.model"/>
+      <arg value="data/TaskA/devtest/COMBINED_CORPUS"/>
+      <arg value="data/TaskA/test/TOKENIZED_CORPUS"/>
+      <arg value="data/TaskA/test/OUTPUT.aliasi.tuned"/>
+      <arg value="C:\Documents and Settings\Bob Carpenter\Desktop\installs\swissprot_prots.xml"/>
+      <arg value="C:\mycvs\lingpipe\training_data\namedentity\en\genomics\genia\3_02\GENIAcorpus3.02.xml"/>
+    </java>
+  </target>
+
+  <target name="swiss-prot"
+          depends="compile"
+          description="Extracts protein names from Swiss-Prot xml.">
+    <java classname="biocreative.SwissProtCommand"
+          maxmemory="256M"
+          fork="true">
+      <jvmarg value="-server"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="C:\Documents and Settings\Bob Carpenter\Desktop\installs\swissprot41.xml"/>      
+      <arg value="C:\Documents and Settings\Bob Carpenter\Desktop\installs\swissprot_prots.xml"/>
+    </java>
+  </target>
+
+</project>
