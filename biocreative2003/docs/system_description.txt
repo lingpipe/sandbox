@@ -1,0 +1,104 @@
+LingPipe in BioCreative Task 1A
+Bob Carpenter, Alias i, Inc
+
+ADAPTING LINGPIPE
+The Alias i entry was built using the open-source LingPipe Framework
+[http://www.aliasi.com/lingpipe].  For training a model based on the
+BioCreative corpus, we specialized the document parser in order to
+convert the unusual NEWGENE/NEWGENE1 tags into the standard
+chunking-as-tagging scheme used in LingPipe.  To process BioCreative's
+pre-tokenized input, a specialized output module was required to
+convert the sub-token tagging results from LingPipe to the official
+tagging.  The standard IndoEuropeanTokenizer and
+IndoEuropeanTokenCategorizer were used, which break tokens at a fairly
+fine level, and categorize tokens based on orthographic features.
+
+NAMED ENTITY DETECTOR
+LingPipe's named entity detector is based on finding the sequence of
+tags that maximizes the joint probability P(Tags,Tokens).  The tags
+for the BioCreative set are the usual chunking-as-tagging ones:
+ST_GENE, GENE and OUT, corresponding to tokens that are first in a
+gene name, a continuation of the previous gene name, or not in a name.
+
+The generative estimate of P(Tags,Tokens) for Tags=Tag1...TagN and
+Tok1...TokN is defined by the chain rule:
+
+     P(Tags,Tokens) 
+     = PRODUCT_TagI,TokI P(TagI,TokI|Tag0,Tok0,...TagI-1,TokI-1)
+
+We make the Markovian assumption of finite history, and then factor:
+
+     P(TagI,TokI|Tag0,Tok0,...TagI-1,TokI-1)
+     ~ P(TagI,TokI|TagI-1,TokI-1,TokI-2)
+     = P(TagI|TagI-1,TokI-1,TokI-2) * P(TokI|TagI,TagI-1,TokI-1,TokI-2)
+
+We tie states in both the tag and token models.  For the tag model,
+we do not differentiate ST_TAG from TAG in the history, and in the
+token model, we tie and only consider a single token of history:
+
+    P(TagI|TagI-1,TokI-1,TokI-2) 
+    == P(TagI|interior(TagI-1),TokI-1,TokI-2)
+
+    P(TokI|TagI,TagI-1,TokI-1,TokI-2) 
+    ~ P(TokI|TagI,TagI-1,TokI-1)
+    ~ P(TokI|TagI,interior(TagI-1),TokI-1)
+
+where interior(ST_TAG) = interior(TAG) = TAG.  
+
+Unknown words are handled by a training pass in which every word below
+a given threshold of occurrences is replaced with a distinguished
+token.  At run time, every unknown word is replaced with the
+distinguished token.  (This overestimates unknown word joint
+probability, but does not effect decoding results.)
+
+LingPipe smoothes estimates with Witten-Bell model C linear interpolation.
+For contexts C and C', and outcome E:
+
+     P(E|C,C') = lambda(C,C') P_ml(E|C,C') + (1-lambda(C,C')) P(E|C)
+
+     lambda(C) = events(C) / (events(C) + LAMBDA_FACTOR * outcomes(C))
+
+where P_ml is the maximum likelihood (frequency based) estimate,
+events(C) is the number of training events seen for context
+C, and outcomes(C) is the number of distinct outcomes seen in context C.
+Smoothing is carried out for our base models in the following orders:
+
+    P(TagI|TagI-1,TokI-1,TokI-2) >> P(TagI|TagI-1,TokI-1)
+                                 >> P(TagI|TagI-1)
+
+    P(TokI|TagI,TokI-1,TagI-1) >> P(TokI|TagI,TokI-1) >> P(TokI|TagI)
+                               >> P(TokI) >> UNIFORM_VOCAB_ESTIMATE
+
+PARAMETERS AND HEURISTICS
+                              Baseline       Tuned
+     UNIFORM_VOCAB_ESTIMATE   1/1,000,000    1/1,000,000
+     LAMBDA_FACTOR            4.0            8.0
+     KNOWN_TOKEN_COUNT        8              2
+
+Models were roughly 6 megabytes, though pruning to 1.5 megabytes
+based on frequency count had little effect on accuracy.
+
+Tag and token conversion was carried out so that if any subtoken of a
+biocreative tag had a label, the whole BioCreative token was given
+that tag, with preference to ST_TAG if ambiguous.
+
+For the development test set, the heuristics increased precision by
+about 2% with very little effect on recall.  The heuristics to remove
+false positives are (1) remove single character entities, (2) remove
+entities with unbalanced parentheses, (3) remove entities with "drug
+name suffixes" as specified by Tanabe and Wilbur's AbGene.  Heuristics
+that changed entities are (1) remove all NEWGENE1 tags, thus merging
+adjacent entities, and (2) split gene names into two if they contained
+a conjunction.
+
+WHAT DIDN'T WORK
+Using LingPipe's tokenization led to a 3% F-measure improvement over
+using the BioCreative tokenization, with the above model.  We tried a
+second pass relabeling genes we found in the first pass, which
+dramatically hurt precision without increasing recall much.  We tried
+adaptation, retraining with the output of a system run, which had no
+appreciable effect. We also tried both training with and heuristically
+applying the Swiss-Prot dictionary, which adversely affected precision
+and recall.  We also tried pruning the models, to little effect.
+
+
