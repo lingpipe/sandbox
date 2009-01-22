@@ -76,36 +76,22 @@ which explains how to modify these files for your installation.
 The top-level LingMed directory contains a set of ant configuration files:
 </p>
 <ul>
-<li>build.lingmed.properties - local configuration variables</li>
 <li>build.xml - the default build file, runs core tasks</li>
 <li>build_common.xml - common tasks and macros for common tasks</li>
 <li>build_dev.xml - tasks used for testing and development</li>
-<li>build_prod.xml - core tasks for a production environment</li>
+<li>build_linkage.xml - tasks that build the genelinkage app</li>
 <li>build_web.xml - targets that launch the genelinkage webapp</li>
 </ul>
 
 
 <p>
-The default build file, and the dev, prod, and web files 
-all start by accessing build.lingmed.properties and build_common.xml:
+The default build file, and the dev, linkage, and web files 
+all start by accessing build_common.xml:
 </p>
 
 <pre class="code">
- &lt;property file="build.lingmed.properties"/&gt;
  &lt;import file="build_common.xml"/&gt;
 </pre>
-
-<p>
-The build.lingmed.properties file contains properties in
-the Java key=value format.  These properties are referenced
-in the build xml files as ${key}.
-For example, the location of lingpipe jar file is specified
-in build.lingmed.properties as
-"lingpipe-jar=lib/lingpipe-3.7.0.jar".
-There are a few properties that you will want to change
-according to your installation, including paths to the
-directories for NLM distribution files and Lucene indexes.
-</p>
 
 <p>
 The ant -f flag is used to specify a particular build file,
@@ -114,15 +100,12 @@ This file contains the basic LingMed infrastructure targets.
 This is all you need to build the indexes for each Entrez Gene
 database and run them as search servers.
 The build_dev.xml is used during applications development.
-The build_prod.xml is for use in a production server environment,
-which lacks a JDK, and it only contains targets to build and
-run the LingMed infrastructure components.
+The build_web.xml is used to launch the genelinkage servlet on Tomcat.
 </p>
 
 <p>
-Because of this proliferation of build files, we have used
-Ant macros, which are defined in <code>build_common.xml</code>.
-Macros are also useful for invoking LingMed programs which
+Ant macros are defined in <code>build_common.xml</code>.
+These are used to invoke LingMed programs which
 take a number of installation-dependent arguments and one
 task-specific argument, e.g. starting a remote search service,
 or handling MEDLINE distribution files, which may be either
