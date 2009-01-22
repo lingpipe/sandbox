@@ -38,7 +38,6 @@
 <li><a href="dao.html">search and indexing</a></li>
 <li><a class="current" href="medline.html">medline processing</a>
 <ul>
-<li><a href="#repository">building the index</a></li>
 <li><a href="#downloading">downloading medline</a></li>
 <li><a href="#indexing">indexing medline</a></li>
 <li><a href="#codec">choosing a codec</a></li>
@@ -46,7 +45,6 @@
 </ul>
 </li>
 
-<li><a href="more_entrez.html">entrez databases</a></li>
 <li><a href="lingblast.html">lingblast</a></li>
 <li><a href="genelinkage.html">putting it together: genelinkage</a></li>
 </ul>
@@ -74,14 +72,8 @@ Update files include new citations, revisions of existing citations,
 and deletion requests for existing records.
 </p>
 
-
-<a name="repository"><h2>Creating and maintaining an up-to-date MEDLINE citation index</h2></a>
-
 <p>
-In this section we outline the steps required to create and maintain 
-a MEDLINE citation index.
-The implementation details of the programs used are covered in the following sections.
-</p>
+
 
 <p>
 To build a MEDLINE index from scrach these tasks 
@@ -100,175 +92,10 @@ should be carried out in the following order:
 </ul>
 
 <p>
-The <code>build.xml</code> file contains a number of variables
-which must be customized for your installation:
+The <a href="getting_started.html">getting started</a> section covers
+how to run the LingMed programs to do this using Apache Ant.
+In this section we examine the implementation details of these programs.
 </p>
-
-<pre class="code">
-&lt;!-- NLM password - e-mail of registered user  --&gt;
-&lt;property name="medline.pwd"
-	  <b>value="</b><i>YourEmail</i><b>"</b>/&gt;
-...
-
-&lt;!-- path where files are downloaded to - under our control --&gt;
-&lt;property name="medline.dir"
-          <b>value="</b><i>/full/path/to/local/repository</i><b>"</b>/&gt;
-&lt;property name="medline.baseline.dir"
-          value="${medline.dir}/baseline"/&gt;
-&lt;property name="medline.updates.dir"
-          value="${medline.dir}/updates"/&gt;
-...
-
-&lt;!-- index dir --&gt;
-&lt;property name="medline.lucene.index.dir"
-          <b>value="</b><i>IndexName</i><b>"</b>/&gt;
-...
-
-&lt;!-- codec used for indexing and search --&gt;
-&lt;property name="medline.codec.class"
-          <b>value="</b><i>com.aliasi.lingmed.medline.SearchableMedlineCodec</i><b>"</b>/&gt;
-</pre>
-
-<p>
-The property <code>medline.pwd</code> is used by the download tasks.
-File downloads from NLM are done via anonymous FTP.
-It's customary to give your e-mail address as the password, 
-but this is not checked by NLM.
-File access is limited to registered IP addresses,
-therefore you must register the address of the download server
-with NLM (and notify NLM when this changes).
-</p>
-
-<p>
-The property <code>medline.dir</code> is the full path to the
-local repository.
-We store the baseline files in one subdirectory, and
-the updates files in another.
-If you choose a different organization you can change
-the properties <code>medline.baseline.dir</code>
-and <code>medline.updates.dir</code>.
-These directories must exist and have read/write permissions
-for the LingMed programs.
-</p>
-
-<p>
-The property <code>medline.lucene.index.dir</code> is the name
-of the directory which contains the Lucene index.
-It can be either an absolute or relative path.
-The <code>indexMedlineBaseline</code> task will create
-this directory if it doesn't exist.
-The <code>indexMedlineUpdates</code> task requires
-that the index already exists.
-</p>
-
-<p>
-The property <code>medline.codec.class</code> specifies
-the class used by the <code>IndexMedline</code> program,
-and is discussed in the <a href="#indexing">Indexing MEDLINE</a>
-section below.
-LingMed contains two choices:
-<code>com.aliasi.lingmed.medline.MedlineCodec</code> or
-<code>com.aliasi.lingmed.medline.SearchableMedlineCodec</code>.
-The latter creates an index with a rich set of searchable fields,
-the former creates a compact index which only allows
-lookup by PubMed ID.
-</p>
-
-<p>
-First download the baseline distribution files:
-</p>
-
-<pre class="code">
-&gt; ant downloadBaseline
-</pre>
-
-<p>
-This may take some time.
-<b><i>Do not run multiple instances of this at once!</i></b>.
-</p>
-
-<p>
-The <code>downloadBaseline</code> task
-invokes the <code>DownloadMedline</code> program, which
-is discussed in the <a href="#downloading">Downloading MEDLINE</a>
-section below.
-Log messages look like this:
-</p>
-
-
-<pre class="code">
-...
- Establishing FTP connection.
- Connecting to NLM
- Connected.
- Logging in.
- Logged in to NLM FTP Server.
- Reading from FTP server path=/nlmdata/.medleasebaseline/gz
- Reading list of file names from server.
- Data files on NLM: 563
- Data files=[[medline08n0454.xml.gz.md5, medline08n0084.xml.gz.md5, ...
- Files to fetch: 563
-...
-</pre>
-
-<p>
-The <code>DownloadMedline</code> program is designed to
-run perpetually, sleeping for a specified
-interval between download attempts.
-When downloading the baseline distribution
-it is necessary to kill this task
-once all baseline distribution files
-have been successfully downloaded
-and the program reports: <code> Files to fetch: 0</code>.
-</p>
-
-<p>
-Next index the baseline distribution files:
-</p>
-
-<pre class="code">
-&gt; ant indexMedlineBaseline
-</pre>
-
-<p>
-This invokes the  <code>IndexMedline</code> program, which
-is discussed in the <a href="#indexing">Indexing MEDLINE</a>
-section below.
-This task will exit when all baseline files have been indexed.
-This too may take some time.
-</p>
-
-<p>
-Finally, download and index the updates files.
-When handling the updates files both
-the <code>DownloadMedline</code> and <code>IndexMedline</code>
-programs run continuously, sleeping for a specified interval
-between download and indexing attempts.
-</p>
-
-<pre class="code">
-&gt;  ant downloadUpdates &amp;
-&gt;  ant indexUpdates &amp;
-</pre>
-
-<p>
-In order to allow remote searches over the Lucene MEDLINE index
-you must start the RMI MEDLINE server, as well as the RMI registry itself.
-To start the RMI registry on a linux server use the command:
-
-<pre class="code">
-&gt nohup rmiregistry &amp;
-</pre>
-
-<p>
-Then start the RMI MEDLINE server:
-</p>
-
-<pre class="code">
-&gt ant rmiMedline &amp;
-</pre>
-
-
 
 <a name="downloading"><h2>Downloading MEDLINE</h2></a>
 
@@ -281,7 +108,6 @@ updates files in a timely fashion, without generating too
 much traffic on the NLM servers.
 </p>
 <p>
-
 The program 
 <a href="../src/com/aliasi/lingmed/medline/DownloadMedline.java">
 <code>com.aliasi.lingmend.medline.DownloadMedline</code></a>
@@ -307,7 +133,7 @@ and then it logs each file download attempt.
 <p>
 The NLM repository contains pairs of files: a gzipped data file 
 and a corresponding md5 checksum file, 
-e.g. {medline2008n0001.xml.gz, medline2008n0001.xml.gz.md5}.
+e.g. {medline2009n0001.xml.gz, medline2009n0001.xml.gz.md5}.
 A successful file download is one where both the data file 
 and the checksum file download without error, 
 and when the checksum is recomputed locally 
@@ -319,18 +145,6 @@ If they match, then the downloader moves the data file to the
 target download directory, else it removes both files.
 The checksum files are downloaded to a subdirectory of the target download directory
 named &quot;<code>md5</code>&quot;.
-</p>
-
-<p>
-<code>DownloadMedline</code> computes the set of files to download by comparing
-this list of files in the NLM repository with the 
-files already in the local repository.
-If the command line parameter <code>-strict</code> is set to <code>true</code>,
-then it will also re-verify the checksums on files that have 
-already been downloaded.
-When it finds a file with a checksum mismatch, it adds that filename to the 
-list of files to refetch.
-Verifying checksums on a large set of large datafiles may take a while.
 </p>
 
 <p>
@@ -386,22 +200,7 @@ The following arguments are optional:
 <b>sleep</b>
 &mdash; Number of minutes to sleep between download sessions. 
 </li>
-<li>
-<b>strict</b>
-&mdash; If true verify md5 checksum on existing data files.
-</li>
 </ul>
-</p>
-
-
-<p>
-The 
-<a href="http://alias-i.com/lingpipe/demos/tutorial/medline/read-me.html">
-LingPipe MEDLINE tutorial</a>
-contains a similar version of the <code>DownloadMedline</code> program.
-The tutorial covers implementation details,
-and has in-depth discussion of the code that handles
-the FTP messaging and downloading and checksum verification.
 </p>
 
 <a name="indexing"><h2>Indexing MEDLINE</h2></a>
@@ -490,29 +289,6 @@ The following arguments are optional:
 </li>
 </ul>
 </p>
-
-<p>
-The ant <a href="../build.xml">build.xml</a> file
-defines specific tasks to index the baseline and
-updates files.
-Here is the ant task which indexes the daily updates file
-on our server:
-</p>
-
-<pre class="code">
-&lt;target name="serverIndexUpdates"
-        description="add updates to Lucene MEDLINE Index" &gt;
-  &lt;java classname="com.aliasi.lingmed.medline.IndexMedline"
-        maxMemory="4G"
-        fork="true"&gt;
-    &lt;classpath refid="classpath.standard"/&gt;
-    &lt;arg value="-index=${server.medline.lucene.index.dir}"/&gt;
-    &lt;arg value="-distDir=${server.medline.updates.dir}"/&gt;
-    &lt;arg value="-distType=updates"/&gt;
-    &lt;arg value="-codec=${medline.codec.class}"/&gt;
-  &lt;/java&gt;
-&lt;/target&gt;
-</pre>
 
 <p>
 <code>IndexMedline</code> extends the 

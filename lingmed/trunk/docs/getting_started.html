@@ -23,7 +23,7 @@
 
 <body>
 <div id="header">
-<h1 id="product">LingMed</h1><h1 id="pagetitle">Getting Started</h1>
+<h1 id="product">Downloading LingMed</h1><h1 id="pagetitle">Getting Started</h1>
 <a id="logo" href="http://alias-i.com/">
 <img src="http://alias-i.com/lingpipe/web/img/logo-small.gif" alt="alias-i logo"/>
 </a>
@@ -39,11 +39,9 @@
 <li><a href="#ant">using ant</a></li>
 <li><a href="#ncbi">ncbi downloads</a></li>
 <li><a href="#indexes">building indexes</a></li>
-<li><a href="#services">search services</a></li>
 </ul>
 <li><a href="dao.html">search and indexing</a>
 <li><a href="medline.html">medline processing</a></li>
-<li><a href="more_entrez.html">entrez databases</a></li>
 <li><a href="lingblast.html">lingblast</a></li>
 <li><a href="genelinkage.html">putting it together: genelinkage</a></li>
 </ul>
@@ -62,7 +60,7 @@ Alias-i <a href="http://alias-i.com/lingpipe/web/sandbox.html">Development Sandb
 Remember to check back periodically for updates.
 </p>
 
-<a name="ant"><h2>Apache Ant</h2></a>
+<a name="ant"><h2>Using Ant</h2></a>
 
 <p>
 <a href="http://ant.apache.org/">Apache Ant</a> is used to build and run LingMed applications.
@@ -82,7 +80,7 @@ The top-level LingMed directory contains a set of ant configuration files:
 <li>build.xml - the default build file, runs core tasks</li>
 <li>build_common.xml - common tasks and macros for common tasks</li>
 <li>build_dev.xml - tasks used for testing and development</li>
-<li>build_prod.xml - targets that run on the production server</li>
+<li>build_prod.xml - core tasks for a production environment</li>
 <li>build_web.xml - targets that launch the genelinkage webapp</li>
 </ul>
 
@@ -186,8 +184,13 @@ Here are the targets which use it in default build.xml file:
 &lt;/target&gt;
 </pre>
 
-<a name="ncbi"><h2>NCBI Distributions</h2></a>
+<a name="ncbi"><h2>Getting the NCBI Distribution Files</h2></a>
 
+<p>
+We have written a program to download the MEDLINE distribution files
+from NLM.  All other databases are distributed as a single file, and
+can be downloaded using your favorite ftp client or web browser.
+</p>
 
 <h3>MEDLINE Distribution Files</h3></a>
 
@@ -273,18 +276,15 @@ First download the baseline distribution files:
 &gt; ant downloadMedlineBaseline
 </pre>
 <p>
-This may take some time.
-<b><i>Do not run multiple instances of this at once!</i></b>.
-</p>
-<p>
-The download the updates files:
+This may take some time, depending the network.
+Then download the updates files:
 </p>
 <pre class="code">
 &gt; ant downloadMedlineUpdates
 </pre>
 <p>
 The DownloadMedline program takes a command line argument <code>sleep</code>.
-If this argument is positive interger value N, the program will run perpertually,
+If this argument is a positive interger value N, the program will run perpertually,
 sleeping N minutes between download attempts.  The default sleep value for
 the Ant target <code>downloadMedlineUpdates</code> is 60,
 which means that the program will check for new updates files once an hour.
@@ -298,7 +298,7 @@ The FTP repository is:
 <a href="ftp://ftp.ncbi.nih.gov/gene/DATA/ASN_BINARY/">ftp.ncbi.nih.gov/gene/DATA/ASN_BINARY</a>.
 Gene data is organized into subdirectories for different classes of species (e.g. mammalia),
 one data file per species. 
-Entrez Gene data are stored as compressed binary Entrezgene-Set ASN.1 files 
+Entrez Gene data are stored as compressed binary Entrezgene-Set ASN.1 filees 
 and have the suffix &quot;.ags.gz&quot;.
 Once downloaded, the files must be converted to .xml
 using the 
@@ -329,17 +329,99 @@ because the EntrezGene DTDs don't validate properly:
 &gt; linux.gene2xml -b &lt;Homo_sapiens.ags | grep -v 'NCBI_Entrezgene.dtd' &gt; Homo_sapiens.xml
 </pre>
 
+<p>
+Finally we move or copy this file to the location specified by
+the buildfile property <code>entrezgene.dist.file</code>.
+</p>
+
+<h3>Homologene Distribution Files</h3></a>
+
+<p>
+Homologene is distributed as a compressed XML file.
+Like EntrezGene, Homologene is distributed as one dataset,
+and each new release replaces the previous release.
+It can be downloaded from NCBI vis the URL:
+<a href="ftp://ftp.ncbi.nih.gov/pub/HomoloGene/current/homologene.xml.gz">
+ftp://ftp.ncbi.nih.gov/pub/HomoloGene/current/homologene.xml.gz</a>.
+</p>
+
+<h3>OMIM Distribution Files</h3></a>
+
+<p>
+The OMIM database is available for FTP download from
+<A href="ftp://ftp.ncbi.nih.gov/repository/OMIM/omim.txt.Z">
+ftp.ncbi.nih.gov/repository/OMIM/omim.txt.Z</A>
+It is a compressed ASCII text file
+containing a set of records.
+Each record contains a number of fields.
+Records begin with the header: 
+<code>*RECORD*</code> on a separate line.
+Fields begin with the header: 
+<code>*FIELD* &lt;FIELD KEY&gt;</code> also on a separate line.
+</p>
 
 <a name="indexes"><h2>Building the indexes</h2></a>
-<h3>Building MEDLINE</h3>
-<h3>Building EntrezGene</h3>
-<h3>Building Homologene</h3>
-<h3>Building OMIM</h3>
 
-<a name="services"><h2>Search Services</h2></a>
+<h3>MEDLINE</h3>
 
-
+<p>
+The LingMed program IndexMedline is used to build 
+a Lucene index from the MEDLINE distribution files.
+We build the index in two steps:  
+first we process all the baseline files into a new index;
+then we add the updates files to it.
+The Ant task <code>indexMedlineBaseline</code> does the step one:
+<pre class="code">
+&gt; ant indexMedlineBaseline
+</pre>
+<p>
+Building the index may take some time, depending on your machine.
+You will need at least 800Mb memory, and at least 170GB of disk space.
+The searchable Lucene index for the MEDLINE 2009 baseline distribution
+is 84GB.
+After the <code>indexMedlineBaseline</code> task has completed successfully,
+index the updates files:
 </p>
+<pre class="code">
+&gt; ant indexMedlineUpdates
+</pre>
+
+<p>
+The IndexMedline program takes a command line argument <code>sleep</code>,
+(like the DownloadMedline program does).
+If this argument is a positive interger value N, the program will run perpertually.
+The default sleep value for the Ant target <code>indexMedlineUpdates</code> is 60.
+By running both the Ant tasks <code>downloadMedlineUpdates</code> and
+<code>indexMedlineUpdates</code> this way,
+updates files are downloaded and indexed in a timely fashion,
+so that the local Lucene repository is in sync
+with the on-line PubMed citation index.
+</p>
+
+<h3>EntrezGene, Homologene, and OMIM</h3>
+
+<p>
+The <code>build.xml</code> file contains tasks to create Lucene indexes
+for each of these databases:  <code>indexEntrezGene</code>;
+<code>indexHomologene</code>; <code>indexOMIM</code>.
+</p>
+
+<p>
+To include some but not all species in the EntrezGene index, you should
+download the individual species files 
+(e.g.: 
+<a href="ftp://ftp.ncbi.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Mus_musculus.ags.gz">
+ftp://ftp.ncbi.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Mus_musculus.ags.gz</a>
+for the mouse genome), 
+and then run the <code>indexEntrezGene</code> task,
+setting the "${entrezgene.dist.file}" property accordingly.
+</p>
+
+<p><em>Note:</em> take care not to run these indexing tasks
+on the same distribution file more than once - this will result
+in duplicate entries in the Lucene index.
+</p>
+
 </div><!-- content -->
 
 <div id="foot">
