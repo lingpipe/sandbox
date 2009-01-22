@@ -1,11 +1,53 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
-<property file="build.lingmed.properties"/>
-
 <import file="build_common.xml"/>
 
+
+<!-- **** RMI CONFIG **** -->
+<property name="rmi.absolute.base.dir"
+          value="/home/lucene"/>
+<property name="rmi.jars"
+          value="file:${rmi.absolute.base.dir}/${lucene-jar}"/>
+<property name="rmi.server.address"
+          value="192.168.1.70"/>
+<property name="rmi.server.port"
+          value="1099"/>
+
+<!-- **** NLM DIST FILES **** -->
+<property name="nlm.data"
+          value="C://aliasi/data"/>
+
 <!-- **** MEDLINE **** -->
+<property name="medline.pwd"
+          value="setme"/>
+<property name="medline.baseline.repository"
+          value="/nlmdata/.medleasebaseline/gz"/>
+<property name="medline.updates.repository"
+          value="/nlmdata/.medlease/gz"/>
+<property name="medline.download.retries"
+          value="3"/>
+
+<property name="medline.dir"
+          value="${nlm.data}/medline/dist/2009"/>
+<property name="medline.baseline.dir"
+          value="${medline.dir}/baseline"/>
+<property name="medline.updates.dir"
+          value="${medline.dir}/updates"/>
+
+<property name="medline.lucene.index.searchable"
+          value="luceneMedline"/>
+<property name="medline.lucene.index.store"
+          value="luceneMedlineStore"/>
+
+<property name="medline.codec.class"
+          value="com.aliasi.lingmed.medline.SearchableMedlineCodec"/>
+<property name="medline.simple.codec.class"
+          value="com.aliasi.lingmed.medline.MedlineCodec"/>
+
+<property name="medline.index.sleep"
+          value="60"/>
+
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM"
         depends="jar">
@@ -50,6 +92,12 @@
 </target>
 
 <!-- **** Entrez Gene tasks **** -->
+
+<property name="entrezgene.dist.file"
+          value="${nlm.data}/entrezgene/homo_sapiens.xml"/>
+<property name="entrezgene.lucene.index.dir"
+          value="luceneEntrezGene"/>
+
 <target name="indexEntrezGene"
         description="create Lucene EntrezGene index"
         depends="jar">
@@ -67,6 +115,12 @@
 </target>
 
 <!-- **** Homologene tasks **** -->
+
+<property name="homologene.lucene.index.dir"
+          value="luceneHomologene"/>
+<property name="homologene.dist.file"
+          value="${nlm.data}/homologene/homologene.xml"/>
+
 <target name="indexHomologene"
         description="create Lucene Homologene index"
         depends="jar">
@@ -85,6 +139,13 @@
 
 
 <!-- **** OMIM tasks **** -->
+
+<property name="omim.lucene.index.dir"
+          value="luceneOMIM"/>
+<property name="omim.dist.file"
+          value="${nlm.data}/mim/omim.txt"/>
+
+
 <target name="indexOmim"
         description="create Lucene OMIM index"
         depends="jar">
@@ -101,68 +162,6 @@
                  index="${omim.lucene.index.dir}" />
 </target>
 
-<!-- **** LingBlast, GeneLinkage **** -->
-<target name="buildDict"
-        description="compile exact match dictionary over all aliases in entrezgene"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lingblast.DictionaryBuilder"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-host=${rmi.server.address}"/>
-    <arg value="-dictFile=exactDictEntrezGene"/>
-    <arg value="-allowedNames=hifreq_names.txt"/>
-    <arg value="-genHtml=true"/>
-    <arg value="-maxPubmedHitsPerAlias=10000"/>
-  </java>
-</target>
-
-<target name="compileModels"
-        description="compile per-gene language model"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lingblast.ModelCompiler"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-host=${rmi.server.address}"/>
-    <arg value="-modelDir=lmTexts2"/>
-  </java>
-</target>
-
-<target name="lingblast"
-        description="run lingblast over pubmed repository"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lingblast.LingBlastMedline"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-dictionary=exactDictEntrezGene"/>
-    <arg value="-modelDir=/data1/lingblast/models"/>
-    <arg value="-sqlDir=/data3/genelinkage/sql"/>
-    <arg value="-host=localhost"/>
-    <arg value="-medline=/data2/lucene/medline_2008"/>
-    <arg value="-genomicsThreshold=100"/>
-  </java>
-</target>
-
-<target name="gene-articles"
-        description="generate html from genelinkage db"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.genelinkage.NBestArticles"
-        maxMemory="2G"
-        fork="true">
-    <classpath>
-      <path refid="classpath.standalone.db"/>
-    </classpath>
-    <arg value="-geneIds=test_geneIds.txt"/>
-    <arg value="-maxArticles=500"/>
-    <arg value="-host=${rmi.server.address}"/>
-    <arg value="-dbUrl=${mysqlBaseURL}/gene_linkage"/>
-    <arg value="-dbName=gene_linkage"/>
-    <arg value="-dbUserName=${mysql_gl_user}"/>
-    <arg value="-dbUserPassword=${mysql_gl_passwd}"/>
-  </java>
-</target>
 
 <!-- **** misc dev **** -->
 <target name="luke">

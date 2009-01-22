@@ -1,9 +1,15 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
-<property file="build.lingmed.properties"/>
-
 <import file="build_common.xml"/>
+
+<property name="tomcat.manager.url"
+          value="http://localhost:8080/manager/"/>
+<property name="tomcat.manager.username"
+          value="setme"/>
+<property name="tomcat.manager.password"
+          value="setme"/>
+
 
 <!--
      for deploy and undeploy targets
