@@ -107,7 +107,7 @@
     <java classname="com.aliasi.lingmed.server.SearchService"
           fork="true">
       <classpath refid="classpath.standard"/>
-      <jvmarg value="-Djava.rmi.server.codebase=${rmijars} "/>
+      <jvmarg value="-Djava.rmi.server.codebase=${rmijars}"/>
       <jvmarg value="-Djava.rmi.server.hostname=@{host}"/>
       <arg value="-port=@{port}"/>
       <arg value="-service=@{service}"/>
