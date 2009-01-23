@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<project name="Syndromes 2008"
+         default="compile" basedir=".">
+
+
+  <path id="classpath.standard">
+    <pathelement location="syndromes08.jar"/>
+    <pathelement location="lib/lingpipe-3.5.1.jar"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete file="syndromes08.jar"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="build/classes"/>
+    <javac optimize="on"
+           debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes">
+      <classpath refid="classpath.standard"/>
+      <src path="src/"/>
+    </javac>
+  </target>
+
+  <target name="jar"
+          depends="compile">
+    <jar destfile="syndromes08.jar">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+
+  <target name="score"
+          depends="jar">
+    <java classname="Scorer"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="testData/simple-temp.csv"/>  <!-- data file -->
+      <arg value="0"/>                         <!-- start Row -->
+      <arg value="0"/>                         <!-- start Ref Col -->
+      <arg value="8"/>                         <!-- start Resp Col -->
+      <arg value="8"/>                         <!-- num syndromes -->
+      <arg value="10"/>                        <!-- num cases -->
+    </java>
+  </target>
+
+</project>
