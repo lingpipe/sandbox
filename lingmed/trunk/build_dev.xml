@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
+<property file="build.properties"/>
+
 <import file="build_common.xml"/>
 
 <target name="test-compile"

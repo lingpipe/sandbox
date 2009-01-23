@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
-<import file="build_common.xml"/>
+<property file="build.properties"/>
 
+<import file="build_common.xml"/>
 
 <!-- **** RMI CONFIG **** -->
 <property name="rmi.absolute.base.dir"

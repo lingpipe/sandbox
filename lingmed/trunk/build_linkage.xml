@@ -3,6 +3,7 @@
 
 <import file="build_common.xml"/>
 
+<property file="build.properties"/>
 
 <!-- **** RMI CONFIG **** -->
 <property name="rmi.absolute.base.dir"
@@ -121,16 +122,12 @@
           value="3306"/>
 <property name="mysqlBaseURL"
           value="jdbc:mysql://${mysqlHost}:${mysqlPort}"/>
-<property name="mysql_gl_user"
-          value="setme"/>
-<property name="mysql_gl_passwd"
-          value="setme"/>
+<!-- use build.properties for mysql.gl.user, mysql.gl.passwd -->
 
 <target name="gene-articles"
         description="generate html from genelinkage db"
         depends="jar">
   <java classname="com.aliasi.lingmed.genelinkage.NBestArticles"
-        maxMemory="2G"
         fork="true">
     <classpath>
       <path refid="classpath.standalone.db"/>
@@ -140,8 +137,8 @@
     <arg value="-host=${rmi.server.address}"/>
     <arg value="-dbUrl=${mysqlBaseURL}/gene_linkage"/>
     <arg value="-dbName=gene_linkage"/>
-    <arg value="-dbUserName=${mysql_gl_user}"/>
-    <arg value="-dbUserPassword=${mysql_gl_passwd}"/>
+    <arg value="-dbUserName=${mysql.gl.user}"/>
+    <arg value="-dbUserPassword=${mysql.gl.passwd}"/>
   </java>
 </target>
 
