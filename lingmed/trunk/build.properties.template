@@ -1,0 +1,9 @@
+# set and/or override properties in build.xml
+
+# tomcat manager accounts
+tomcat.manager.username=setme
+tomcat.manager.password=setme
+
+# mysql users
+mysql.gl.user=setme
+mysql.gl.passwd=setme
