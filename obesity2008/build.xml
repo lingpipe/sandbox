@@ -1,0 +1,356 @@
+<?xml version="1.0"?>
+
+<project name="I2B2 Obesity '08 Challenge"
+         default="compile"
+         basedir=".">
+
+
+  <property file="local.properties"/>
+
+  <property name="maxMemory"
+	    value="1300m"/>
+
+  <property name="lingpipe.jar"
+            value="lib/lingpipe-3.5.1.jar"/>
+
+  <path id="classpath.standard">
+    <pathelement location="build/classes"/>
+    <pathelement location="${lingpipe.jar}"/>
+  </path>
+
+
+  <target name="clean"
+	  description="Clean build and distribution directories.">
+    <delete dir="build"/>
+    <delete dir="data/eval/src"/>
+  </target>
+
+
+  <target name="compile" 
+	  depends=""
+	  description="Compile the src code into the build directory.">
+    <mkdir dir="build/classes"/>
+    <javac optimize="on"
+           debug="yes"
+           debuglevel="source,lines,vars"
+	   destdir="build/classes">
+      <classpath refid="classpath.standard"/>
+      <src path="src/"/>
+    </javac>
+  </target>
+
+  <property name="min-ngram"
+           value="1"/>
+  <property name="max-ngram"
+           value="4"/>
+  <property name="min-feat-count"
+           value="5"/>
+  <property name="num-feats-report"
+            value="500"/>
+
+  <target name="feats"
+          depends="compile">
+    <java classname="features.SelectFeatures"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="data/obesity_patient_records_training.xml,data/obesity_patient_records_training2.xml"/>
+      <arg value="data/obesity_standoff_annotations_training.xml,data/obesity_standoff_annotations_training_addendum.xml,data/obesity_standoff_annotations_training_addendum2.xml,data/obesity_standoff_annotations_training_addendum3.xml"/>
+      <arg value="${min-feat-count}"/>
+      <arg value="${num-feats-report}"/>  
+      <arg value="${min-ngram}"/> 
+      <arg value="${max-ngram}"/> 
+
+      <arg value="textual,Asthma"/>
+      <arg value="intuitive,Asthma"/>
+      <arg value="textual,CAD"/>
+      <arg value="intuitive,CAD"/>
+      <arg value="textual,CHF"/>
+      <arg value="intuitive,CHF"/>
+      <arg value="textual,Depression"/>
+      <arg value="intuitive,Depression"/>
+      <arg value="textual,Diabetes"/>
+      <arg value="intuitive,Diabetes"/>
+      <arg value="textual,Gallstones"/>
+      <arg value="intuitive,Gallstones"/>
+      <arg value="textual,GERD"/>
+      <arg value="intuitive,GERD"/>
+      <arg value="textual,Gout"/>
+      <arg value="intuitive,Gout"/>
+
+      <arg value="textual,Hypercholesterolemia"/>
+      <arg value="intuitive,Hypercholesterolemia"/>
+
+      <arg value="textual,Hypertension"/>
+      <arg value="intuitive,Hypertension"/>
+      <arg value="textual,Hypertriglyceridemia"/>
+      <arg value="intuitive,Hypertriglyceridemia"/>
+      <arg value="textual,OA"/>
+      <arg value="intuitive,OA"/>
+
+      <arg value="textual,Obesity"/>
+      <arg value="intuitive,Obesity"/>
+
+      <arg value="textual,OSA"/>
+      <arg value="intuitive,OSA"/>
+      <arg value="textual,PVD"/>
+      <arg value="intuitive,PVD"/>
+      <arg value="textual,Venous Insufficiency"/>
+      <arg value="intuitive,Venous Insufficiency"/>
+    </java>
+  </target>
+
+
+  <target name="xval"
+          depends="compile">
+    <java classname="classify.RunBaseline"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="python/train.xml,python/train2.xml"/>
+      <!-- <arg value="data/obesity_patient_records_training.xml,data/obesity_patient_records_training2.xml"/>  -->
+      <arg value="data/obesity_standoff_annotations_training.xml,data/obesity_standoff_annotations_training_addendum.xml,data/obesity_standoff_annotations_training_addendum2.xml,data/obesity_standoff_annotations_training_addendum3.xml"/>
+
+      <arg value="intuitive,Hypercholesterolemia"/>
+      <arg value="textual,Hypercholesterolemia"/>
+
+      <arg value="textual,Asthma"/>
+      <arg value="intuitive,Asthma"/>
+
+      <arg value="textual,CAD"/>
+      <arg value="intuitive,CAD"/>
+      <arg value="textual,CHF"/>
+      <arg value="intuitive,CHF"/>
+      <arg value="textual,Depression"/>
+      <arg value="intuitive,Depression"/>
+      <arg value="textual,Diabetes"/>
+      <arg value="intuitive,Diabetes"/>
+      <arg value="textual,Gallstones"/>
+      <arg value="intuitive,Gallstones"/>
+      <arg value="textual,GERD"/>
+      <arg value="intuitive,GERD"/>
+      <arg value="textual,Gout"/>
+      <arg value="intuitive,Gout"/>
+
+      <arg value="textual,Hypertension"/>
+      <arg value="intuitive,Hypertension"/>
+      <arg value="textual,Hypertriglyceridemia"/>
+      <arg value="intuitive,Hypertriglyceridemia"/>
+      <arg value="textual,OA"/>
+      <arg value="intuitive,OA"/>
+
+      <arg value="textual,Obesity"/>
+      <arg value="intuitive,Obesity"/>
+
+      <arg value="textual,OSA"/>
+      <arg value="intuitive,OSA"/>
+      <arg value="textual,PVD"/>
+      <arg value="intuitive,PVD"/>
+      <arg value="textual,Venous Insufficiency"/>
+      <arg value="intuitive,Venous Insufficiency"/>
+   </java>
+</target>
+
+<target name="train"
+        depends="compile">
+    <java classname="classify.Train"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="data/obesity_patient_records_training.xml,data/obesity_patient_records_training2.xml"/>
+      <arg value="data/obesity_standoff_annotations_training.xml,data/obesity_standoff_annotations_training_addendum.xml,data/obesity_standoff_annotations_training_addendum2.xml,data/obesity_standoff_annotations_training_addendum3.xml"/>
+      <arg value="non-cvs/models/charSixGram-laplace-0.1"/>
+   </java>
+</target>
+
+<target name="submit"
+        depends="compile">
+    <java classname="classify.Writer"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="data/obesity_patient_records_training.xml"/>
+      <arg value="non-cvs/models"/>
+      <arg value="temp-output.xml"/>
+   </java>
+</target>
+
+<target name="train1"
+        depends="compile">
+    <java classname="classify.Train1"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+   </java>
+</target>
+<target name="submit1"
+        depends="compile">
+    <java classname="classify.Writer1"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+   </java>
+</target>
+<target name="test1"
+        depends="compile">
+    <java jar="data/eval/evaluation.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="submission/alias-i-textual-1.xml"/>
+      <arg value="submission/alias-i-textual-2.xml"/>
+   </java>
+   <java jar="data/eval/evaluation.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="submission/alias-i-intuitive-1.xml"/>
+      <arg value="submission/alias-i-intuitive-2.xml"/>
+   </java>
+</target>
+
+
+<target name="train2"
+        depends="compile">
+    <java classname="classify.Train2"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+   </java>
+</target>
+<target name="submit2"
+        depends="compile">
+    <java classname="classify.Writer2"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+   </java>
+</target>
+<target name="test2"
+        depends="compile">
+    <java jar="data/eval/evaluation.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="submission/alias-i-textual-2.xml"/>
+      <arg value="submission/alias-i-textual-2.xml"/>
+   </java>
+   <java jar="data/eval/evaluation.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="submission/alias-i-intuitive-2.xml"/>
+      <arg value="submission/alias-i-intuitive-2.xml"/>
+   </java>
+</target>
+
+
+<target name="train3"
+        depends="compile">
+    <java classname="classify.Train3"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+   </java>
+</target>
+<target name="submit3"
+        depends="compile">
+    <java classname="classify.Writer3"
+          maxmemory="${maxMemory}"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+   </java>
+</target>
+<target name="test3"
+        depends="compile">
+    <java jar="data/eval/evaluation.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="submission/alias-i-textual-2.xml"/>
+      <arg value="submission/alias-i-textual-3.xml"/>
+   </java>
+   <java jar="data/eval/evaluation.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="submission/alias-i-intuitive-2.xml"/>
+      <arg value="submission/alias-i-intuitive-3.xml"/>
+   </java>
+</target>
+        
+
+
+<target name="eval">
+   <echo message="---------------------------------------------------------"/>
+   <echo message="TEXTUAL 1"/>
+   <java jar="data/eval/evaluation-2.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="data/eval/obesity_standoff_annotations_test_textual.xml"/>
+      <arg value="submission/alias-i-textual-1.xml"/>
+   </java>
+
+   <echo message=""/>        
+   <echo message="---------------------------------------------------------"/>
+   <echo message="TEXTUAL 2"/>
+   <java jar="data/eval/evaluation-2.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="data/eval/obesity_standoff_annotations_test_textual.xml"/>
+      <arg value="submission/alias-i-textual-2.xml"/>
+   </java>
+
+   <echo message=""/>        
+   <echo message="---------------------------------------------------------"/>
+   <echo message="TEXTUAL 3"/>
+   <java jar="data/eval/evaluation-2.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="data/eval/obesity_standoff_annotations_test_textual.xml"/>
+      <arg value="submission/alias-i-textual-3.xml"/>
+   </java>
+
+   <echo message=""/>        
+   <echo message="========================================================="/>
+   <echo message=""/>        
+
+   <echo message=""/>        
+   <echo message="---------------------------------------------------------"/>
+   <echo message="INTUITIVE 1"/>
+   <java jar="data/eval/evaluation-2.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="data/eval/obesity_standoff_annotations_test_intuitive.xml"/>
+      <arg value="submission/alias-i-intuitive-1.xml"/>
+   </java>
+
+   <echo message=""/>        
+   <echo message="---------------------------------------------------------"/>
+   <echo message="INTUITIVE 2"/>
+   <java jar="data/eval/evaluation-2.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="data/eval/obesity_standoff_annotations_test_intuitive.xml"/>
+      <arg value="submission/alias-i-intuitive-2.xml"/>
+   </java>
+
+   <echo message=""/>        
+   <echo message="---------------------------------------------------------"/>
+   <echo message="INTUITIVE 3"/>
+   <java jar="data/eval/evaluation-2.jar"
+          fork="true">
+      <jvmarg value="-server"/>
+      <arg value="data/eval/obesity_standoff_annotations_test_intuitive.xml"/>
+      <arg value="submission/alias-i-intuitive-3.xml"/>
+   </java>
+
+</target>
+
+
+</project>
+

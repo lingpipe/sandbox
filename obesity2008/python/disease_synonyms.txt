@@ -1,0 +1,48 @@
+Diabetes
+Diabetes Mellitus
+D. M. 
+DM
+D M
+D.M
+
+Hypertension
+High Blood Pressure
+HBP
+HTN
+
+CAD
+Atherosclerotic CV disease
+Coronary Artery Disease
+Heart disease
+Atherosclerotic Cardiovascular disease
+Atherosclerotic Cardio Vascular disease
+
+CHF
+Congestive Heart Failure
+Heart failure
+
+PVD
+Peripheral vascular disease
+Peripheral Artery Disease
+Peripheral Arterial Disease
+PAD
+
+VenousInsufficiency
+Venous Insufficiency
+
+Obesity
+Obese
+
+OA
+Osteoarthritis
+
+OSA
+obstructive sleep apnea
+Sleep apnea
+
+GERD
+Gastroesophageal reflux disease
+acid reflux
+
+Gallstones
+Cholecystectomy
