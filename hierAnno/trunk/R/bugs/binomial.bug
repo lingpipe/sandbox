@@ -1,0 +1,14 @@
+model {
+  pi ~ dbeta(1,1)
+  for (i in 1:I) {
+    c[i] ~ dbern(pi)
+  }
+  theta.0 ~ dbeta(1,1) I(0.4,1)
+  theta.1 ~ dbeta(1,1) I(0.4,1)
+  for (i in 1:I) {
+    bern[i] <- c[i] * theta.1 + (1 - c[i]) * (1 - theta.0)
+  }
+  for (k in 1:K) {
+    xx[k] ~ dbern(bern[ii[k]])
+  }
+}

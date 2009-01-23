@@ -1,0 +1,21 @@
+model {
+  pi ~ dbeta(1,1)
+  for (i in 1:I) {
+    c[i] ~ dbern(pi)
+    delta[i] ~ dunif(-5,5)
+  }
+  for (j in 1:J) {
+    gamma.0[j] ~ dunif(0,10)
+    gamma.1[j] ~ dunif(-1,10)
+    gamma.0.adj[j] <- gamma.0[j] - gamma.0.mean
+    gamma.1.adj[j] <- gamma.1[j] - gamma.1.mean
+  }
+  gamma.0.mean <- mean(gamma.0[])
+  gamma.1.mean <- mean(gamma.1[])
+  for (k in 1:K) {
+    logit(bern[k]) <- (c[ii[k]] * (gamma.1[jj[k]] - gamma.0.mean + delta[ii[k]])) + ((1 - c[ii[k]]) * (-(gamma.0[jj[k]] - gamma.0.mean - delta[ii[k]])))
+    bern.adj[k] <- max(0,min(1,bern[k]))
+    xx[k] ~ dbern(bern.adj[k])
+  }
+}
+

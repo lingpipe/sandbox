@@ -1,0 +1,27 @@
+model {
+  pi ~ dbeta(1,1)
+  rho.0 ~ dunif(0,10)
+  rho.1 ~ dunif(0,10)
+  tau.rho.0 <- pow(rho.0,-2)
+  tau.rho.1 <- pow(rho.1,-2)
+  for (i in 1:I) {
+    c[i] ~ dbern(pi)
+    tau[i] <- c[i] * tau.rho.1 + (1 - c[i]) * tau.rho.0
+    delta[i] ~ dnorm(0,tau[i]) I(-1,1)
+  }
+  mu.0 ~ dnorm(0,0.01) I(0,)
+  sigma.0 ~ dunif(0.5,5)
+  tau.0 <- pow(sigma.0,-2)
+  mu.1 ~ dnorm(0,0.01) I(0,)
+  sigma.1 ~ dunif(0.5,5)
+  tau.1 <- pow(sigma.1,-2)
+  for (j in 1:J) {
+    gamma.0[j] ~ dnorm(mu.0,tau.0) I(-1,5)
+    gamma.1[j] ~ dnorm(mu.1,tau.1) I(-1,8)
+  }
+  for (k in 1:K) {
+    logit(bern[k]) <- c[ii[k]] * (gamma.1[jj[k]] - delta[ii[k]]) + (1 - c[ii[k]]) * -(gamma.0[jj[k]] - delta[ii[k]])
+    xx[k] ~ dbern(bern[k])
+  }
+}
+
