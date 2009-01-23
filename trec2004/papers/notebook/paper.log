@@ -1,0 +1,207 @@
+This is pdfeTeX, Version 3.141592-1.20a-rc1-2.1 (MiKTeX 2.4) (preloaded format=latex 2004.6.1)  26 OCT 2004 00:24
+entering extended mode
+**paper.tex
+(paper.tex
+LaTeX2e <2003/12/01>
+Babel <v3.8a> and hyphenation patterns for english, french, german, ngerman, du
+mylang, nohyphenation, loaded.
+(C:\texmf\tex\latex\base\article.cls
+Document Class: article 2004/02/16 v1.4f Standard LaTeX document class
+(C:\texmf\tex\latex\base\size11.clo
+File: size11.clo 2004/02/16 v1.4f Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (C:\texmf\tex\latex\graphics\graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+(C:\texmf\tex\latex\graphics\keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(C:\texmf\tex\latex\graphics\graphics.sty
+Package: graphics 2001/07/07 v1.0n Standard LaTeX Graphics (DPC,SPQR)
+ (C:\texmf\tex\latex\graphics\trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+) (C:\texmf\tex\latex\00miktex\graphics.cfg
+File: graphics.cfg 2003/03/12 v1.1 MiKTeX 'graphics' configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 80.
+
+(C:\texmf\tex\latex\graphics\pdftex.def
+File: pdftex.def 2002/06/19 v0.03k graphics/color for pdftex
+\Gread@gobject=\count87
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+) (paper.aux)
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+
+(C:\texmf\tex\context\base\supp-pdf.tex (C:\texmf\tex\context\base\supp-mis.tex
+loading : Context Support Macros / Miscellaneous 
+\protectiondepth=\count88
+\scratchcounter=\count89
+\scratchtoks=\toks15
+\scratchdimen=\dimen105
+\scratchskip=\skip43
+\scratchmuskip=\muskip10
+\scratchbox=\box26
+\scratchread=\read1
+\scratchwrite=\write3
+\zeropoint=\dimen106
+\onepoint=\dimen107
+\minusone=\count90
+\thousandpoint=\dimen108
+\emptytoks=\toks16
+\nextbox=\box27
+\nextdepth=\dimen109
+\everyline=\toks17
+\!!counta=\count91
+\!!countb=\count92
+\recursecounter=\count93
+)
+loading : Context Support Macros / PDF (2004.03.26)
+\nofMPsegments=\count94
+\nofMParguments=\count95
+\everyMPtoPDFconversion=\toks18
+)
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 19.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 19.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 19.
+
+Overfull \hbox (2.16733pt too wide) in paragraph at lines 69--69
+[]    \OT1/cmtt/m/n/10.95 (proton-coupled divalent metal ion transporters), mem
+ber 3)[] 
+ []
+
+
+Overfull \hbox (7.4968pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 SLC40A1 gene encoding for a main iron export protein i
+n mammals,[] 
+ []
+
+
+Overfull \hbox (7.4968pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 hemochromatosis (HFE) gene. It has distinctive clinica
+l features[] 
+ []
+
+
+Overfull \hbox (2.24684pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 such as early increase in serum ferritin in spite of l
+ow-normal[] 
+ []
+
+
+Overfull \hbox (7.4968pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 transferrin saturation, progressive iron accumulation 
+in organs,[] 
+ []
+
+
+Overfull \hbox (7.4968pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 predominantly in reticuloendothelialmacrophages, margi
+nal anemia[] 
+ []
+
+
+Overfull \hbox (12.74675pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 been reported in many countries regardless of ethnicit
+y. They may[] 
+ []
+
+
+Overfull \hbox (2.24684pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 lead to a loss of protein function responsible for red
+uced iron[] 
+ []
+
+
+Overfull \hbox (2.24684pt too wide) in paragraph at lines 121--121
+[]      \OT1/cmtt/m/n/10 export from cells, particularly reticuloendothelial ce
+lls. Now,[] 
+ []
+
+[1
+
+{psfonts.map}]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 131.
+
+Overfull \hbox (18.5192pt too wide) in paragraph at lines 164--177
+\OT1/cmr/m/n/10 tion, but leaves alpha-numeric se-quences in-tact. For in-stanc
+e, ``Ferroportin-
+ []
+
+[2] [3]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 197.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 197.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <9> on input line 201.
+ [4]
+Overfull \hbox (1.55623pt too wide) in paragraph at lines 252--277
+[]\OT1/cmr/m/n/10 LingPipe's en-tity ex-trac-tion is based on a Bayesian gen-er
+-a-tive model
+ []
+
+[5]
+Overfull \hbox (3.5007pt too wide) in paragraph at lines 311--324
+\OT1/cmr/m/n/10 transducing molecule'', ``nerve growth fac-tor path-way'', ``Sa
+c-cha-romyces
+ []
+
+[6] [7] [8] [9]
+Underfull \hbox (badness 10000) in paragraph at lines 517--520
+
+ []
+
+
+Overfull \hbox (58.56973pt too wide) in paragraph at lines 521--538
+[][] 
+ []
+
+[10] (paper.aux) ) 
+Here is how much of TeX's memory you used:
+ 944 strings out of 95529
+ 10420 string characters out of 1189966
+ 63430 words of memory out of 1060039
+ 4056 multiletter control sequences out of 35000
+ 10919 words of font info for 39 fonts, out of 500000 for 1000
+ 14 hyphenation exceptions out of 607
+ 25i,8n,21p,224b,285s stack positions out of 1500i,500n,5000p,200000b,32768s
+ 71 PDF objects out of 300000
+ 0 named destinations out of 300000
+ 1 words of extra memory for PDF output out of 65536
+<C:\texmf\fonts\type1\bluesky\cm\cmsy10.pfb><C:\texmf\fonts\t
+ype1\bluesky\cm\cmmi10.pfb><C:\texmf\fonts\type1\bluesky\cm\cmr9.pfb><C:\texmf\
+fonts\type1\bluesky\cm\cmr6.pfb><C:\texmf\fonts\type1\bluesky\cm\cmr7.pfb><C:\t
+exmf\fonts\type1\bluesky\cm\cmtt10.pfb><C:\texmf\fonts\type1\bluesky\cm\cmbx12.
+pfb><C:\texmf\fonts\type1\bluesky\cm\cmr10.pfb><C:\texmf\fonts\type1\bluesky\cm
+\cmbx10.pfb><C:\texmf\fonts\type1\bluesky\cm\cmtt9.pfb><C:\texmf\fonts\type1\bl
+uesky\cm\cmti10.pfb><C:\texmf\fonts\type1\bluesky\cm\cmr12.pfb><C:\texmf\fonts\
+type1\bluesky\cm\cmr17.pfb>
+Output written on paper.pdf (10 pages, 120058 bytes).
