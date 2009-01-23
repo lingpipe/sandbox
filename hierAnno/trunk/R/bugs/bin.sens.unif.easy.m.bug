@@ -1,0 +1,20 @@
+model {
+  q ~ dbeta(1,1)
+  z.0 ~ dbeta(1,1)
+  z.1 ~ dbeta(1,1)
+  for (i in 1:I) {
+    c[i] ~ dbern(q)
+    e.bern[i] <- c[i] * z.1 + (1 - c[i]) * z.0
+    e[i] ~ dbern(e.bern[i])
+  }
+  for (j in 1:J) {
+    a.0[j] ~ dbeta(1,1) I(0.5,)
+    a.1[j] ~ dbeta(1,1) I(0.5,)
+  }
+  for (k in 1:K) {
+    a.e.0[k] <- max(e[ii[k]],a.0[jj[k]])
+    a.e.1[k] <- max(e[ii[k]],a.1[jj[k]])
+    x.bern[k] <- c[ii[k]] * a.e.1[k] + (1 - c[ii[k]]) * (1 - a.e.0[k])
+    xx[k] ~ dbern(x.bern[k])
+  }
+}

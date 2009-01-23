@@ -1,0 +1,48 @@
+MEDLINE-able
+-----------------------------------------------
+
+Anton K. Formann. 1994. Measurement Errors in Caries Diagnosis. Biometrics.
+
+Walter SD, Irwig LM. 1988.  Estimation of test error rates, disease prevalence and relative risk from misclassified data: a review.  J. Clin Epidem.
+
+Using latent class models to characterize and assess relative error in
+discrete measurements.  MA Espeland, SL Handelman - Biometrics, 1989.
+
+Vacek, P.~M. 1985.  The effect of conditional dependence on the
+evaluation of diagnostic tests.  {\it Biometrics} {\bf 41}:959--968.
+
+Qu YS, Hadgu A. A biomedical application of latent class models with
+random effects.  Applied Statistics 1998; 47: 603±616.
+
+
+
+From Lawrence Joseph's home page:
+
+*Dendukuri N, Rahme E, B´elisle P, Joseph L. Bayesian sample size determination for prevalence and
+diagnostic studies in the absence of a gold standard test. Biometrics 2004;60:388-397.
+
+*Bernatsky S, Joseph L, B´elisle P, Boivin J, Rajan R, Moore A, Clarke A. A Bayesian hierarchical
+model for estimating the properties of cancer ascertainment methods in cohort studies. Statistics in
+Medicine 2005;24:2365-2379.
+
+*Carabin H, Balolong E, Joseph L, McGarvey S, Johansen M, Fernandez T, Willingham A, Olveda
+R. Estimating sensitivity and specificity of a faecal examination method for Schistosoma japonicum
+infection in cats, dogs, water buffaloes, pigs and rats in Western Samar and Sorsogon Provinces, The
+Philippines. International Journal of Parasitology 2005;35:1517-1524.
+
+*Ladouceur M, Rahme E, Pineau C, Joseph L. Robustness of prevalence estimates derived from
+misclassified data from administrative databases. Biometrics 2007;63:272-279.
+
+Fernandez T, Tarafder M, Balolong E, Joseph L, Willingham L, B´elisle P, Webster J, Olveda R,
+McGarvey S, Carabin H. Prevalence of Shistosoma Japonicum infection among animals in 50 villages
+Of Samar Province, the Philippines. Zoonoses and Vector Borne Diseases 2007;7(2):147-155.
+
+*Bernatsky S, Joseph L, Pineau C, B´elisle P, Boivin J, Banerjee D, Clarke A. Estimating the prevalence
+of polymyositis and dermatomyositis from administrative data: age, sex, and regional differences.
+Annals of the Rheumatic Diseases 2008 (epub ahead of print).
+
+Atherton J, Charbonneauy B, Wolfson D, Joseph L, Zhou X, Vandal A. Bayesian optimal design for
+changepoint problems. Canadian Journal of Statistics.
+
+*Bernatsky S, Joseph L, Pineau C, B´elisle P, Hudson M, Clarke A. Scleroderma prevalence: demographic
+variations in a population-based. Annals of the Rheumatic Diseases.

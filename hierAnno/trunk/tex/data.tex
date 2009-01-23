@@ -1,0 +1,166 @@
+
+\subsection{4-Test HIV Diagnosis}
+
+Data from Alvord et al.~(1988) cited in (Qu et al.~1996) and Yang and
+Becker (1997).  The four tests are (A) radioimmunoassay (RIA)
+utilizing recombinant agl21, (B) RIA utilizing purified HIV p24, (C)
+RIA utilizing purified HIV gpl20, and (D) enzyme-linked immunosorbent
+assay.
+
+\begin{tabular}{cccc|r}
+{\it A}, {\it B}, {\it C}, {\it D} & {\it Count}
+\\ \hline
+0000 & 170
+\\
+0001 & 15
+\\
+0100 & 6
+\\
+1000 & 4
+\\
+1001 & 17
+\\
+1011 & 83
+\\
+1100 & 1
+\\
+1101 & 4
+\\
+1111 & 128
+\\
+\end{tabular}
+
+
+
+\subsection{Uterine Carcinoma Diagnosis}
+
+Holmquist et al. (1967) had seven pathologists independently classfy
+118 hisotological slides.  Agresti and Lang (1993) dichotomized
+ratings, with 1 representing carcinoma and 0 no carcinoma.
+
+\begin{tabular}{cr}
+{\it Pathologists} & {\it Count} \\
+0000000 & 34 \\
+0000100 & 2 \\
+0100000 & 6 \\
+0100001 & 1 \\
+0100100 & 4 \\
+0100101 & 5 \\
+1000000 & 2 \\
+1010101 & 1 \\
+1100000 & 2 \\
+1100001 & 1 \\
+1100100 & 2 \\
+1100101 & 7 \\
+1100111 & 1 \\
+1101001 & 1 \\
+1101101 & 2 \\
+1101111 & 3 \\
+1110101 & 13 \\
+1110111 & 5 \\
+1111101 & 10 \\
+1111111 & 16 \\
+\end{tabular}
+
+
+
+\subsection{{\it Strongyloides} Infection Diagnosis}
+
+Joseph, Gyorkas and Coupal (1995) analyze data on 162 Cambodian
+refugees arriving in Montreal, Canada between July 1982 and February
+1983.  A serology test and stool examination were used.  The parasites
+are visible in a stool sample positive result, so false positives are
+rare.  It is also known that stool examination is highly dependent
+on level of infection.
+
+\begin{tabular}{lr}
+{\it Serology}, {\it Stool} & {\it Count} \\
+11 & 38 \\
+10 & 87 \\
+01 & 2 \\
+00 & 35 \\
+\end{tabular}
+
+\subsection{{\it Leishmania infantum} Infection Diagnosis}
+
+\subsubsection{1999 Study}
+
+Boelaert et al.~(1999) report a study of 151 street dogs at risk for
+{\it Leishmania infantum} infection in Tunisia by the Institute Pasteur de
+Tunis and the Prince Leopolod Institute of Tropical Medicine in
+Antwerp.  Serological tests include an indirect immunofluorescence
+antibody test (IFAT), an enzyme-linked immunosorbent assay (ELISA),
+and a direct agglutination test (DAT).  Clinical status, and parasitological
+data is also included as annotations.
+
+\begin{tabular}{lllllr}
+{\it C}, {\it E}, {\it D}, {\it I}, {\it P} & {\it Count} \\
+00000 & 105 \\
+00100 & 8 \\
+01000 & 8 \\
+01011 & 1 \\
+01100 & 1 \\
+01110 & 7 \\
+01111 & 3 \\
+10000 & 9 \\
+10111 & 2 \\
+11110 & 2 \\
+11111 & 5 \\
+\end{tabular}
+
+The tests are clinical, ELISA, DAT, IFAT, and parasitology,
+respectively.  A priori, parasitology has high specificity and low
+sensitivity.
+
+Their statistical analysis follows Qu, Tan and Kutner, assuming
+independence of tests and differing sensitivity/specificity for the
+models.  That is, two latent classes, for infected and not infected.
+They also considered three latent classes, with symptomatically and
+asymptomatically infected classes subdividing the infected class.
+A direct effect between two tests was the best fit.
+
+
+\subsubsection{2008 Study}
+
+Menten et al. (2008) performed a follow-on study using DAT, rk39, and
+KAtex tests, along with a parasitology test for 291 dogs.
+
+\begin{tabular}{lr}
+{\it D}, {\it r}, {\it K}, {\it P} & {\it Count} \\
+1111 & 51 \\
+1110 & 1 \\
+1101 & 4 \\
+1100 & 16 \\
+1011 & 15 \\
+1010 & 1 \\
+1001 & 2 \\
+1000 & 5 \\
+0111 & 7 \\
+0110 & 4 \\
+0101 & 1 \\
+0100 & 15 \\
+0011 & 1 \\
+0010 & 1 \\
+0001 & 1 \\
+0000 & 166
+\end{tabular}
+
+\subsection{Thought Disorder Diagnosis}
+
+Broemeling (2001) studied four psychiatric residents diagnosing twelve
+patients for an unspecified ``thought disorder''.
+
+\begin{tabular}{lr}
+{\it Diagnoses} & {\it Count} \\
+1111 & 2 \\
+1101 & 1 \\
+0111 & 2 \\
+1100 & 1 \\
+0101 & 1 \\
+0010 & 2 \\
+0100 & 1 \\
+0000 & 2 \\
+\end{tabular}
+
+Used a Dirichlet prior on all $2^4$ possible outcomes with
+a count of 1 for each outcome.

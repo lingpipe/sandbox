@@ -1,0 +1,23 @@
+model {
+  pi ~ dbeta(1,1)
+  for (i in 1:I) {
+    c[i] ~ dbern(pi)
+  }
+  acc.0 ~ dbeta(1,1)
+  scale.0 ~ dunif(1,200) # dpar(1.5,1)
+  alpha.0 <- acc.0 * scale.0
+  beta.0 <- (1 - acc.0) * scale.0
+  acc.1 ~ dbeta(1,1)
+  scale.1 ~ dunif(1,200) # dpar(1.5,1)
+  alpha.1 <- acc.1 * scale.1
+  beta.1 <- (1 - acc.1) * scale.1
+  for (i in 1:I) {
+    alpha[i] <- c[i] * alpha.1 + (1 - c[i]) * alpha.0
+    beta[i] <- c[i] * beta.1 + (1 - c[i]) * beta.0
+    theta[i] ~ dbeta(alpha[i],beta[i]) I(0.5,)
+    bern[i] <- c[i] * theta[i] + (1 - c[i]) * (1 - theta[i])
+  }
+  for (k in 1:K) {
+    xx[k] ~ dbern(bern[ii[k]])
+  }
+}
