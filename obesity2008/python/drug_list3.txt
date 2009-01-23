@@ -1,0 +1,339 @@
+Diabetes
+glyburide, DiaBeta
+glipizide, Glucotrol
+glimepiride, Amaryl
+repaglinide, Prandin
+nateglinide, Starlix
+metformin, Glucophage
+Troglitazone, Rezulin
+pioglitazone, Actos
+rosiglitazone, Avandia
+acarbose, Precose
+Symlin, pramlintide
+Byetta, exenatide
+Glyburide, metformin, Glucovance
+rosiglitazone, metformin, Avandamet
+glipizide, metformin, Metaglip
+pioglitazone, metformin, Actosplusmet
+Exubera
+Apidra
+Humalog
+Humalog Mix50/50
+Humalog Mix75/25
+Humulin
+Humulin R
+Lantus
+Levemir
+Novolog
+Novolog MIX 70/30
+Sandostatin
+Sandostatin LAR Depot
+Symlin 
+Actoplus MET
+Actos
+Amaryl
+Apidra
+Avandamet
+Avandaryl
+Avandia
+Byetta
+Diabeta
+Diabinese
+Duetact
+Fortamet
+Glipizide
+Glipizide and Metformin
+Glucotrol XL
+Glucovance
+Glyburase
+Glyburide
+Glyburide and Metformin
+Glynase
+Glyset
+Humalog
+Humalog Mix50/50
+Humalog Mix75/25
+Humulin
+Humulin R
+Lantus
+Levemir
+Metaglip
+Metformin
+Metformin Extended-Release
+Micronase
+Micronized Glyburide
+Novolog
+Novolog MIX 70/30
+Prandin
+Precose
+Starlix
+Symlin
+Tolazamide
+Tolbutamide
+Tolinase 
+
+Hypertension
+Vasotec, enalapril
+Capoten, captopril
+lisinopril, Zestril, Prinivil
+benazepril, Lotensin
+quinapril, Accupril
+perindopril, Aceon
+ramipril, Altace
+trandolapril, Mavik
+fosinopril, Monopril
+moexipril, Univasc
+losartan, Cozaar
+irbesartan, Avapro
+valsartan, Diovan
+candesartan, Atacand
+olmesartan, Benicar
+telmisartan, Micardis
+eprosartan, Teveten
+atenolol, Tenormin
+propranolol, Inderal
+metoprolol, Toprol
+nadolol, Corgard
+betaxolol, Kerlone
+acebutolol, Sectral
+pindolol, Visken
+bisoprolol, Zebeta
+Hydrodiuril
+Lasix
+Demadex
+Dyazide
+Zaroxolyn
+amlodipine, Norvasc
+nifedipine, Procardia XL, Adalat CC
+felodipine, Plendil
+nisoldipine, Sular
+verapamil, Calan, Covera, Isoptin, Verelan
+diltiazem, Cardizem, Tiazac, Dilacor, Diltia
+terazosin, Hytrin
+doxazosin, Cardura
+tamsulosin, Flomax
+alfuzosin, Uroxatral
+Clonidine, Catapres
+Minoxidil
+Accupril
+Accuretic
+Acebutolol
+Aceon
+Adalat CC
+Afeditab
+Aldactazide
+Aldactone
+Aldoclor
+Aldoril
+Altace
+Apresoline
+Atacand
+Atacand HCT
+Atenolol
+Atenolol and Chlorthalidone
+Avalide
+Avapro
+Benicar
+Benicar HCT
+Bisoprolol
+Bisoprolol and Hydrochlorothiazide
+Blocadren
+Caduet
+Calan
+Capoten
+Capozide
+Captopril
+Captopril and Hydrochlorothiazide
+Cardene
+Cardizem
+Carteolol
+Cartia XT
+Catapres
+Catapres-TTS
+Chlorothiazide
+Chlorthalidone
+Clorpres
+Coreg
+Coreg CR
+Corgard
+Corzide
+Covera-HS
+Cozaar
+Demadex
+Dilacor XR
+Dilt-CD
+Diltiazem
+Diovan
+Diovan HCT
+Diupres
+Diuril
+Dyazide
+Dynacirc
+Enalapril
+Enalapril and Hydrochlorothiazide
+Enalaprilat
+Enduronyl
+Esidrix
+Exforge
+Fenoldopam
+Fosinopril
+Fosinopril and Hydrochlorothiazide
+Guanfacine
+Hydralazine
+Hydralazine and Hydrochlorothiazide
+Hydrochlorothiazide
+Hydrodiuril
+Hyperstat
+Hytrin
+Hyzaar
+Indapamide
+Inderal
+Inderal LA
+Innopran XL
+Inspra
+Inversine
+Ismelin
+Kerlone
+Labetalol
+Lasix
+Levatol
+Lexxel
+Lisinopril and Hydrochlorothiazide
+Loniten
+Lopressor
+Lopressor HCT
+Lotensin
+Lotensin HCT
+Lotrel
+Lozol
+Mavik
+Maxzide
+Methyclothiazide
+Methyldopa
+Metolazone
+Metoprolol
+Metoprolol and Hydrochlorothiazide
+Micardis
+Micardis HCT
+Microzide
+Midamor
+Minipress
+Minitran
+Minoxidil
+Moduretic
+Mykrox
+Nadolol
+Naturetin
+Nicardipine
+Nifediac
+Nifedipine
+Nitro-BID
+Nitro-DUR
+Nitroglycerin
+Nitroglycerin Injection
+Nitrolingual
+Norvasc
+Plendil
+Prinivil
+Prinzide
+Procardia
+Propranolol
+Quinapril
+Quinapril and Hydrochlorothiazide
+Quinaretic
+Renese-R
+Reserpine
+Saluron
+SER-AP-ES
+Spironolactone
+Spironolactone and Hydrochlorothiazide
+Sular
+Tarka
+Tekturna
+Tenormin
+Teveten
+Teveten HCT
+Thalitone
+Tiazac
+Timolide
+Timolol
+Timolol GFS
+Toprol-XL
+Torsemide
+Trandate
+Triamterene and Hydrochlorothiazide
+Uniretic
+Univasc
+Vaseretic
+Vasotec
+Vasotec I.V.
+Verapamil
+Verelan
+Verelan PM
+Visken
+Zaroxolyn
+Zestoretic
+Zestril 
+
+Depression
+Antidepressant
+SSRIs, fluoxetine, Prozac, paroxetine, Paxil, sertraline, Zoloft, citalopram, Celexa, fluvoxamine, Luvox
+mirtazapine, Remeron, Venlafaxine, Effexor
+nefazodone, Serzone, trazodone, Desyrel, venlafaxine, Effexor, bupropion, Wellbutrin
+Lithium, Eskalith, Lithobid, valproate, Depakene, Depakote, carbamazepine, Epitol, Tegretol, neurontin, Gabapentin, lamictal, Lamotrigine
+ziprasidone, Geodon, risperidone, Risperdal, quetiapine, Seroquel
+Tricyclic, amitriptyline, Elavil, protriptyline, Vivactil, desipramine, Norpramin, nortriptyline, Aventyl, Pamelor, trimipramine, Surmontil, perphenazine, Triavil
+methylphenidate, Ritalin, dextroamphetamine, Dexedrine
+Alprazolam
+Amoxapine
+Anafranil
+Celexa
+Chlordiazepoxide and Amitriptyline
+Citalopram
+Clomipramine
+Concerta
+Cymbalta
+Desyrel
+Effexor
+Effexor XR
+Elavil
+Emsam
+Fluvoxamine
+Lexapro
+Ludiomil
+Maprotiline
+Marplan
+Metadate
+Metadate CD
+Metadate ER
+Methylin
+Methylphenidate
+Mirtazapine
+Nardil
+Nefazodone
+Niravam
+Norpramin
+Nortriptyline
+Pamelor
+Parnate
+Paxil
+Paxil CR
+Perphenazine and Amitriptyline
+Pexeva
+Protriptyline
+Prozac
+Remeron
+Ritalin
+Ritalin LA
+Ritalin-SR
+Sarafem
+Serzone
+Surmontil
+Tofranil
+Trazodone
+Wellbutrin
+Wellbutrin SR
+Wellbutrin XL
+Xanax
+Xanax XR
+Zoloft 
