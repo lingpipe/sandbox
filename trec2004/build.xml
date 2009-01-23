@@ -1,0 +1,129 @@
+<project name="TREC" default="compile" basedir=".">
+
+  <property name="org.xml.sax.driver"
+            value="org.apache.xerces.parsers.SAXParser"/>
+
+  <path id="classpath.all">
+    <pathelement location="build/classes"/>
+    <pathelement location="lib/concurrent-1.3.3.jar"/>
+    <pathelement location="lib/lingpipe_1_0_7.jar"/>
+    <pathelement location="lib/lucene-1.3-final.jar"/>
+    <pathelement location="lib/xml-apis.jar"/>
+    <pathelement location="lib/xercesImpl.jar"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src"
+           optimize="on"
+           debug="yes"
+           debuglevel="source,lines,vars"
+	   destdir="build/classes">
+      <classpath refid="classpath.all"/>
+    </javac>
+  </target>
+
+  <target name="javadoc">
+    <mkdir dir="build/javadoc"/>
+    <javadoc sourcepath="src"
+             packagenames="trec.*"
+	     destdir="build/javadoc"
+             access="protected"
+             doctitle="Text Retrieval Conference (TREC) API"
+             windowtitle="Text Retrieval Conference (TREC) API">
+      <classpath refid="classpath.all"/>
+    </javadoc>
+  </target>
+
+  <!-- name of directory containing data files -->
+  <property name="data"
+            location="data/2004_trec_ascii_medline"/>
+
+  <!-- name of index directory -->
+  <property name="indexDir"
+            location="index4"/>
+
+  <!-- name of class to use for analyzer -->
+  <property name="analyzer"
+            value="trec.IndoEuropeanAnalyzer"/>
+<!--
+            value="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+            value="org.apache.lucene.analysis.SimpleAnalyzer"/>
+            value="trec.NGramAnalyzer"/>
+
+-->
+
+  <target name="index"
+          depends="compile">
+    <java classname="trec.SimpleIndex"
+          fork="true"
+          maxmemory="1536M">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.all"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <arg value="-analyzer=${analyzer}"/>
+      <arg value="-indexDir=${indexDir}"/>
+      <arg value="${data}/2004_TREC_ASCII_MEDLINE_A"/>
+    </java>
+  </target>
+
+  <target name="search"
+          depends="compile">
+    <java classname="trec.Search"
+          fork="true"
+          maxmemory="512M">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.all"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <arg value="-analyzer=${analyzer}"/>
+      <arg value="-indexDir=${indexDir}"/>
+      <arg value="\&quot;restriction maps\&quot; \&quot;gene vectors\&quot; \&quot;pbr322\&quot; \&quot;gene vector\&quot; \&quot;restriction map information\&quot; \&quot;plasmid\&quot;"/> 
+      <!--
+      <arg value="\&quot;pBR322\&quot;"/>
+      <arg value="\&quot;Wnt signaling pathway\&quot; \&quot;model organ system\&quot; \&quot;wnt signaling pathway\&quot; \&quot;need\&quot; \&quot;organ system\&quot; \&quot;wnt\&quot; wnt signaling pathway model organ system need"/>
+      <arg value="\&quot;gene expression regulation\&quot;^16 \&quot;tnf/nfkappab pathway\&quot;^16 \&quot;gadd45beta\&quot; \&quot;xiap\&quot; \&quot;ciap2\&quot; \&quot;a2O\&quot; \&quot;researcher\&quot; \&quot;inflammation\&quot; \&quot;tissue\&quot; \&quot;abdominal cavity\&quot; \&quot;mice\&quot; \&quot;normal mice\&quot; \&quot;mutant mice\&quot; \&quot;specific mutation\&quot; \&quot;signaling\&quot; +gene^16 +expression^16 +regulation^16 +tnf^16 +kappab^16"/>
+      <arg value="\&quot;fungal differentiation\&quot;^16 \&quot;differentiation\&quot; \&quot;mating\&quot; \&quot;candida albicans\&quot; \&quot;candida dubliniensis\&quot; fungal^16 differentiation^16 +candida"/>
+
+      <arg value="\&quot;histone family\&quot;^8 histone^8 family^8 \&quot;h2a histones\&quot; +\&quot;h2a\&quot;"/>
+       -->   
+    </java>
+  </target>
+
+  <target name="trec-search"
+          depends="compile">
+    <java classname="trec.TrecSearch"
+          fork="true"
+          maxmemory="1024M">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.all"/>
+      <sysproperty key="org.xml.sax.driver" value="${org.xml.sax.driver}"/>
+      <arg value="-analyzer=${analyzer}"/>
+      <arg value="-indexDir=${indexDir}"/>
+
+      <arg value="-queryFile=queries/04.adhoc.topics.xml"/>
+
+      <arg value="-useStopList"/>       
+
+      <!--
+      <arg value="-name=aliasiTerms"/>
+      <arg value="-useLingPipeTerms"/>
+      OR
+      <arg value="-name=aliasiTerms"/>
+      <arg value="-useLingPipeTerms"/>
+      -->
+
+      <arg value="-name=aliasiBase"/>
+
+      <arg value="idxIE_A"/>
+      <arg value="idxIE_B"/>
+      <arg value="idxIE_C"/>
+      <arg value="idxIE_D"/>
+      <arg value="idxIE_E"/>
+    </java>
+  </target>
+
+</project>

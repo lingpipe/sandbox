@@ -1,0 +1,21 @@
+SYSTEM: Jakarta Lucene 1.3 (jakarta.apache.org/lucene)
+
+LINGUISTICS: Alias-i LingPipe (www.aliasi.com/lingpipe)
+
+INDEXING: Tokenized with LingPipe IndoEuropeanTokenizer, lowercased,
+without a stop list.  Combined document text into single field with
+boosts: 4*title, 1*abstract, 2*ordinary MESH, 4*starred MESH,
+1*chemical names.  Took 5 hours, producing 9GB index, including
+storing original titles, abstracts, MESH terms and chemical names.
+
+SEARCH: Tokenized with LingPipe IndoEuropeanTokenizer, lowercased,
+removed stop terms.  Used fields with boosts: 4*title, 2*need,
+1*context.  Lucene's standard TF/IDF implementation: TF is square root
+of raw frequency; IDF is log(num docs/doc freq + 1) + 1; doc and query
+normalized to unit length.  Took 15 minutes per result set of 50
+topics with 1000 results/topic.
+
+TERMS: Added all terms recognized by LingPipe's GENIA-corpus trained
+Genomics named entity annotator as quoted search terms with a boost of
+4 (multiplied by field boost).
+

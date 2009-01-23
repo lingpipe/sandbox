@@ -1,0 +1,291 @@
+package trec;
+
+import com.aliasi.util.Streams;
+
+import EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.lucene.analysis.Analyzer;
+
+import org.apache.lucene.document.Document;
+
+import org.apache.lucene.index.IndexWriter;
+
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
+
+
+/**
+ * The <code>BuildIndex</code> command is used to build an index for a
+ * data set.  Like other abstract commands, a new instance should
+ * be built for each command and then the run method called.
+ *
+ * <P>Command-line arguments include the following:
+ *
+ * <DL>
+ *  <DT>-analyzer=<i>ClassName</i></DT>
+ *  <DD>The name of the class to be used as the analyzer. Defaults
+ *      to <tt>org.apache.lucene.analysis.standard.StandardAnalyzer</tt></DD>
+ *  <DT></DT>
+ *  <DD></DD>
+ *
+ *  <DT></DT>
+ *  <DD></DD>
+ *
+ *  <DT></DT>
+ *  <DD></DD>
+ * </DL>
+ *
+ * <P>The fields are described at:
+ * <A HREF="http://www.ncbi.nlm.nih.gov/entrez/query/static/help/pmhelp.html#MEDLINEDisplayFormat">http://www.ncbi.nlm.nih.gov/entrez/query/static/help/pmhelp.html#MEDLINEDisplayFormat</a>
+ * 
+ *
+ * @author Bob Carpenter
+ * @version 1.0
+ * @since Trec 1.0
+ */
+public class BuildIndex extends AbstractTrecCommand {
+
+    private final BoundedLinkedQueue mDocumentQueue;
+    private final BoundedLinkedQueue mIndexQueue;
+
+    /**
+     * Construct an instance of an index building command
+     * using the specified command line arguments.
+     *
+     * @param args Command-line arguments.  See class documentation
+     * for a specification.
+     */
+    public BuildIndex(String[] args) throws IOException {
+	super(args,DEFAULT_PROPERTIES);
+
+	System.out.println("Creating shared document and index queues.");
+	mDocumentQueue = new BoundedLinkedQueue(20); // keep this stocked -- small docs
+	mIndexQueue = new BoundedLinkedQueue(1); // o.w., blowout memory
+    }
+
+    /**
+     * Execute the command with the specified argument.  This just
+     * constructs an instance of <code>BuildIndex</code> with the
+     * specified arguments and runs it once.
+     *
+     * @param args Command-line arguments.  See class documentation
+     * for a specification.
+     */
+    public static void main(String[] args) throws IOException {
+	BuildIndex cmd = new BuildIndex(args);
+	cmd.run();
+    }
+
+    /**
+     * Execute the indexing command.
+     */
+    public void run() {
+	try { 
+	    System.out.println("Creating runnables for input. "
+			       + "Indexing and merging.");
+	    Inputter inputter = new Inputter();
+	    Indexer indexer = new Indexer();
+	    Merger merger = new Merger();
+
+	    System.out.println("Creating threads for runnables.");
+	    Thread inputThread = new Thread(inputter);
+	    Thread indexThread = new Thread(indexer);
+	    Thread mergeThread = new Thread(merger);
+
+	    System.out.println("Starting all threads.");
+	    inputThread.start();
+	    indexThread.start();
+	    mergeThread.start();
+
+	    System.out.println("Wait for input to terminate.");
+	    inputThread.join();
+	    
+	    System.out.println("Wait for indexing to terminate.");
+	    indexer.terminable(); 
+	    if (indexThread.isAlive()) indexThread.join();
+	    
+	    System.out.println("Wait for merging to terminate.");
+	    merger.terminable(); 
+	    if (mergeThread.isAlive())
+		mergeThread.join();
+	    merger.closeIndex();
+	} catch (InterruptedException e) {
+	    errorMsg("Interruption in main run.",e);
+	} catch (IOException e) {
+	    errorMsg("IOException in main run.",e);
+	}
+    }
+
+    private class Inputter implements Runnable {
+	private long mStartTime;
+	private long mLastTime;
+	private int mInputDocCount = 0;
+	public void run() {
+	    mStartTime = System.currentTimeMillis();
+	    mLastTime = mStartTime;
+	    for (int i = 0; i < numBareArguments(); ++i)
+		readMultiFile(new File(getBareArgument(i)));
+	}
+	private void readMultiFile(File file) {
+	    FileInputStream fileIn = null;
+	    BufferedInputStream bufIn = null;
+	    InputStreamReader inReader = null;
+	    BufferedReader bufReader = null;
+	    try {
+		fileIn = new FileInputStream(file);
+		bufIn = new BufferedInputStream(fileIn);
+		inReader = new InputStreamReader(bufIn,"ASCII");
+		bufReader = new BufferedReader(inReader);
+		while (true) {
+		    String line = bufReader.readLine();
+		    if (line == null) break; // finished reading
+		    MedlineDoc doc = new MedlineDoc(line,bufReader);
+		    try {
+			mDocumentQueue.put(doc);
+		    } catch (InterruptedException e) {
+			errorMsg("Ignoring doc.", e);
+		    }
+		    ++mInputDocCount;
+
+		    if (mInputDocCount % REPORT_INTERVAL == 0) {
+			long nowTime = System.currentTimeMillis();
+			long diffTime = (nowTime - mLastTime);
+			long totalTime = (nowTime - mStartTime)/1000l;
+			mLastTime = nowTime;
+			StringBuffer timeBuf = new StringBuffer();
+			System.out.println("#DOCS=" + Integer.toString(mInputDocCount)
+					   + " t=" + timeBuf
+					   + "rate=" + (REPORT_INTERVAL*1000/diffTime) + "doc/s");
+		    }
+		}
+	    } catch (IOException e) {
+		errorMsg("IOException reading.",e);
+	    } finally {
+		Streams.closeReader(bufReader);
+		Streams.closeReader(inReader);
+		Streams.closeInputStream(bufIn);
+		Streams.closeInputStream(fileIn);
+	    }
+	}
+    }
+
+    private class Indexer extends Terminable {
+	private Indexer() throws IOException {
+	    freshIndexWriter();
+	}
+	public void run() {
+	    while (true) {
+		MedlineDoc doc = null;
+		try {
+		    doc = (MedlineDoc) mDocumentQueue.poll(POLL_TIME);
+		} catch (InterruptedException e) {
+		    System.out.println("Unexpected interruption in Indexer Poll.");
+		    e.printStackTrace();
+		    continue;
+		}
+		if (doc == null) {
+		    if (isTerminable()) {
+			System.out.println("Exiting indexer. Queue size=" + mDocumentQueue.size());
+			try { 
+			    merge();
+			} catch (InterruptedException e) {
+			    System.out.println("Unexpected interruption.");
+			} catch (IOException e) {
+			    System.out.println("IOException=" + e);
+			}
+			return;
+		    }
+		    continue;
+		}
+		try {
+		    Document luceneDocument = doc.toLuceneDocument();
+		    mIndexWriter.addDocument(luceneDocument);
+		    if (mIndexWriter.docCount() > MAX_COUNT) {
+			merge();
+		    }
+		} catch (IOException e) {
+		    errorMsg("IOException indexing doc=" + doc, e);
+		} catch (InterruptedException e) {
+		    errorMsg("Interrupted indexing doc=" + doc,e);
+		}
+	    }
+	}
+    }
+
+    protected void merge() throws InterruptedException, IOException {
+	mIndexWriter.optimize();
+	mIndexQueue.put(mRAMDirectory);
+	freshIndexWriter();
+    }
+    
+    private class Merger extends Terminable {
+	private IndexWriter mDirectoryIndexWriter;
+	private Merger() throws IOException {
+	    FSDirectory directory 
+		= FSDirectory.getDirectory(mIndexDirectory,false);
+	    mDirectoryIndexWriter = new IndexWriter(directory,mAnalyzer,true);
+	}
+	public void run() {
+	    while (true) {
+		Directory directoryToMerge = null;
+		try {
+		    directoryToMerge = (Directory) mIndexQueue.poll(POLL_TIME);
+		} catch (InterruptedException e) {
+		    System.out.println("Unexpected interruption in Merger poll.");
+		    e.printStackTrace();
+		    continue;
+		}
+		if (directoryToMerge == null) {
+		    if (isTerminable()) {
+			printReport();
+			return;
+		    }
+		    continue;
+		}
+		try {
+		    mDirectoryIndexWriter.addIndexes(new Directory[] { directoryToMerge });
+		} catch (IOException e) {
+		    errorMsg("IOException in merge.", e);
+		}
+	    }
+	}
+	private void printReport() {
+	    System.out.println("\n");
+	    System.out.println("Exiting merger. Queue size=" + mIndexQueue.size());
+	    System.out.println("\n");
+	    System.out.println("TOTAL # DOCS INDEXED=" + mDirectoryIndexWriter.docCount());
+	}
+	private void closeIndex() throws IOException {
+	    // mDirectoryIndexWriter.optimize();
+	    mDirectoryIndexWriter.close();
+	}
+    }
+
+    private abstract class Terminable implements Runnable {
+	protected final int POLL_TIME = 1000; // 1 second
+	private boolean mTerminable = false;
+	public synchronized void terminable() {
+	    mTerminable = true;
+	}
+	public synchronized boolean isTerminable() {
+	    return mTerminable;
+	}
+
+
+    }
+}
+

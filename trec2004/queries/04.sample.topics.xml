@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!-- error corrected when posted on list: dubliniensis was spelled wrong in context -->
+<SAMPLE-TOPICS>
+<TOPIC>
+<ID>51</ID> 
+<TITLE>pBR322 used as a gene vector</TITLE> 
+<NEED>Find information about base sequences and restriction maps in plasmids that are used as gene vectors.</NEED> 
+<CONTEXT>The researcher would like to manipulate the plasmid by removing a particular gene and needs the original base sequence or restriction map information of the plasmid.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>52</ID> 
+<TITLE>Wnt signaling pathway</TITLE> 
+<NEED>Find information on model organ system where Wnt signaling pathway has been studied.</NEED> 
+<CONTEXT>Need to retrieve literature for any computer modeled organ system that has studied Wnt.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>53</ID> 
+<TITLE>Gene expression regulation and TNF/NfkappaB pathway</TITLE> 
+<NEED>What influence do up-regulated proteins GADD45beta, IkappaBalpha, XIAP, cIAP2, and A2O have on the TNF/NfkappaB pathway?</NEED> 
+<CONTEXT>Researcher needs to gather information to understand the inflammation response in tissue in the abdominal cavity of mice. Certain proteins are up-regulated in normal mice who show the inflammation response of interest. Mutant mice do not show upregulation and do not have the inflammation response. In addition, the specific mutation alters NFkappaB/TNF-dependent signaling.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>54</ID> 
+<TITLE>Fungal differentiation</TITLE> 
+<NEED>Find the time of differentiation or mating of Candida albicans and Candida dubliniensis.</NEED> 
+<CONTEXT>During experiments on Candida albicans researchers found that they can mate with Candida dubliniensis.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>55</ID> 
+<TITLE>H2A histone family</TITLE> 
+<NEED>What evolutionary changes have occurred to members of the H2A histone family?</NEED> 
+<CONTEXT>We are interested in the evolutionary context of H2A histones, e.g., where do they belong in the tree of life?</CONTEXT> 
+</TOPIC>
+</SAMPLE-TOPICS>

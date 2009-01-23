@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<TOPICS>
+<TOPIC>
+<ID>1</ID> 
+<TITLE>Ferroportin-1 in humans</TITLE> 
+<NEED>Find articles about Ferroportin-1, an iron transporter, in humans.</NEED> 
+<CONTEXT>Ferroportin1 (also known as SLC40A1; Ferroportin 1; FPN1; HFE4; IREG1; Iron regulated gene 1; Iron-regulated transporter 1; MTP1; SLC11A3; and Solute carrier family 11 (proton-coupled divalent metal ion transporters), member 3) may play a role in iron transport.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>2</ID> 
+<TITLE>Generating transgenic mice</TITLE> 
+<NEED>Find protocols for generating transgenic mice.</NEED> 
+<CONTEXT>Determine protocols to generate transgenic mice having a single copy of the gene of interest at a specific location.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>3</ID> 
+<TITLE>Time course for gene expression in mouse kidney</TITLE> 
+<NEED>What is the time course of gene expression in the murine developing kidney?</NEED> 
+<CONTEXT>Relevant articles describe genes involved in kidney development.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>4</ID> 
+<TITLE>Gene expression profiles for kidney in mice</TITLE> 
+<NEED>What mouse genes are specific to the kidney?</NEED> 
+<CONTEXT> What genes are expressed only in the mouse kidney and not in other tissues?</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>5</ID> 
+<TITLE>Protocols for isolating cell nuclei</TITLE> 
+<NEED> Articles are relevant if they describe methods for subcellular fractionation of nuclei.</NEED> 
+<CONTEXT> Laboratory preparations can be enriched for certain kinds of proteins if the cellular compartment in which they reside is purified away from the rest of the cell contents.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>6</ID> 
+<TITLE>FancD2</TITLE> 
+<NEED>Find articles about function of FancD2.</NEED> 
+<CONTEXT>There are many genes involved in Fanconi Anemia and the downstream pathways of FancD2 in flies. The FancD2 is monoubiquitylated and there are 2 components of the FancD2 pathway. The researcher studies the FancD2 pathway in flies.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>7</ID> 
+<TITLE>DNA repair and oxidative stress</TITLE> 
+<NEED>Find correlation between DNA repair pathways and oxidative stress.</NEED> 
+<CONTEXT>Researcher is interested in how oxidative stress effects DNA repair.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>8</ID> 
+<TITLE>Correlation between DNA repair pathways and skin cancer</TITLE> 
+<NEED>Genes and proteins (pathways) common to DNA repair, oxidative diseases, skin-carcinogenesis, and UV-carcinogenesis.</NEED> 
+<CONTEXT> Are there genes and mechanisms that are utilized by more than one of these fields? A relevant article mentions a gene or pathway, DNA repair, and one or more oxidative or cancerous diseases.
+</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>9</ID> 
+<TITLE>mutY</TITLE> 
+<NEED>Find articles about the function of mutY in humans.</NEED> 
+<CONTEXT>mutY is particularly challenging, because it is also known as hMYH. This is further complicated by the fact that myoglobin genes are also typically located in search results.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>10</ID> 
+<TITLE>NEIL1</TITLE> 
+<NEED>Find articles about the role of NEIL1 in repair of DNA.</NEED> 
+<CONTEXT>Interested in role that NEIL1 plays in DNA repair.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>11</ID> 
+<TITLE>Carcinogenesis and hairless mice</TITLE> 
+<NEED>Find articles regarding carcinogenesis induced in hairless mice.</NEED> 
+<CONTEXT>Researching genes and proteins (pathways) common to DNA repair, oxidative diseases, skin-carcinogenesis, and UV-carcinogenesis.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>12</ID> 
+<TITLE>Genes regulated by Smad4</TITLE> 
+<NEED> Find articles describing genes that are regulated by the signal transducing molecule Smad4.</NEED> 
+<CONTEXT>Project is to characterize Smad4 knockout mouse in skin (specifically skin) to establish signaling network. Identify all Smad4 targets to compare gene expression patterns of the knockout mouse to the normal mouse.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>13</ID> 
+<TITLE>Role of TGFB in angiogenesis in skin</TITLE> 
+<NEED>Documents regarding the role of TGFB in angiogenesis in skin with respect to homeostasis and development.</NEED> 
+<CONTEXT>TGFB plays a crucial role in regulating angiogenesis, a biological process that occurs during development and homeostasis, as well as during inflammatory perturbation.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>14</ID> 
+<TITLE>Expression or Regulation of TGFB in HNSCC cancers</TITLE> 
+<NEED>Documents regarding TGFB expression or regulation in HNSCC cancers.</NEED> 
+<CONTEXT>The laboratory wants to identify components of the the TGFB signaling pathway in HNSCC, and determine new targets to study HNSCC.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>15</ID> 
+<TITLE>ATPase and apoptosis</TITLE> 
+<NEED>Find information on role of ATPases in apoptosis</NEED> 
+<CONTEXT>The laboratory wants to know more about the role of ATPases in apoptosis.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>16</ID> 
+<TITLE>AAA proteins</TITLE> 
+<NEED>How do AAA proteins mediate interaction with lipids or DNA and what is their functional impact?</NEED> 
+<CONTEXT>A relevant document is one that discusses protein interactions interactions involving members of the AAA protein family that can help to determine their functional importance.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>17</ID> 
+<TITLE>DO1 antibody</TITLE> 
+<NEED>Determine binding affinity of anti-p53 monoclonal antibody DO1.</NEED> 
+<CONTEXT>One aspect of determining how an antibody works is to determine its binding affinity. A relevant document is one which discusses the binding affinity of DO1.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>18</ID> 
+<TITLE>Gis4</TITLE> 
+<NEED>Properties of Gis4 with respect to cell cycle and/or metabolism.</NEED> 
+<CONTEXT>It is possible that Gis4 plays a role between cell cycle and yeast carbon pathways and that there is a link between cell cycle and metabolism. A relevant document is one that supports or refutes this hypothesis with regard to the properties of Gis4 in one or both processes.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>19</ID> 
+<TITLE>Comparison of Promoters of GAL1 and SUC1</TITLE> 
+<NEED>What similarities and differences exist between the upstream promoter regions of GAL1 and SUC1? Are there co-repressors or co-activators? If so, are they regulated by SNF1?</NEED> 
+<CONTEXT>Gis4 may play a role between the cell cycle and yeast carbon pathways. SNF1 is an upstream kinase of Gis 4.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>20</ID> 
+<TITLE>Substrate modification by ubiquitin</TITLE> 
+<NEED> Which biological processes are regulated by having constituent proteins modified by covalent attachment to ubiquitin or ubiquitin-like proteins?</NEED> 
+<CONTEXT>Ubiquitin and ubiquitin-like proteins have important roles in controlling cell division, signal transduction, embryonic development, endocytic trafficking, and the immune response.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>21</ID> 
+<TITLE>Role of p63 and p73 in relation to DNA damage</TITLE> 
+<NEED>Do p63 and p73 cause cell cycle arrest or apoptosis related to DNA damage?</NEED> 
+<CONTEXT>DNA damage may cause cell cycle arrest or apoptosis. p63 and p73 may play a role in mediating these sequelae of DNA damage.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>22</ID> 
+<TITLE>Relative response of p53 family members to agents causing single-stranded versus double-stranded DNA breaks</TITLE> 
+<NEED>Does p53 respond differently to different DNA-damaging agents? Do they respond differently to single-strand versus double-strand breaks?</NEED> 
+<CONTEXT>DNA damage may cause cell cycle arrest or apoptosis. p53 plays a role in mediating these sequelae of DNA damage.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>23</ID> 
+<TITLE>Saccharomyces cerevisiae proteins involved in ubiquitin system</TITLE> 
+<NEED>Which Saccharomyces cerevisiae proteins are involved in the ubiquitin proteolytic pathway?</NEED> 
+<CONTEXT>The researcher identified a protein in another yeast species and wants to compare it to the same one in Saccharomyces cerevisiae.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>24</ID> 
+<TITLE>Mouse peptidoglycan recognition proteins (PGRP)</TITLE> 
+<NEED>Find all reports describing mouse peptidoglycan recognition proteins (PGRP).</NEED> 
+<CONTEXT>A research group is preparing a manuscript about four poorly characterized mouse PGRP genes. Their findings include new information about gene regulation. They report longer DNA and protein sequences than those found in GenBank, and sub-cellular location discrepancies.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>25</ID> 
+<TITLE>Cause of scleroderma</TITLE> 
+<NEED>Identify studies that include genome-wide scans and microarray analysis in the investigation of scleroderma.</NEED> 
+<CONTEXT>New information about experiments and genes involved in scleroderma.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>26</ID> 
+<TITLE>Function of BUB2/BFA1 in the process of cytokinesis</TITLE> 
+<NEED>Retrieval of information regarding the role of BUB2 and BFA1 in cytokinesis in yeast.</NEED> 
+<CONTEXT>Information gathering for the purpose of supplementing the information from a local protocol.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>27</ID> 
+<TITLE>Role of autophagy in apoptosis</TITLE> 
+<NEED>Experiments establishing positive or negative interconnection between autophagy and apoptosis.</NEED> 
+<CONTEXT>New information about experiments and genes involved in autophagic cell death.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>28</ID> 
+<TITLE>Proteases that function in both apoptosis and autophagy cell death</TITLE> 
+<NEED>Studies that investigate similarities in morphological changes among apoptosis and autophagy processes.</NEED> 
+<CONTEXT>Collection of information regarding the potential relationship between apoptosis and autophagy.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>29</ID> 
+<TITLE>Phenotypes of gyrA mutations</TITLE> 
+<NEED>Documents containing the sequences and phenotypes of E. coli gyrA mutations.</NEED> 
+<CONTEXT>The laboratory has isolated some gyrA mutations in E. coli. They want to compare their mutant gyrA with the wild-type and other mutant sequences.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>30</ID> 
+<TITLE>Regulatory targets of the Nkx gene family members</TITLE> 
+<NEED>Documents identifying genes regulated by Nkx gene family members.</NEED> 
+<CONTEXT>The laboratory needs markers to follow Nkx family-member expression and activity.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>31</ID> 
+<TITLE>TOR signaling in neurofibromatosis</TITLE> 
+<NEED>Reports that provide possible links between neurofibromatosis and TOR signaling.</NEED> 
+<CONTEXT>TOR is a serine-threonine kinase in a pathway involved in the control of cell growth and proliferation, and it is the target of the signaling inhibitor rapamycin.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>32</ID> 
+<TITLE>Xenograft animal models of tumorogenesis</TITLE> 
+<NEED>Find reports that describe xenograft models of human cancers.</NEED> 
+<CONTEXT>A xenograft animal model of cancer is one in which foreign tumor tissue is grafted into animals, usually rodents, providing a means to test various compounds for their ability to slow or halt tumor growth.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>33</ID> 
+<TITLE>Mice, mutant strains, and Histoplasmosis</TITLE> 
+<NEED>Identify research on mutant mouse strains and factors which increase susceptibility to infection by Histoplasma capsulatum.</NEED> 
+<CONTEXT>The ultimate goal of this initial research study, is to identify mouse genes that will influence the outcome of blood borne pathogen infections.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>34</ID> 
+<TITLE>Gene products of Cryptococcus important to fungal survival</TITLE> 
+<NEED>Articles reporting experiments allowing annotation of gene products of Cryptococcus.</NEED> 
+<CONTEXT>Information needed to contribute to the development of a standardized annotated database of Cryptococcus neoformans genome.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>35</ID> 
+<TITLE>WD40 repeat-containing proteins</TITLE> 
+<NEED>What is the function of proteins containing WD40 repeats?</NEED> 
+<CONTEXT>Need to understand the variety of functions that involve this domain.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>36</ID> 
+<TITLE>RAB3A</TITLE> 
+<NEED>Background information on RAB3A.</NEED> 
+<CONTEXT>Further information about a gene is needed after it is identified through a gene expression profile. The genes are related to synaptic plasticity in learning and memory.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>37</ID> 
+<TITLE>PAM</TITLE> 
+<NEED>What research is being done on peptide amidating enzyme, PAM?</NEED> 
+<CONTEXT>Need to put specific PAM research in the context of other researchers work.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>38</ID> 
+<TITLE>Risk factors for stroke</TITLE> 
+<NEED>Information concerning genetic loci that are associated with increased risk of stroke, such as apolipoprotein E4 or factor V mutations.</NEED> 
+<CONTEXT>Candidate gene testing within a large Scottish case-control study of genetic risk factors for stroke. Future research includes investigations into other ethnically distinct populations.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>39</ID> 
+<TITLE>Hypertension</TITLE> 
+<NEED>Identify genes as potential genetic risk factors candidates for causing hypertension.</NEED> 
+<CONTEXT>A relevant document is one which discusses genes that could be considered as candidates to test in a randomized controlled trial which studies the genetic risk factors for stroke.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>40</ID> 
+<TITLE>Antigens expressed by lung epithelial cells</TITLE> 
+<NEED>To identify the antigens expressed by lung epithelial cells and the antibodies available.</NEED> 
+<CONTEXT>Information gathering to design assays to determine the nature of donor cells in tissues of chimaeric animals.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>41</ID> 
+<TITLE>Mutations in the Cystic Fibrosis conductance regulator gene</TITLE> 
+<NEED>What phenotypes have been described resulting from mutations in the Cystic Fibrosis conductance regulator gene?</NEED> 
+<CONTEXT>Comparing protein mutations detected utilizing mass spectrometry.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>42</ID> 
+<TITLE>Genes altered by chromosome translocations</TITLE> 
+<NEED>What genes show altered behavior due to chromosomal rearrangements?</NEED> 
+<CONTEXT>Information is required on the disruption of functions from genomic DNA rearrangements.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>43</ID> 
+<TITLE>Sleeping Beauty</TITLE> 
+<NEED>Studies of Sleeping Beauty transposons.</NEED> 
+<CONTEXT>A relevant document is one that discusses studies on Sleeping Beauty. Interviewee's group studies a related element and want to know what others are doing in a similar field.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>44</ID> 
+<TITLE>Proteins involved in the nerve growth factor pathway</TITLE> 
+<NEED>Create a list of all the nerve growth factor pathway proteins.</NEED> 
+<CONTEXT>Need to identify genes that are most likely to be involved in the nerve growth factor pathway.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>45</ID> 
+<TITLE>Mental Health Wellness-1</TITLE> 
+<NEED>What genetic loci, such as Mental Health Wellness 1 (MWH1) are implicated in mental health?</NEED> 
+<CONTEXT>Want to identify genes involved in mental disorders.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>46</ID> 
+<TITLE>RSK2</TITLE> 
+<NEED>What human biological processes is RSK2 known to be involved in?</NEED> 
+<CONTEXT>After being identified via microarrays, the biological processes the genes are involved in needs to be discovered.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>47</ID> 
+<TITLE>Human gene BCL-2 antagonists and inhibitors</TITLE> 
+<NEED>Research the human gene BCL-2 to determine if there are antagonists and inhibitors inside of a cell.</NEED> 
+<CONTEXT>Early research goals included learning more about BCL2-interacting molecules, which facilitated identifying new inhibitors during preliminary testing.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>48</ID> 
+<TITLE>Human homologues of C. elegans UNC genes</TITLE> 
+<NEED>What is the focus of studies involving the members of the human UNC gene family?</NEED> 
+<CONTEXT>The interviewee wished to determine the interests and focus of a fellow scientist that was investigating similar topics to their own.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>49</ID> 
+<TITLE>Glyphosate tolerance gene sequence</TITLE> 
+<NEED>Find reports and glyphosate tolerance gene sequences in the literature.</NEED> 
+<CONTEXT>A DNA sequence isolated in the laboratory is often sequenced only partially, until enough sequence is generated to identify the gene. In these situations, the rest of the sequence is inferred from matching clones in the public domain. When there is difficulty in the laboratory manipulating the DNA segment using sequence-dependent methods, the laboratory isolate must be re-examined.</CONTEXT> 
+</TOPIC>
+<TOPIC>
+<ID>50</ID> 
+<TITLE>Low temperature protein expression in E. coli</TITLE> 
+<NEED>Find research on improving protein expressions at low temperature in Escherichia coli bacteria.</NEED> 
+<CONTEXT>The researcher is not satisfied with the yield of expressing a protein in E. coli when grown at low temperature and is searching for a better solution. The researcher is willing to try a different organism and/or method.</CONTEXT> 
+</TOPIC>
+</TOPICS>
+
