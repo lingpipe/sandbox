@@ -1,0 +1,275 @@
+<?xml version="1.0"?>
+
+<project name="Stemmers"
+         default="compile" basedir=".">
+
+<property name="data.dir"
+          value="../data"/>
+
+<property name="gigaword.dir"
+          value="${data.dir}/gigawordEnglish/dist/"/>
+<property name="gigaword.dir.nyt"
+          value="${gigaword.dir}/nyt"/>
+<property name="gigaword.dir.nyt.file"
+          value="${gigaword.dir.nyt}/nyt199407.gz"/>
+
+<property name="catalan.dir"
+          value="${data.dir}/senseval3/unpacked/catalan/"/>
+
+
+
+<path id="classpath.standard">
+  <pathelement location="build/classes"/>
+  <pathelement location="../lingpipe/lingpipe-2.4.0.jar"/>
+  <pathelement location="../lingpipe/lib/commons-math-1.1.jar"/>
+</path>
+
+<target name="tarball">
+  <tar destfile="ai-stemmer.tar.gz"
+       compression="gzip">
+    <tarfileset dir="."
+                prefix="ai-stemmer"
+                mode="775">
+      <exclude name="ai-stemmer.tar.gz"/>
+      <exclude name="**/build/**"/>
+      <include name="build.xml"/>
+      <include name="data/**"/>
+      <include name="docs/**"/>
+      <include name="src/**"/>
+      <include name="results/**"/>
+      <include name="users/**"/>
+    </tarfileset>
+  </tar>
+</target>
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete file="stemmer.jar"/>
+</target>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="stemmer.jar">
+    <fileset dir="build/classes"
+             includes="**/*.class"/>
+  </jar>
+</target>
+
+
+
+<target name="count"
+        depends="jar">
+  <java classname="corpus.CorpusCounts"
+        maxmemory="4G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="data/leipzig-en-words.txt"/>
+    <arg value="data/leipzig-cat-words.txt"/>
+    <arg value="data/leipzig-de-words.txt"/>
+    <arg value="data/leipzig-fi-words.txt"/>
+    <arg value="data/leipzig-fr-words.txt"/>
+    <arg value="data/leipzig-tr-words.txt"/>
+    <arg value="data/clef-portuguese-words.txt"/>
+    <arg value="data/gigawords-nyt.txt"/>
+   </java>
+</target>
+
+<target name="em4"
+        depends="jar">
+  <java classname="stemmers.Em4"
+        maxmemory="10G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+
+    <arg value="data/senseval-catalan-words.txt"/>
+
+    <!-- Portuguese -->
+    <arg value="data/clef-portuguese-words.txt"/>
+
+    <!-- Catalan -->
+    <arg value="data/leipzig-cat-words.txt"/>
+
+    <!-- German -->
+    <arg value="data/leipzig-de-words.txt"/>
+
+    <!-- Finnish -->
+    <arg value="data/leipzig-fi-words.txt"/>
+
+    <!-- French -->
+    <arg value="data/leipzig-fr-words.txt"/>
+
+    <!-- Turkish -->
+    <arg value="data/leipzig-tr-words.txt"/>
+
+    <!-- English -->
+    <arg value="data/gigawords-nyt.txt"/>
+    <arg value="data/leipzig-en-words.txt"/>
+
+  </java>
+</target>
+
+<target name="em2"
+        depends="jar">
+  <java classname="stemmers.em2.Trainer"
+        maxmemory="512M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="-resultFile=results/${results.file}.txt"/>
+    <arg value="-wordCountFile=data/gigawords-nyt.txt"/>
+    <arg value="-minWordCount=32"/>
+    <arg value="-priorCount=2"/>
+    <arg value="-priorStemAvgLength=4"/>
+    <arg value="-priorSuffixNonZeroAvgLength=2.5"/>
+    <arg value="-priorSuffixZeroLengthProb=0.20"/>
+    <arg value="-maxCharNGram=8"/>
+    <arg value="-lmInterpolationRatio=8"/>
+    <arg value="-numChars=26"/>
+    <arg value="-lmCountMultiplier=10000000"/>
+    <arg value="-epsilon=0.000001"/>
+    <arg value="-maxIterations=128"/>
+  </java>
+</target>
+
+
+
+
+<target name="editor"
+        depends="jar">
+  <java classname="stemmers.Editor"
+        maxmemory="1622M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="models/leipzig-en-words.txt.Stemmer"/>
+    <arg value="carp"/>
+  </java>
+</target>
+
+
+
+
+
+
+<target name="score"
+        depends="jar">
+  <java classname="stem.Scorer"
+        maxmemory="1024M"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="results/test16.txt"/>
+    <arg value="UTF-8"/>
+    <arg value="results/test64.txt"/>
+    <arg value="UTF-8"/>
+  </java>
+</target>
+
+
+<!-- TEXT EXTRACTORS -->
+
+<target name="english-gigaword-nyt"
+        depends="jar">
+  <java classname="corpus.GigawordFreq"
+        maxmemory="256M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="data/gigawords-nyt-test.txt"/>   <!-- output -->
+    <arg value="${gigaword.dir.nyt.file}"/>      <!-- path of data -->
+  </java>
+</target>
+
+<target name="catalan-senseval3"
+        depends="jar">
+  <java classname="util.ExtractWords"
+        maxmemory="512M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="senseval-catalan-words.txt"/>   <!-- output -->
+    <arg value="corpus.Senseval3Counter"/>           <!-- parser class name -->
+    <arg value="${catalan.dir}/Catalan-samples.test.tagged.xml.gz"/>
+    <arg value="${catalan.dir}/Catalan-samples.train.tagged.xml.gz"/>
+    <arg value="${catalan.dir}/Catalan-samples.unlab.tagged.xml.gz"/>
+  </java>
+</target>
+
+<target name="leipzig-cat"
+        depends="jar">
+  <java classname="corpus.LeipzigFreq"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="F:\data\leipzig\unpacked\cat300k"/>
+    <arg value="data/leipzig-cat-words.txt"/>
+  </java>
+</target>
+
+<target name="leipzig-de"
+        depends="jar">
+  <java classname="corpus.LeipzigFreq"
+        maxmemory="4G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="F:\data\leipzig\unpacked\de05_3M"/>
+    <arg value="data/leipzig-de-words.txt"/>
+  </java>
+</target>
+
+<target name="leipzig-en"
+        depends="jar">
+  <java classname="corpus.LeipzigFreq"
+        maxmemory="3G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="F:\data\leipzig\unpacked\en1M"/>
+    <arg value="data/leipzig-en-words.txt"/>
+  </java>
+</target>
+
+<target name="leipzig-fr"
+        depends="jar">
+  <java classname="corpus.LeipzigFreq"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="F:\data\leipzig\unpacked\fr100k"/>
+    <arg value="data/leipzig-fr-words.txt"/>
+  </java>
+</target>
+
+<target name="leipzig-tr"
+        depends="jar">
+  <java classname="corpus.LeipzigFreq"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="F:\data\leipzig\unpacked\tr100k"/>
+    <arg value="data/leipzig-tr-words.txt"/>
+  </java>
+</target>
+
+<target name="clef-pt"
+        depends="jar">
+  <java classname="corpus.FolhaFreq"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="data/clef-portuguese-words.txt"/>
+    <arg value="f:\data\clef\unpacked\folha\folha.xml"/>
+    <arg value="f:\data\clef\unpacked\publico\publico94.xml"/>
+    <arg value="f:\data\clef\unpacked\publico\publico95.xml"/>
+  </java>
+</target>
+
+
+
+</project>
