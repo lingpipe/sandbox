@@ -58,9 +58,15 @@ class EntrezTags {
     static final String GENE_COMMENTARY_LABEL_ELT = "Gene-commentary_label";
     static final String GENE_COMMENTARY_TEXT_ELT = "Gene-commentary_text";
     static final String GENE_COMMENTARY_REFS_ELT = "Gene-commentary_refs";
+    static final String GENE_COMMENTARY_HEADING_ELT = "Gene-commentary_heading";
+    static final String GENE_COMMENTARY_COMMENT_ELT = "Gene-commentary_comment";
+    static final String GENE_COMMENTARY_SOURCE_ELT = "Gene-commentary_source";
+
     static final String PUBMEDID_ELT = "PubMedId";
     static final String OFFICIAL_SYMBOL_TEXT = "Official Symbol";
     static final String OFFICIAL_FULL_NAME = "Official Full Name";
+
+    static final String ADDITIONAL_LINKS_TEXT = "Additional Links";
 
     static final String ENTREZGENE_UNIQUE_KEYS_ELT = "Entrezgene_unique-keys";
 
@@ -68,6 +74,8 @@ class EntrezTags {
     static final String DBTAG_DB_ELT = "Dbtag_db";
     static final String DBTAG_TAG_ELT = "Dbtag_tag";
     static final String DBTAG_OBJECTID_ID_ELT = "Object-id_id";
+
+    static final String ADD_LINK_STR_ELT = "Object-id_str";
 
     static final String MIM = "MIM";
     static final String LOCUSLINK = "LocusID";

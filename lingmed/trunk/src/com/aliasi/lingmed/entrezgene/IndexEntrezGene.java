@@ -60,7 +60,7 @@ import org.apache.log4j.Logger;
 
 public class IndexEntrezGene extends AbstractCommand {
     private final Logger mLogger
-	= Logger.getLogger(IndexEntrezGene.class);
+        = Logger.getLogger(IndexEntrezGene.class);
 
     private File mDistFile;
     private String mDistFileName;
@@ -80,74 +80,74 @@ public class IndexEntrezGene extends AbstractCommand {
     private IndexEntrezGene(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
         mIndexName = getExistingArgument(LUCENE_INDEX);
-	mDistFileName = getExistingArgument(DIST_FILE);
-	reportParameters();
-	mIndex = FileUtils.checkIndex(mIndexName,true);
-	mDistFile = FileUtils.checkInputFile(mDistFileName);
+        mDistFileName = getExistingArgument(DIST_FILE);
+        reportParameters();
+        mIndex = FileUtils.checkIndex(mIndexName,true);
+        mDistFile = FileUtils.checkInputFile(mDistFileName);
     }
 
     private void reportParameters() {
         mLogger.info("Indexing EntrezGene "
-		     + "\n\tIndex=" + mIndexName
-		     + "\n\tEntrezGene distribution=" + mDistFileName
-		     );
+                     + "\n\tIndex=" + mIndexName
+                     + "\n\tEntrezGene distribution=" + mDistFileName
+                     );
     }
 
     public void run() {
-	mLogger.info("Begin indexing");
-	try {
-	    IndexWriter indexWriter = new IndexWriter(mIndex,mCodec.getAnalyzer());
+        mLogger.info("Begin indexing");
+        try {
+            IndexWriter indexWriter = new IndexWriter(mIndex,mCodec.getAnalyzer());
 
-	    EntrezGeneIndexer indexer = new EntrezGeneIndexer(indexWriter,mCodec);
+            EntrezGeneIndexer indexer = new EntrezGeneIndexer(indexWriter,mCodec);
 
-	    // save raw XML for <Entrezgene> element
-	    Parser<ObjectHandler<EntrezGene>> parser = new EntrezParser(true);  
-	    parser.setHandler(indexer);
-	    InputSource inSource = new InputSource(mDistFileName);
-	    parser.parse(inSource);
-	    mLogger.info("Parsed index, now optimize.");
-	    indexer.close();
-	    mLogger.info("Processing complete.");
-	} catch (Exception e) {
-	    mLogger.warn("Unexpected Exception: "+e.getMessage());
-	    mLogger.warn("stack trace: "+Logging.logStackTrace(e));
-	    IllegalStateException e2 
-		= new IllegalStateException(e.getMessage());
-	    e2.setStackTrace(e.getStackTrace());
-	    throw e2;
-	}
+            // save raw XML for <Entrezgene> element
+            Parser<ObjectHandler<EntrezGene>> parser = new EntrezParser(true);  
+            parser.setHandler(indexer);
+            InputSource inSource = new InputSource(mDistFileName);
+            parser.parse(inSource);
+            mLogger.info("Parsed index, now optimize.");
+            indexer.close();
+            mLogger.info("Processing complete.");
+        } catch (Exception e) {
+            mLogger.warn("Unexpected Exception: "+e.getMessage());
+            mLogger.warn("stack trace: "+Logging.logStackTrace(e));
+            IllegalStateException e2 
+                = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
+        }
     }
 
     public static void main(String[] args) throws Exception {
         IndexEntrezGene indexer = new IndexEntrezGene(args);
-	indexer.run();
+        indexer.run();
     }
 
     static class EntrezGeneIndexer implements ObjectHandler<EntrezGene> {
-	final IndexWriter mIndexWriter;
-	final EntrezGeneCodec mGeneCodec;
+        final IndexWriter mIndexWriter;
+        final EntrezGeneCodec mGeneCodec;
 
         public EntrezGeneIndexer(IndexWriter indexWriter, EntrezGeneCodec codec) {
-	    mIndexWriter = indexWriter;
-	    mGeneCodec = codec;
+            mIndexWriter = indexWriter;
+            mGeneCodec = codec;
         }
 
         public void handle(EntrezGene eg) {
-	    // Logger.getLogger(IndexEntrezGene.class).debug("entrez gene entry: " + eg.toString());
+            // Logger.getLogger(IndexEntrezGene.class).debug("entrez gene entry: " + eg.toString());
 
-	    if (eg.isStatusLive() && eg.isTypeGene()) {
-		Logger.getLogger(IndexEntrezGene.class).debug("Adding Entrezgene GeneId=" + eg.getGeneId());
-		Document doc = mGeneCodec.toDocument(eg);
-		try { 
-		    mIndexWriter.addDocument(doc);  
-		    // Logger.getLogger(IndexEntrezGene.class).debug("Added Entrezgene\n" + eg.toString());
-		
-		} catch (IOException ioe) {
-		    Logger.getLogger(IndexEntrezGene.class).warn("Exception indexing EntrezGene: " + ioe);
-		}
-	    } else if (eg.isStatusLive() && !eg.isTypeGene()) {
-		Logger.getLogger(IndexEntrezGene.class).debug("Skipping non-gene, GeneId=" + eg.getGeneId());
-	    }
+            if (eg.isStatusLive() && eg.isTypeGene()) {
+                Logger.getLogger(IndexEntrezGene.class).debug("Adding Entrezgene GeneId=" + eg.getGeneId());
+                Document doc = mGeneCodec.toDocument(eg);
+                try { 
+                    mIndexWriter.addDocument(doc);  
+                    Logger.getLogger(IndexEntrezGene.class).debug("Added Entrezgene\n" + eg.toString());
+                
+                } catch (IOException ioe) {
+                    Logger.getLogger(IndexEntrezGene.class).warn("Exception indexing EntrezGene: " + ioe);
+                }
+            } else if (eg.isStatusLive() && !eg.isTypeGene()) {
+                Logger.getLogger(IndexEntrezGene.class).debug("Skipping non-gene, GeneId=" + eg.getGeneId());
+            }
         }
 
         public void close() throws IOException {
