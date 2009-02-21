@@ -100,39 +100,39 @@ public class EntrezGene {
 
 
     public EntrezGene(String entrezStatus,
-		      String geneId,
-		      String entrezType,
-		      String speciesTaxName,
-		      String speciesCommonName,
-		      String speciesTaxonId,
-		      String geneRefDesc,
-		      String geneRefLocus,
-		      String geneRefMaploc,
-		      String[] geneRefSyns,
-		      String geneSummary,
-		      String officialFullName,
-		      String officialSymbol,
-		      String[] protRefNames,
-		      String protRefDesc,
-		      Pair<String,String[]>[] pubMedRefs,
-		      Pair<String,String[]>[] uniqueKeys) {
-	mEntrezStatus =	entrezStatus;
-	mGeneId = geneId;
-	mEntrezType = entrezType;
-	mSpeciesTaxName = speciesTaxName;
-	mSpeciesCommonName = speciesCommonName;
-	mSpeciesTaxonId = speciesTaxonId;
-	mGeneRefDesc = geneRefDesc;
-	mGeneRefLocus = geneRefLocus;
-	mGeneRefMaploc = geneRefMaploc;
-	mGeneSummary = geneSummary;
-	mOfficialFullName = officialFullName;
-	mOfficialSymbol = officialSymbol;
-	mProtRefDesc = protRefDesc;
-	mProtRefNames = protRefNames;
-	mGeneRefSyns = geneRefSyns;
-	mPubMedRefs = pubMedRefs;
-	mUniqueKeys = uniqueKeys;
+                      String geneId,
+                      String entrezType,
+                      String speciesTaxName,
+                      String speciesCommonName,
+                      String speciesTaxonId,
+                      String geneRefDesc,
+                      String geneRefLocus,
+                      String geneRefMaploc,
+                      String[] geneRefSyns,
+                      String geneSummary,
+                      String officialFullName,
+                      String officialSymbol,
+                      String[] protRefNames,
+                      String protRefDesc,
+                      Pair<String,String[]>[] pubMedRefs,
+                      Pair<String,String[]>[] uniqueKeys) {
+        mEntrezStatus =        entrezStatus;
+        mGeneId = geneId;
+        mEntrezType = entrezType;
+        mSpeciesTaxName = speciesTaxName;
+        mSpeciesCommonName = speciesCommonName;
+        mSpeciesTaxonId = speciesTaxonId;
+        mGeneRefDesc = geneRefDesc;
+        mGeneRefLocus = geneRefLocus;
+        mGeneRefMaploc = geneRefMaploc;
+        mGeneSummary = geneSummary;
+        mOfficialFullName = officialFullName;
+        mOfficialSymbol = officialSymbol;
+        mProtRefDesc = protRefDesc;
+        mProtRefNames = protRefNames;
+        mGeneRefSyns = geneRefSyns;
+        mPubMedRefs = pubMedRefs;
+        mUniqueKeys = uniqueKeys;
     }
 
     String getEntrezStatus() { return mEntrezStatus; }
@@ -226,29 +226,29 @@ public class EntrezGene {
     public String[] getProtRefNames() { return mProtRefNames; }
 
     /**
-      * Returns the list of all (labeled) lists of PubMed article references.
+	 * Returns the list of all (labeled) lists of PubMed article references.
      */
     public Pair<String,String[]>[] getPubMedRefs() { return mPubMedRefs; }
 
     /**
-      * Returns the list of all lists of external database ids, 
-      * labelled by database name.
+	 * Returns the list of all lists of external database ids, 
+	 * labelled by database name.
      */
     public Pair<String,String[]>[] getUniqueKeys() { return mUniqueKeys; }
 
     /**
-      * Returns the count of unique PubMed ids from the list of PubMedRefs.
+	 * Returns the count of unique PubMed ids from the list of PubMedRefs.
      */
     public int countUniquePubMedRefs() {
-	if (mPubMedRefs == null || mPubMedRefs.length == 0) return 0;
-	HashSet<String> refs = new HashSet<String>();
-	for (Pair<String,String[]> ref : mPubMedRefs) {
-	    String[] pmids = ref.b();
-	    for (String pmid : pmids) {
-		refs.add(pmid);
-	    }
-	}
-	return refs.size();
+        if (mPubMedRefs == null || mPubMedRefs.length == 0) return 0;
+        HashSet<String> refs = new HashSet<String>();
+        for (Pair<String,String[]> ref : mPubMedRefs) {
+            String[] pmids = ref.b();
+            for (String pmid : pmids) {
+                refs.add(pmid);
+            }
+        }
+        return refs.size();
     }
 
     /**
@@ -258,24 +258,24 @@ public class EntrezGene {
      * preferred protein name.
      */
     public int countUniqueAliases() {
-	HashSet<String> names = new HashSet<String>();
-	if (mOfficialSymbol != null) names.add(mOfficialSymbol);
-	if (mOfficialFullName != null) names.add(mOfficialFullName);
-	if (mGeneRefDesc != null)  names.add(mGeneRefDesc);
-	if (mGeneRefSyns != null) {
-	    for (int i=0; i<mGeneRefSyns.length; i++) {
-		names.add(mGeneRefSyns[i]);
-	    }
-	}
-	if (mProtRefDesc != null) {
-	    names.add(mProtRefDesc);
-	}
-	if (mProtRefNames != null) {
-	    for (int i=0; i<mProtRefNames.length; i++) {
-		names.add(mProtRefNames[i]);
-	    }
-	}
-	return names.size();
+        HashSet<String> names = new HashSet<String>();
+        if (mOfficialSymbol != null) names.add(mOfficialSymbol);
+        if (mOfficialFullName != null) names.add(mOfficialFullName);
+        if (mGeneRefDesc != null)  names.add(mGeneRefDesc);
+        if (mGeneRefSyns != null) {
+            for (int i=0; i<mGeneRefSyns.length; i++) {
+                names.add(mGeneRefSyns[i]);
+            }
+        }
+        if (mProtRefDesc != null) {
+            names.add(mProtRefDesc);
+        }
+        if (mProtRefNames != null) {
+            for (int i=0; i<mProtRefNames.length; i++) {
+                names.add(mProtRefNames[i]);
+            }
+        }
+        return names.size();
     }
 
     /**
@@ -285,64 +285,64 @@ public class EntrezGene {
      * preferred protein name.
      */
     public String[] getUniqueAliases() {
-	HashSet<String> names = new HashSet<String>();
-	if (mOfficialSymbol != null) names.add(mOfficialSymbol);
-	if (mOfficialFullName != null) names.add(mOfficialFullName);
-	if (mGeneRefDesc != null)  names.add(mGeneRefDesc);
-	if (mGeneRefSyns != null) {
-	    for (int i=0; i<mGeneRefSyns.length; i++) {
-		names.add(mGeneRefSyns[i]);
-	    }
-	}
-	if (mProtRefDesc != null) {
-	    names.add(mProtRefDesc);
-	}
-	if (mProtRefNames != null) {
-	    for (int i=0; i<mProtRefNames.length; i++) {
-		names.add(mProtRefNames[i]);
-	    }
-	}
-	String[] result = new String[names.size()];
-	return names.toArray(result);
+        HashSet<String> names = new HashSet<String>();
+        if (mOfficialSymbol != null) names.add(mOfficialSymbol);
+        if (mOfficialFullName != null) names.add(mOfficialFullName);
+        if (mGeneRefDesc != null)  names.add(mGeneRefDesc);
+        if (mGeneRefSyns != null) {
+            for (int i=0; i<mGeneRefSyns.length; i++) {
+                names.add(mGeneRefSyns[i]);
+            }
+        }
+        if (mProtRefDesc != null) {
+            names.add(mProtRefDesc);
+        }
+        if (mProtRefNames != null) {
+            for (int i=0; i<mProtRefNames.length; i++) {
+                names.add(mProtRefNames[i]);
+            }
+        }
+        String[] result = new String[names.size()];
+        return names.toArray(result);
     }
 
     /**
-      * Returns array of MIM ids, or empty array if entry not linked to MIM.
+	 * Returns array of MIM ids, or empty array if entry not linked to MIM.
      */
     public String[] getMimIds() {
-	if (mUniqueKeys.length > 0) {
-	    for (Pair<String,String[]> dbKeys : mUniqueKeys) {
-		if (dbKeys.a().equals("MIM")) {
-		    return dbKeys.b();
-		}
-	    }
-	}
-	return new String[0];
+        if (mUniqueKeys.length > 0) {
+            for (Pair<String,String[]> dbKeys : mUniqueKeys) {
+                if (dbKeys.a().equals("MIM")) {
+                    return dbKeys.b();
+                }
+            }
+        }
+        return new String[0];
     }
     
 
     /**
-      * Returns the set of unique PubMed ids from the list of PubMedRefs.
+	 * Returns the set of unique PubMed ids from the list of PubMedRefs.
      */
     public String[] getUniquePubMedRefs() {
-	if (mPubMedRefs == null || mPubMedRefs.length == 0) return new String[0];
-	HashSet<String> refs = new HashSet<String>();
-	for (Pair<String,String[]> ref : mPubMedRefs) {
-	    String[] pmids = ref.b();
-	    for (String pmid : pmids) {
-		refs.add(pmid);
-	    }
-	}
-	String[] result = new String[refs.size()];
-	return refs.toArray(result);
+        if (mPubMedRefs == null || mPubMedRefs.length == 0) return new String[0];
+        HashSet<String> refs = new HashSet<String>();
+        for (Pair<String,String[]> ref : mPubMedRefs) {
+            String[] pmids = ref.b();
+            for (String pmid : pmids) {
+                refs.add(pmid);
+            }
+        }
+        String[] result = new String[refs.size()];
+        return refs.toArray(result);
     }
 
     /**
-      * Returns the ct of unique PubMed ids from the list of PubMedRefs.
+	 * Returns the ct of unique PubMed ids from the list of PubMedRefs.
      */
     public int ctUniquePubMedRefs() {
-	String[] refs = getUniquePubMedRefs();
-	return refs.length;
+        String[] refs = getUniquePubMedRefs();
+        return refs.length;
     }
 
     /**
@@ -350,16 +350,16 @@ public class EntrezGene {
      * which are stored in a <code>EntrezGene</code>.
      */
     public boolean hasTextAnnotations() {
-	if (mGeneRefLocus != null
-	    || mGeneRefDesc != null
-	    || mGeneSummary != null
-	    || mOfficialFullName != null
-	    || mOfficialSymbol != null
-	    || mGeneRefSyns != null
-	    || mProtRefDesc != null
-	    || mProtRefNames != null)
-	    return true;
-	return false;
+        if (mGeneRefLocus != null
+            || mGeneRefDesc != null
+            || mGeneSummary != null
+            || mOfficialFullName != null
+            || mOfficialSymbol != null
+            || mGeneRefSyns != null
+            || mProtRefDesc != null
+            || mProtRefNames != null)
+            return true;
+        return false;
     }
 
     /**
@@ -367,9 +367,9 @@ public class EntrezGene {
      * attribute "value" is "live"
      */
     public boolean isStatusLive() {
-	if (mEntrezStatus == null) return false;
-	if (mEntrezStatus.equals("live")) return true;
-	return false;
+        if (mEntrezStatus == null) return false;
+        if (mEntrezStatus.equals("live")) return true;
+        return false;
     }
 
     /**
@@ -377,81 +377,81 @@ public class EntrezGene {
      * attribute "value" is not "other" or "unknown"
      */
     public boolean isTypeGene() {
-	if (mEntrezType == null 
-	    || mEntrezType.equals("other")
-	    || mEntrezType.equals("unknown")) return false;
-	return true;
+        if (mEntrezType == null 
+            || mEntrezType.equals("other")
+            || mEntrezType.equals("unknown")) return false;
+        return true;
     }
 
     /**
      * Returns <code>EntrezGene</code> contents, formatted with tabs and linefeeds.
      */
     public String toString() {
-	StringBuffer result = new StringBuffer();
-	result.append("\nEntrezgene_GeneId: "+getGeneId()+"\n");
-	if (getEntrezStatus() != null) 
-	    result.append("\tStatus: "+getEntrezStatus());
-	if (getEntrezType() != null) 
-	    result.append("\tType: "+getEntrezType());
-	if (getOfficialSymbol() != null) 
-	    result.append("\tOfficial_Symbol: "+getOfficialSymbol());
-	if (getOfficialSymbol() != null) 
-	    result.append("\tOfficial_Symbol: "+getOfficialSymbol());
-	if (getOfficialFullName() != null) 
-	    result.append("\tOfficial_FullName: "+getOfficialFullName());
-	if (getSpeciesTaxName() != null) 
-	    result.append("\n\tOrg-ref_taxname: "+getSpeciesTaxName());
-	if (getSpeciesTaxonId() != null) 
-	    result.append("\tOrg-ref_db taxon id: "+getSpeciesTaxonId());
-	if (getSpeciesCommonName() != null) 
-	    result.append("\tOrg-ref_common: "+getSpeciesCommonName());
-	if (getGeneRefMaploc() != null) 
-	    result.append("\n\tGene-ref_maploc: "+getGeneRefMaploc());
-	if (getGeneRefLocus() != null) 
-	    result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefLocus());
-	if (getGeneRefSyns() != null) {
-	    String[] syns = getGeneRefSyns();
-	    result.append("\tGene-ref_syns: ");
-	    for (int i=0;i<syns.length;i++) {
-		result.append(syns[i]+", ");
-	    }
-	}
-	if (getGeneRefDesc() != null) 
-	    result.append("\n\tGene-ref_desc: "+getGeneRefDesc());
-	if (getProtRefNames() != null) {
-	    String[] names = getProtRefNames();
-	    result.append("\n\tProt-ref_names: ");
-	    for (int i=0;i<names.length;i++) {
-		result.append(names[i]+", ");
-	    }
-	}
-	if (getProtRefDesc() != null) 
-	    result.append("\n\tProt-ref_desc (Preferred name): "+getProtRefDesc());
-	if (getGeneSummary() != null) 
-	    result.append("\n\tEntrezgene_summary: "+getGeneSummary());
+        StringBuffer result = new StringBuffer();
+        result.append("\nEntrezgene_GeneId: "+getGeneId()+"\n");
+        if (getEntrezStatus() != null) 
+            result.append("\tStatus: "+getEntrezStatus());
+        if (getEntrezType() != null) 
+            result.append("\tType: "+getEntrezType());
+        if (getOfficialSymbol() != null) 
+            result.append("\tOfficial_Symbol: "+getOfficialSymbol());
+        if (getOfficialSymbol() != null) 
+            result.append("\tOfficial_Symbol: "+getOfficialSymbol());
+        if (getOfficialFullName() != null) 
+            result.append("\tOfficial_FullName: "+getOfficialFullName());
+        if (getSpeciesTaxName() != null) 
+            result.append("\n\tOrg-ref_taxname: "+getSpeciesTaxName());
+        if (getSpeciesTaxonId() != null) 
+            result.append("\tOrg-ref_db taxon id: "+getSpeciesTaxonId());
+        if (getSpeciesCommonName() != null) 
+            result.append("\tOrg-ref_common: "+getSpeciesCommonName());
+        if (getGeneRefMaploc() != null) 
+            result.append("\n\tGene-ref_maploc: "+getGeneRefMaploc());
+        if (getGeneRefLocus() != null) 
+            result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefLocus());
+        if (getGeneRefSyns() != null) {
+            String[] syns = getGeneRefSyns();
+            result.append("\tGene-ref_syns: ");
+            for (int i=0;i<syns.length;i++) {
+                result.append(syns[i]+", ");
+            }
+        }
+        if (getGeneRefDesc() != null) 
+            result.append("\n\tGene-ref_desc: "+getGeneRefDesc());
+        if (getProtRefNames() != null) {
+            String[] names = getProtRefNames();
+            result.append("\n\tProt-ref_names: ");
+            for (int i=0;i<names.length;i++) {
+                result.append(names[i]+", ");
+            }
+        }
+        if (getProtRefDesc() != null) 
+            result.append("\n\tProt-ref_desc (Preferred name): "+getProtRefDesc());
+        if (getGeneSummary() != null) 
+            result.append("\n\tEntrezgene_summary: "+getGeneSummary());
 
-	if (getPubMedRefs() != null) {
-	    result.append("\n\tPubmed article refs: "+countUniquePubMedRefs());
-	    for (Pair<String,String[]> ref : mPubMedRefs) {
-		String geneRIF = ref.a();
-		String[] pmids = ref.b();
-		result.append("\n\t"+geneRIF+": ");
-		for (String pmid : pmids) {
-		    result.append(pmid+",");
-		}
-	    }
-	}
-	if (getUniqueKeys() != null) {
-	    result.append("\n\tDatabase ids: ");
-	    for (Pair<String,String[]> dbKeys : mUniqueKeys) {
-		result.append(dbKeys.a()+": ");
-		String[] dbids = dbKeys.b();
-		for (String dbid : dbids) {
-		    result.append(dbid+",");
-		}
-	    }
-	}
-	return result.toString();
+        if (getPubMedRefs() != null) {
+            result.append("\n\tPubmed article refs: "+countUniquePubMedRefs());
+            for (Pair<String,String[]> ref : mPubMedRefs) {
+                String geneRIF = ref.a();
+                String[] pmids = ref.b();
+                result.append("\n\t"+geneRIF+": ");
+                for (String pmid : pmids) {
+                    result.append(pmid+",");
+                }
+            }
+        }
+        if (getUniqueKeys() != null) {
+            result.append("\n\tDatabase ids: ");
+            for (Pair<String,String[]> dbKeys : mUniqueKeys) {
+                result.append(dbKeys.a()+": ");
+                String[] dbids = dbKeys.b();
+                for (String dbid : dbids) {
+                    result.append(dbid+",");
+                }
+            }
+        }
+        return result.toString();
     }
 
     /**
@@ -460,59 +460,59 @@ public class EntrezGene {
      * Includes GenRIF labels, omits PubMed and database ids.
      */
     public String getTextData() {
-	StringBuffer result = new StringBuffer();
-	if (getOfficialSymbol() != null) 
-	    result.append(getOfficialSymbol()+", ");
-	if (getOfficialFullName() != null) 
-	    result.append(getOfficialFullName()+", ");
-	if (getGeneRefLocus() != null) 
-	    result.append(getGeneRefLocus()+", ");
-	if (getGeneRefSyns() != null) {
-	    String[] syns = getGeneRefSyns();
-	    for (int i=0;i<syns.length;i++) {
-		result.append(syns[i]+", ");
-	    }
-	}
-	if (getGeneRefDesc() != null) 
-	    result.append(getGeneRefDesc()+", ");
-	if (getProtRefNames() != null) {
-	    String[] names = getProtRefNames();
-	    for (int i=0;i<names.length;i++) {
-		result.append(names[i]+", ");
-	    }
-	}
-	if (getProtRefDesc() != null) 
-	    result.append(getProtRefDesc()+", ");
-	if (getGeneSummary() != null) 
-	    result.append(getGeneSummary()+", ");
+        StringBuffer result = new StringBuffer();
+        if (getOfficialSymbol() != null) 
+            result.append(getOfficialSymbol()+", ");
+        if (getOfficialFullName() != null) 
+            result.append(getOfficialFullName()+", ");
+        if (getGeneRefLocus() != null) 
+            result.append(getGeneRefLocus()+", ");
+        if (getGeneRefSyns() != null) {
+            String[] syns = getGeneRefSyns();
+            for (int i=0;i<syns.length;i++) {
+                result.append(syns[i]+", ");
+            }
+        }
+        if (getGeneRefDesc() != null) 
+            result.append(getGeneRefDesc()+", ");
+        if (getProtRefNames() != null) {
+            String[] names = getProtRefNames();
+            for (int i=0;i<names.length;i++) {
+                result.append(names[i]+", ");
+            }
+        }
+        if (getProtRefDesc() != null) 
+            result.append(getProtRefDesc()+", ");
+        if (getGeneSummary() != null) 
+            result.append(getGeneSummary()+", ");
 
-	if (getPubMedRefs() != null) {
-	    for (Pair<String,String[]> ref : mPubMedRefs) {
-		if (ref.a() != null) {
-		    result.append(ref.a()+", ");
-		}
-	    }
-	}
-	return result.toString();
+        if (getPubMedRefs() != null) {
+            for (Pair<String,String[]> ref : mPubMedRefs) {
+                if (ref.a() != null) {
+                    result.append(ref.a()+", ");
+                }
+            }
+        }
+        return result.toString();
     }
     /**
      * Returns array of all GeneRIF labels.
      */
     public String[] getGeneRifLabels() {
-	HashSet<String> texts = new HashSet<String>();
-	if (getPubMedRefs() != null) {
-	    for (Pair<String,String[]> ref : mPubMedRefs) {
-		if (ref.a() != null 
-		    && ref.a().trim().length() > 0) 
-		    texts.add(ref.a());
-	    }
-	}
-	String[] result = new String[texts.size()];
-	return texts.toArray(result);
+        HashSet<String> texts = new HashSet<String>();
+        if (getPubMedRefs() != null) {
+            for (Pair<String,String[]> ref : mPubMedRefs) {
+                if (ref.a() != null 
+                    && ref.a().trim().length() > 0) 
+                    texts.add(ref.a());
+            }
+        }
+        String[] result = new String[texts.size()];
+        return texts.toArray(result);
     }
 
     void setXmlString(String xmlString) {
-	mXmlString = xmlString;
+        mXmlString = xmlString;
     }
     /**
      * Returns the XML underlying this citation as a string.  Note
