@@ -5,17 +5,6 @@
 
 <property file="build.properties"/>
 
-<!-- **** RMI CONFIG **** -->
-<property name="rmi.absolute.base.dir"
-          value="/home/lucene"/>
-<property name="rmi.jars"
-          value="file:${rmi.absolute.base.dir}/${lucene-jar}"/>
-<property name="rmi.server.address"
-          value="192.168.1.70"/>
-<property name="rmi.server.port"
-          value="1099"/>
-
-
 <!-- **** MEDLINE **** -->
 
 <property name="medline.lucene.index.searchable"

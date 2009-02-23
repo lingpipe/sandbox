@@ -4,7 +4,7 @@
 <!-- properties -->
 
 <property name="version"
-          value="1.2"/>
+          value="1.3"/>
 
 <property name="jar"
           value="lingmed-${version}.jar"/>
@@ -31,6 +31,7 @@
   <pathelement location="lib/log4j-1.2.15.jar"/>
   <pathelement location="lib/mysql-connector-java-5.1.5-bin.jar"/>
   <pathelement location="lib/servlet-api-6.0.16.jar"/>
+  <pathelement location="${luke-jar}"/>
 </path>
 
 <path id="classpath.test">
@@ -98,6 +99,9 @@
 </target>
 
 <!-- **** REMOTE SEARCH **** -->
+<property name="rmi.jars"
+          value="file:${rmi.absolute.base.dir}/${lucene-jar}"/>
+
 <macrodef name="searchService">
   <attribute name="host"/>
   <attribute name="port"/>

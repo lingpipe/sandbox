@@ -5,27 +5,12 @@
 
 <import file="build_common.xml"/>
 
-<!-- **** RMI CONFIG **** -->
-<property name="rmi.absolute.base.dir"
-          value="/home/lucene"/>
-<property name="rmi.jars"
-          value="file:${rmi.absolute.base.dir}/${lucene-jar}"/>
-<property name="rmi.server.address"
-          value="192.168.1.70"/>
-<property name="rmi.server.port"
-          value="1099"/>
-
-<!-- **** NLM DIST FILES **** -->
-<property name="nlm.data"
-          value="C://aliasi/data"/>
-
 <!-- **** MEDLINE **** -->
-<property name="medline.pwd"
-          value="setme"/>
 <property name="medline.baseline.repository"
           value="/nlmdata/.medleasebaseline/gz"/>
 <property name="medline.updates.repository"
           value="/nlmdata/.medlease/gz"/>
+
 <property name="medline.download.retries"
           value="3"/>
 
