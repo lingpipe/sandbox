@@ -1,4 +1,14 @@
-# set and/or override properties in build.xml
+# installation-specific properties
+# will override properties in build.xml et.al.
+
+# NLM data
+nlm.data=/full/path/to/nlm/data/dir
+medline.pwd=your@email
+
+# rmi config for remote search server
+rmi.absolute.base.dir=/full/path/to/lucene/jar/dir
+rmi.server.address=192.168.1.257
+rmi.server.port=1099
 
 # tomcat manager accounts
 tomcat.manager.username=setme
