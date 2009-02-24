@@ -322,6 +322,30 @@ public class EntrezGene {
     
 
     /**
+	 * Returns the set of ids linking to other databases.
+     */
+    public String[] getLinkIds() {
+        if (mUniqueKeys == null || mUniqueKeys.length == 0) return new String[0];
+        HashSet<String> idSet = new HashSet<String>();
+        for (Pair<String,String[]> ref : mUniqueKeys) {
+            String[] ids = ref.b();
+            for (String id : ids) {
+                idSet.add(id);
+            }
+        }
+        String[] result = new String[idSet.size()];
+        return idSet.toArray(result);
+    }
+
+    /**
+	 * Returns the ct of ids linking to other databases.
+     */
+    public int ctLinkIds() {
+        String[] ids = getLinkIds();
+        return ids.length;
+    }
+
+    /**
 	 * Returns the set of unique PubMed ids from the list of PubMedRefs.
      */
     public String[] getUniquePubMedRefs() {

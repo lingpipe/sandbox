@@ -251,6 +251,9 @@ public class DictionaryBuilder extends AbstractCommand {
                 HashSet<String> names = new HashSet<String>();
                 String[] aliases = entrezGene.getUniqueAliases();
                 for (String alias : aliases) names.add(alias);
+                String[] linkIds = entrezGene.getLinkIds();
+                for (String linkId : linkIds) names.add(linkId);
+
                 if (mLogger.isDebugEnabled()) 
                     mLogger.debug("entrez names: "+names.size());
 
