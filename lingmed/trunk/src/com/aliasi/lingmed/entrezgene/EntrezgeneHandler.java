@@ -189,7 +189,8 @@ class EntrezgeneHandler extends DelegatingHandler {
     }
 
     public EntrezGene geneEntry() { 
-		Pair<String,String[]>[] keys = append(curUniqueKeys, curAddLinks);
+		Pair<String,String[]>[] keys 
+			= append(curUniqueKeys, curAddLinks);
         return new EntrezGene(curEntrezStatus,
                               curGeneId,
                               curEntrezType,
@@ -240,9 +241,13 @@ class EntrezgeneHandler extends DelegatingHandler {
     }
 
 	private Pair<String,String[]>[] append(Pair<String,String[]>[] set, Pair<String,String[]> elt) {
+		if (set == null && elt == null) { return null; }
+		if (elt == null) { return set; }
 		Set<Pair<String,String[]>> keys = new HashSet<Pair<String,String[]>>();
-		for (Pair<String,String[]> item : set) {
-			keys.add(item);
+		if (set != null) {
+			for (Pair<String,String[]> item : set) {
+				keys.add(item);
+			}
 		}
 		keys.add(elt);
 		return keys.<Pair<String,String[]>>toArray(new Pair[keys.size()]);
