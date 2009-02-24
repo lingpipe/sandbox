@@ -69,10 +69,12 @@
         maxMemory="4G"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="-host=${rmi.server.address}"/>
+    <arg value="-host=localhost"/>
     <arg value="-dictFile=exactDictEntrezGene"/>
-    <arg value="-allowedNames=hifreq_names.txt"/>
+<!--    <arg value="-allowedNames=hifreq_names.txt"/> -->
     <arg value="-genHtml=true"/>
+    <arg value="-medline=/lucene_data/indexes/medline_2009_searchable"/>
+    <arg value="-entrezgene=/lucene_data/indexes/luceneEntrezGene"/>
     <arg value="-maxPubmedHitsPerAlias=10000"/>
   </java>
 </target>

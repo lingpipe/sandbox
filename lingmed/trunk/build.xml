@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
+<property name="mxMem" value="4G" />
+
 <property file="build.properties"/>
 
 <import file="build_common.xml"/>
 
 <!-- **** MEDLINE **** -->
+
 <property name="medline.baseline.repository"
           value="/nlmdata/.medleasebaseline/gz"/>
 <property name="medline.updates.repository"
@@ -13,6 +16,8 @@
 
 <property name="medline.download.retries"
           value="3"/>
+
+<!-- property nlm.data defined in build.properties -->
 
 <property name="medline.dir"
           value="${nlm.data}/medline/dist/2009"/>
@@ -22,7 +27,8 @@
           value="${medline.dir}/updates"/>
 
 <property name="medline.lucene.index.searchable"
-          value="luceneMedline"/>
+          value="/lucene_data/indexes/luceneMedline"/>
+
 <property name="medline.lucene.index.store"
           value="luceneMedlineStore"/>
 
@@ -47,7 +53,7 @@
         depends="jar">
   <downloadMedline repository="${medline.updates.repository}"
                    target="${medline.updates.dir}"
-                   sleep="60"/>
+                   sleep="240"/>
 </target>
 
 <target name="indexMedlineBaseline"
@@ -80,9 +86,9 @@
 <!-- **** Entrez Gene tasks **** -->
 
 <property name="entrezgene.dist.file"
-          value="${nlm.data}/entrezgene/homo_sapiens.xml"/>
+          value="${nlm.data}/entrezgene/human.xml"/>
 <property name="entrezgene.lucene.index.dir"
-          value="luceneEntrezGene"/>
+          value="/lucene_data/indexes/luceneEntrezGene"/>
 
 <target name="indexEntrezGene"
         description="create Lucene EntrezGene index"
