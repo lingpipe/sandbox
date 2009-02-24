@@ -125,7 +125,7 @@ import org.apache.log4j.Logger;
 
 public class DictionaryBuilder extends AbstractCommand {
     private final Logger mLogger
-	= Logger.getLogger(DictionaryBuilder.class);
+        = Logger.getLogger(DictionaryBuilder.class);
 
     private boolean mGenHtml;
     private PrintStream mHtmlOut;
@@ -152,7 +152,7 @@ public class DictionaryBuilder extends AbstractCommand {
     private final static String DICT_FILE = "dictFile";
     private final static String ALLOWED_NAMES_FILE = "allowedNames";
     private final static String SEARCH_HOST = "host";
-    private final static String ENTREZ_SERVICE = "entrez";
+    private final static String ENTREZ_SERVICE = "entrezgene";
     private final static String MEDLINE_SERVICE = "medline";
     private final static String MIN_NAME_LENGTH = "minNameLen";
     private final static String MAX_NAME_LENGTH = "maxNameLen";
@@ -174,154 +174,154 @@ public class DictionaryBuilder extends AbstractCommand {
     // initialize instance variables per command line args
     private DictionaryBuilder(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
-	mGenHtml = Boolean.valueOf(getArgument(GEN_HTML));
-	mDictFileName = getExistingArgument(DICT_FILE);
-	mAllowedNamesFileName = getExistingArgument(ALLOWED_NAMES_FILE);
+        mGenHtml = Boolean.valueOf(getArgument(GEN_HTML));
+        mDictFileName = getExistingArgument(DICT_FILE);
         mSearchHost = getExistingArgument(SEARCH_HOST);
         mEntrezService = getExistingArgument(ENTREZ_SERVICE);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
+        mAllowedNamesFileName = getArgument(ALLOWED_NAMES_FILE);
         mMinNameLen = getArgumentInt(MIN_NAME_LENGTH);
         mMaxNameLen = getArgumentInt(MAX_NAME_LENGTH);
         mMaxPubmedHits = getArgumentInt(MAX_PUBMED_HITS);
 
-	reportParameters();
+        reportParameters();
 
-	mDictFile = FileUtils.checkOutputFile(mDictFileName);
+        mDictFile = FileUtils.checkOutputFile(mDictFileName);
 
-	if (mGenHtml) {
-	    File htmlFile = FileUtils.checkOutputFile(mDictFileName+".html");
-	    mHtmlOut = new PrintStream(new FileOutputStream(htmlFile));
-	    mHtmlOut.println("<HTML><BODY><TABLE BORDER=\"1\" CELLPADDING=\"1\">");
-	    mHtmlOut.println("<TR><TH>Pubmed Hits</TH><TH>EntrezGene Hits</TH><TH>Phrase</TH><TH>Include?</TH></TR>");
-	}
+        if (mGenHtml) {
+            File htmlFile = FileUtils.checkOutputFile(mDictFileName+".html");
+            mHtmlOut = new PrintStream(new FileOutputStream(htmlFile));
+            mHtmlOut.println("<HTML><BODY><TABLE BORDER=\"1\" CELLPADDING=\"1\">");
+            mHtmlOut.println("<TR><TH>Pubmed Hits</TH><TH>EntrezGene Hits</TH><TH>Phrase</TH><TH>Include?</TH></TR>");
+        }
 
-	if (mAllowedNamesFileName != null) {
-	    File allowedNames = FileUtils.checkInputFile(mAllowedNamesFileName);
-	    String line = null;
-	    LineNumberReader in = new LineNumberReader(new FileReader(allowedNames));
-	    while ((line = in.readLine()) != null) {
-		mAllowed.add(line);
-	    }
-	    in.close();
-	    if (mLogger.isDebugEnabled()) 
-		mLogger.debug("total allowed gene names: "+mAllowed.size());
-	}
+        if (mAllowedNamesFileName != null) {
+            File allowedNames = FileUtils.checkInputFile(mAllowedNamesFileName);
+            String line = null;
+            LineNumberReader in = new LineNumberReader(new FileReader(allowedNames));
+            while ((line = in.readLine()) != null) {
+                mAllowed.add(line);
+            }
+            in.close();
+            if (mLogger.isDebugEnabled()) 
+                mLogger.debug("total allowed gene names: "+mAllowed.size());
+        }
 
-	if (mSearchHost.equals("localhost")) {
-	    FileUtils.checkIndex(mEntrezService,false);
-	    Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
-	    mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
+        if (mSearchHost.equals("localhost")) {
+            FileUtils.checkIndex(mEntrezService,false);
+            Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
+            mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
 
-	    FileUtils.checkIndex(mMedlineService,false);
-	    Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
-	    mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
-	} else {
-	    SearchClient egClient = new SearchClient(mEntrezService,mSearchHost,1099);
-	    Searcher egRemoteSearcher = egClient.getSearcher();
-	    mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
+            FileUtils.checkIndex(mMedlineService,false);
+            Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
+            mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
+        } else {
+            SearchClient egClient = new SearchClient(mEntrezService,mSearchHost,1099);
+            Searcher egRemoteSearcher = egClient.getSearcher();
+            mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
 
-	    SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
-	    Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-	    mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
-	}
+            SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
+            Searcher medlineRemoteSearcher = medlineClient.getSearcher();
+            mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
+        }
     }
 
     private void reportParameters() {
         mLogger.info("DictionaryBuilder "
-		     + "\n\tDictionary=" + mDictFileName
-		     + "\n\tAllowedNames=" + mAllowedNamesFileName
-		     + "\n\tmaximum pubmed articles per name=" + mMaxPubmedHits
-		     + "\n\tminimum name length=" + mMinNameLen
-		     + "\n\tmaximum name length=" + mMaxNameLen
-		     + "\n\tsearch host=" + mSearchHost
-		     + "\n\tEntrezService=" + mEntrezService
-		     + "\n\tMedlineService=" + mMedlineService
-		     + "\n\tgenerate Html?=" + mGenHtml
-		     );
+                     + "\n\tDictionary=" + mDictFileName
+                     + "\n\tAllowedNames=" + mAllowedNamesFileName
+                     + "\n\tmaximum pubmed articles per name=" + mMaxPubmedHits
+                     + "\n\tminimum name length=" + mMinNameLen
+                     + "\n\tmaximum name length=" + mMaxNameLen
+                     + "\n\tsearch host=" + mSearchHost
+                     + "\n\tEntrezService=" + mEntrezService
+                     + "\n\tMedlineService=" + mMedlineService
+                     + "\n\tgenerate Html?=" + mGenHtml
+                     );
     }
 
     public void run() {
-	mLogger.info("\nBegin");
-	try {
-	    for (EntrezGene entrezGene : mEntrezGeneSearcher) {
-		String geneId = entrezGene.getGeneId();
-		if (mLogger.isDebugEnabled())
-		    mLogger.debug("\nprocessing EntrezGene Id: "+geneId);
+        mLogger.info("\nBegin");
+        try {
+            for (EntrezGene entrezGene : mEntrezGeneSearcher) {
+                String geneId = entrezGene.getGeneId();
+                if (mLogger.isDebugEnabled())
+                    mLogger.debug("\nprocessing EntrezGene Id: "+geneId);
 
-		HashSet<String> names = new HashSet<String>();
-		String[] aliases = entrezGene.getUniqueAliases();
-		for (String alias : aliases) names.add(alias);
-		if (mLogger.isDebugEnabled()) 
-		    mLogger.debug("entrez names: "+names.size());
+                HashSet<String> names = new HashSet<String>();
+                String[] aliases = entrezGene.getUniqueAliases();
+                for (String alias : aliases) names.add(alias);
+                if (mLogger.isDebugEnabled()) 
+                    mLogger.debug("entrez names: "+names.size());
 
-		for (String name: names) {
-		    if (name.length() >= mMinNameLen
-			&& name.length() <= mMaxNameLen ) {
-			Set<String> ids = null;
-			if (!mDictMap.containsKey(name)) {
-			    ids = new HashSet<String>();
-			} else {
-			    if (mLogger.isDebugEnabled())
-				mLogger.debug("ambiguous name: "+name);
-			    ids = mDictMap.get(name);
-			}
-			ids.add(geneId);
-			mDictMap.put(name,ids);
-		    } else {
-			if (mLogger.isDebugEnabled())
-			    mLogger.debug("not using name: "+name+ ", geneId: "+geneId);
-		    }
-		}
-	    }
+                for (String name: names) {
+                    if (name.length() >= mMinNameLen
+                        && name.length() <= mMaxNameLen ) {
+                        Set<String> ids = null;
+                        if (!mDictMap.containsKey(name)) {
+                            ids = new HashSet<String>();
+                        } else {
+                            if (mLogger.isDebugEnabled())
+                                mLogger.debug("ambiguous name: "+name);
+                            ids = mDictMap.get(name);
+                        }
+                        ids.add(geneId);
+                        mDictMap.put(name,ids);
+                    } else {
+                        if (mLogger.isDebugEnabled())
+                            mLogger.debug("not using name: "+name+ ", geneId: "+geneId);
+                    }
+                }
+            }
 
-	    mLogger.info("\nCreate dictionary");
-	    TrieDictionary<String> mTrieDict = new TrieDictionary<String>();
-	    for (Iterator dictIt=mDictMap.entrySet().iterator(); dictIt.hasNext(); ) {
-		Entry<String,Set<String>> entry = (Entry<String,Set<String>>)dictIt.next();
-		String alias = entry.getKey();
-		Set<String> ids = entry.getValue();
-		
-		int pubmedHits = mMedlineSearcher.numExactPhraseMatches(alias);
-		if (mGenHtml) {
-		    mHtmlOut.print("<TR><TD>"+pubmedHits+"</TD><TD>"+ids.size()+"</TD><TD>"+alias+"</TD>");
-		}
-		if (pubmedHits > mMaxPubmedHits && !mAllowed.contains(alias)) {
-		    if (mGenHtml) mHtmlOut.println("<TD><B>no</B></TD></TR>");
-		    continue;
-		} else {
-		    if (mGenHtml) mHtmlOut.println("<TD>yes</TD></TR>");
-		}
+            mLogger.info("\nCreate dictionary");
+            TrieDictionary<String> mTrieDict = new TrieDictionary<String>();
+            for (Iterator dictIt=mDictMap.entrySet().iterator(); dictIt.hasNext(); ) {
+                Entry<String,Set<String>> entry = (Entry<String,Set<String>>)dictIt.next();
+                String alias = entry.getKey();
+                Set<String> ids = entry.getValue();
+                
+                int pubmedHits = mMedlineSearcher.numExactPhraseMatches(alias);
+                if (mGenHtml) {
+                    mHtmlOut.print("<TR><TD>"+pubmedHits+"</TD><TD>"+ids.size()+"</TD><TD>"+alias+"</TD>");
+                }
+                if (pubmedHits > mMaxPubmedHits && !mAllowed.contains(alias)) {
+                    if (mGenHtml) mHtmlOut.println("<TD><B>no</B></TD></TR>");
+                    continue;
+                } else {
+                    if (mGenHtml) mHtmlOut.println("<TD>yes</TD></TR>");
+                }
 
 
-		String[] categoryArray = new String[ids.size()];
-		categoryArray = ids.toArray(categoryArray);
-		String category = Arrays.arrayToCSV(categoryArray);
-		DictionaryEntry<String> dictEntry = new DictionaryEntry<String>(alias,category,1.00d);
-		mTrieDict.addEntry(dictEntry);
-	    }
-	    if (mGenHtml) {
-		mHtmlOut.println("</TABLE></BODY></HTML>");
-		mHtmlOut.close();
-	    }
+                String[] categoryArray = new String[ids.size()];
+                categoryArray = ids.toArray(categoryArray);
+                String category = Arrays.arrayToCSV(categoryArray);
+                DictionaryEntry<String> dictEntry = new DictionaryEntry<String>(alias,category,1.00d);
+                mTrieDict.addEntry(dictEntry);
+            }
+            if (mGenHtml) {
+                mHtmlOut.println("</TABLE></BODY></HTML>");
+                mHtmlOut.close();
+            }
 
-	    mLogger.info("\nCompile dictionary");
-	    ObjectOutputStream compiledDict = new ObjectOutputStream(new FileOutputStream(mDictFileName));
-	    mTrieDict.compileTo(compiledDict);
-	    compiledDict.close();
-	    mLogger.info("Processing complete.");
-	} catch (Exception e) {
-	    mLogger.warn("Unexpected Exception: "+e.getMessage());
-	    mLogger.warn("stack trace: "+Logging.logStackTrace(e));
-	    IllegalStateException e2 
-		= new IllegalStateException(e.getMessage());
-	    e2.setStackTrace(e.getStackTrace());
-	    throw e2;
-	}
+            mLogger.info("\nCompile dictionary");
+            ObjectOutputStream compiledDict = new ObjectOutputStream(new FileOutputStream(mDictFileName));
+            mTrieDict.compileTo(compiledDict);
+            compiledDict.close();
+            mLogger.info("Processing complete.");
+        } catch (Exception e) {
+            mLogger.warn("Unexpected Exception: "+e.getMessage());
+            mLogger.warn("stack trace: "+Logging.logStackTrace(e));
+            IllegalStateException e2 
+                = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
+        }
     }
 
     public static void main(String[] args) throws Exception {
         DictionaryBuilder builder = new DictionaryBuilder(args);
-	builder.run();
+        builder.run();
     }
 
 
