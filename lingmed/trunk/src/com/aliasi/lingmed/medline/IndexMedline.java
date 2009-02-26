@@ -214,7 +214,6 @@ public class IndexMedline extends AbstractCommand {
                     new IndexWriter(FSDirectory.getDirectory(mIndex),
                                     mCodec.getAnalyzer(),
                                     new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
-				int ct = 0;
                 for (File file: files) {
                     mLogger.info("processing file:" + file);
                     MedlineIndexer indexer = new MedlineIndexer(indexWriter,mCodec);
@@ -223,12 +222,6 @@ public class IndexMedline extends AbstractCommand {
                     indexer.close();
                     recordLastUpdate(indexWriter,file.getName());
                     mLogger.info("completed processing file:" + file);
-					if (++ct == 100) {
-						mLogger.info("optimizing index ...");
-						indexWriter.optimize();
-						mLogger.info("index optimized");
-						ct = 0;
-					}
                 }
                 mLogger.info("All files parsed, now optimize index");
                 indexWriter.optimize();
