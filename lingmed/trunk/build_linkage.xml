@@ -1,76 +1,22 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
+<property name="mxMem" value="2G" />
+
 <import file="build_common.xml"/>
 
 <property file="build.properties"/>
-
-<!-- **** MEDLINE **** -->
-
-<property name="medline.lucene.index.searchable"
-          value="luceneMedline"/>
-
-<target name="rmiMedline"
-        description="rmi MEDLINE search service"
-        depends="jar">
-  <searchService host="localhost"
-                 port="1099"
-                 service="medline"
-                 index="${medline.lucene.index.searchable}" />
-</target>
-
-<!-- **** Entrez Gene tasks **** -->
-
-<property name="entrezgene.lucene.index.dir"
-          value="luceneEntrezGene"/>
-
-<target name="rmiEntrezGene"
-        description="rmi EntrezGene search serice"
-        depends="jar">
-  <searchService host="localhost"
-                 port="1099"
-                 service="entrezgene"
-                 index="${entrezgene.lucene.index.dir}" />
-</target>
-
-<!-- **** Homologene tasks **** -->
-
-<property name="homologene.lucene.index.dir"
-          value="luceneHomologene"/>
-
-<target name="rmiHomologene"
-        description="rmi Homologene search serice"
-        depends="jar">
-  <searchService host="localhost"
-                 port="1099"
-                 service="homologene"
-                 index="${homologene.lucene.index.dir}" />
-</target>
-
-
-<!-- **** OMIM tasks **** -->
-<property name="omim.lucene.index.dir"
-          value="luceneOMIM"/>
-
-<target name="rmiOmim"
-        description="rmi OMIM search serice"
-        depends="jar">
-  <searchService host="localhost"
-                 port="1099"
-                 service="omim"
-                 index="${omim.lucene.index.dir}" />
-</target>
 
 <!-- **** LingBlast, GeneLinkage **** -->
 <target name="buildDict"
         description="compile exact match dictionary over all aliases in entrezgene"
         depends="jar">
   <java classname="com.aliasi.lingmed.lingblast.DictionaryBuilder"
-        maxMemory="4G"
+        maxMemory="${mxMem}"
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="-host=localhost"/>
-    <arg value="-dictFile=exactDictEntrezGene"/>
+    <arg value="-dictFile=/data/lingblast/exactDictEntrezGene"/>
 <!--    <arg value="-allowedNames=hifreq_names.txt"/> -->
     <arg value="-genHtml=true"/>
     <arg value="-medline=/lucene_data/indexes/medline_2009_searchable"/>
@@ -83,7 +29,7 @@
         description="compile per-gene language model"
         depends="jar">
   <java classname="com.aliasi.lingmed.lingblast.ModelCompiler"
-        maxMemory="4G"
+        maxMemory="${mxMem}"
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="-host=${rmi.server.address}"/>
@@ -95,7 +41,7 @@
         description="run lingblast over pubmed repository"
         depends="jar">
   <java classname="com.aliasi.lingmed.lingblast.LingBlastMedline"
-        maxMemory="4G"
+        maxMemory="${mxMem}"
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="-dictionary=exactDictEntrezGene"/>
@@ -107,13 +53,12 @@
   </java>
 </target>
 
-<property name="mysqlHost"
-          value="localhost"/>
-<property name="mysqlPort"
-          value="3306"/>
+
+
+<!-- build.properties defines mysql database properties -->
+<!-- mysqlHost, mysqlPort, mysql.gl.user, mysql.gl.passwd -->
 <property name="mysqlBaseURL"
           value="jdbc:mysql://${mysqlHost}:${mysqlPort}"/>
-<!-- use build.properties for mysql.gl.user, mysql.gl.passwd -->
 
 <target name="gene-articles"
         description="generate html from genelinkage db"
