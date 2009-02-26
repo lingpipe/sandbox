@@ -213,15 +213,22 @@ public class IndexMedline extends AbstractCommand {
                 IndexWriter indexWriter = 
                     new IndexWriter(FSDirectory.getDirectory(mIndex),
                                     mCodec.getAnalyzer(),
-				    new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
+                                    new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
+				int ct = 0;
                 for (File file: files) {
-		    mLogger.info("processing file:" + file);
-		    MedlineIndexer indexer = new MedlineIndexer(indexWriter,mCodec);
-		    parser.setHandler(indexer);
-		    parseFile(parser,file);
-		    indexer.close();
-		    recordLastUpdate(indexWriter,file.getName());
-		    mLogger.info("completed processing file:" + file);
+                    mLogger.info("processing file:" + file);
+                    MedlineIndexer indexer = new MedlineIndexer(indexWriter,mCodec);
+                    parser.setHandler(indexer);
+                    parseFile(parser,file);
+                    indexer.close();
+                    recordLastUpdate(indexWriter,file.getName());
+                    mLogger.info("completed processing file:" + file);
+					if (++ct == 100) {
+						mLogger.info("optimizing index ...");
+						indexWriter.optimize();
+						mLogger.info("index optimized");
+						ct = 0;
+					}
                 }
                 mLogger.info("All files parsed, now optimize index");
                 indexWriter.optimize();
@@ -244,7 +251,7 @@ public class IndexMedline extends AbstractCommand {
     private String getLastUpdate(File index) throws Exception {
         FSDirectory fsDirectory = FSDirectory.getDirectory(index);
         if (isNewDirectory(fsDirectory)) return LOW_SORT_STRING;
-	IndexReader reader = IndexReader.open(fsDirectory,true); // open reader read-only
+        IndexReader reader = IndexReader.open(fsDirectory,true); // open reader read-only
         IndexSearcher searcher = new IndexSearcher(reader);
         Term term = new Term(Fields.LAST_FILE_FIELD,Fields.LAST_FILE_VALUE);
         Query query = new TermQuery(term);
@@ -392,52 +399,52 @@ public class IndexMedline extends AbstractCommand {
         final IndexSearcher mSearcher;
 
         public MedlineIndexer(IndexWriter indexWriter, MedlineCodec codec) 
-	    throws IOException {
+            throws IOException {
             mIndexWriter = indexWriter;
             mMedlineCodec = codec;
-	    mReader = IndexReader.open(indexWriter.getDirectory(),true); // open reader read-only
-	    mSearcher = new IndexSearcher(mReader);
+            mReader = IndexReader.open(indexWriter.getDirectory(),true); // open reader read-only
+            mSearcher = new IndexSearcher(mReader);
         }
 
         public void handle(MedlineCitation citation) {
             Document doc = mMedlineCodec.toDocument(citation);
             try {
-		if (sIsBaseline) {
-		    mIndexWriter.addDocument(doc);  
-		} else {
-		    Term idTerm = new Term(Fields.ID_FIELD,citation.pmid());
-		    if (mSearcher.docFreq(idTerm) > 0) {
-			mLogger.debug("revise existing citation: "+citation.pmid());
-			mIndexWriter.updateDocument(idTerm,doc);
-		    } else {
-			mLogger.debug("add new citation: "+citation.pmid());
-			mIndexWriter.addDocument(doc);  
-		    }
-		}
+                if (sIsBaseline) {
+                    mIndexWriter.addDocument(doc);  
+                } else {
+                    Term idTerm = new Term(Fields.ID_FIELD,citation.pmid());
+                    if (mSearcher.docFreq(idTerm) > 0) {
+                        mLogger.debug("revise existing citation: "+citation.pmid());
+                        mIndexWriter.updateDocument(idTerm,doc);
+                    } else {
+                        mLogger.debug("add new citation: "+citation.pmid());
+                        mIndexWriter.addDocument(doc);  
+                    }
+                }
             } catch (IOException e) {
                 mLogger.warn("handle citation: index access error, term: "+citation.pmid());
             }
         }
 
         public void delete(String pmid) {
-	    if (sIsBaseline) {
-		String msg = "Cannot handle deleteions.";
-		throw new UnsupportedOperationException(msg);
-	    }
+            if (sIsBaseline) {
+                String msg = "Cannot handle deleteions.";
+                throw new UnsupportedOperationException(msg);
+            }
             Term idTerm = new Term(Fields.ID_FIELD,pmid);
             mLogger.debug("delete citation: "+pmid);
             try {
-		mIndexWriter.deleteDocuments(idTerm);
+                mIndexWriter.deleteDocuments(idTerm);
             } catch (IOException e) {
                 mLogger.warn("delete citation: index access error, term: "+pmid);
             }
         }
 
-	public void close() throws IOException { 
-	    mSearcher.close();
-	    mReader.close();
-	    mIndexWriter.commit();
-	}
+        public void close() throws IOException { 
+            mSearcher.close();
+            mReader.close();
+            mIndexWriter.commit();
+        }
     }
 
     static class FileNameComparator implements Comparator<File> {
