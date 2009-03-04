@@ -53,20 +53,35 @@ class EntrezTags {
     static final String ENTREZGENE_PROPERTIES_ELT = "Entrezgene_properties";
     static final String ENTREZGENE_COMMENTS_ELT = "Entrezgene_comments";
 
+    static final String ENTREZGENE_LOCUS_ELT = "Entrezgene_locus";
 
     static final String GENE_COMMENTARY_ELT = "Gene-commentary";
+    static final String GENE_COMMENTARY_TYPE_ELT = "Gene-commentary_type";
+    static final String GENE_COMMENTARY_HEADING_ELT = "Gene-commentary_heading";
     static final String GENE_COMMENTARY_LABEL_ELT = "Gene-commentary_label";
     static final String GENE_COMMENTARY_TEXT_ELT = "Gene-commentary_text";
     static final String GENE_COMMENTARY_REFS_ELT = "Gene-commentary_refs";
-    static final String GENE_COMMENTARY_HEADING_ELT = "Gene-commentary_heading";
+    static final String GENE_COMMENTARY_ACCESSION_ELT = "Gene-commentary_accession";
+    static final String GENE_COMMENTARY_VERSION_ELT = "Gene-commentary_version";
     static final String GENE_COMMENTARY_COMMENT_ELT = "Gene-commentary_comment";
     static final String GENE_COMMENTARY_SOURCE_ELT = "Gene-commentary_source";
+
+    static final String GENE_COMMENTARY_SEQS_ELT = "Gene-commentary_seqs";
+    static final String SEQ_INTERVAL_ELT = "Seq-interval";
+    static final String SEQ_INTERVAL_FROM_ELT = "Seq-interval_from";
+    static final String SEQ_INTERVAL_TO_ELT = "Seq-interval_to";
+    static final String SEQ_INTERVAL_STRAND_ELT = "Seq-interval_strand";
+    static final String NA_STRAND_ELT = "Na-strand";
+    static final String SEQ_ID_GI_ELT = "Seq-id_gi";
+
 
     static final String PUBMEDID_ELT = "PubMedId";
     static final String OFFICIAL_SYMBOL_TEXT = "Official Symbol";
     static final String OFFICIAL_FULL_NAME = "Official Full Name";
 
     static final String ADDITIONAL_LINKS_TEXT = "Additional Links";
+
+	static final String REFERENCE_HEADING_TEXT = "Reference assembly";
 
     static final String ENTREZGENE_UNIQUE_KEYS_ELT = "Entrezgene_unique-keys";
 
@@ -82,6 +97,8 @@ class EntrezTags {
     static final String HGNC = "HGNC";
 
     static final String TAXON = "taxon";
+
+    static final String GENOMIC = "genomic";
 
     EntrezTags() {}
 }
