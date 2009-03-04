@@ -90,20 +90,26 @@ class EntrezgeneHandler extends DelegatingHandler {
     // <Entrezgene_properties>
     EntrezgenePropertiesHandler mEntrezgenePropertiesHandler;
 
+    // <Entrezgene_gene-source>
+    // <Entrezgene_prot>
+
+    // <Entrezgene_locus>
+    EntrezgeneLocusHandler mEntrezgeneLocusHandler;
+
     // <Entrezgene_comments>
     EntrezgeneCommentsHandler mEntrezgeneCommentsHandler;
 
     // <Entrezgene_unique-keys>
     EntrezgeneUniqueKeysHandler mEntrezgeneUniqueKeysHandler;
 
-    private String curEntrezStatus;
+    private String curGeneTrackStatus;
     private String curGeneId;
-    private String curEntrezType;
-    private String curSpeciesTaxName;
-    private String curSpeciesCommonName;
-    private String curSpeciesTaxonId;
+    private String curEntrezgeneType;
+
+    private Species curSpecies;
+
     private String curGeneRefDesc;
-    private String curGeneRefLocus;
+    private String curGeneRefName;
     private String curGeneRefMaploc;
     private String[] curGeneRefSyns;
     private String curGeneSummary;
@@ -111,6 +117,9 @@ class EntrezgeneHandler extends DelegatingHandler {
     private String curOfficialSymbol;
     private String[] curProtRefNames;
     private String curProtRefDesc;
+
+	private GenomeLocation curGenomeLocation;
+
     private Pair<String,String[]>[] curPubMedRefs;
     private Pair<String,String[]>[] curUniqueKeys;
     private Pair<String,String[]> curAddLinks;
@@ -138,6 +147,9 @@ class EntrezgeneHandler extends DelegatingHandler {
 
         setDelegate(EntrezTags.ENTREZGENE_SUMMARY_ELT,mEntrezgeneSummaryHandler);
 
+        mEntrezgeneLocusHandler = new EntrezgeneLocusHandler(this);
+        setDelegate(EntrezTags.ENTREZGENE_LOCUS_ELT,mEntrezgeneLocusHandler);
+
         mEntrezgeneSourceHandler = new EntrezgeneSourceHandler(this);
         setDelegate(EntrezTags.ENTREZGENE_SOURCE_ELT,mEntrezgeneSourceHandler);
 
@@ -153,19 +165,17 @@ class EntrezgeneHandler extends DelegatingHandler {
 
     public void finishDelegate(String qName, DefaultHandler handler) {
         if (qName.equals(EntrezTags.GENE_TRACK_STATUS_ELT)) {
-            curEntrezStatus = mGeneTrackStatusHandler.mValue;
+            curGeneTrackStatus = mGeneTrackStatusHandler.mValue;
         } else if (qName.equals(EntrezTags.GENE_TRACK_GENEID_ELT)) {
             curGeneId = mGeneTrackGeneIdHandler.getText();
         } else if (qName.equals(EntrezTags.ENTREZGENE_TYPE_ELT)) {
-            curEntrezType = mEntrezgeneTypeHandler.mValue;
+            curEntrezgeneType = mEntrezgeneTypeHandler.mValue;
         } else if (qName.equals(EntrezTags.ENTREZGENE_SOURCE_ELT)) {
-            curSpeciesTaxName = mEntrezgeneSourceHandler.getTaxName();
-            curSpeciesCommonName = mEntrezgeneSourceHandler.getCommonName();
-            curSpeciesTaxonId = mEntrezgeneSourceHandler.getTaxonId();
+			curSpecies = mEntrezgeneSourceHandler.getSpecies();
         } else if (qName.equals(EntrezTags.GENE_REF_DESC_ELT)) {
             curGeneRefDesc = mGeneRefDescHandler.getText();
         } else if (qName.equals(EntrezTags.GENE_REF_LOCUS_ELT)) {
-            curGeneRefLocus = mGeneRefLocusHandler.getText();
+            curGeneRefName = mGeneRefLocusHandler.getText();
         } else if (qName.equals(EntrezTags.GENE_REF_MAPLOC_ELT)) {
             curGeneRefMaploc = mGeneRefMaplocHandler.getText();
         } else if (qName.equals(EntrezTags.GENE_REF_SYN_ELT)) {
@@ -179,28 +189,29 @@ class EntrezgeneHandler extends DelegatingHandler {
             curProtRefNames = mProtRefNamesHandler.getTextSet();
         } else if (qName.equals(EntrezTags.PROT_REF_DESC_ELT)) {
             curProtRefDesc = mProtRefDescHandler.getText();
-        } else if (qName.equals(EntrezTags.ENTREZGENE_COMMENTS_ELT)) {
-            curPubMedRefs = mEntrezgeneCommentsHandler.getPubMedRefs();
+        } else if (qName.equals(EntrezTags.ENTREZGENE_LOCUS_ELT)) {
+			curGenomeLocation = mEntrezgeneLocusHandler.getLocation();
+		} else if (qName.equals(EntrezTags.ENTREZGENE_COMMENTS_ELT)) {
+			curPubMedRefs = mEntrezgeneCommentsHandler.getPubMedRefs();
 			curAddLinks 
 				= new Pair<String,String[]>("",mEntrezgeneCommentsHandler.getAddLinks());
-        } else if (qName.equals(EntrezTags.ENTREZGENE_UNIQUE_KEYS_ELT)) {
-            curUniqueKeys = mEntrezgeneUniqueKeysHandler.getUniqueKeys();
-        }            
-    }
+		} else if (qName.equals(EntrezTags.ENTREZGENE_UNIQUE_KEYS_ELT)) {
+			curUniqueKeys = mEntrezgeneUniqueKeysHandler.getUniqueKeys();
+		}            
+	}
 
-    public EntrezGene geneEntry() { 
+	public EntrezGene geneEntry() { 
 		Pair<String,String[]>[] keys 
 			= append(curUniqueKeys, curAddLinks);
-        return new EntrezGene(curEntrezStatus,
+		return new EntrezGene(curGeneTrackStatus,
                               curGeneId,
-                              curEntrezType,
-                              curSpeciesTaxName,
-                              curSpeciesCommonName,
-                              curSpeciesTaxonId,
-                              curGeneRefDesc,
-                              curGeneRefLocus,
-                              curGeneRefMaploc,
+                              curEntrezgeneType,
+                              curSpecies,
+                              curGeneRefName,
                               curGeneRefSyns,
+                              curGeneRefDesc,
+                              curGeneRefMaploc,
+							  curGenomeLocation,
                               curGeneSummary,
                               curOfficialFullName,
                               curOfficialSymbol,
@@ -218,17 +229,16 @@ class EntrezgeneHandler extends DelegatingHandler {
         mProtRefDescHandler.reset();
         mEntrezgeneSummaryHandler.reset();
 
-        curEntrezStatus = null;
+        curGeneTrackStatus = null;
         curGeneId = null;
-        curEntrezType = null;
-        curSpeciesTaxName = null;
-        curSpeciesCommonName = null;
-        curSpeciesTaxonId = null;
+        curEntrezgeneType = null;
+        curSpecies = null;
         curGeneRefDesc = null;
-        curGeneRefLocus = null;
+        curGeneRefName = null;
         curGeneRefMaploc = null;
         curGeneRefSyns = new String[0];
         curGeneSummary = null;
+		curGenomeLocation = null;
         curOfficialFullName = null;
         curOfficialSymbol = null;
         curProtRefNames = new String[0];
@@ -307,14 +317,12 @@ class EntrezgeneHandler extends DelegatingHandler {
         TextAccumulatorHandler mTaxNameHandler
             = new TextAccumulatorHandler();
 
-
         // <Org-ref_common>Homo sapiens</Org-ref_common>
         TextAccumulatorHandler mCommonNameHandler
             = new TextAccumulatorHandler();
 
         // <Org-ref_db><...>taxon<...>9606<...><...></Org-ref_db>
         DbTagHandler mDbtagHandler;
-
 
         EntrezgeneSourceHandler(DelegatingHandler parent) {
             super(parent);
@@ -343,9 +351,9 @@ class EntrezgeneHandler extends DelegatingHandler {
             }
         }
 
-        public String getTaxName() { return mTaxName; }
-        public String getCommonName() { return mCommonName; }
-        public String getTaxonId() { return mTaxonId; }
+		public Species getSpecies() {
+			return Species.valueOf(mTaxonId,mTaxName,mCommonName);
+		}
     }
 
     class EntrezgenePropertiesHandler extends DelegateHandler {
@@ -380,233 +388,375 @@ class EntrezgeneHandler extends DelegatingHandler {
         String getOfficialFullName() { return mOfficialFullName; }
     }
 
-    class EntrezgeneCommentsHandler extends DelegateHandler {
-        final ArrayList<Pair<String,String[]>> mPubMedRefs;
-        final ArrayList<Pair<String,String[]>> mUniqueKeys;
-        final HashSet<String> mAddLinks;
-        final GeneCommentaryHandler mGeneCommentaryHandler;
+
+	/* EntrezGeneLocus handler:  collects GenomeLocation
+	   <Entrezgene_locus>
+ 	     <Gene-commentary_type value="genomic">1</Gene-commentary_type>
+	     <Gene-commentary_heading>Reference assembly</Gene-commentary_heading>
+	     <Gene-commentary_accession>NC_000019</Gene-commentary_accession>
+	     <Gene-commentary_version>8</Gene-commentary_version>
+	     <Gene-commentary_seqs><...><Seq-interval><...>
+	*/
+	class EntrezgeneLocusHandler extends DelegateHandler {
+		String mAccession;
+		String mVersion;
+		String mStrand;
+		int mFrom;
+		int mTo;
+		boolean mIsGenomic;
+		boolean mIsRefAssembly;
+		int mSectionCount;  // multiple sections: <Gene-commentary>
+		GenomeLocation mLocation;
+
+		AttributeValueHandler mTypeHandler = new AttributeValueHandler();
+		TextAccumulatorHandler mHeadingHandler = new TextAccumulatorHandler();
+		TextAccumulatorHandler mAccessionHandler = new TextAccumulatorHandler();
+		TextAccumulatorHandler mVersionHandler= new TextAccumulatorHandler();
+		SeqIntervalHandler mSeqHandler;
+
+		EntrezgeneLocusHandler(DelegatingHandler parent) {
+			super(parent);
+			setDelegate(EntrezTags.GENE_COMMENTARY_TYPE_ELT,mTypeHandler);
+			setDelegate(EntrezTags.GENE_COMMENTARY_HEADING_ELT,mHeadingHandler);
+			setDelegate(EntrezTags.GENE_COMMENTARY_ACCESSION_ELT,mAccessionHandler);
+			setDelegate(EntrezTags.GENE_COMMENTARY_VERSION_ELT,mVersionHandler);
+			mSeqHandler = new SeqIntervalHandler(parent);
+			setDelegate(EntrezTags.GENE_COMMENTARY_SEQS_ELT,mSeqHandler);
+		}
+
+		public void startDocument() {
+			mHeadingHandler.reset();
+			mAccessionHandler.reset();
+			mVersionHandler.reset();
+			mAccession = null;
+			mVersion = null;
+			mStrand = null;
+			mFrom = -1;
+			mTo = -1;
+			mIsGenomic = false;
+			mIsRefAssembly = false;
+			mSectionCount = 0;
+			mLocation = null;
+		}
+
+		public void finishDelegate(String qName, DefaultHandler handler) {
+			if (qName.equals(EntrezTags.GENE_COMMENTARY_TYPE_ELT)) {
+				if (EntrezTags.GENOMIC.equalsIgnoreCase(mTypeHandler.mValue)) {
+					mIsGenomic = true;
+					mSectionCount++;
+				}
+			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_HEADING_ELT)) {
+				if (EntrezTags.REFERENCE_HEADING_TEXT.equalsIgnoreCase(mHeadingHandler.getText())
+					&& mIsGenomic 
+					&& mSectionCount == 1) {
+					mIsRefAssembly = true;
+				} else {
+					mIsRefAssembly = false;
+				}
+			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_ACCESSION_ELT)
+					   && mIsRefAssembly) {
+				mAccession = mAccessionHandler.getText();
+			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_VERSION_ELT)
+					   && mIsRefAssembly) {
+				mVersion = mVersionHandler.getText();
+				if (mAccession != null 
+					&& mAccession.length() > 0 
+					&& mVersion != null
+					&& mVersion.length() > 0) {
+					mAccession = mAccession + "." + mVersion;
+				}
+			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_SEQS_ELT)
+					   && mIsRefAssembly) {
+				mStrand = mSeqHandler.getStrand();
+				mFrom = mSeqHandler.getLower();
+				mTo = mSeqHandler.getUpper();
+				mLocation = new GenomeLocation(mAccession,mStrand,mFrom,mTo);
+			}
+		}
+
+		GenomeLocation getLocation() { 
+			return mLocation;
+		}
+	}
+
+	/* SeqIntervalHandler
+	   <Gene-commentary_seqs><...>
+	   <Seq-interval_from>DDD</Seq-interval_from>
+	   <Seq-interval_to>DDD</Seq-interval_to>
+	   <Na-strand value="plus"/><...></Gene-commentary_seqs>
+	*/
+	class SeqIntervalHandler extends DelegateHandler {
+		TextAccumulatorHandler mFromHandler = new TextAccumulatorHandler();
+		TextAccumulatorHandler mToHandler = new TextAccumulatorHandler();
+		AttributeValueHandler mStrandHandler = new AttributeValueHandler();
+		int mFrom;
+		int mTo;
+		String mStrand;
+
+		SeqIntervalHandler(DelegatingHandler parent) {
+			super(parent);
+			setDelegate(EntrezTags.SEQ_INTERVAL_FROM_ELT,mFromHandler);
+			setDelegate(EntrezTags.SEQ_INTERVAL_TO_ELT,mToHandler);
+			setDelegate(EntrezTags.NA_STRAND_ELT,mStrandHandler);
+		}
+
+		public void startDocument() {
+			mFromHandler.reset();
+			mToHandler.reset();
+			mFrom = -1;
+			mTo = -1;
+			mStrand = null;
+		}
+
+		public void finishDelegate(String qName, DefaultHandler handler) {
+			if (qName.equals(EntrezTags.SEQ_INTERVAL_FROM_ELT)) {
+				try {
+					mFrom = Integer.parseInt(mFromHandler.getText());
+				} catch (NumberFormatException e) {
+				}
+			} else if (qName.equals(EntrezTags.SEQ_INTERVAL_TO_ELT)) {
+				try {
+					mTo = Integer.parseInt(mToHandler.getText());
+				} catch (NumberFormatException e) {
+				}
+			} else if (qName.equals(EntrezTags.NA_STRAND_ELT)) {
+				mStrand = mStrandHandler.mValue;
+			}
+		}
+
+		public String getStrand() { return mStrand; }
+		public int getLower() { return mFrom < mTo ? mFrom : mTo; }
+		public int getUpper() { return mFrom > mTo ? mFrom : mTo; }
+	}
 
 
-        EntrezgeneCommentsHandler(DelegatingHandler parent) {
-            super(parent);
-            mPubMedRefs = new ArrayList<Pair<String,String[]>>();
-            mUniqueKeys = new ArrayList<Pair<String,String[]>>();
-            mAddLinks = new HashSet<String>();
-            mGeneCommentaryHandler = new GeneCommentaryHandler(parent);
-            setDelegate(EntrezTags.GENE_COMMENTARY_ELT,mGeneCommentaryHandler);
-        }
+	class EntrezgeneCommentsHandler extends DelegateHandler {
+		final ArrayList<Pair<String,String[]>> mPubMedRefs;
+		final ArrayList<Pair<String,String[]>> mUniqueKeys;
+		final HashSet<String> mAddLinks;
+		final GeneCommentaryHandler mGeneCommentaryHandler;
 
-        public void startDocument() {
-            mPubMedRefs.clear();
-            mUniqueKeys.clear();
-            mAddLinks.clear();
-        }
 
-        public void finishDelegate(String qName, DefaultHandler handler) {
+		EntrezgeneCommentsHandler(DelegatingHandler parent) {
+			super(parent);
+			mPubMedRefs = new ArrayList<Pair<String,String[]>>();
+			mUniqueKeys = new ArrayList<Pair<String,String[]>>();
+			mAddLinks = new HashSet<String>();
+			mGeneCommentaryHandler = new GeneCommentaryHandler(parent);
+			setDelegate(EntrezTags.GENE_COMMENTARY_ELT,mGeneCommentaryHandler);
+		}
+
+		public void startDocument() {
+			mPubMedRefs.clear();
+			mUniqueKeys.clear();
+			mAddLinks.clear();
+		}
+
+		public void finishDelegate(String qName, DefaultHandler handler) {
 			if (qName.equals(EntrezTags.GENE_COMMENTARY_ELT)) {
-                if (mGeneCommentaryHandler.getPubMedIds() != null) {
-                    if (mGeneCommentaryHandler.getText() != null) {
-                        Pair<String,String[]> ref = 
-                            new Pair<String,String[]>(mGeneCommentaryHandler.getText(),
-                                                      mGeneCommentaryHandler.getPubMedIds());
-                        mPubMedRefs.add(ref);
-                    } else {
-                        Pair<String,String[]> ref = 
-                            new Pair<String,String[]>("",mGeneCommentaryHandler.getPubMedIds());
-                        mPubMedRefs.add(ref);
-                    }
+				if (mGeneCommentaryHandler.getPubMedIds() != null) {
+					if (mGeneCommentaryHandler.getText() != null) {
+						Pair<String,String[]> ref = 
+							new Pair<String,String[]>(mGeneCommentaryHandler.getText(),
+													  mGeneCommentaryHandler.getPubMedIds());
+						mPubMedRefs.add(ref);
+					} else {
+						Pair<String,String[]> ref = 
+							new Pair<String,String[]>("",mGeneCommentaryHandler.getPubMedIds());
+						mPubMedRefs.add(ref);
+					}
 
 				}
-                if (mGeneCommentaryHandler.getAddLinks() != null) {
+				if (mGeneCommentaryHandler.getAddLinks() != null) {
 					String[] links = mGeneCommentaryHandler.getAddLinks();
 					for (String link : links) mAddLinks.add(link);
 				}
 			}
-        }
+		}
 
-        Pair<String,String[]>[] getPubMedRefs() { 
-            return mPubMedRefs.<Pair<String,String[]>>toArray(new Pair[mPubMedRefs.size()]);
-        }
+		Pair<String,String[]>[] getPubMedRefs() { 
+			return mPubMedRefs.<Pair<String,String[]>>toArray(new Pair[mPubMedRefs.size()]);
+		}
 
-        String[] getAddLinks() { 
-            return mAddLinks.toArray(new String[mAddLinks.size()]);
-        }
-    }
-
-
-    class EntrezgeneUniqueKeysHandler extends DelegateHandler {
-        final ArrayList<Pair<String,String[]>> mDbKeys;
-        final DbTagHandler mDbtagHandler;
-
-        EntrezgeneUniqueKeysHandler(DelegatingHandler parent) {
-            super(parent);
-            mDbKeys = new ArrayList<Pair<String,String[]>>(); 
-            mDbtagHandler = new DbTagHandler(parent);
-            setDelegate(EntrezTags.DBTAG_ELT,mDbtagHandler);
-        }
-
-        public void startDocument() {
-            mDbKeys.clear();
-        }
-
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            if (qName.equals(EntrezTags.DBTAG_ELT)) {
-                if (mDbtagHandler.getDbtag() != null) {
-                    mDbKeys.add(mDbtagHandler.getDbtag());
-                }
-            }
-        }
-
-        Pair<String,String[]>[] getUniqueKeys() {
-            return mDbKeys.<Pair<String,String[]>>toArray(new Pair[mDbKeys.size()]);
-        }
-
-    }
-
-    class DbTagHandler extends DelegateHandler {
-        String mDb;
-        String[] mDbIds;
-
-        TextAccumulatorHandler mDbHandler = new TextAccumulatorHandler();
-        TextSetAccumulatorHandler mObjectIdHandler;
-
-        DbTagHandler(DelegatingHandler parent) {
-            super(parent);
-            setDelegate(EntrezTags.DBTAG_DB_ELT,mDbHandler);
-            mObjectIdHandler = 
-                new TextSetAccumulatorHandler(parent,EntrezTags.DBTAG_OBJECTID_ID_ELT);
-            setDelegate(EntrezTags.DBTAG_TAG_ELT,mObjectIdHandler);
-        }
-
-        public void startDocument() {
-            mDbHandler.reset();
-            mDbIds = new String[0];
-        }
-
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            if (qName.equals(EntrezTags.DBTAG_DB_ELT)) {
-                mDb = mDbHandler.getText();
-            } else if (qName.equals(EntrezTags.DBTAG_TAG_ELT)) {
-                mDbIds = mObjectIdHandler.getTextSet();
-            }
-        }
-
-        public Pair<String,String[]> getDbtag() {
-            if (mDb == null || mDbIds == null || mDbIds.length == 0) return null;
-            return new Pair<String,String[]>(mDb,mDbIds);
-        }
-    }
-
-    class GeneCommentaryHandler extends DelegateHandler {
-        TextAccumulatorHandler mGeneCommentaryLabel = new TextAccumulatorHandler();
-        TextAccumulatorHandler mGeneCommentaryHeading = new TextAccumulatorHandler();
-        TextAccumulatorHandler mGeneCommentaryText = new TextAccumulatorHandler();
-        TextSetAccumulatorHandler mPubMedIdHandler;
-		TextSetAccumulatorHandler mAddLinkHandler;
-        String mLabel;
-        String mText;
-        String[] mPubMedIds;
-		String[] mAddLinkIds;
-        
-        GeneCommentaryHandler(DelegatingHandler parent) {
-            super(parent);
-            mPubMedIdHandler = new TextSetAccumulatorHandler(parent,EntrezTags.PUBMEDID_ELT);
-            mAddLinkHandler = new TextSetAccumulatorHandler(parent,EntrezTags.ADD_LINK_STR_ELT);
-            setDelegate(EntrezTags.GENE_COMMENTARY_REFS_ELT,mPubMedIdHandler);
-            setDelegate(EntrezTags.GENE_COMMENTARY_LABEL_ELT,mGeneCommentaryLabel);
-            setDelegate(EntrezTags.GENE_COMMENTARY_TEXT_ELT,mGeneCommentaryText);
-            setDelegate(EntrezTags.GENE_COMMENTARY_SOURCE_ELT,mAddLinkHandler);
-        }
-        
-        public void startDocument() {
-            mLabel = null;
-            mText = null;
-            mPubMedIds = null;
-            mAddLinkIds = null;
-            mGeneCommentaryLabel.reset();
-        }
-
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            if (qName.equals(EntrezTags.GENE_COMMENTARY_TEXT_ELT)) {
-                mText = mGeneCommentaryText.getText();
-            } else if (qName.equals(EntrezTags.GENE_COMMENTARY_LABEL_ELT)) {
-                mLabel = mGeneCommentaryLabel.getText();
-            } else if (qName.equals(EntrezTags.GENE_COMMENTARY_REFS_ELT)) {
-                mPubMedIds = mPubMedIdHandler.getTextSet();
-            } else if (qName.equals(EntrezTags.GENE_COMMENTARY_SOURCE_ELT)) {
-                mAddLinkIds = mAddLinkHandler.getTextSet();
-            }
-        }
-
-        String getLabel() { return mLabel; }
-        String getText() { return mText; }
-        String[] getPubMedIds() { return mPubMedIds; }
-        String[] getAddLinks() { return mAddLinkIds; }
+		String[] getAddLinks() { 
+			return mAddLinks.toArray(new String[mAddLinks.size()]);
+		}
 	}
 
-    class GeneRefSynHandler extends DelegateHandler {
-        Set<String> mSynESet;
-        TextAccumulatorHandler mSynEHandler = new TextAccumulatorHandler();
 
-        GeneRefSynHandler(DelegatingHandler parent) {
-            super(parent);
-            setDelegate(EntrezTags.GENE_REF_SYN_E_ELT,mSynEHandler);
-        }
+	class EntrezgeneUniqueKeysHandler extends DelegateHandler {
+		final ArrayList<Pair<String,String[]>> mDbKeys;
+		final DbTagHandler mDbtagHandler;
 
-        public void startDocument() {
-            mSynESet = new HashSet<String>();
-            mSynEHandler.reset();
-        }
+		EntrezgeneUniqueKeysHandler(DelegatingHandler parent) {
+			super(parent);
+			mDbKeys = new ArrayList<Pair<String,String[]>>(); 
+			mDbtagHandler = new DbTagHandler(parent);
+			setDelegate(EntrezTags.DBTAG_ELT,mDbtagHandler);
+		}
 
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            if (qName.equals(EntrezTags.GENE_REF_SYN_E_ELT)) 
-                mSynESet.add(mSynEHandler.getText());
-        }
+		public void startDocument() {
+			mDbKeys.clear();
+		}
 
-        public String[] getGeneRefSyns() {
-            String[] syns = new String[mSynESet.size()];
-            return mSynESet.toArray(syns);
-        }
-    }
+		public void finishDelegate(String qName, DefaultHandler handler) {
+			if (qName.equals(EntrezTags.DBTAG_ELT)) {
+				if (mDbtagHandler.getDbtag() != null) {
+					mDbKeys.add(mDbtagHandler.getDbtag());
+				}
+			}
+		}
 
-    class AttributeValueHandler extends DefaultHandler {
-        String mValue;
-        public void startElement(String namespaceURI, String localName,
-                                 String qName, Attributes atts)
-            throws SAXException {
-            mValue = atts.getValue("value");
-        }
-    }
+		Pair<String,String[]>[] getUniqueKeys() {
+			return mDbKeys.<Pair<String,String[]>>toArray(new Pair[mDbKeys.size()]);
+		}
 
-    class PubMedIdHandler extends DelegateHandler {
-        Set<String> mPubMedIdSet = new HashSet<String>();
-        TextAccumulatorHandler mPMIDHandler = new TextAccumulatorHandler();
+	}
 
-        public PubMedIdHandler(DelegatingHandler parent) {
-            super(parent);
-            setDelegate(EntrezTags.PUBMEDID_ELT,mPMIDHandler);
-        }
+	class DbTagHandler extends DelegateHandler {
+		String mDb;
+		String[] mDbIds;
 
-        public void startDocument() {
-            mPMIDHandler.reset();
-        }
+		TextAccumulatorHandler mDbHandler = new TextAccumulatorHandler();
+		TextSetAccumulatorHandler mObjectIdHandler;
 
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            if (qName.equals(EntrezTags.PUBMEDID_ELT)) {
-                mPubMedIdSet.add(mPMIDHandler.getText());
-            }
-        }
+		DbTagHandler(DelegatingHandler parent) {
+			super(parent);
+			setDelegate(EntrezTags.DBTAG_DB_ELT,mDbHandler);
+			mObjectIdHandler = 
+				new TextSetAccumulatorHandler(parent,EntrezTags.DBTAG_OBJECTID_ID_ELT);
+			setDelegate(EntrezTags.DBTAG_TAG_ELT,mObjectIdHandler);
+		}
 
-        public String[] getPubMedIds() {
-            if (mPubMedIdSet.size() == 0) return null;
-            String[] ids = new String[mPubMedIdSet.size()];
-            return mPubMedIdSet.toArray(ids);
-        }
+		public void startDocument() {
+			mDbHandler.reset();
+			mDbIds = new String[0];
+		}
 
-        public void reset() { 
-            mPubMedIdSet.clear();
-        }
-    }
+		public void finishDelegate(String qName, DefaultHandler handler) {
+			if (qName.equals(EntrezTags.DBTAG_DB_ELT)) {
+				mDb = mDbHandler.getText();
+			} else if (qName.equals(EntrezTags.DBTAG_TAG_ELT)) {
+				mDbIds = mObjectIdHandler.getTextSet();
+			}
+		}
+
+		public Pair<String,String[]> getDbtag() {
+			if (mDb == null || mDbIds == null || mDbIds.length == 0) return null;
+			return new Pair<String,String[]>(mDb,mDbIds);
+		}
+	}
+
+	class GeneCommentaryHandler extends DelegateHandler {
+		TextAccumulatorHandler mGeneCommentaryLabel = new TextAccumulatorHandler();
+		TextAccumulatorHandler mGeneCommentaryHeading = new TextAccumulatorHandler();
+		TextAccumulatorHandler mGeneCommentaryText = new TextAccumulatorHandler();
+		TextSetAccumulatorHandler mPubMedIdHandler;
+		TextSetAccumulatorHandler mAddLinkHandler;
+		String mLabel;
+		String mText;
+		String[] mPubMedIds;
+		String[] mAddLinkIds;
+        
+		GeneCommentaryHandler(DelegatingHandler parent) {
+			super(parent);
+			mPubMedIdHandler = new TextSetAccumulatorHandler(parent,EntrezTags.PUBMEDID_ELT);
+			mAddLinkHandler = new TextSetAccumulatorHandler(parent,EntrezTags.ADD_LINK_STR_ELT);
+			setDelegate(EntrezTags.GENE_COMMENTARY_REFS_ELT,mPubMedIdHandler);
+			setDelegate(EntrezTags.GENE_COMMENTARY_LABEL_ELT,mGeneCommentaryLabel);
+			setDelegate(EntrezTags.GENE_COMMENTARY_TEXT_ELT,mGeneCommentaryText);
+			setDelegate(EntrezTags.GENE_COMMENTARY_SOURCE_ELT,mAddLinkHandler);
+		}
+        
+		public void startDocument() {
+			mLabel = null;
+			mText = null;
+			mPubMedIds = null;
+			mAddLinkIds = null;
+			mGeneCommentaryLabel.reset();
+		}
+
+		public void finishDelegate(String qName, DefaultHandler handler) {
+			if (qName.equals(EntrezTags.GENE_COMMENTARY_TEXT_ELT)) {
+				mText = mGeneCommentaryText.getText();
+			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_LABEL_ELT)) {
+				mLabel = mGeneCommentaryLabel.getText();
+			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_REFS_ELT)) {
+				mPubMedIds = mPubMedIdHandler.getTextSet();
+			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_SOURCE_ELT)) {
+				mAddLinkIds = mAddLinkHandler.getTextSet();
+			}
+		}
+
+		String getLabel() { return mLabel; }
+		String getText() { return mText; }
+		String[] getPubMedIds() { return mPubMedIds; }
+		String[] getAddLinks() { return mAddLinkIds; }
+	}
+
+	class GeneRefSynHandler extends DelegateHandler {
+		Set<String> mSynESet;
+		TextAccumulatorHandler mSynEHandler = new TextAccumulatorHandler();
+
+		GeneRefSynHandler(DelegatingHandler parent) {
+			super(parent);
+			setDelegate(EntrezTags.GENE_REF_SYN_E_ELT,mSynEHandler);
+		}
+
+		public void startDocument() {
+			mSynESet = new HashSet<String>();
+			mSynEHandler.reset();
+		}
+
+		public void finishDelegate(String qName, DefaultHandler handler) {
+			if (qName.equals(EntrezTags.GENE_REF_SYN_E_ELT)) 
+				mSynESet.add(mSynEHandler.getText());
+		}
+
+		public String[] getGeneRefSyns() {
+			String[] syns = new String[mSynESet.size()];
+			return mSynESet.toArray(syns);
+		}
+	}
+
+	class AttributeValueHandler extends DefaultHandler {
+		String mValue;
+		public void startElement(String namespaceURI, String localName,
+								 String qName, Attributes atts)
+			throws SAXException {
+			mValue = atts.getValue("value");
+		}
+	}
+
+	class PubMedIdHandler extends DelegateHandler {
+		Set<String> mPubMedIdSet = new HashSet<String>();
+		TextAccumulatorHandler mPMIDHandler = new TextAccumulatorHandler();
+
+		public PubMedIdHandler(DelegatingHandler parent) {
+			super(parent);
+			setDelegate(EntrezTags.PUBMEDID_ELT,mPMIDHandler);
+		}
+
+		public void startDocument() {
+			mPMIDHandler.reset();
+		}
+
+		public void finishDelegate(String qName, DefaultHandler handler) {
+			if (qName.equals(EntrezTags.PUBMEDID_ELT)) {
+				mPubMedIdSet.add(mPMIDHandler.getText());
+			}
+		}
+
+		public String[] getPubMedIds() {
+			if (mPubMedIdSet.size() == 0) return null;
+			String[] ids = new String[mPubMedIdSet.size()];
+			return mPubMedIdSet.toArray(ids);
+		}
+
+		public void reset() { 
+			mPubMedIdSet.clear();
+		}
+	}
 
 
 }

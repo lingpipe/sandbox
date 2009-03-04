@@ -29,11 +29,14 @@ import java.util.HashSet;
  * Entrez Gene entries contain general information about 
  * the gene and its associated proteins including:
  * <ul>
- * <li> names, abbreviations, and text descriptions
- * <li> genome location
- * <li> lists of PubMed references
- * <li> GO terms
- * <li> links to other NCBI databases
+ * <li> names, symbols, aliases, and text descriptions
+ * <li> genome, genomic location
+ * <li> bibliographic references, with annotations
+ * <li> gene information, including GO terms
+ * <li> protein information 
+ * <li> sequence information 
+ * <li> links to related databases, database ids
+ * <li> entry status
  * </ul>
  * See the <A href="http://www.ncbi.nlm.nih.gov/entrez/query/static/help/genehelp.html">
  * Entrez Gene FAQ</A> for more details.
@@ -51,7 +54,7 @@ import java.util.HashSet;
  * The function {@link #getOfficialSymbol()} returns the official gene symbol,
  * and the function {@link #getOfficialFullName()} returns the official 
  * gene name.
- * The function {@link #getGeneRefLocus()} returns the LocusLink gene symbol.
+ * The function {@link #getGeneRefName()} returns the LocusLink gene name.
  * The function {@link #getGeneRefDesc()} returns the long version of the name.
  * The function {@link #getGeneRefSyns()} returns the set of synonymous symbols.
  * If the protein associated with this gene in known, the entry contains
@@ -73,27 +76,32 @@ import java.util.HashSet;
  * The function {@link #getUniqueKeys()} returns this information.
  *
  * @author Mitzi Morris
- * @version 1.0
+ * @version 1.1
  * @since   LingMed1.0
  */
 
 public class EntrezGene {
 
-    private final String mEntrezStatus;
     private final String mGeneId;
-    private final String mEntrezType;
-    private final String mSpeciesTaxName;
-    private final String mSpeciesCommonName;
-    private final String mSpeciesTaxonId;
-    private final String mGeneRefDesc;
-    private final String mGeneRefLocus;
-    private final String mGeneRefMaploc;
+    private final String mGeneTrackStatus;
+    private final String mEntrezgeneType;
+
+    private final Species mSpecies;
+
+    private final String mGeneRefName;
     private final String[] mGeneRefSyns;
+    private final String mGeneRefDesc;
+
+    private final String mGeneRefMaploc;
+	private final GenomeLocation mGenomeLocus;
+
     private final String mGeneSummary;
     private final String mOfficialFullName;
     private final String mOfficialSymbol;
     private final String[] mProtRefNames;
     private final String mProtRefDesc;
+
+
     private final Pair<String,String[]>[] mPubMedRefs;
     private final Pair<String,String[]>[] mUniqueKeys;
     private String mXmlString;
@@ -102,13 +110,12 @@ public class EntrezGene {
     public EntrezGene(String entrezStatus,
                       String geneId,
                       String entrezType,
-                      String speciesTaxName,
-                      String speciesCommonName,
-                      String speciesTaxonId,
-                      String geneRefDesc,
-                      String geneRefLocus,
-                      String geneRefMaploc,
+					  Species species,
+                      String geneRefName,
                       String[] geneRefSyns,
+                      String geneRefDesc,
+                      String geneRefMaploc,
+					  GenomeLocation geneLocus,
                       String geneSummary,
                       String officialFullName,
                       String officialSymbol,
@@ -116,28 +123,27 @@ public class EntrezGene {
                       String protRefDesc,
                       Pair<String,String[]>[] pubMedRefs,
                       Pair<String,String[]>[] uniqueKeys) {
-        mEntrezStatus =        entrezStatus;
+		mGeneTrackStatus =        entrezStatus;
         mGeneId = geneId;
-        mEntrezType = entrezType;
-        mSpeciesTaxName = speciesTaxName;
-        mSpeciesCommonName = speciesCommonName;
-        mSpeciesTaxonId = speciesTaxonId;
+        mEntrezgeneType = entrezType;
+		mSpecies = species;
+        mGeneRefName = geneRefName;
+        mGeneRefSyns = geneRefSyns;
         mGeneRefDesc = geneRefDesc;
-        mGeneRefLocus = geneRefLocus;
         mGeneRefMaploc = geneRefMaploc;
+		mGenomeLocus = geneLocus;
         mGeneSummary = geneSummary;
         mOfficialFullName = officialFullName;
         mOfficialSymbol = officialSymbol;
         mProtRefDesc = protRefDesc;
         mProtRefNames = protRefNames;
-        mGeneRefSyns = geneRefSyns;
         mPubMedRefs = pubMedRefs;
         mUniqueKeys = uniqueKeys;
     }
 
-    String getEntrezStatus() { return mEntrezStatus; }
+    String getGeneTrackStatus() { return mGeneTrackStatus; }
 
-    String getEntrezType() { return mEntrezType; }
+    String getEntrezgeneType() { return mEntrezgeneType; }
 
 
     /**
@@ -152,34 +158,36 @@ public class EntrezGene {
     public String getGeneRefDesc() { return mGeneRefDesc; }
 
 
-    public String getGeneTaxonId() { return mGeneId + "_" + mSpeciesTaxonId; }
+    public String getGeneTaxonId() { return mGeneId + "_" + mSpecies.taxonId(); }
 
     /**
      * Returns the text value of the <code>Org-ref_taxname</code> element.
      */
-    public String getSpeciesTaxName() { return mSpeciesTaxName; }
+    public String getSpeciesTaxName() { return mSpecies.taxName(); }
 
     /**
      * Returns the text value of the <code>Org-ref_common</code> element.
      */
-    public String getSpeciesCommonName() { return mSpeciesCommonName; }
+    public String getSpeciesCommonName() { return mSpecies.commonName(); }
 
     /**
      * Returns the taxon id value embedded in the <code>Org-ref_db</code> element.
      */
-    public String getSpeciesTaxonId() { return mSpeciesTaxonId; }
+    public String getSpeciesTaxonId() { return mSpecies.taxonId(); }
 
     /**
      * Returns the LocusLink gene symbol, if found, else <code>null</code>.
      * @return The text value of the <code>Gene-ref_locus</code> element.
      */
-    public String getGeneRefLocus() { return mGeneRefLocus; }
+    public String getGeneRefName() { return mGeneRefName; }
 
     /**
      * Returns cytoband location, if found, else <code>null</code>.
      * @return The text value of the <code>Gene-ref_maploc</code> element.
      */
     public String getGeneRefMaploc() { return mGeneRefMaploc; }
+
+    public GenomeLocation getGenomeLocus() { return mGenomeLocus; }
 
     /**
      * Returns a list of alternate gene symbols, if found, else <code>null</code>.
@@ -374,7 +382,7 @@ public class EntrezGene {
      * which are stored in a <code>EntrezGene</code>.
      */
     public boolean hasTextAnnotations() {
-        if (mGeneRefLocus != null
+        if (mGeneRefName != null
             || mGeneRefDesc != null
             || mGeneSummary != null
             || mOfficialFullName != null
@@ -391,8 +399,8 @@ public class EntrezGene {
      * attribute "value" is "live"
      */
     public boolean isStatusLive() {
-        if (mEntrezStatus == null) return false;
-        if (mEntrezStatus.equals("live")) return true;
+        if (mGeneTrackStatus == null) return false;
+        if (mGeneTrackStatus.equals("live")) return true;
         return false;
     }
 
@@ -401,9 +409,9 @@ public class EntrezGene {
      * attribute "value" is not "other" or "unknown"
      */
     public boolean isTypeGene() {
-        if (mEntrezType == null 
-            || mEntrezType.equals("other")
-            || mEntrezType.equals("unknown")) return false;
+        if (mEntrezgeneType == null 
+            || mEntrezgeneType.equals("other")
+            || mEntrezgeneType.equals("unknown")) return false;
         return true;
     }
 
@@ -413,12 +421,10 @@ public class EntrezGene {
     public String toString() {
         StringBuffer result = new StringBuffer();
         result.append("\nEntrezgene_GeneId: "+getGeneId()+"\n");
-        if (getEntrezStatus() != null) 
-            result.append("\tStatus: "+getEntrezStatus());
-        if (getEntrezType() != null) 
-            result.append("\tType: "+getEntrezType());
-        if (getOfficialSymbol() != null) 
-            result.append("\tOfficial_Symbol: "+getOfficialSymbol());
+        if (getGeneTrackStatus() != null) 
+            result.append("\tStatus: "+getGeneTrackStatus());
+        if (getEntrezgeneType() != null) 
+            result.append("\tType: "+getEntrezgeneType());
         if (getOfficialSymbol() != null) 
             result.append("\tOfficial_Symbol: "+getOfficialSymbol());
         if (getOfficialFullName() != null) 
@@ -431,8 +437,12 @@ public class EntrezGene {
             result.append("\tOrg-ref_common: "+getSpeciesCommonName());
         if (getGeneRefMaploc() != null) 
             result.append("\n\tGene-ref_maploc: "+getGeneRefMaploc());
-        if (getGeneRefLocus() != null) 
-            result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefLocus());
+        if (getGenomeLocus() != null) 
+            result.append("\n\tEntrezgene_locus: "+getGenomeLocus().toString());
+
+
+        if (getGeneRefName() != null) 
+            result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefName());
         if (getGeneRefSyns() != null) {
             String[] syns = getGeneRefSyns();
             result.append("\tGene-ref_syns: ");
@@ -453,6 +463,7 @@ public class EntrezGene {
             result.append("\n\tProt-ref_desc (Preferred name): "+getProtRefDesc());
         if (getGeneSummary() != null) 
             result.append("\n\tEntrezgene_summary: "+getGeneSummary());
+
 
         if (getPubMedRefs() != null) {
             result.append("\n\tPubmed article refs: "+countUniquePubMedRefs());
@@ -489,8 +500,8 @@ public class EntrezGene {
             result.append(getOfficialSymbol()+", ");
         if (getOfficialFullName() != null) 
             result.append(getOfficialFullName()+", ");
-        if (getGeneRefLocus() != null) 
-            result.append(getGeneRefLocus()+", ");
+        if (getGeneRefName() != null) 
+            result.append(getGeneRefName()+", ");
         if (getGeneRefSyns() != null) {
             String[] syns = getGeneRefSyns();
             for (int i=0;i<syns.length;i++) {

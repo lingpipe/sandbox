@@ -133,7 +133,7 @@ public class IndexEntrezGene extends AbstractCommand {
         }
 
         public void handle(EntrezGene eg) {
-            // Logger.getLogger(IndexEntrezGene.class).debug("entrez gene entry: " + eg.toString());
+			// Logger.getLogger(IndexEntrezGene.class).debug("entrez gene entry: " + eg.toString());
 
             if (eg.isStatusLive() && eg.isTypeGene()) {
                 Logger.getLogger(IndexEntrezGene.class).debug("Adding Entrezgene GeneId=" + eg.getGeneId());
