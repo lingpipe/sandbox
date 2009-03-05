@@ -76,7 +76,7 @@ class EntrezTags {
 
 
     static final String PUBMEDID_ELT = "PubMedId";
-    static final String OFFICIAL_SYMBOL_TEXT = "Official Symbol";
+    static final String OFFICIAL_SYMBOL = "Official Symbol";
     static final String OFFICIAL_FULL_NAME = "Official Full Name";
 
     static final String ADDITIONAL_LINKS_TEXT = "Additional Links";
@@ -89,8 +89,8 @@ class EntrezTags {
     static final String DBTAG_DB_ELT = "Dbtag_db";
     static final String DBTAG_TAG_ELT = "Dbtag_tag";
     static final String DBTAG_OBJECTID_ID_ELT = "Object-id_id";
+    static final String DBTAG_OBJECTID_STR_ELT = "Object-id_str";
 
-    static final String ADD_LINK_STR_ELT = "Object-id_str";
 
     static final String MIM = "MIM";
     static final String LOCUSLINK = "LocusID";
@@ -99,6 +99,10 @@ class EntrezTags {
     static final String TAXON = "taxon";
 
     static final String GENOMIC = "genomic";
+
+    static final String GENERIF = "generif";
+
+    static final String PROPERTY = "property";
 
     EntrezTags() {}
 }
