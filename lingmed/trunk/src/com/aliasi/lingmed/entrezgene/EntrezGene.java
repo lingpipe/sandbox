@@ -455,7 +455,7 @@ public class EntrezGene {
         if (getDbLinks() != null) {
             result.append("\n\tDatabase ids: "+mDbLinks.length);
             for (Pair<String,String[]> dbLink : mDbLinks) {
-                result.append("\n\t" + dbLink.a() + "\t");
+                result.append("\n\t" + dbLink.a() + ": ");
                 for (String dbid : dbLink.b()) {
                     result.append(dbid + ", ");
                 }
