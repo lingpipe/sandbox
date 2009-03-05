@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,22 +106,24 @@ class EntrezgeneHandler extends DelegatingHandler {
     private String curEntrezgeneType;
 
     private Species curSpecies;
-
-    private String curGeneRefDesc;
-    private String curGeneRefName;
     private String curGeneRefMaploc;
-    private String[] curGeneRefSyns;
-    private String curGeneSummary;
-    private String curOfficialFullName;
+	private GenomeLocation curGenomeLocation;
+
     private String curOfficialSymbol;
+    private String curOfficialFullName;
+    private String curGeneSummary;
+
+    private String curGeneRefName;
+    private String[] curGeneRefSyns;
+    private String curGeneRefDesc;
+
     private String[] curProtRefNames;
     private String curProtRefDesc;
 
-	private GenomeLocation curGenomeLocation;
-
-	private HashMap<String,String> curBibliography;
-	private HashMap<String,HashSet<String>> curLinks;
-
+    private Pair<String,String>[] curPubMedRefs;
+    private Pair<String,String[]>[] curDbLinks;
+    //	private HashMap<String,String> curPubMedRefs;
+    //	private HashMap<String,HashSet<String>> curDbLinks;
 
     EntrezgeneHandler() {
         setDelegate(EntrezTags.GENE_TRACK_GENEID_ELT,mGeneTrackGeneIdHandler);
@@ -187,9 +190,8 @@ class EntrezgeneHandler extends DelegatingHandler {
         } else if (qName.equals(EntrezTags.ENTREZGENE_LOCUS_ELT)) {
 			curGenomeLocation = mEntrezgeneLocusHandler.getLocation();
 		} else if (qName.equals(EntrezTags.ENTREZGENE_COMMENTS_ELT)) {
-			// redo!!
-			// get bibliography
-			// get dblinks
+            curPubMedRefs= mEntrezgeneCommentsHandler.getPubMedRefs();
+            curDbLinks= mEntrezgeneCommentsHandler.getDbLinks();
 		}            
 	}
 
@@ -198,18 +200,18 @@ class EntrezgeneHandler extends DelegatingHandler {
                               curGeneId,
                               curEntrezgeneType,
                               curSpecies,
+                              curGeneRefMaploc,
+							  curGenomeLocation,
+                              curOfficialSymbol,
+                              curOfficialFullName,
+                              curGeneSummary,
                               curGeneRefName,
                               curGeneRefSyns,
                               curGeneRefDesc,
-                              curGeneRefMaploc,
-							  curGenomeLocation,
-                              curGeneSummary,
-                              curOfficialFullName,
-                              curOfficialSymbol,
                               curProtRefNames,
                               curProtRefDesc,
-                              curBibliography,
-							  curLinks);
+                              curPubMedRefs,
+							  curDbLinks);
     }
 
     public void startDocument() throws SAXException {
@@ -234,8 +236,8 @@ class EntrezgeneHandler extends DelegatingHandler {
         curOfficialSymbol = null;
         curProtRefNames = new String[0];
         curProtRefDesc = null;
-        curBibliography = null;
-        curLinks = null;
+        curPubMedRefs = null;
+        curDbLinks = null;
 
         super.startDocument();
     }
@@ -539,7 +541,6 @@ class EntrezgeneHandler extends DelegatingHandler {
 			if (qName.equals(EntrezTags.GENE_COMMENTARY_TYPE_ELT)) {
 				mType = mTypeHandler.value();
 				mGeneRif = null;
-				mHeading = null;
 			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_HEADING_ELT)) {
 				mHeading = mHeadingHandler.getText();
 			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_TEXT_ELT)) {
@@ -552,20 +553,45 @@ class EntrezgeneHandler extends DelegatingHandler {
 				if (EntrezTags.ADDITIONAL_LINKS_TEXT.equalsIgnoreCase(mHeading)) {
 					String dbName = mDbTagHandler.getDbName();
 					String dbId = mDbTagHandler.getDbId();
-					HashSet<String> ids = null;
-					if (mDbNameIdsMap.containsKey(dbName)) {
-						ids = mDbNameIdsMap.get(dbName);
-					} else {
-						ids = new HashSet<String>();
-					}
-					ids.add(dbId);
-					mDbNameIdsMap.put(dbName,ids);
-				}
+                    // only get dbIds that are different than geneId
+                    if (dbId != null && !(dbId.equals(curGeneId))) {
+                        HashSet<String> ids = null;
+                        if (mDbNameIdsMap.containsKey(dbName)) {
+                            ids = mDbNameIdsMap.get(dbName);
+                        } else {
+                            ids = new HashSet<String>();
+                        }
+                        ids.add(dbId);
+                        mDbNameIdsMap.put(dbName,ids);
+                    }
+                }
 			}
 		}
 
-		public HashMap<String,HashSet<String>> getLinks() { return mDbNameIdsMap; }
-		public HashMap<String,String> getBiblio() { return mPmidNotesMap; }
+        public Pair<String,String>[] getPubMedRefs() {
+            if (mPmidNotesMap == null || mPmidNotesMap.size() == 0) return null;
+            Pair<String,String>[] results = new Pair[mPmidNotesMap.size()];
+            int i = 0;
+            for (Iterator it = mPmidNotesMap.entrySet().iterator(); it.hasNext(); i++) {
+                Map.Entry<String,String> entry = (Map.Entry<String,String>)it.next();
+                results[i] = new Pair<String,String>(entry.getKey(),entry.getValue());
+            }
+            return results;
+        }
+
+        public Pair<String,String[]>[] getDbLinks() {
+            if (mDbNameIdsMap == null || mDbNameIdsMap.size() == 0) return null;
+            Pair<String,String[]>[] results = new Pair[mDbNameIdsMap.size()];
+            int i = 0;
+            for (Iterator it = mDbNameIdsMap.entrySet().iterator(); it.hasNext(); i++) {
+                Map.Entry<String,HashSet<String>> entry = (Map.Entry<String,HashSet<String>>)it.next();
+                HashSet<String> idSet = entry.getValue();
+                String ids[] = new String[idSet.size()];
+                ids = idSet.toArray(ids);
+                results[i] = new Pair<String,String[]>(entry.getKey(),ids);
+            }
+            return results;
+        }
 	}
 
 	class DbTagHandler extends DelegateHandler {
