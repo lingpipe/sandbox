@@ -37,6 +37,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Mitzi Morris
  * @version 1.0
@@ -44,6 +46,8 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 
 class EntrezgeneHandler extends DelegatingHandler {
+    private final Logger mLogger
+        = Logger.getLogger(EntrezgeneHandler.class);
 
     // <Gene-track_status value="live">0</Gene-track_status>
     AttributeValueHandler mGeneTrackStatusHandler 
@@ -541,6 +545,9 @@ class EntrezgeneHandler extends DelegatingHandler {
 			if (qName.equals(EntrezTags.GENE_COMMENTARY_TYPE_ELT)) {
 				mType = mTypeHandler.value();
 				mGeneRif = null;
+				if (EntrezTags.GENERIF.equalsIgnoreCase(mType)) {
+                    mHeading = null;
+                }
 			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_HEADING_ELT)) {
 				mHeading = mHeadingHandler.getText();
 			} else if (qName.equals(EntrezTags.GENE_COMMENTARY_TEXT_ELT)) {
@@ -552,17 +559,20 @@ class EntrezgeneHandler extends DelegatingHandler {
 			} else if (qName.equals(EntrezTags.DBTAG_ELT)) {
 				if (EntrezTags.ADDITIONAL_LINKS_TEXT.equalsIgnoreCase(mHeading)) {
 					String dbName = mDbTagHandler.getDbName();
-					String dbId = mDbTagHandler.getDbId();
-                    // only get dbIds that are different than geneId
-                    if (dbId != null && !(dbId.equals(curGeneId))) {
-                        HashSet<String> ids = null;
-                        if (mDbNameIdsMap.containsKey(dbName)) {
-                            ids = mDbNameIdsMap.get(dbName);
-                        } else {
-                            ids = new HashSet<String>();
+                    if (!EntrezTags.UCSC.equalsIgnoreCase(dbName)
+                        && !EntrezTags.MGC.equalsIgnoreCase(dbName)) {
+                        String dbId = mDbTagHandler.getDbId();
+                        // only get dbIds that are different than geneId
+                        if (dbId != null && dbId.length() > 0 && !dbId.equals(curGeneId)) {
+                            HashSet<String> ids = null;
+                            if (mDbNameIdsMap.containsKey(dbName)) {
+                                ids = mDbNameIdsMap.get(dbName);
+                            } else {
+                                ids = new HashSet<String>();
+                            }
+                            ids.add(dbId);
+                            mDbNameIdsMap.put(dbName,ids);
                         }
-                        ids.add(dbId);
-                        mDbNameIdsMap.put(dbName,ids);
                     }
                 }
 			}

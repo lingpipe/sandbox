@@ -96,6 +96,9 @@ class EntrezTags {
     static final String LOCUSLINK = "LocusID";
     static final String HGNC = "HGNC";
 
+    static final String UCSC = "UCSC";
+    static final String MGC = "MGC";
+
     static final String TAXON = "taxon";
 
     static final String GENOMIC = "genomic";
