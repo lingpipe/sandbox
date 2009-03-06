@@ -116,7 +116,7 @@ import org.apache.log4j.Logger;
 
 public class ModelCompiler extends AbstractCommand {
     private final Logger mLogger
-	= Logger.getLogger(ModelCompiler.class);
+        = Logger.getLogger(ModelCompiler.class);
 
     private boolean mGenHtml;
     private PrintStream mHtmlOut;
@@ -157,199 +157,199 @@ public class ModelCompiler extends AbstractCommand {
         mSearchHost = getExistingArgument(SEARCH_HOST);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mEntrezService = getExistingArgument(ENTREZGENE_SERVICE);
-	mGenHtml = Boolean.valueOf(getArgument(GEN_HTML));
-	mModelDirPath = getExistingArgument(MODEL_DIR);
+        mGenHtml = Boolean.valueOf(getArgument(GEN_HTML));
+        mModelDirPath = getExistingArgument(MODEL_DIR);
         mNGram = getArgumentInt(MAX_NGRAM);
         mMaxGeneHits = getArgumentInt(MAX_GENE_HITS);
 
-	reportParameters();
+        reportParameters();
 
-	mModelDir = new File(mModelDirPath);
-	FileUtils.ensureDirExists(mModelDir);
+        mModelDir = new File(mModelDirPath);
+        FileUtils.ensureDirExists(mModelDir);
 
-	if (mGenHtml) {
-	    mHtmlOut = new PrintStream(new FileOutputStream(new File(mModelDir,"Models.html")));
-	    mHtmlOut.println("<HTML><BODY>");
-	}
+        if (mGenHtml) {
+            mHtmlOut = new PrintStream(new FileOutputStream(new File(mModelDir,"Models.html")));
+            mHtmlOut.println("<HTML><BODY>");
+        }
 
-	if (mSearchHost.equals("localhost")) {
-	    FileUtils.checkIndex(mMedlineService,false);
-	    Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
- 	    mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
+        if (mSearchHost.equals("localhost")) {
+            FileUtils.checkIndex(mMedlineService,false);
+            Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
+             mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
 
-	    FileUtils.checkIndex(mEntrezService,false);
-	    Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
- 	    mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
+            FileUtils.checkIndex(mEntrezService,false);
+            Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
+             mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
 
-	} else {
-	    SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
-	    Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-	    mMedlineSearcher = 
-		new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
+        } else {
+            SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
+            Searcher medlineRemoteSearcher = medlineClient.getSearcher();
+            mMedlineSearcher = 
+                new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
 
-	    SearchClient egClient = new SearchClient(mEntrezService,mSearchHost,1099);
-	    Searcher egRemoteSearcher = egClient.getSearcher();
-	    mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
+            SearchClient egClient = new SearchClient(mEntrezService,mSearchHost,1099);
+            Searcher egRemoteSearcher = egClient.getSearcher();
+            mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
 
 
-	}
-	mLogger.info("instantiated lucene searchers");
+        }
+        mLogger.info("instantiated lucene searchers");
     }
 
     private void reportParameters() {
         mLogger.info("ModelCompiler "
-		     + "\n\tModel Directory (output dir)=" + mModelDirPath
-		     + "\n\tmax ngram=" + mNGram
-		     + "\n\tmax gene hits per pubmed article=" + mMaxGeneHits
-		     + "\n\tsearch host=" + mSearchHost
-		     + "\n\tgenerate Html?=" + mGenHtml
-		     );
+                     + "\n\tModel Directory (output dir)=" + mModelDirPath
+                     + "\n\tmax ngram=" + mNGram
+                     + "\n\tmax gene hits per pubmed article=" + mMaxGeneHits
+                     + "\n\tsearch host=" + mSearchHost
+                     + "\n\tgenerate Html?=" + mGenHtml
+                     );
     }
 
     public void run() {
-	mLogger.info("Begin");
-	try {
-	    Set<String> allTexts = new HashSet<String>();
-	    for (EntrezGene entrezGene : mEntrezGeneSearcher) {
-		mLogger.info("processing EntrezGene Id: "+entrezGene.getGeneId());
-		if (mGenHtml) outputEntrezGeneName(entrezGene);
-		Set<String> perGeneTexts = new HashSet<String>();
-		addEntrezGeneTexts(entrezGene,allTexts,perGeneTexts);
-		addPubMedTexts(entrezGene,allTexts,perGeneTexts);
-		compilePerGeneLM(entrezGene,perGeneTexts);
-		if (mGenHtml) mPerGeneHtmlOut.close();
-	    }
-	    if (mLogger.isDebugEnabled())
-		mLogger.debug("Compiled all per-gene models, now do genomics model");
-	    compileGenomicsLM(allTexts);
-	    if (mGenHtml) mHtmlOut.close();
-	    mLogger.info("Processing complete.");
-	} catch (Exception e) {
-	    mLogger.warn("Unexpected Exception: "+e.getMessage());
-	    mLogger.warn("stack trace: "+Logging.logStackTrace(e));
-	    IllegalStateException e2 
-		= new IllegalStateException(e.getMessage());
-	    e2.setStackTrace(e.getStackTrace());
-	    throw e2;
-	}
+        mLogger.info("Begin");
+        try {
+            Set<String> allTexts = new HashSet<String>();
+            for (EntrezGene entrezGene : mEntrezGeneSearcher) {
+                mLogger.info("processing EntrezGene Id: "+entrezGene.getGeneId());
+                if (mGenHtml) outputEntrezGeneName(entrezGene);
+                Set<String> perGeneTexts = new HashSet<String>();
+                addEntrezGeneTexts(entrezGene,allTexts,perGeneTexts);
+                addPubMedTexts(entrezGene,allTexts,perGeneTexts);
+                compilePerGeneLM(entrezGene,perGeneTexts);
+                if (mGenHtml) mPerGeneHtmlOut.close();
+            }
+            if (mLogger.isDebugEnabled())
+                mLogger.debug("Compiled all per-gene models, now do genomics model");
+            compileGenomicsLM(allTexts);
+            if (mGenHtml) mHtmlOut.close();
+            mLogger.info("Processing complete.");
+        } catch (Exception e) {
+            mLogger.warn("Unexpected Exception: "+e.getMessage());
+            mLogger.warn("stack trace: "+Logging.logStackTrace(e));
+            IllegalStateException e2 
+                = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
+        }
     }
 
     private void addEntrezGeneTexts(EntrezGene entrezGene,
- 				    Set<String> allTexts,
-				    Set<String> perGeneTexts) throws DaoException {
-	String geneSummary = entrezGene.getGeneSummary();
-	if (geneSummary != null) {
-	    allTexts.add(geneSummary);
-	    perGeneTexts.add(geneSummary);
-	}
-	String[] geneRifLabels = entrezGene.getGeneRifLabels();
-	for (String label : geneRifLabels) {
-	    allTexts.add(label);
-	    perGeneTexts.add(label);
-	}
+                                     Set<String> allTexts,
+                                    Set<String> perGeneTexts) throws DaoException {
+        String geneSummary = entrezGene.getGeneSummary();
+        if (geneSummary != null) {
+            allTexts.add(geneSummary);
+            perGeneTexts.add(geneSummary);
+        }
+        String[] geneRifLabels = entrezGene.getGeneRifLabels();
+        for (String label : geneRifLabels) {
+            allTexts.add(label);
+            perGeneTexts.add(label);
+        }
     }
 
     private void addPubMedTexts(EntrezGene entrezGene,
-				Set<String> allTexts,
-				Set<String> perGeneTexts) throws DaoException {
-	String[] pubMedIds = entrezGene.getUniquePubMedRefs();
-	for (String pmid : pubMedIds) {
-	    SearchResults<EntrezGene> hits = mEntrezGeneSearcher.getGenesForPubmedId(pmid);
-	    if (mLogger.isDebugEnabled())
-		mLogger.debug("pubmed id: "+pmid+"\t hits: "+hits.size());
-	    if (hits.size() > mMaxGeneHits) continue;
+                                Set<String> allTexts,
+                                Set<String> perGeneTexts) throws DaoException {
+        String[] pubMedIds = entrezGene.getUniquePubMedRefs();
+        for (String pmid : pubMedIds) {
+            SearchResults<EntrezGene> hits = mEntrezGeneSearcher.getGenesForPubmedId(pmid);
+            if (mLogger.isDebugEnabled())
+                mLogger.debug("pubmed id: "+pmid+"\t hits: "+hits.size());
+            if (hits.size() > mMaxGeneHits) continue;
 
-	    MedlineCitation citation = mMedlineSearcher.getById(pmid);
-	    if (citation == null) {
-		if (mLogger.isDebugEnabled())
-		    mLogger.debug("pubmed id: "+pmid+" not found in index");
-		continue;
-	    }
-	    
-	    String titleAbstract = MedlineCodec.titleAbstract(citation);
-	    allTexts.add(titleAbstract);
-	    perGeneTexts.add(titleAbstract);
+            MedlineCitation citation = mMedlineSearcher.getById(pmid);
+            if (citation == null) {
+                if (mLogger.isDebugEnabled())
+                    mLogger.debug("pubmed id: "+pmid+" not found in index");
+                continue;
+            }
+            
+            String titleAbstract = MedlineCodec.titleAbstract(citation);
+            allTexts.add(titleAbstract);
+            perGeneTexts.add(titleAbstract);
 
-	    if (mGenHtml)
-		outputPubmedTexts(citation);
-	}
+            if (mGenHtml)
+                outputPubmedTexts(citation);
+        }
     }
 
     private void compileGenomicsLM(Set<String> texts) throws IOException {
-	NGramProcessLM genomicLM = new NGramProcessLM(mNGram);
-	for (String text : texts) genomicLM.train(text);
-	File outputFile = new File(mModelDir,Constants.GENOMICS_LM);
-	AbstractExternalizable.compileTo(genomicLM,outputFile);
-	if (mGenHtml)
-	    outputTopNGrams(genomicLM.substringCounter());
-	if (mLogger.isDebugEnabled())
-	    mLogger.debug("compiled genomic  model to file: "+Constants.GENOMICS_LM);
+        NGramProcessLM genomicLM = new NGramProcessLM(mNGram);
+        for (String text : texts) genomicLM.train(text);
+        File outputFile = new File(mModelDir,Constants.GENOMICS_LM);
+        AbstractExternalizable.compileTo(genomicLM,outputFile);
+        if (mGenHtml)
+            outputTopNGrams(genomicLM.substringCounter());
+        if (mLogger.isDebugEnabled())
+            mLogger.debug("compiled genomic  model to file: "+Constants.GENOMICS_LM);
     }
 
     private void compilePerGeneLM(EntrezGene entrezGene,Set<String> texts) throws IOException {
-	NGramProcessLM perGeneLM = new NGramProcessLM(mNGram);
-	for (String text : texts) perGeneLM.train(text);
-	if (perGeneLM.observedCharacters().length == 0) {
-	    mLogger.warn("cannot build model for EntrezGene Id: "+entrezGene.getGeneId());
-	    return;
-	}
-	String perGeneFileName = entrezGene.getGeneId()+Constants.LM_SUFFIX;
-	File outputFile = new File(mModelDir,perGeneFileName);
-	AbstractExternalizable.compileTo(perGeneLM,outputFile);
-	if (mGenHtml)
-	    outputTopNGrams(perGeneLM.substringCounter());
-	if (mLogger.isDebugEnabled())
-	    mLogger.debug("compiled modelto file: "+perGeneFileName);
+        NGramProcessLM perGeneLM = new NGramProcessLM(mNGram);
+        for (String text : texts) perGeneLM.train(text);
+        if (perGeneLM.observedCharacters().length == 0) {
+            mLogger.warn("cannot build model for EntrezGene Id: "+entrezGene.getGeneId());
+            return;
+        }
+        String perGeneFileName = entrezGene.getGeneId()+Constants.LM_SUFFIX;
+        File outputFile = new File(mModelDir,perGeneFileName);
+        AbstractExternalizable.compileTo(perGeneLM,outputFile);
+        if (mGenHtml)
+            outputTopNGrams(perGeneLM.substringCounter());
+        if (mLogger.isDebugEnabled())
+            mLogger.debug("compiled modelto file: "+perGeneFileName);
     }
 
     private void outputEntrezGeneName(EntrezGene entrezGene) throws FileNotFoundException {
-	String geneId = entrezGene.getGeneId();
-	mHtmlOut.println("<H3>EntrezGene ID: "+geneId+" Name: "+entrezGene.getOfficialFullName()+"</H3>");
-	mHtmlOut.println("<A HREF=\""+geneId+".html\">text</A><BR>");
-	mPerGeneHtmlOut = new PrintStream(new FileOutputStream(new File(mModelDir,geneId+".html")));
-	mPerGeneHtmlOut.println("<HTML><BODY><H2>EntrezGene ID: "+geneId+" Name: "+entrezGene.getOfficialFullName()+"</H2>");
+        String geneId = entrezGene.getGeneId();
+        mHtmlOut.println("<H3>EntrezGene ID: "+geneId+" Name: "+entrezGene.getOfficialFullName()+"</H3>");
+        mHtmlOut.println("<A HREF=\""+geneId+".html\">text</A><BR>");
+        mPerGeneHtmlOut = new PrintStream(new FileOutputStream(new File(mModelDir,geneId+".html")));
+        mPerGeneHtmlOut.println("<HTML><BODY><H2>EntrezGene ID: "+geneId+" Name: "+entrezGene.getOfficialFullName()+"</H2>");
     }
 
 
     private void outputEntrezTexts(EntrezGene entrezGene) {
-	mPerGeneHtmlOut.println("<H4>gene summary</H4>");
-	mPerGeneHtmlOut.println(entrezGene.getGeneSummary());
-	String[] geneRifLabels = entrezGene.getGeneRifLabels();
-	mPerGeneHtmlOut.println("<H4>gene RIF</H4><UL>");
-	for (String label : geneRifLabels)
-	    mPerGeneHtmlOut.println("<LI>"+label);
-	mPerGeneHtmlOut.println("</UL>");
+        mPerGeneHtmlOut.println("<H4>gene summary</H4>");
+        mPerGeneHtmlOut.println(entrezGene.getGeneSummary());
+        String[] geneRifLabels = entrezGene.getGeneRifLabels();
+        mPerGeneHtmlOut.println("<H4>gene RIF</H4><UL>");
+        for (String label : geneRifLabels)
+            mPerGeneHtmlOut.println("<LI>"+label);
+        mPerGeneHtmlOut.println("</UL>");
     }
 
     private void outputPubmedTexts(MedlineCitation citation) {
-	mPerGeneHtmlOut.println("<H4>PubMed ID: "+citation.pmid()+" title</H4>");
-	mPerGeneHtmlOut.println(citation.article().articleTitleText());
-	if (citation.article().abstrct() != null) {
-	    mPerGeneHtmlOut.println("<H4>PubMed ID: "+citation.pmid()+" abstract</H4>");
-	    mPerGeneHtmlOut.println(citation.article().abstrct().textWithoutTruncationMarker());
-	}
+        mPerGeneHtmlOut.println("<H4>PubMed ID: "+citation.pmid()+" title</H4>");
+        mPerGeneHtmlOut.println(citation.article().articleTitleText());
+        if (citation.article().abstrct() != null) {
+            mPerGeneHtmlOut.println("<H4>PubMed ID: "+citation.pmid()+" abstract</H4>");
+            mPerGeneHtmlOut.println(citation.article().abstrct().textWithoutTruncationMarker());
+        }
     }
 
     private void outputTopNGrams(TrieCharSeqCounter seqCounter) {
-	for (int i = 0; i <= mNGram; ++i) {
-	    ObjectToCounterMap<String> topNGrams = seqCounter.topNGrams(i,mNGram);
-	    Object[] keysByCount = topNGrams.keysOrderedByCount();
-	    if (keysByCount.length > 0) {
-		mHtmlOut.print(i + ",");
-		for (int j = 0; j < keysByCount.length; ++j) {
-		    String nGram = keysByCount[j].toString();
-		    int count = topNGrams.getCount(nGram);
-		    String csvNGram = '"' + nGram.replaceAll("\"","\\\"") + '"';
-		    mHtmlOut.print("  \"" + nGram + "\"," + count);
-		}
-		mHtmlOut.println("<BR>");
-	    }
-	}
+        for (int i = 0; i <= mNGram; ++i) {
+            ObjectToCounterMap<String> topNGrams = seqCounter.topNGrams(i,mNGram);
+            Object[] keysByCount = topNGrams.keysOrderedByCount();
+            if (keysByCount.length > 0) {
+                mHtmlOut.print(i + ",");
+                for (int j = 0; j < keysByCount.length; ++j) {
+                    String nGram = keysByCount[j].toString();
+                    int count = topNGrams.getCount(nGram);
+                    String csvNGram = '"' + nGram.replaceAll("\"","\\\"") + '"';
+                    mHtmlOut.print("  \"" + nGram + "\"," + count);
+                }
+                mHtmlOut.println("<BR>");
+            }
+        }
     }
 
     public static void main(String[] args) throws Exception {
         ModelCompiler compiler = new ModelCompiler(args);
-	compiler.run();
+        compiler.run();
     }
 
 

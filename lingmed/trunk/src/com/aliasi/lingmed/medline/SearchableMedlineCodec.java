@@ -61,8 +61,8 @@ import org.apache.log4j.Logger;
  * <p>Conversion of the Lucene document to a citation is carried
  * out by the superclass {@link MedlineCodec}.
  * 
- * @author Bob Carpenter
- * @version 1.0
+ * @author Bob Carpenter, Mitzi Morris
+ * @version 1.1
  * @since   LingMed1.0
  */
 public class SearchableMedlineCodec extends MedlineCodec {
@@ -234,7 +234,7 @@ public class SearchableMedlineCodec extends MedlineCodec {
         if (appendToExisting)
             text = " , " + text;
         if (TEXT_FIELD_SET.contains(fieldName)) {
-            addTextField(doc,fieldName,text);
+            addTextField(doc,fieldName,text); // skip this one to reduce index size
             addTextField(doc,fieldName+EXACT_FIELD_SUFFIX,text);
             addTextField(doc,fieldName+NGRAM_FIELD_SUFFIX,text);
         } else if (SIMPLE_FIELD_SET.contains(fieldName)) {

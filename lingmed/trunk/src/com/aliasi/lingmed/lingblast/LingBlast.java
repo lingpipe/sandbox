@@ -26,7 +26,7 @@ import com.aliasi.lingmed.entrezgene.EntrezGeneSearcher;
 import com.aliasi.lingmed.medline.MedlineSearcher;
 import com.aliasi.lingmed.utils.FileUtils;
 
-import com.aliasi.lm.NGramProcessLM;
+import com.aliasi.lm.CompiledNGramProcessLM;
 
 import com.aliasi.stats.Statistics;
 
@@ -61,27 +61,27 @@ import org.apache.log4j.Logger;
 
 public class LingBlast {
     private final Logger mLogger
-	= Logger.getLogger(LingBlast.class);
+        = Logger.getLogger(LingBlast.class);
 
     private File mModelDir;
     private EntrezGeneSearcher mEntrezGeneSearcher;
     private MedlineSearcher mMedlineSearcher;
     private ExactDictionaryChunker mDictionaryChunker;
-    private NGramProcessLM mGenomicsLM;
+    private CompiledNGramProcessLM mGenomicsLM;
     private int mNGram;
     private double mGenomicsThreshold;
 
     public LingBlast(MedlineSearcher medlineSearcher,
-		     EntrezGeneSearcher entrezGeneSearcher,
-		     ExactDictionaryChunker dictionaryChunker,
-		     File modelDir,
-		     double threshold) throws IOException, ClassNotFoundException {
-	mMedlineSearcher = medlineSearcher;
-	mEntrezGeneSearcher = entrezGeneSearcher;
-	mDictionaryChunker = dictionaryChunker;
-	mModelDir = modelDir;
-	mGenomicsLM = readGenomicsLM();
-	mGenomicsThreshold = threshold;
+                     EntrezGeneSearcher entrezGeneSearcher,
+                     ExactDictionaryChunker dictionaryChunker,
+                     File modelDir,
+                     double threshold) throws IOException, ClassNotFoundException {
+        mMedlineSearcher = medlineSearcher;
+        mEntrezGeneSearcher = entrezGeneSearcher;
+        mDictionaryChunker = dictionaryChunker;
+        mModelDir = modelDir;
+        mGenomicsLM = readGenomicsLM();
+        mGenomicsThreshold = threshold;
     }
 
     /**
@@ -90,93 +90,93 @@ public class LingBlast {
      * For genes mentioned in text, score text against per-gene model.
      */
     public Pair<Double, Chunking>  lingblast(CharSequence input) throws IOException, ClassNotFoundException {
-	double genomicsCrossEntropyRate = 
-	    getCrossEntropyRate(input,mGenomicsLM);
-	if (mLogger.isDebugEnabled())
-	    mLogger.debug("genomicsCrossEntropyRate: "+genomicsCrossEntropyRate);
-	if (genomicsCrossEntropyRate < mGenomicsThreshold) {
-	    Chunking geneNames = lingblastGenes(input);
-	    return new Pair(genomicsCrossEntropyRate,geneNames);
-	}
-	return new Pair(genomicsCrossEntropyRate,null);
+        double genomicsCrossEntropyRate = 
+            getCrossEntropyRate(input,mGenomicsLM);
+        if (mLogger.isDebugEnabled())
+            mLogger.debug("genomicsCrossEntropyRate: "+genomicsCrossEntropyRate);
+        if (genomicsCrossEntropyRate < mGenomicsThreshold) {
+            Chunking geneNames = lingblastGenes(input);
+            return new Pair(genomicsCrossEntropyRate,geneNames);
+        }
+        return new Pair(genomicsCrossEntropyRate,null);
     }
 
     private Chunking lingblastGenes(CharSequence input) throws IOException, ClassNotFoundException {
-	Set<String> allGeneIds = new HashSet<String>();
-	Chunking geneNames = mDictionaryChunker.chunk(input);
-	if (mLogger.isDebugEnabled())
-	    mLogger.debug("found chunks: "+geneNames.chunkSet().size());
+        Set<String> allGeneIds = new HashSet<String>();
+        Chunking geneNames = mDictionaryChunker.chunk(input);
+        if (mLogger.isDebugEnabled())
+            mLogger.debug("found chunks: "+geneNames.chunkSet().size());
         for (Chunk chunk : geneNames.chunkSet()) {
             int start = chunk.start();
             int end = chunk.end();
             String phrase = input.subSequence(start,end).toString();
             String genes = chunk.type();
-	    if (mLogger.isDebugEnabled())
-		mLogger.debug("     phrase=|" + phrase + "|"
-			      + " start=" + start
-			      + " end=" + end
-			      + " genes=" + genes);
-	    String[] geneArray = Arrays.csvToArray(genes);
-	    for (String gene : geneArray) {
-		allGeneIds.add(gene);
-	    }
+            if (mLogger.isDebugEnabled())
+                mLogger.debug("     phrase=|" + phrase + "|"
+                              + " start=" + start
+                              + " end=" + end
+                              + " genes=" + genes);
+            String[] geneArray = Arrays.csvToArray(genes);
+            for (String gene : geneArray) {
+                allGeneIds.add(gene);
+            }
         }
-	Map<String,Double> perGeneLmScores = new HashMap<String,Double>();
-	for (String geneId : allGeneIds) {
-	    NGramProcessLM perGeneLM = readPerGeneLM(geneId);
-	    if (perGeneLM != null) {
-		double perGeneCrossEntropyRate = 
-		    getCrossEntropyRate(input,perGeneLM);
-		if (mLogger.isDebugEnabled())
-		    mLogger.debug("geneId: "+geneId
-				  +" perGeneCrossEntropyRate: "+perGeneCrossEntropyRate);
-		perGeneLmScores.put(geneId,perGeneCrossEntropyRate);
-	    }
-	}
-	Set<Chunk> resultChunkSet = new LinkedHashSet<Chunk>();
-	for (Iterator geneIt = perGeneLmScores.entrySet().iterator(); geneIt.hasNext(); ) {
-	    Entry<String,Double> entry = (Entry<String,Double>)geneIt.next();
-	    String geneId = entry.getKey();
-	    double score = entry.getValue();
-	    for (Chunk chunk : geneNames.chunkSet()) {
-		String[] geneArray = Arrays.csvToArray(chunk.type());
-		if (Arrays.member(geneId,geneArray)) {
-		    Chunk newChunk = ChunkFactory.createChunk(chunk.start(),chunk.end(),geneId,score);
-		    resultChunkSet.add(newChunk);
-		}
-	    }
-	}
-	ChunkingImpl result = new ChunkingImpl(input);
-	result.addAll(resultChunkSet);
-	return result;
+        Map<String,Double> perGeneLmScores = new HashMap<String,Double>();
+        for (String geneId : allGeneIds) {
+            CompiledNGramProcessLM perGeneLM = readPerGeneLM(geneId);
+            if (perGeneLM != null) {
+                double perGeneCrossEntropyRate = 
+                    getCrossEntropyRate(input,perGeneLM);
+                if (mLogger.isDebugEnabled())
+                    mLogger.debug("geneId: "+geneId
+                                  +" perGeneCrossEntropyRate: "+perGeneCrossEntropyRate);
+                perGeneLmScores.put(geneId,perGeneCrossEntropyRate);
+            }
+        }
+        Set<Chunk> resultChunkSet = new LinkedHashSet<Chunk>();
+        for (Iterator geneIt = perGeneLmScores.entrySet().iterator(); geneIt.hasNext(); ) {
+            Entry<String,Double> entry = (Entry<String,Double>)geneIt.next();
+            String geneId = entry.getKey();
+            double score = entry.getValue();
+            for (Chunk chunk : geneNames.chunkSet()) {
+                String[] geneArray = Arrays.csvToArray(chunk.type());
+                if (Arrays.member(geneId,geneArray)) {
+                    Chunk newChunk = ChunkFactory.createChunk(chunk.start(),chunk.end(),geneId,score);
+                    resultChunkSet.add(newChunk);
+                }
+            }
+        }
+        ChunkingImpl result = new ChunkingImpl(input);
+        result.addAll(resultChunkSet);
+        return result;
     }
 
-    private NGramProcessLM readGenomicsLM() throws IOException, ClassNotFoundException {
-	return readLM(Constants.GENOMICS_LM);
+    private CompiledNGramProcessLM readGenomicsLM() throws IOException, ClassNotFoundException {
+        return readLM(Constants.GENOMICS_LM);
     }
 
-    private NGramProcessLM readPerGeneLM(String geneId) throws IOException, ClassNotFoundException {
-	String modelFileName = geneId+Constants.LM_SUFFIX;
-	return readLM(modelFileName);
+    private CompiledNGramProcessLM readPerGeneLM(String geneId) throws IOException, ClassNotFoundException {
+        String modelFileName = geneId+Constants.LM_SUFFIX;
+        return readLM(modelFileName);
     }
 
-    private NGramProcessLM readLM(String modelFileName) throws IOException, ClassNotFoundException {
-	File modelFile = new File(mModelDir,modelFileName);
-	if (!FileUtils.checkInputFile(modelFile)) {
-	    if (mLogger.isDebugEnabled())
-		mLogger.debug("No model file: "+modelFileName);
-	    return null;
-	}
-	NGramProcessLM lm = (NGramProcessLM)
-	    AbstractExternalizable.readObject(modelFile);
-	if (mLogger.isDebugEnabled()) {
-	    mLogger.debug("Read model: "+modelFileName);
-	}
-	return lm;
+    private CompiledNGramProcessLM readLM(String modelFileName) throws IOException, ClassNotFoundException {
+        File modelFile = new File(mModelDir,modelFileName);
+        if (!FileUtils.checkInputFile(modelFile)) {
+            if (mLogger.isDebugEnabled())
+                mLogger.debug("No model file: "+modelFileName);
+            return null;
+        }
+        CompiledNGramProcessLM lm = (CompiledNGramProcessLM)
+            AbstractExternalizable.readObject(modelFile);
+        // if (mLogger.isDebugEnabled()) {
+		//	mLogger.debug("Read model: "+modelFileName);
+        // }
+        return lm;
     }
 
-    private double getCrossEntropyRate(CharSequence input, NGramProcessLM lm) {
-	String text = input.toString();
-	return -1.0*(lm.log2Estimate(text)/text.length());
+    private double getCrossEntropyRate(CharSequence input, CompiledNGramProcessLM lm) {
+        String text = input.toString();
+        return -1.0*(lm.log2Estimate(text)/text.length());
     }
 }
