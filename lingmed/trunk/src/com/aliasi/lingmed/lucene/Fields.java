@@ -31,9 +31,9 @@ public class Fields {
 
     public static final String RAW_TEXT_FIELD = "rawTEXT";
 
-    public static final String LAST_FILE_FIELD = "LASTFILE";
-    public static final String LAST_FILE_VALUE = "lastfile";
-    public static final String FILE_NAME_FIELD = "FILENAME";
+    public static final String MEDLINE_DIST_FIELD = "MEDLINE_DIST";
+    public static final String MEDLINE_DIST_VALUE = "medline";
+    public static final String MEDLINE_FILE_FIELD = "FILENAME";
 
     private Fields() {}
 

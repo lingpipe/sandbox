@@ -65,11 +65,12 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopFieldDocs;
 
 import org.apache.lucene.store.FSDirectory;
 
@@ -157,6 +158,8 @@ public class IndexMedline extends AbstractCommand {
     private String mDistDirPath;
     private String mType;
 
+    private final static double RAM_BUF_SIZE = 256d;
+
     private final static int SECOND = 1000;
     private final static int MINUTE = 60*SECOND;
 
@@ -214,13 +217,14 @@ public class IndexMedline extends AbstractCommand {
                     new IndexWriter(FSDirectory.getDirectory(mIndex),
                                     mCodec.getAnalyzer(),
                                     new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
+				indexWriter.setRAMBufferSizeMB(RAM_BUF_SIZE);
                 for (File file: files) {
                     mLogger.info("processing file:" + file);
                     MedlineIndexer indexer = new MedlineIndexer(indexWriter,mCodec);
                     parser.setHandler(indexer);
                     parseFile(parser,file);
                     indexer.close();
-                    recordLastUpdate(indexWriter,file.getName());
+                    recordFile(indexWriter,file.getName());
                     mLogger.info("completed processing file:" + file);
                 }
                 mLogger.info("All files parsed, now optimize index");
@@ -246,24 +250,19 @@ public class IndexMedline extends AbstractCommand {
         if (isNewDirectory(fsDirectory)) return LOW_SORT_STRING;
         IndexReader reader = IndexReader.open(fsDirectory,true); // open reader read-only
         IndexSearcher searcher = new IndexSearcher(reader);
-        Term term = new Term(Fields.LAST_FILE_FIELD,Fields.LAST_FILE_VALUE);
+        Term term = new Term(Fields.MEDLINE_DIST_FIELD,Fields.MEDLINE_DIST_VALUE);
+		Sort sort = new Sort(Fields.MEDLINE_FILE_FIELD,true);
         Query query = new TermQuery(term);
-        Hits hits = searcher.search(query);
-        if (hits.length() != 1) {
-            if (hits.length() > 1) {
-                String msg ="index contains more than 1 LASTFILE recs";
-                mLogger.warn(msg);
-                throw new IllegalStateException(msg);
-            } else {
-                mLogger.warn("index missing LASTFILE rec");
-            }
-            searcher.close();
+        TopFieldDocs results = searcher.search(query,null,1,sort);
+		if (results.totalHits == 0) {
+			searcher.close();
+			reader.close();
             return LOW_SORT_STRING;
-        }
-        Document d = hits.doc(0);
+		}
+		Document d = searcher.doc(results.scoreDocs[0].doc);
         searcher.close();
         reader.close();
-        return d.get(Fields.FILE_NAME_FIELD);
+        return d.get(Fields.MEDLINE_FILE_FIELD);
     }
 
     private File[] getLaterFiles(File index) throws Exception {
@@ -329,22 +328,20 @@ public class IndexMedline extends AbstractCommand {
         }
     }
 
-    private void recordLastUpdate(IndexWriter indexWriter, String fileName)
+    private void recordFile(IndexWriter indexWriter, String fileName)
         throws IOException {
-        Term term = new Term(Fields.LAST_FILE_FIELD,
-                             Fields.LAST_FILE_VALUE);
         Document doc = new Document(); 
-        Field tagField = new Field(Fields.LAST_FILE_FIELD,
-                                   Fields.LAST_FILE_VALUE,
+        Field tagField = new Field(Fields.MEDLINE_DIST_FIELD,
+                                   Fields.MEDLINE_DIST_VALUE,
                                    Field.Store.YES,
                                    Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add(tagField);
-        Field nameField = new Field(Fields.FILE_NAME_FIELD,
+        Field nameField = new Field(Fields.MEDLINE_FILE_FIELD,
                                     fileName,
                                     Field.Store.YES,
-                                    Field.Index.NO);
+                                    Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add(nameField);
-        indexWriter.updateDocument(term,doc);
+        indexWriter.addDocument(doc);
     }
 
     private void reportParameters() {

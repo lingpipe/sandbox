@@ -252,8 +252,14 @@ public class DictionaryBuilder extends AbstractCommand {
                 String[] aliases = entrezGene.getUniqueAliases();
                 for (String alias : aliases) names.add(alias);
                 String[] linkIds = entrezGene.getLinkIds();
-                for (String linkId : linkIds) names.add(linkId);
-
+                for (String linkId : linkIds) {
+					try {
+						Float.valueOf(linkId);
+						mLogger.debug("ignore link id: "+linkId);
+					} catch (NumberFormatException e) {
+						names.add(linkId);
+					}
+				}
                 if (mLogger.isDebugEnabled()) 
                     mLogger.debug("entrez names: "+names.size());
 

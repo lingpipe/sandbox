@@ -52,7 +52,7 @@ public class MedlineSearcherImpl extends DaoSearcherImpl<MedlineCitation>
     public MedlineSearcherImpl(Codec<MedlineCitation> codec, 
                                Searcher searcher) 
         throws IOException {
-	super(codec, searcher);
+        super(codec, searcher);
     }
 
     /**      
@@ -60,40 +60,40 @@ public class MedlineSearcherImpl extends DaoSearcherImpl<MedlineCitation>
      * in either the title or abstract field.
      */
     public int numExactPhraseMatches(String phrase) throws DaoException {
-	String query = "abstractX:(+\"" + phrase + "\") titleX:(+\"" + phrase + "\")";
-	return numHits(query);
+        String query = "abstractX:(+\"" + phrase + "\") titleX:(+\"" + phrase + "\")";
+        return numHits(query);
     }
 
     /**      
      * Find all MedlineCitations published in the range fromYear, toYear, inclusive.
      */
     public SearchResults<MedlineCitation> getCitationsInYearRange(String fromYear, String toYear) 
-	throws DaoException {
+        throws DaoException {
 
-	if (!isYear(fromYear) || !isYear(toYear)
-	    || fromYear.compareTo(toYear) > 0) {
-	    throw new DaoException("bad year search range: "+fromYear+", "+toYear);
-	}
-	ConstantScoreRangeQuery rangeQuery = 
-	    new ConstantScoreRangeQuery(SearchableMedlineCodec.DATE_YEAR_FIELD,
-					fromYear,
-					toYear,
-					true,
-					true);
-	return search(rangeQuery);
+        if (!isYear(fromYear) || !isYear(toYear)
+            || fromYear.compareTo(toYear) > 0) {
+            throw new DaoException("bad year search range: "+fromYear+", "+toYear);
+        }
+        ConstantScoreRangeQuery rangeQuery = 
+            new ConstantScoreRangeQuery(SearchableMedlineCodec.DATE_YEAR_FIELD,
+                                        fromYear,
+                                        toYear,
+                                        true,
+                                        true);
+        return search(rangeQuery);
     }
 
     // check that year is string of 4 digits
     private boolean isYear(String s) {
-	if (s.length() != 4) {
-	    return false;
-	}
-	for (int i=0; i<s.length(); i++) {
-	    if (!Character.isDigit(s.charAt(i))) {
-		return false;
-	    }
-	}
-	return true;
+        if (s.length() != 4) {
+            return false;
+        }
+        for (int i=0; i<s.length(); i++) {
+            if (!Character.isDigit(s.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

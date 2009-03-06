@@ -26,27 +26,27 @@ package com.aliasi.lingmed.entrezgene;
  */
 
 public class GenomeLocation {
-    private final String mAccession;
+    private final String mAssembly;
     private final String mStrand;
-    private final int mLowerOffset;
-    private final int mUpperOffset;
+    private final int mOffsetLower;
+    private final int mOffsetUpper;
 
 
-    String accession() { return mAccession; }
+    String assembly() { return mAssembly; }
     String strand() { return mStrand; }
-    int lower() { return mLowerOffset; }
-    int upper() { return mUpperOffset; }
+    int lower() { return mOffsetLower; }
+    int upper() { return mOffsetUpper; }
 
     public String toString() {
-        return "chr (assembly.version): " + mAccession
-            + " strand: " + mStrand + ": " + mLowerOffset + "-" + mUpperOffset;
+        return "chr (assembly.version): " + mAssembly
+            + " strand: " + mStrand + ": " + mOffsetLower + "-" + mOffsetUpper;
     }
 
-    public GenomeLocation (String accession, String strand, int lower, int upper) {
-        mAccession = accession;
+    public GenomeLocation (String assembly, String strand, int lower, int upper) {
+        mAssembly = assembly;
         mStrand = strand;
-        mLowerOffset = lower;
-        mUpperOffset = upper;
+        mOffsetLower = lower;
+        mOffsetUpper = upper;
     }
 
 	public boolean overlaps(GenomeLocation o) {
