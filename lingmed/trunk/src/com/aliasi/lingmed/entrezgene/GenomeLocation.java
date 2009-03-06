@@ -48,4 +48,12 @@ public class GenomeLocation {
         mLowerOffset = lower;
         mUpperOffset = upper;
     }
+
+	public boolean overlaps(GenomeLocation o) {
+		return ((mOffsetLower < o.lower() && mOffsetUpper > o.upper())
+				|| (mOffsetLower > o.lower() && mOffsetUpper < o.upper())
+				|| (mOffsetLower < o.lower() && mOffsetUpper > o.lower())
+				|| (mOffsetUpper < o.upper() && mOffsetUpper > o.upper()));
+	}
+
 }
