@@ -1,11 +1,23 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
-<property name="mxMem" value="2G" />
+<property name="mxMem" value="4G" />
 
 <import file="build_common.xml"/>
 
 <property file="build.properties"/>
+
+<property name="dictionary"
+          value="/data/lingblast/exactDictEntrezGene"/>
+
+<property name="model.dir"
+          value="/data/lingblast/models"/>
+
+<property name="medline.lucene.index"
+          value="/lucene_data/indexes/luceneMedline"/>
+
+<property name="entrezgene.lucene.index"
+          value="/lucene_data/indexes/luceneEntrezGene"/>
 
 <!-- **** LingBlast, GeneLinkage **** -->
 <target name="buildDict"
@@ -16,12 +28,12 @@
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="-host=localhost"/>
-    <arg value="-dictFile=/data/lingblast/exactDictEntrezGene"/>
-<!--    <arg value="-allowedNames=hifreq_names.txt"/> -->
-    <arg value="-genHtml=true"/>
-    <arg value="-medline=/lucene_data/indexes/medline_2009_searchable"/>
-    <arg value="-entrezgene=/lucene_data/indexes/luceneEntrezGene"/>
+    <arg value="-dictFile=${dictionary}"/>
+    <arg value="-medline=${medline.lucene.index}"/>
+    <arg value="-entrezgene=${entrezgene.lucene.index}"/>
     <arg value="-maxPubmedHitsPerAlias=10000"/>
+    <arg value="-genHtml=true"/>
+<!--    <arg value="-allowedNames=hifreq_names.txt"/> -->
   </java>
 </target>
 
@@ -32,8 +44,11 @@
         maxMemory="${mxMem}"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="-host=${rmi.server.address}"/>
-    <arg value="-modelDir=lmTexts2"/>
+    <arg value="-host=localhost"/>
+    <arg value="-medline=${medline.lucene.index}"/>
+    <arg value="-entrezgene=${entrezgene.lucene.index}"/>
+    <arg value="-modelDir=${model.dir}"/>
+    <arg value="-genHtml=true"/>
   </java>
 </target>
 
@@ -44,11 +59,11 @@
         maxMemory="${mxMem}"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="-dictionary=exactDictEntrezGene"/>
-    <arg value="-modelDir=/data1/lingblast/models"/>
-    <arg value="-sqlDir=/data3/genelinkage/sql"/>
     <arg value="-host=localhost"/>
-    <arg value="-medline=/data2/lucene/medline_2008"/>
+    <arg value="-dictionary=${dictionary}"/>
+    <arg value="-medline=${medline.lucene.index}"/>
+    <arg value="-modelDir=${model.dir}"/>
+    <arg value="-sqlDir=/data/genelinkage/sql"/>
     <arg value="-genomicsThreshold=100"/>
   </java>
 </target>
