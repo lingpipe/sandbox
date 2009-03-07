@@ -38,7 +38,7 @@
           value="com.aliasi.lingmed.medline.MedlineCodec"/>
 
 <property name="medline.index.sleep"
-          value="60"/>
+          value="-1"/>
 
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM"
@@ -86,15 +86,16 @@
 <!-- **** Entrez Gene tasks **** -->
 
 <property name="entrezgene.dist.file"
-          value="${nlm.data}/entrezgene/human.xml"/>
+          value="${nlm.data}/entrezgene/pig.xml"/>
 <property name="entrezgene.lucene.index.dir"
-          value="/lucene_data/indexes/luceneEntrezGene"/>
+          value="pigEntrezGene"/>
 
 <target name="indexEntrezGene"
         description="create Lucene EntrezGene index"
         depends="jar">
   <indexEntrezGene distFile="${entrezgene.dist.file}"
-                   index="${entrezgene.lucene.index.dir}"/>
+                   index="${entrezgene.lucene.index.dir}"
+                   type="live_gene" />
 </target>
 
 <target name="rmiEntrezGene"
