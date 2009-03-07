@@ -163,6 +163,7 @@
 <macrodef name="indexEntrezGene">
   <attribute name="distFile"/>
   <attribute name="index"/>
+  <attribute name="type"/>
   <sequential>
     <java classname="com.aliasi.lingmed.entrezgene.IndexEntrezGene"
           maxMemory="${mxMem}"
@@ -170,6 +171,7 @@
       <classpath refid="classpath.standard"/>
       <arg value="-distFile=@{distFile}"/>
       <arg value="-index=@{index}"/>
+      <arg value="-type=@{type}"/>
     </java>
   </sequential>
 </macrodef>

@@ -141,14 +141,23 @@ public class EntrezGene {
 
     String getGeneTrackStatus() { return mGeneTrackStatus; }
 
-    String getEntrezgeneType() { return mEntrezgeneType; }
-
 
     /**
      * Returns the Entrez Gene gene id.
      * @return The text value of the <code>Gene-track_geneid</code> element.
      */
     public String getGeneId() { return mGeneId; }
+
+    /**
+     * Returns the <code>Gene-track_status</code> element
+     */
+    public String getGeneStatus() { return mGeneTrackStatus; }
+
+    /**
+     * Returns the <code>Entrezgene_type</code> element
+     */
+    public String getEntrezgeneType() { return mEntrezgeneType; }
+
 
     /**
      * Returns the text value of the <code>Gene-ref_desc</code> element.
@@ -383,6 +392,7 @@ public class EntrezGene {
         if (mGeneTrackStatus.equals("live")) return true;
         return false;
     }
+
 
     /**
      * Returns true if the <code>Entrezgene_type</code> element

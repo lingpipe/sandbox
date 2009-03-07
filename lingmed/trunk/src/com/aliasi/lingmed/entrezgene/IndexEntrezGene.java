@@ -53,6 +53,17 @@ import org.apache.log4j.Logger;
  * </dd>
  * </dl>
  *
+ * <P>The following arguments are optional:
+ * <dl>
+ * <dt><code>-type</code></dt>
+ * <dd>Specifies restriction on Entrezgene entries to index.<br>
+ * &quot;<code>gene</code>&quot; - if <code>isTypeGene()</code><br>
+ * &quot;<code>live</code>&quot; - if <code>isStatusLive()</code>
+ * &quot;<code>live_gene</code>&quot; - if <code>isTypeGene()</code> and <code>isStatusLive()</code>
+ * 
+ * </dd>
+ * </dl>
+ *
  * @author Mitzi Morris
  * @version 1.0
  * @since   LingMed1.0
@@ -66,11 +77,16 @@ public class IndexEntrezGene extends AbstractCommand {
     private String mDistFileName;
     private File mIndex;
     private String mIndexName;
+    private String mType;
 
     private EntrezGeneCodec mCodec = new EntrezGeneCodec();
 
     private final static String DIST_FILE = "distFile";
     private final static String LUCENE_INDEX = "index";
+    private final static String TYPE = "type";
+    private final static String TYPE_GENE = "gene";
+    private final static String TYPE_LIVE = "live";
+    private final static String TYPE_LIVEGENE = "live_gene";
     private final static Properties DEFAULT_PARAMS = new Properties();
 
     /*
@@ -84,12 +100,19 @@ public class IndexEntrezGene extends AbstractCommand {
         reportParameters();
         mIndex = FileUtils.checkIndex(mIndexName,true);
         mDistFile = FileUtils.checkInputFile(mDistFileName);
+        mType = getArgument(TYPE);
+		if (! (TYPE_GENE.equalsIgnoreCase(mType)
+			   || TYPE_LIVE.equalsIgnoreCase(mType)
+			   || TYPE_LIVEGENE.equalsIgnoreCase(mType))) {
+			mType = null;
+		}
     }
 
     private void reportParameters() {
         mLogger.info("Indexing EntrezGene "
                      + "\n\tIndex=" + mIndexName
                      + "\n\tEntrezGene distribution=" + mDistFileName
+                     + "\n\tType (optional)=" + mType
                      );
     }
 
@@ -98,7 +121,7 @@ public class IndexEntrezGene extends AbstractCommand {
         try {
             IndexWriter indexWriter = new IndexWriter(mIndex,mCodec.getAnalyzer());
 
-            EntrezGeneIndexer indexer = new EntrezGeneIndexer(indexWriter,mCodec);
+            EntrezGeneIndexer indexer = new EntrezGeneIndexer(indexWriter,mCodec,mType);
 
             // save raw XML for <Entrezgene> element
             Parser<ObjectHandler<EntrezGene>> parser = new EntrezParser(true);  
@@ -126,16 +149,21 @@ public class IndexEntrezGene extends AbstractCommand {
     static class EntrezGeneIndexer implements ObjectHandler<EntrezGene> {
         final IndexWriter mIndexWriter;
         final EntrezGeneCodec mGeneCodec;
+		final String mType;
 
-        public EntrezGeneIndexer(IndexWriter indexWriter, EntrezGeneCodec codec) {
+        public EntrezGeneIndexer(IndexWriter indexWriter, EntrezGeneCodec codec, String type) {
             mIndexWriter = indexWriter;
             mGeneCodec = codec;
+			mType = type;
         }
 
         public void handle(EntrezGene eg) {
 			// Logger.getLogger(IndexEntrezGene.class).debug("entrez gene entry: " + eg.toString());
 
-            if (eg.isStatusLive() && eg.isTypeGene()) {
+			if (mType == null
+				|| (TYPE_GENE.equalsIgnoreCase(mType) && eg.isTypeGene())
+				|| (TYPE_LIVE.equalsIgnoreCase(mType) && eg.isStatusLive())
+				|| (TYPE_LIVEGENE.equalsIgnoreCase(mType) && eg.isStatusLive() && eg.isTypeGene())) {
                 Logger.getLogger(IndexEntrezGene.class).debug("Adding Entrezgene GeneId=" + eg.getGeneId());
                 Document doc = mGeneCodec.toDocument(eg);
                 try { 
@@ -145,8 +173,10 @@ public class IndexEntrezGene extends AbstractCommand {
                 } catch (IOException ioe) {
                     Logger.getLogger(IndexEntrezGene.class).warn("Exception indexing EntrezGene: " + ioe);
                 }
-            } else if (eg.isStatusLive() && !eg.isTypeGene()) {
-                Logger.getLogger(IndexEntrezGene.class).debug("Skipping non-gene, GeneId=" + eg.getGeneId());
+			} else {
+                Logger.getLogger(IndexEntrezGene.class).debug("Skipping GeneId=" + eg.getGeneId()
+															 + " not type " + mType
+															 + "\n" + eg.toString() );
             }
         }
 
