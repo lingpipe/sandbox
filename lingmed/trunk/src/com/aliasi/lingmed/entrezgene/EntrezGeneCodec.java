@@ -56,45 +56,47 @@ public class EntrezGeneCodec implements Codec<EntrezGene> {
 
     public Document toDocument(EntrezGene e) { 
         Document doc = new Document(); 
-	// index EntrezGene id (as keyword)
+		// index EntrezGene id (as keyword)
         Field idField = new Field(Fields.ID_FIELD,e.getGeneId(),
                                   Field.Store.YES,
                                   Field.Index.TOKENIZED);
         doc.add(idField);
-	// index Species (latin name: "Homo Sapiens")
-        Field speciesField = new Field(SPECIES_FIELD,e.getSpeciesTaxName(),
-                                  Field.Store.YES,
-                                  Field.Index.TOKENIZED);
-        doc.add(speciesField);
-	// index pubmed article ids (if any) which reference this gene
-	String[] pmidRefs = e.getUniquePubMedRefs();
-	for (String pmid : pmidRefs) {
-	    Field pmidField = new Field(PMID_FIELD,pmid,
-					Field.Store.YES,
-					Field.Index.TOKENIZED);
-	    doc.add(pmidField);
-	}
-	Field xmlField = new Field(Fields.XML_FIELD,e.xmlString(),
-				   Field.Store.COMPRESS,
-				   Field.Index.NO);
-	doc.add(xmlField);
-	return doc;
+		// index Species (latin name: "Homo Sapiens")
+		if (e.getSpeciesTaxName() != null) {
+			Field speciesField = new Field(SPECIES_FIELD,e.getSpeciesTaxName(),
+										   Field.Store.YES,
+										   Field.Index.TOKENIZED);
+			doc.add(speciesField);
+		}
+		// index pubmed article ids (if any) which reference this gene
+		String[] pmidRefs = e.getUniquePubMedRefs();
+		for (String pmid : pmidRefs) {
+			Field pmidField = new Field(PMID_FIELD,pmid,
+										Field.Store.YES,
+										Field.Index.TOKENIZED);
+			doc.add(pmidField);
+		}
+		Field xmlField = new Field(Fields.XML_FIELD,e.xmlString(),
+								   Field.Store.COMPRESS,
+								   Field.Index.NO);
+		doc.add(xmlField);
+		return doc;
     }
 
     public EntrezGene toObject(Document d) { 
-	String xml = d.get(Fields.XML_FIELD);
-	InputSource is = new InputSource(new StringReader(xml)); 
-	EntrezParser parser = new EntrezParser(false);
-	ExtractionHandler handler = new ExtractionHandler();
-	parser.setHandler(handler);
-	try {
-	    parser.parse(is);
-	    return handler.mGene;
-	} catch (IOException e) {
-	    System.err.println(e.getMessage());
-	    e.printStackTrace(System.err);
-	}
-	return null;
+		String xml = d.get(Fields.XML_FIELD);
+		InputSource is = new InputSource(new StringReader(xml)); 
+		EntrezParser parser = new EntrezParser(false);
+		ExtractionHandler handler = new ExtractionHandler();
+		parser.setHandler(handler);
+		try {
+			parser.parse(is);
+			return handler.mGene;
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace(System.err);
+		}
+		return null;
     }
 
 
@@ -103,16 +105,16 @@ public class EntrezGeneCodec implements Codec<EntrezGene> {
      * numeric id analyzer on PMID field
      */
     public LuceneAnalyzer getAnalyzer() {
-	LuceneAnalyzer analyzer = new LuceneAnalyzer();
-	analyzer.setTokenizer(PMID_FIELD,NUMBER_TOKENIZER_FACTORY);
-	return analyzer;
+		LuceneAnalyzer analyzer = new LuceneAnalyzer();
+		analyzer.setTokenizer(PMID_FIELD,NUMBER_TOKENIZER_FACTORY);
+		return analyzer;
     }
 
     static class ExtractionHandler implements ObjectHandler<EntrezGene> {
-	EntrezGene mGene;
-	public void handle(EntrezGene gene) {
-	    mGene = gene;
-	}
+		EntrezGene mGene;
+		public void handle(EntrezGene gene) {
+			mGene = gene;
+		}
     }
 
     public static final TokenizerFactory NUMBER_TOKENIZER_FACTORY
