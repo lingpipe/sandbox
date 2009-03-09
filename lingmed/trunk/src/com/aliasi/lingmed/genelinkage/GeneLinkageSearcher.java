@@ -60,18 +60,18 @@ import org.apache.log4j.Logger;
 
 public class GeneLinkageSearcher {
     private final Logger mLogger
-	= Logger.getLogger(GeneLinkageSearcher.class);
+        = Logger.getLogger(GeneLinkageSearcher.class);
 
     private final EntrezGeneSearcher mEntrezGeneSearcher;
     private final MedlineSearcher mMedlineSearcher;
     private final GeneLinkageDao mGeneLinkageDao;
 
     public GeneLinkageSearcher(EntrezGeneSearcher entrezGeneSearcher,
-			       MedlineSearcher medlineSearcher,
-			       GeneLinkageDao geneLinkageDao) {
-	mEntrezGeneSearcher = entrezGeneSearcher;
-	mMedlineSearcher = medlineSearcher;
-	mGeneLinkageDao = geneLinkageDao;
+                               MedlineSearcher medlineSearcher,
+                               GeneLinkageDao geneLinkageDao) {
+        mEntrezGeneSearcher = entrezGeneSearcher;
+        mMedlineSearcher = medlineSearcher;
+        mGeneLinkageDao = geneLinkageDao;
     }
 
     public EntrezGeneSearcher entrezGeneSearcher() { return mEntrezGeneSearcher; }
@@ -79,93 +79,93 @@ public class GeneLinkageSearcher {
     public GeneLinkageDao geneLinkageDao() { return  mGeneLinkageDao; }
 
     ArticleMention[] findTopMentions(String gene, int limit) 
-	throws SQLException, DaoException {
-	int geneId = 0;
-	try {
-	    geneId = Integer.parseInt(gene);
-	} catch (NumberFormatException nfe) {
-	    return new ArticleMention[0];
-	}
-	Comparator<ArticleMention> byScore = new ArticleMentionComparator();
-	NBestSet<ArticleMention> tops = new NBestSet<ArticleMention>(limit,byScore);
-	int limitx10 = limit*10;
-	Map<String,Pair<Double,Set<Chunk>>> articleMentions =
-	    mGeneLinkageDao.getNArticleMentionsForGeneId(geneId,limitx10);
-	if (mLogger.isDebugEnabled())
-	    mLogger.info("mentions for geneId "+geneId+ ": "+articleMentions.size());
+        throws SQLException, DaoException {
+        int geneId = 0;
+        try {
+            geneId = Integer.parseInt(gene);
+        } catch (NumberFormatException nfe) {
+            return new ArticleMention[0];
+        }
+        Comparator<ArticleMention> byScore = new ArticleMentionComparator();
+        NBestSet<ArticleMention> tops = new NBestSet<ArticleMention>(limit,byScore);
+        int limitx10 = limit*10;
+        Map<String,Pair<Double,Set<Chunk>>> articleMentions =
+            mGeneLinkageDao.getNArticleMentionsForGeneId(geneId,limitx10);
+        if (mLogger.isDebugEnabled())
+            mLogger.info("mentions for geneId "+geneId+ ": "+articleMentions.size());
 
-	for (Iterator it=articleMentions.entrySet().iterator(); it.hasNext(); ) {
-	    Entry<String,Pair<Double,Set<Chunk>>> entry = 
-		(Entry<String,Pair<Double,Set<Chunk>>>)it.next();
-	    String pubmedId = entry.getKey();
-	    String pubmedText = getTitleAbstract(pubmedId);
-	    Pair<Double,Set<Chunk>> geneMentions = entry.getValue();
-	    Double totalScore = geneMentions.a();
-	    Set<Chunk> chunkSet = geneMentions.b();
-	    for (Chunk chunk : chunkSet) {
-		totalScore = totalScore + chunk.score();
-		break;
-	    }
-	    ArticleMention mention = 
-		new ArticleMention(pubmedId,pubmedText,totalScore,chunkSet);
-	    tops.add(mention);
-	}
-	ArticleMention[] result = new ArticleMention[tops.size()];
-	return tops.toArray(result);
+        for (Iterator it=articleMentions.entrySet().iterator(); it.hasNext(); ) {
+            Entry<String,Pair<Double,Set<Chunk>>> entry = 
+                (Entry<String,Pair<Double,Set<Chunk>>>)it.next();
+            String pubmedId = entry.getKey();
+            String pubmedText = getTitleAbstract(pubmedId);
+            Pair<Double,Set<Chunk>> geneMentions = entry.getValue();
+            Double totalScore = geneMentions.a();
+            Set<Chunk> chunkSet = geneMentions.b();
+            for (Chunk chunk : chunkSet) {
+                totalScore = totalScore + chunk.score();
+                break;
+            }
+            ArticleMention mention = 
+                new ArticleMention(pubmedId,pubmedText,totalScore,chunkSet);
+            tops.add(mention);
+        }
+        ArticleMention[] result = new ArticleMention[tops.size()];
+        return tops.toArray(result);
     }
 
     private String getTitleAbstract(String pubmedId) throws DaoException {
-	MedlineCodec codec = new MedlineCodec();
-	MedlineCitation citation = mMedlineSearcher.getById(pubmedId);
-	return codec.titleAbstract(citation);
+        MedlineCodec codec = new MedlineCodec();
+        MedlineCitation citation = mMedlineSearcher.getById(pubmedId);
+        return codec.titleAbstract(citation);
     }
 
     private final static String ENTREZ_PREFIX = 
-	"http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&Cmd=DetailsSearch&Term=";
+        "http://www.ncbi.nlm.nih.gov/sites/entrez?Db=gene&Cmd=DetailsSearch&Term=";
     private final static String PUBMED_PREFIX = 
-	"http://www.ncbi.nlm.nih.gov/sites/entrez?Db=pubmed&Cmd=DetailsSearch&Term=";
+        "http://www.ncbi.nlm.nih.gov/sites/entrez?Db=pubmed&Cmd=DetailsSearch&Term=";
     private final static String POSTFIX = "%5Buid%5D";
 
     public String genHtml(String geneId, ArticleMention[] mentions) throws DaoException {
-	EntrezGene entrezGene = mEntrezGeneSearcher.getById(geneId);
-	String geneName = entrezGene.getOfficialFullName();
-	StringBuffer result = new StringBuffer();
-	result.append("<HTML><BODY>");
-	result.append("<h2>");
-	result.append("<h2><A href=\""
-		      +ENTREZ_PREFIX
-		      +geneId
-		      +POSTFIX
-		      +"\">Gene "
-		      +geneId
-		      +"</A>: "
-		      +geneName
-		      +"</h2>");
-	NumberFormat formatter = new DecimalFormat("#.###");
-	for (int i = mentions.length-1; i >= 0; i--) {
-	    double geneScore = 0.0;
-	    for (Chunk chunk : mentions[i].chunkSet()) {
-		geneScore = chunk.score();
-		break;
-	    }
-	    result.append("<h4>PubmedId: ");
-	    result.append("<A href=\""
-			  +PUBMED_PREFIX
-			  +mentions[i].pubmedId()
-			  +POSTFIX
-			  +"\">"
-			  +mentions[i].pubmedId()
-			  +"</A></h4>");
-	    result.append("<p>Total score: "
-			  +formatter.format(mentions[i].totalScore())
-			  +" Gene score: "
-			  +formatter.format(geneScore)
-			  +"</p>");
-	    result.append("<p>"
-			  +mentions[i].text()
-			  +"</p>");
-	}
-	return result.toString();
+        EntrezGene entrezGene = mEntrezGeneSearcher.getById(geneId);
+        String geneName = entrezGene.getOfficialFullName();
+        StringBuffer result = new StringBuffer();
+        result.append("<HTML><BODY>");
+        result.append("<h2>");
+        result.append("<h2><A href=\""
+                      +ENTREZ_PREFIX
+                      +geneId
+                      +POSTFIX
+                      +"\">Gene "
+                      +geneId
+                      +"</A>: "
+                      +geneName
+                      +"</h2>");
+        NumberFormat formatter = new DecimalFormat("#.###");
+        for (int i = mentions.length-1; i >= 0; i--) {
+            double geneScore = 0.0;
+            for (Chunk chunk : mentions[i].chunkSet()) {
+                geneScore = chunk.score();
+                break;
+            }
+            result.append("<h4>PubmedId: ");
+            result.append("<A href=\""
+                          +PUBMED_PREFIX
+                          +mentions[i].pubmedId()
+                          +POSTFIX
+                          +"\">"
+                          +mentions[i].pubmedId()
+                          +"</A></h4>");
+            result.append("<p>Total score: "
+                          +formatter.format(mentions[i].totalScore())
+                          +" Gene score: "
+                          +formatter.format(geneScore)
+                          +"</p>");
+            result.append("<p>"
+                          +mentions[i].text()
+                          +"</p>");
+        }
+        return result.toString();
     }
 
 }
