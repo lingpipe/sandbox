@@ -245,27 +245,34 @@ public class IndexMedline extends AbstractCommand {
 
     static final String LOW_SORT_STRING = "";
 
-    private String getLastUpdate(File index) throws Exception {
-        FSDirectory fsDirectory = FSDirectory.getDirectory(index);
-        if (isNewDirectory(fsDirectory)) return LOW_SORT_STRING;
-        IndexReader reader = IndexReader.open(fsDirectory,true); // open reader read-only
-        IndexSearcher searcher = new IndexSearcher(reader);
-        Term term = new Term(Fields.MEDLINE_DIST_FIELD,Fields.MEDLINE_DIST_VALUE);
-		Sort sort = new Sort(Fields.MEDLINE_FILE_FIELD,true);
-        Query query = new TermQuery(term);
-        TopFieldDocs results = searcher.search(query,null,1,sort);
-		if (results.totalHits == 0) {
-			searcher.close();
-			reader.close();
-            return LOW_SORT_STRING;
+    private String getLastUpdate(File index) throws IOException {
+        IndexReader reader = null;
+        IndexSearcher searcher = null;
+		try {
+			FSDirectory fsDirectory = FSDirectory.getDirectory(index);
+			if (isNewDirectory(fsDirectory)) return LOW_SORT_STRING;
+			reader = IndexReader.open(fsDirectory,true); // open reader read-only
+			searcher = new IndexSearcher(reader);
+			Term term = new Term(Fields.MEDLINE_DIST_FIELD,Fields.MEDLINE_DIST_VALUE);
+			Sort sort = new Sort(Fields.MEDLINE_FILE_FIELD,true);
+			Query query = new TermQuery(term);
+			TopFieldDocs results = searcher.search(query,null,1,sort);
+			if (results.totalHits == 0) {
+				searcher.close();
+				reader.close();
+				return LOW_SORT_STRING;
+			}
+            if (mLogger.isDebugEnabled())
+				mLogger.debug("num MEDLINE_FILE docs:" + results.totalHits);
+			Document d = searcher.doc(results.scoreDocs[0].doc);
+			return d.get(Fields.MEDLINE_FILE_FIELD);
+		} finally {
+			if (searcher != null) searcher.close();
+			if (reader != null) reader.close();
 		}
-		Document d = searcher.doc(results.scoreDocs[0].doc);
-        searcher.close();
-        reader.close();
-        return d.get(Fields.MEDLINE_FILE_FIELD);
     }
 
-    private File[] getLaterFiles(File index) throws Exception {
+    private File[] getLaterFiles(File index) throws IOException {
         String lastFileName = getLastUpdate(index);
         mLogger.debug("lastFileName: |"+lastFileName+"|");
         String[] extensions = {"xml", "gz"};
@@ -330,6 +337,8 @@ public class IndexMedline extends AbstractCommand {
 
     private void recordFile(IndexWriter indexWriter, String fileName)
         throws IOException {
+		if (mLogger.isDebugEnabled())
+			mLogger.debug("record file:" + fileName);
         Document doc = new Document(); 
         Field tagField = new Field(Fields.MEDLINE_DIST_FIELD,
                                    Fields.MEDLINE_DIST_VALUE,
@@ -342,6 +351,9 @@ public class IndexMedline extends AbstractCommand {
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add(nameField);
         indexWriter.addDocument(doc);
+		if (mLogger.isDebugEnabled())
+			mLogger.debug("added doc: " + doc.toString());
+
     }
 
     private void reportParameters() {
