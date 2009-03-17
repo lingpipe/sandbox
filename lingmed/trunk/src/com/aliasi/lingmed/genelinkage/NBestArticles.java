@@ -139,7 +139,7 @@ import org.apache.log4j.Logger;
 
 public class NBestArticles extends AbstractCommand {
     private final Logger mLogger
-	= Logger.getLogger(NBestArticles.class);
+        = Logger.getLogger(NBestArticles.class);
 
     private File mGeneIdFile;
     private String mGeneIdFilePath;
@@ -185,138 +185,138 @@ public class NBestArticles extends AbstractCommand {
     }
     private NBestArticles(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
-	mGeneIdFilePath = getExistingArgument(GENE_IDS);
-	mHtmlDirPath = getExistingArgument(HTML_DIR);
+        mGeneIdFilePath = getExistingArgument(GENE_IDS);
+        mHtmlDirPath = getExistingArgument(HTML_DIR);
         mMaxArticles = getArgumentInt(MAX_ARTICLES);
         mSearchHost = getExistingArgument(SEARCH_HOST);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mEntrezService = getExistingArgument(ENTREZGENE_SERVICE);
-	mDbUrl = getExistingArgument(DB_URL);
-	mDbName = getExistingArgument(DB_NAME);
-	mDbUserName = getExistingArgument(DB_USERNAME);
-	mDbUserPassword = getExistingArgument(DB_USERPASSWORD);
+        mDbUrl = getExistingArgument(DB_URL);
+        mDbName = getExistingArgument(DB_NAME);
+        mDbUserName = getExistingArgument(DB_USERNAME);
+        mDbUserPassword = getExistingArgument(DB_USERPASSWORD);
 
-	reportParameters();
-	processParameters();
+        reportParameters();
+        processParameters();
     }
 
     public static void main(String[] args) throws Exception {
-	NBestArticles generator = new NBestArticles(args);
-	generator.run();
+        NBestArticles generator = new NBestArticles(args);
+        generator.run();
     }
 
     public void run() {
-	mLogger.info("find articleMentions for gene Ids");
-	try {
-	    PrintStream mHtmlIndexOut =
-		new PrintStream(new FileOutputStream(new File(mHtmlDir,"index.html")));
-	    mHtmlIndexOut.println("<HTML><BODY>");
+        mLogger.info("find articleMentions for gene Ids");
+        try {
+            PrintStream mHtmlIndexOut =
+                new PrintStream(new FileOutputStream(new File(mHtmlDir,"index.html")));
+            mHtmlIndexOut.println("<HTML><BODY>");
 
-	    LineNumberReader in = new LineNumberReader(new FileReader(mGeneIdFile));
-	    String line = null;
-	    while ((line = in.readLine()) != null) {
-		mLogger.info("geneId: "+line);
-		EntrezGene entrezGene = mEntrezGeneSearcher.getById(line);
-		String geneId = entrezGene.getGeneId();
-		String geneName = entrezGene.getOfficialFullName();
-		String geneSymbol = entrezGene.getOfficialSymbol();
-		String name = geneName+" ("+geneSymbol+")";
-		mHtmlIndexOut.println("<h3>Gene "+geneId+": "+name+"</h3>");
-		ArticleMention[] mentions = 
-		    mGeneLinkageSearcher.findTopMentions(geneId,mMaxArticles);
-		if (mentions.length > 0) {
-		    String page = genPerGenePage(geneId,name,mentions);
-		    mHtmlIndexOut.println("<p>See <a href=\""+page+"\">"+mentions.length+" best scoring articles</a> in pubmed.</p>");
-		} else {
-		    mHtmlIndexOut.println("<p>No mentions in pubmed.</p>");
+            LineNumberReader in = new LineNumberReader(new FileReader(mGeneIdFile));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                mLogger.info("geneId: "+line);
+                if (line.trim().length() < 1) continue;
+				EntrezGene entrezGene = mEntrezGeneSearcher.getById(line);
+				String geneId = entrezGene.getGeneId();
+				String geneName = entrezGene.getOfficialFullName();
+				String geneSymbol = entrezGene.getOfficialSymbol();
+				String name = geneName+" ("+geneSymbol+")";
+				mHtmlIndexOut.println("<h3>Gene "+geneId+": "+name+"</h3>");
+				ArticleMention[] mentions = 
+                    mGeneLinkageSearcher.findTopMentions(geneId,mMaxArticles);
+				if (mentions.length > 0) {
+					String page = genPerGenePage(geneId,name,mentions);
+					mHtmlIndexOut.println("<p>See <a href=\""+page+"\">"+mentions.length+" best scoring articles</a> in pubmed.</p>");
+				} else {
+					mHtmlIndexOut.println("<p>No mentions in pubmed.</p>");
+				}
+			}
+			mHtmlIndexOut.close();
+		} catch (Exception e) {
+			mLogger.warn("Unexpected Exception: "+e.getMessage());
+			mLogger.warn("stack trace: "+Logging.logStackTrace(e));
+			IllegalStateException e2 
+				= new IllegalStateException(e.getMessage());
+			e2.setStackTrace(e.getStackTrace());
+			throw e2;
 		}
-	    }
-	    mHtmlIndexOut.close();
-	} catch (Exception e) {
-	    mLogger.warn("Unexpected Exception: "+e.getMessage());
-	    mLogger.warn("stack trace: "+Logging.logStackTrace(e));
-	    IllegalStateException e2 
-		= new IllegalStateException(e.getMessage());
-	    e2.setStackTrace(e.getStackTrace());
-	    throw e2;
 	}
-    }
 
-    private String genPerGenePage(String geneId,
-				  String name,
-				  ArticleMention[] mentions) throws IOException, DaoException {
-	File perGeneFile = new File(mHtmlDir,geneId+".html");
-	PrintStream htmlOut = new PrintStream(new FileOutputStream(perGeneFile));
-	htmlOut.println(mGeneLinkageSearcher.genHtml(geneId,mentions));
-	htmlOut.close();
-	return perGeneFile.getName();
-    }
-
-
-    private void processParameters() throws Exception {
-	mGeneIdFile = FileUtils.checkInputFile(mGeneIdFilePath);
-
-	if (mSearchHost.equals("localhost")) {
-	    FileUtils.checkIndex(mMedlineService,false);
-	    Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
- 	    mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
-
-	    FileUtils.checkIndex(mEntrezService,false);
-	    Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
- 	    mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
-
-	} else {
-	    SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
-	    Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-	    mMedlineSearcher = 
-		new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
-
-	    SearchClient egClient = new SearchClient(mEntrezService,mSearchHost,1099);
-	    Searcher egRemoteSearcher = egClient.getSearcher();
-	    mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
+	private String genPerGenePage(String geneId,
+								  String name,
+								  ArticleMention[] mentions) throws IOException, DaoException {
+		File perGeneFile = new File(mHtmlDir,geneId+".html");
+		PrintStream htmlOut = new PrintStream(new FileOutputStream(perGeneFile));
+		htmlOut.println(mGeneLinkageSearcher.genHtml(geneId,mentions));
+		htmlOut.close();
+		return perGeneFile.getName();
 	}
-	mLogger.info("instantiated lucene searchers");
 
 
-	InitialContext ic = new InitialContext();
-	// Construct Jndi object reference:  arg1:  classname, arg2: factory name, arg3:URL (can be null)
-	Reference ref = new Reference("com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource",
-				      "com.mysql.jdbc.jdbc2.optional.MysqlDataSourceFactory",null);
-	ref.add(new StringRefAddr("driverClassName","com.mysql.jdbc.Driver"));
-	ref.add(new StringRefAddr("url",mDbUrl));
-	ref.add(new StringRefAddr("databaseName",mDbName));
-	ref.add(new StringRefAddr("username", mDbUserName));
-	ref.add(new StringRefAddr("password", mDbUserPassword));
-	ic.rebind("jdbc/mysql", ref);
-	mGeneLinkageDao = 
-	    GeneLinkageDaoImpl.getInstance(ic,"jdbc/mysql",mDbUserName,mDbUserPassword);
-	mLogger.info("instantiated mysql dao");
-	mLogger.info("mGeneLinkageDao: "+mGeneLinkageDao);
+	private void processParameters() throws Exception {
+		mGeneIdFile = FileUtils.checkInputFile(mGeneIdFilePath);
 
-	mGeneLinkageSearcher = 
-	    new GeneLinkageSearcher(mEntrezGeneSearcher, mMedlineSearcher, mGeneLinkageDao);
+		if (mSearchHost.equals("localhost")) {
+			FileUtils.checkIndex(mMedlineService,false);
+			Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
+			mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
 
-	mHtmlDir = new File(mHtmlDirPath);
-	FileUtils.ensureDirExists(mHtmlDir);
+			FileUtils.checkIndex(mEntrezService,false);
+			Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
+			mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
 
-	if (mMaxArticles < 1) {
-	    String msg = "Max Articles must be > 0, value found: "+mMaxArticles;
-	    throw new IllegalArgumentException(msg);
+		} else {
+			SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
+			Searcher medlineRemoteSearcher = medlineClient.getSearcher();
+			mMedlineSearcher = 
+				new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
+
+			SearchClient egClient = new SearchClient(mEntrezService,mSearchHost,1099);
+			Searcher egRemoteSearcher = egClient.getSearcher();
+			mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
+		}
+		mLogger.info("instantiated lucene searchers");
+
+
+		InitialContext ic = new InitialContext();
+		// Construct Jndi object reference:  arg1:  classname, arg2: factory name, arg3:URL (can be null)
+		Reference ref = new Reference("com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource",
+									  "com.mysql.jdbc.jdbc2.optional.MysqlDataSourceFactory",null);
+		ref.add(new StringRefAddr("driverClassName","com.mysql.jdbc.Driver"));
+		ref.add(new StringRefAddr("url",mDbUrl));
+		ref.add(new StringRefAddr("databaseName",mDbName));
+		ref.add(new StringRefAddr("username", mDbUserName));
+		ref.add(new StringRefAddr("password", mDbUserPassword));
+		ic.rebind("jdbc/mysql", ref);
+		mGeneLinkageDao = 
+			GeneLinkageDaoImpl.getInstance(ic,"jdbc/mysql",mDbUserName,mDbUserPassword);
+		mLogger.info("instantiated mysql dao");
+		mLogger.info("mGeneLinkageDao: "+mGeneLinkageDao);
+
+		mGeneLinkageSearcher = 
+			new GeneLinkageSearcher(mEntrezGeneSearcher, mMedlineSearcher, mGeneLinkageDao);
+
+		mHtmlDir = new File(mHtmlDirPath);
+		FileUtils.ensureDirExists(mHtmlDir);
+
+		if (mMaxArticles < 1) {
+			String msg = "Max Articles must be > 0, value found: "+mMaxArticles;
+			throw new IllegalArgumentException(msg);
+		}
 	}
-    }
 
-    private void reportParameters() {
-        mLogger.info("NBestArticles "
-		     + "\n\tgeneIds list (inputs)=" + mGeneIdFilePath
-		     + "\n\tHTML dir (outputs)=" + mHtmlDirPath
-		     + "\n\tmax articles for gene=" + mMaxArticles
-		     + "\n\tlucene host=" + mSearchHost
-		     + "\n\tmysql host=" + mDbUrl
-		     + "\n\tdb name=" + mDbName
-		     + "\n\tdb user name=" + mDbUserName
-		     + "\n\tdb user password=" + mDbUserPassword
-		     );
-    }
+	private void reportParameters() {
+		mLogger.info("NBestArticles "
+					 + "\n\tgeneIds list (inputs)=" + mGeneIdFilePath
+					 + "\n\tHTML dir (outputs)=" + mHtmlDirPath
+					 + "\n\tmax articles for gene=" + mMaxArticles
+					 + "\n\tlucene host=" + mSearchHost
+					 + "\n\tmysql host=" + mDbUrl
+					 + "\n\tdb name=" + mDbName
+					 + "\n\tdb user name=" + mDbUserName
+					 );
+	}
 
 
 }
