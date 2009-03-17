@@ -148,24 +148,33 @@ public class GeneLinkageSearcher {
                 geneScore = chunk.score();
                 break;
             }
-            result.append("<h4>PubmedId: ");
+			result.append("<h4>PubmedId: ");
             result.append("<A href=\""
-                          +PUBMED_PREFIX
-                          +mentions[i].pubmedId()
-                          +POSTFIX
-                          +"\">"
-                          +mentions[i].pubmedId()
-                          +"</A></h4>");
-            result.append("<p>Total score: "
-                          +formatter.format(mentions[i].totalScore())
-                          +" Gene score: "
-                          +formatter.format(geneScore)
-                          +"</p>");
-            result.append("<p>"
-                          +mentions[i].text()
-                          +"</p>");
+                          + PUBMED_PREFIX
+                          + mentions[i].pubmedId()
+                          + POSTFIX
+                          + "\">"
+                          + mentions[i].pubmedId()
+                          + "</A></br>");
+            result.append(formatCitation(mentions[i].text()));
+            result.append("<br><b>Total score: "
+                          + formatter.format(mentions[i].totalScore())
+                          + " Gene score: "
+                          + formatter.format(geneScore)
+						  + "</b>");
         }
         return result.toString();
     }
+
+	private String formatCitation(String text) {
+		StringBuffer result = new StringBuffer();
+		int idx = text.indexOf(Strings.NEWLINE_CHAR);
+		result.append(text.substring(0,idx));
+		result.append("</h4>");
+		if (idx < text.length()) {
+			result.append(text.substring(idx+1,text.length()));
+		}
+		return result.toString();
+	}
 
 }
