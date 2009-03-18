@@ -24,16 +24,29 @@ import com.aliasi.lingmed.utils.FileUtils;
 import com.aliasi.lingmed.utils.Logging;
 
 import com.aliasi.util.AbstractCommand;
+import com.aliasi.util.Files;
+import com.aliasi.util.Reflection;
+import com.aliasi.util.Streams;
+import com.aliasi.util.Strings;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringReader;
 
 import java.util.Properties;
+import java.util.zip.*;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import org.apache.log4j.Logger;
 
@@ -126,8 +139,16 @@ public class IndexEntrezGene extends AbstractCommand {
             // save raw XML for <Entrezgene> element
             Parser<ObjectHandler<EntrezGene>> parser = new EntrezParser(true);  
             parser.setHandler(indexer);
-            InputSource inSource = new InputSource(mDistFileName);
-            parser.parse(inSource);
+			if (mDistFileName.endsWith(".xml")) {
+				InputSource inSource = new InputSource(mDistFileName);
+				parser.parse(inSource);
+			} else if (mDistFileName.endsWith(".gz")) {
+				parseGZip(parser,mDistFile);
+			} else { 
+				String msg = "Unknown file extension. File=" + mDistFileName;
+				throw new IllegalArgumentException(msg);
+			}
+
             mLogger.info("Parsed index, now optimize.");
             indexer.close();
             mLogger.info("Processing complete.");
@@ -140,6 +161,30 @@ public class IndexEntrezGene extends AbstractCommand {
             throw e2;
         }
     }
+	
+    static void parseGZip(Parser<ObjectHandler<EntrezGene>> parser, File file)
+        throws IOException, SAXException {
+        FileInputStream fileIn = null;
+        GZIPInputStream gzipIn = null;
+        InputStreamReader inReader = null;
+        BufferedReader bufReader = null;
+        InputSource inSource = null;
+        try {
+            fileIn = new FileInputStream(file);
+            gzipIn = new GZIPInputStream(fileIn);
+            inReader = new InputStreamReader(gzipIn,Strings.UTF8);
+            bufReader = new BufferedReader(inReader);
+            inSource = new InputSource(bufReader);
+            inSource.setSystemId(Files.fileToURLName(file));
+            parser.parse(inSource);
+        } finally {
+            Streams.closeReader(bufReader);
+            Streams.closeReader(inReader);
+            Streams.closeInputStream(gzipIn);
+            Streams.closeInputStream(fileIn);
+        }
+    }
+
 
     public static void main(String[] args) throws Exception {
         IndexEntrezGene indexer = new IndexEntrezGene(args);

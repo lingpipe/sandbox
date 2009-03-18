@@ -35,6 +35,13 @@ public class Fields {
     public static final String MEDLINE_DIST_VALUE = "medline";
     public static final String MEDLINE_FILE_FIELD = "FILENAME";
 
+    public static final String ENTREZGENE_SPECIES_FIELD = "species";
+    public static final String ENTREZGENE_PMID_FIELD = "PMID";
+    public static final String ENTREZGENE_SYMBOL_FIELD = "symbol";
+    public static final String ENTREZGENE_TYPE_FIELD = "type";
+    public static final String ENTREZGENE_STATUS_FIELD = "status";
+    public static final String ENTREZGENE_TEXTS_FIELD = "texts";
+
     private Fields() {}
 
 }

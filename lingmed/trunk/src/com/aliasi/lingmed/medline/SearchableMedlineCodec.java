@@ -68,7 +68,7 @@ import org.apache.log4j.Logger;
 public class SearchableMedlineCodec extends MedlineCodec {
 
     private final Logger mLogger
-	= Logger.getLogger(SearchableMedlineCodec.class);
+        = Logger.getLogger(SearchableMedlineCodec.class);
 
 
     public SearchableMedlineCodec() { 
@@ -196,22 +196,22 @@ public class SearchableMedlineCodec extends MedlineCodec {
         for (String geneSymbol : geneSymbols)
             add(doc,GENE_SYMBOL_FIELD,geneSymbol);
 
-	DataBankList dataBankList = article.dataBankList();
-	if (dataBankList != null) {
-	    DataBank[] dataBanks = dataBankList.dataBanks();
+        DataBankList dataBankList = article.dataBankList();
+        if (dataBankList != null) {
+            DataBank[] dataBanks = dataBankList.dataBanks();
             for (DataBank dataBank : dataBanks) {
-		String dataBankName = dataBank.dataBankName();
-		String[] accessionNumbers = dataBank.accessionNumbers();
+                String dataBankName = dataBank.dataBankName();
+                String[] accessionNumbers = dataBank.accessionNumbers();
                 for (String accessionNumber : accessionNumbers) {
                     String labeledNumber = dataBankName + "=" + accessionNumber;
                     add(doc,DATA_BANK_FIELD,labeledNumber);
                 }
-	    }
-	}
+            }
+        }
 
-	String[] languages = article.languages();
+        String[] languages = article.languages();
         for (String language : languages)
-	    add(doc,LANGUAGE_FIELD,language);
+            add(doc,LANGUAGE_FIELD,language);
 
         return doc;
     }
@@ -247,15 +247,15 @@ public class SearchableMedlineCodec extends MedlineCodec {
 
     static void addTextField(Document doc, String fieldName, String text) {
         Field field = new Field(fieldName,text,
-				Field.Store.NO,
-				Field.Index.ANALYZED);
+                                Field.Store.NO,
+                                Field.Index.ANALYZED);
         doc.add(field);
     }
 
     public static void addKeywordField(Document doc, String fieldName, String text) {
         Field field = new Field(fieldName,text,
-				Field.Store.NO,
-				Field.Index.NOT_ANALYZED);
+                                Field.Store.NO,
+                                Field.Index.NOT_ANALYZED);
         doc.add(field);
     }
 
@@ -366,17 +366,17 @@ public class SearchableMedlineCodec extends MedlineCodec {
         // = new org.apache.lucene.analysis.SimpleAnalyzer();
         // org.apache.lucene.analysis.KeywordAnalyzer analyzer 
         // = new org.apache.lucene.analysis.KeywordAnalyzer();
-	MedlineCodec codec = new MedlineCodec();
-	LuceneAnalyzer analyzer = codec.getAnalyzer();
+        MedlineCodec codec = new MedlineCodec();
+        LuceneAnalyzer analyzer = codec.getAnalyzer();
         org.apache.lucene.index.IndexWriter writer 
             = new org.apache.lucene.index.IndexWriter(directory,analyzer);
         Document doc = new Document();
         doc.add(new Field(MESH_MINOR_FIELD,"abc",
-			  Field.Store.NO,
-			  Field.Index.ANALYZED));
+                          Field.Store.NO,
+                          Field.Index.ANALYZED));
         doc.add(new Field(MESH_MINOR_FIELD," xyz efg",
-			  Field.Store.NO,
-			  Field.Index.ANALYZED));
+                          Field.Store.NO,
+                          Field.Index.ANALYZED));
         writer.addDocument(doc);
         writer.close();
         org.apache.lucene.search.IndexSearcher searcher 
