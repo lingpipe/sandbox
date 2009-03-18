@@ -4,19 +4,19 @@
          <servlet-class>com.aliasi.lingmed.genelinkage.SearchServlet</servlet-class>
 	 <init-param>
 	      <param-name>medlineHost</param-name>
-	      <param-value>192.168.1.94</param-value>
+	      <param-value>localhost</param-value>
 	 </init-param>
 	 <init-param>
 	      <param-name>medlineService</param-name>
-	      <param-value>medline</param-value>
+	      <param-value>/data/lucene/medline2009</param-value>
 	 </init-param>
 	 <init-param>
 	      <param-name>entrezgeneHost</param-name>
-	      <param-value>192.168.1.94</param-value>
+	      <param-value>localhost</param-value>
 	 </init-param>
 	 <init-param>
-	      <param-name>entrezGeneService</param-name>
-	      <param-value>entrezgene</param-value>
+	      <param-name>entrezgeneService</param-name>
+	      <param-value>/data/lucene/allEntrezGene</param-value>
 	 </init-param>
      </servlet>
 
