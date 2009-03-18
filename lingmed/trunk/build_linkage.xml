@@ -14,10 +14,10 @@
           value="/data/lingblast/models"/>
 
 <property name="medline.lucene.index"
-          value="/lucene_data/indexes/luceneMedline"/>
+          value="/data/lucene/medline2009"/>
 
 <property name="entrezgene.lucene.index"
-          value="/lucene_data/indexes/luceneEntrezGene"/>
+          value="/data/lucene/allEntrezGene"/>
 
 <!-- **** LingBlast, GeneLinkage **** -->
 <target name="buildDict"
@@ -83,9 +83,14 @@
     <classpath>
       <path refid="classpath.standalone.db"/>
     </classpath>
+<!--    <sysproperty 
+         key="java.naming.factory.initial"
+         value="javax.naming.InitialContext"/> -->
     <arg value="-geneIds=test_geneIds.txt"/>
     <arg value="-maxArticles=500"/>
-    <arg value="-host=${rmi.server.address}"/>
+    <arg value="-host=localhost"/>
+    <arg value="-medline=${medline.lucene.index}"/>
+    <arg value="-entrezgene=${entrezgene.lucene.index}"/>
     <arg value="-dbUrl=${mysqlBaseURL}/gene_linkage"/>
     <arg value="-dbName=gene_linkage"/>
     <arg value="-dbUserName=${mysql.gl.user}"/>
