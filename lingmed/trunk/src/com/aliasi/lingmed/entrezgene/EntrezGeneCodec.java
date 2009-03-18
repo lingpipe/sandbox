@@ -24,6 +24,10 @@ import com.aliasi.lingmed.dao.SearchResults;
 import com.aliasi.lingmed.lucene.Fields;
 import com.aliasi.lingmed.lucene.LuceneAnalyzer;
 
+import com.aliasi.tokenizer.EnglishStopListFilterTokenizer;
+import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;
+import com.aliasi.tokenizer.LowerCaseFilterTokenizer;
+import com.aliasi.tokenizer.PorterStemmerFilterTokenizer;
 import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.tokenizer.TokenizerFactory;
@@ -51,34 +55,77 @@ import org.xml.sax.InputSource;
 
 public class EntrezGeneCodec implements Codec<EntrezGene> {
 
-    public static final String SPECIES_FIELD = "species";
-    public static final String PMID_FIELD = "PMID";
-
     public Document toDocument(EntrezGene e) { 
         Document doc = new Document(); 
-		// index EntrezGene id (as keyword)
-        Field idField = new Field(Fields.ID_FIELD,e.getGeneId(),
-                                  Field.Store.YES,
-                                  Field.Index.TOKENIZED);
+
+        Field idField 
+			= new Field(Fields.ID_FIELD,
+						e.getGeneId(),
+						Field.Store.YES,
+						Field.Index.TOKENIZED);
         doc.add(idField);
-		// index Species (latin name: "Homo Sapiens")
+
 		if (e.getSpeciesTaxName() != null) {
-			Field speciesField = new Field(SPECIES_FIELD,e.getSpeciesTaxName(),
-										   Field.Store.YES,
-										   Field.Index.TOKENIZED);
+			Field speciesField 
+				= new Field(Fields.ENTREZGENE_SPECIES_FIELD,
+							e.getSpeciesTaxName(),
+							Field.Store.YES,
+							Field.Index.TOKENIZED);
 			doc.add(speciesField);
 		}
+		if (e.getOfficialSymbol() != null) {
+			Field symbolField
+				= new Field(Fields.ENTREZGENE_SYMBOL_FIELD,
+							e.getOfficialSymbol(),
+							Field.Store.YES,
+							Field.Index.TOKENIZED);
+			doc.add(symbolField);
+		}
+
+        if (e.getGeneTrackStatus() != null) {
+			Field statusField
+				= new Field(Fields.ENTREZGENE_STATUS_FIELD,
+							e.getGeneTrackStatus(),
+							Field.Store.YES,
+							Field.Index.TOKENIZED);
+			doc.add(statusField);
+		}
+        if (e.getEntrezgeneType() != null) {
+			Field typeField
+				= new Field(Fields.ENTREZGENE_TYPE_FIELD,
+							e.getEntrezgeneType(),
+							Field.Store.YES,
+							Field.Index.TOKENIZED);
+			doc.add(typeField);
+		}
+
+        if (e.getTextData() != null) {
+			String texts = e.getTextData().trim();
+			if (texts.length() > 1) {
+				Field textsField
+					= new Field(Fields.ENTREZGENE_TEXTS_FIELD,
+								texts,
+								Field.Store.YES,
+								Field.Index.TOKENIZED);
+				doc.add(textsField);
+			}
+		}
+
+
 		// index pubmed article ids (if any) which reference this gene
 		String[] pmidRefs = e.getUniquePubMedRefs();
 		for (String pmid : pmidRefs) {
-			Field pmidField = new Field(PMID_FIELD,pmid,
-										Field.Store.YES,
-										Field.Index.TOKENIZED);
+			Field pmidField = 
+				new Field(Fields.ENTREZGENE_PMID_FIELD,pmid,
+						  Field.Store.YES,
+						  Field.Index.TOKENIZED);
 			doc.add(pmidField);
 		}
-		Field xmlField = new Field(Fields.XML_FIELD,e.xmlString(),
-								   Field.Store.COMPRESS,
-								   Field.Index.NO);
+
+		Field xmlField 
+			= new Field(Fields.XML_FIELD,e.xmlString(),
+						Field.Store.COMPRESS,
+						Field.Index.NO);
 		doc.add(xmlField);
 		return doc;
     }
@@ -100,14 +147,49 @@ public class EntrezGeneCodec implements Codec<EntrezGene> {
     }
 
 
-    /* 
-     * EntrezGene analyzer uses keyword analyzer on ID field,
-     * numeric id analyzer on PMID field
-     */
     public LuceneAnalyzer getAnalyzer() {
-		LuceneAnalyzer analyzer = new LuceneAnalyzer();
-		analyzer.setTokenizer(PMID_FIELD,NUMBER_TOKENIZER_FACTORY);
-		return analyzer;
+        return EntrezGeneAnalyzer.INSTANCE;
+    }
+
+
+    /**
+     * Analyzer used for creating and searching Lucene index of 
+	 * Entrez Gene entries.
+     * Per-field analyzers:
+	 * <ul>
+	 *  <li>numeric ids:  Entrez Gene, PubMed (Medline Citation)</li>
+	 *  <li>keywords:  species, status, geneType</li>
+	 *  <li>text: </li>
+	 * </ul>
+     */
+    static class EntrezGeneAnalyzer extends LuceneAnalyzer {
+
+        static class StandardTokenizerFactory implements TokenizerFactory {
+            public Tokenizer tokenizer(char[] cs, int start, int length) {
+                Tokenizer tokenizer = SIMPLE_TOKENIZER_FACTORY.tokenizer(cs,start,length);
+                tokenizer = new LowerCaseFilterTokenizer(tokenizer);
+                tokenizer = new EnglishStopListFilterTokenizer(tokenizer);
+                tokenizer = new PorterStemmerFilterTokenizer(tokenizer);
+                return tokenizer;
+            }
+        } // acts like Lucene's StandardAnalyzer
+        public TokenizerFactory TEXT_TOKENIZER_FACTORY
+            = new StandardTokenizerFactory();
+
+		// like Lucene's analysis.SimpleAnalyzer, but with digits, too
+		public static final TokenizerFactory SIMPLE_TOKENIZER_FACTORY
+			= new RegExTokenizerFactory("\\p{L}+|\\p{Digit}+");
+
+
+        public static final EntrezGeneAnalyzer INSTANCE
+            = new EntrezGeneAnalyzer();
+
+        private EntrezGeneAnalyzer() {
+			setTokenizer(Fields.ID_FIELD,SIMPLE_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ENTREZGENE_PMID_FIELD,SIMPLE_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ENTREZGENE_TEXTS_FIELD,TEXT_TOKENIZER_FACTORY);
+        }
+
     }
 
     static class ExtractionHandler implements ObjectHandler<EntrezGene> {
@@ -116,9 +198,5 @@ public class EntrezGeneCodec implements Codec<EntrezGene> {
 			mGene = gene;
 		}
     }
-
-    public static final TokenizerFactory NUMBER_TOKENIZER_FACTORY
-        = new RegExTokenizerFactory("\\d+");
-
 
 }
