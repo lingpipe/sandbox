@@ -11,6 +11,7 @@ rmi.server.address=192.168.1.257
 rmi.server.port=1099
 
 # tomcat manager accounts
+tomcat.manager.url="http://localhost:8080/manager/"
 tomcat.manager.username=setme
 tomcat.manager.password=setme
 
