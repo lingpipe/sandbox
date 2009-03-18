@@ -47,7 +47,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 
-import org.apache.log4j.Logger;
 
 /**
  * <P>The <code>SearchServlet</code> 
@@ -62,49 +61,60 @@ import org.apache.log4j.Logger;
  */
     
 public class SearchServlet extends HttpServlet {
-    private final Logger mLogger
-	= Logger.getLogger(SearchServlet.class);
-
     private SearchPresentation mPresentation;
     private GeneLinkageSearcher mGeneLinkageSearcher;
 
     private static final int MAX_ARTICLES = 100;
 
+	private static final String LOCALHOST = "localhost";
+
     public void init() throws ServletException {
-	try {
-	    InitialContext ic = new InitialContext();
-	    Context envContext  = (Context)ic.lookup("java:/comp/env");
-	    mPresentation = new SearchPresentation(getServletContext());
+        try {
+            InitialContext ic = new InitialContext();
+            Context envContext  = (Context)ic.lookup("java:/comp/env");
+            mPresentation = new SearchPresentation(getServletContext());
 
-	    GeneLinkageDao geneLinkageDao = null;
-	    geneLinkageDao = GeneLinkageDaoImpl.getInstance(envContext,"jdbc/GeneLinkDB");
-	    mLogger.info("instantiated genelinkage mysql dao");
+            EntrezGeneSearcher entrezGeneSearcher = null;
+            String entrezgeneHost = getInitParameter("entrezgeneHost");
+            String entrezgeneService = getInitParameter("entrezgeneService");
+			if (entrezgeneHost == null || entrezgeneService == null) {
+				throw new IllegalStateException("missing config for entrezgene");
+			}
+			if (LOCALHOST.equals(entrezgeneHost)) {
+				FileUtils.checkIndex(entrezgeneService,false);
+				entrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),
+														  new IndexSearcher(entrezgeneService));
+			} else {
+				SearchClient entrezgeneClient = new SearchClient(entrezgeneService,entrezgeneHost,1099);
+				entrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),
+														  entrezgeneClient.getSearcher());
+			}
+            MedlineSearcher medlineSearcher = null;
+            String medlineHost = getInitParameter("medlineHost");
+            String medlineService = getInitParameter("medlineService");
+			if (medlineHost == null || medlineService == null) {
+				throw new IllegalStateException("missing config for medline");
+			}
+			if (LOCALHOST.equals(medlineHost)) {
+				FileUtils.checkIndex(medlineService,false);
+				medlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),
+														  new IndexSearcher(medlineService));
+			} else {
+				SearchClient medlineClient = new SearchClient(medlineService,medlineHost,1099);
+				medlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),
+														  medlineClient.getSearcher());
+			}
+            GeneLinkageDao geneLinkageDao = null;
+            geneLinkageDao = GeneLinkageDaoImpl.getInstance(envContext,"jdbc/GeneLinkDB");
 
-	    String medlineHost = getInitParameter("medlineHost");
-	    String medlineService = getInitParameter("medlineService");
-	    if (medlineHost == null) medlineHost = "localhost";
-	    if (medlineService == null) medlineService = "medline";
-	    SearchClient medlineClient = new SearchClient(medlineService,medlineHost,1099);
-	    Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-	    MedlineSearcher medlineSearcher = 
-		new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
-
-	    String entrezgeneHost = getInitParameter("entrezgeneHost");
-	    String entrezgeneService = getInitParameter("entrezgeneService");
-	    if (entrezgeneHost == null) entrezgeneHost = "localhost";
-	    if (entrezgeneService == null) entrezgeneService = "entrezgene";
-	    SearchClient egClient = new SearchClient(entrezgeneService,entrezgeneHost,1099);
-	    Searcher egRemoteSearcher = egClient.getSearcher();
-	    EntrezGeneSearcher entrezGeneSearcher = 
-		new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
-
-	    mGeneLinkageSearcher = 
-		new GeneLinkageSearcher(entrezGeneSearcher,medlineSearcher,geneLinkageDao);
-	} catch (Exception e) {
-	    String msg = "Unexpected exception: "+e.getMessage();
-	    throw new ServletException(msg,e);
-	}
-	
+            mGeneLinkageSearcher = 
+                new GeneLinkageSearcher(entrezGeneSearcher,medlineSearcher,geneLinkageDao);
+            getServletContext().log("init successful");
+        } catch (Exception e) {
+            String msg = "Unexpected exception: "+e.getMessage();
+            throw new ServletException(msg,e);
+        }
+        
     }
 
     public void destroy() {
@@ -119,62 +129,62 @@ public class SearchServlet extends HttpServlet {
     }
 
     private void doGetOrPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	PrintWriter out = response.getWriter();
+        PrintWriter out = response.getWriter();
         String pathInfo = request.getPathInfo();
         if (pathInfo != null && pathInfo.startsWith("/byGeneId")) {
-	    doSearch(request,response);
+            doSearch(request,response);
         } else {
-	    out.println(mPresentation.genSearchForm());
+            out.println(mPresentation.genSearchForm());
+        }
+        out.close();
 	}
-	out.close();
-   }
 
     private void doSearch(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	response.setContentType("text/html");
-	PrintWriter out = response.getWriter();
-	try {
-	    String paramGeneId = request.getParameter("geneId");
-	    if (paramGeneId == null) {
-		getServletContext().log("search request missing parameter geneId");
-		out.println(mPresentation.genSearchForm());
-		return;
-	    }
-	    int geneId = 0;
-	    try {
-		geneId = Integer.parseInt(paramGeneId);
-	    } catch (NumberFormatException nfe) {
-		getServletContext().log("expecting integer geneId, found: "+paramGeneId);
-		out.println(mPresentation.genSearchForm());
-		return;
-	    }
-	    String paramLimit = request.getParameter("limit");
-	    int limit = MAX_ARTICLES;
-	    if (paramLimit != null) {
-		try {
-		    limit = Integer.parseInt(paramLimit);
-		} catch (NumberFormatException nfe) {
-		    getServletContext().log("expecting integer geneId, found: "+paramLimit);
-		}
-	    }
-	    if (limit < 1) {
-		getServletContext().log("impossible limit: "+limit);
-		out.println(mPresentation.genSearchForm());
-		return;
-	    }
-	    getServletContext().log("find N best articles for geneId: "+paramGeneId
-				    +" limit: "+limit);
-	    int limitx10 = limit*10;
-	    ArticleMention[] mentions = 
-		mGeneLinkageSearcher.findTopMentions(paramGeneId,limitx10);
-	    out.println(mGeneLinkageSearcher.genHtml(paramGeneId,mentions));
-	} catch (DaoException de) {
-	    String msg = "search error: "+de.getMessage();
-	    out.println(mPresentation.genErrorPage(msg,de));
-	} catch (SQLException se) {
-	    String msg = "database error: "+se.getMessage();
-	    out.println(mPresentation.genErrorPage(msg,se));
-	} finally {
-	    out.close();
-	}
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        try {
+            String paramGeneId = request.getParameter("geneId");
+            if (paramGeneId == null) {
+                getServletContext().log("search request missing parameter geneId");
+                out.println(mPresentation.genSearchForm());
+                return;
+            }
+            int geneId = 0;
+            try {
+                geneId = Integer.parseInt(paramGeneId);
+            } catch (NumberFormatException nfe) {
+                getServletContext().log("expecting integer geneId, found: "+paramGeneId);
+                out.println(mPresentation.genSearchForm());
+                return;
+            }
+            String paramLimit = request.getParameter("limit");
+            int limit = MAX_ARTICLES;
+            if (paramLimit != null) {
+                try {
+                    limit = Integer.parseInt(paramLimit);
+                } catch (NumberFormatException nfe) {
+                    getServletContext().log("expecting integer geneId, found: "+paramLimit);
+                }
+            }
+            if (limit < 1) {
+                getServletContext().log("impossible limit: "+limit);
+                out.println(mPresentation.genSearchForm());
+                return;
+            }
+            getServletContext().log("find N best articles for geneId: "+paramGeneId
+                                    +" limit: "+limit);
+            int limitx10 = limit*10;
+            ArticleMention[] mentions = 
+                mGeneLinkageSearcher.findTopMentions(paramGeneId,limitx10);
+            out.println(mGeneLinkageSearcher.genHtml(paramGeneId,mentions));
+        } catch (DaoException de) {
+            String msg = "search error: "+de.getMessage();
+            out.println(mPresentation.genErrorPage(msg,de));
+        } catch (SQLException se) {
+            String msg = "database error: "+se.getMessage();
+            out.println(mPresentation.genErrorPage(msg,se));
+        } finally {
+            out.close();
+        }
     }
 }
