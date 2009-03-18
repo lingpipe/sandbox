@@ -27,10 +27,7 @@
           value="${medline.dir}/updates"/>
 
 <property name="medline.lucene.index.searchable"
-          value="/lucene_data/indexes/luceneMedline"/>
-
-<property name="medline.lucene.index.store"
-          value="luceneMedlineStore"/>
+          value="/data/lucene/medline2009"/>
 
 <property name="medline.codec.class"
           value="com.aliasi.lingmed.medline.SearchableMedlineCodec"/>
@@ -86,16 +83,16 @@
 <!-- **** Entrez Gene tasks **** -->
 
 <property name="entrezgene.dist.file"
-          value="${nlm.data}/entrezgene/pig.xml"/>
+          value="${nlm.data}/entrezgene/All_Data.xml"/>
 <property name="entrezgene.lucene.index.dir"
-          value="pigEntrezGene"/>
+          value="/lucene_data/indexes/allEntrezGene"/>
 
 <target name="indexEntrezGene"
         description="create Lucene EntrezGene index"
         depends="jar">
   <indexEntrezGene distFile="${entrezgene.dist.file}"
                    index="${entrezgene.lucene.index.dir}"
-                   type="live_gene" />
+                   type="all" />
 </target>
 
 <target name="rmiEntrezGene"
