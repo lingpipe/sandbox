@@ -1,5 +1,7 @@
 java.naming.factory.initial=com.sun.jndi.fscontext.RefFSContextFactory
-java.naming.provider.url=file:///mitzi/cvsroot/lingmed
+java.naming.provider.url=file:///path/to/svn/trunk
+
+
 
 
 
