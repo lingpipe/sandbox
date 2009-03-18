@@ -83,7 +83,7 @@
 <!-- **** Entrez Gene tasks **** -->
 
 <property name="entrezgene.dist.file"
-          value="${nlm.data}/entrezgene/All_Data.xml"/>
+          value="${nlm.data}/entrezgene/All_Data.xml.gz"/>
 <property name="entrezgene.lucene.index.dir"
           value="/lucene_data/indexes/allEntrezGene"/>
 
@@ -155,7 +155,9 @@
 
 <!-- **** misc dev **** -->
 <target name="luke">
-  <java classname="org.getopt.luke.Luke" fork="true">
+  <java classname="org.getopt.luke.Luke" 
+        maxMemory="${mxMem}"
+        fork="true">
     <arg value="-index"/>
     <arg value="${medline.lucene.index.dir}"/>
     <arg value="-ro"/>  <!-- read only index -->
