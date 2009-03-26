@@ -71,8 +71,12 @@
         depends="compile">
 <!--    description="create LingMed jarfile" -->
   <copy todir="build/classes">
-    <fileset dir="${basedir}"
-             includes="*.properties" />
+    <fileset dir="${basedir}">
+      <patternset id="properties">
+         <include name="jndi.properties" />
+         <include name="src/**/*.properties" />
+      </patternset>
+    </fileset>
   </copy>
   <jar destfile="${jar}">
     <fileset dir="build/classes"
