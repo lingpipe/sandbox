@@ -250,12 +250,16 @@ public class DictionaryBuilder extends AbstractCommand {
 
                 HashSet<String> names = new HashSet<String>();
                 String[] aliases = entrezGene.getUniqueAliases();
-                for (String alias : aliases) names.add(alias);
+                for (String alias : aliases) {
+					// munge name into variants
+					names.add(alias);
+				}
                 String[] linkIds = entrezGene.getLinkIds();
                 for (String linkId : linkIds) {
 					try {
 						Float.valueOf(linkId);
 						mLogger.debug("ignore link id: "+linkId);
+
 					} catch (NumberFormatException e) {
 						names.add(linkId);
 					}

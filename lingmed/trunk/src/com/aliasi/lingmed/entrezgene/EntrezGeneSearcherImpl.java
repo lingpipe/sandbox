@@ -21,6 +21,7 @@ import com.aliasi.lingmed.dao.DaoException;
 import com.aliasi.lingmed.dao.DaoSearcher;
 import com.aliasi.lingmed.dao.DaoSearcherImpl;
 import com.aliasi.lingmed.dao.SearchResults;
+import com.aliasi.lingmed.lucene.Fields;
 
 import java.io.IOException;
 
@@ -60,7 +61,7 @@ public class EntrezGeneSearcherImpl extends DaoSearcherImpl<EntrezGene> implemen
      * Find all entrez EntrezGene entries which are associated with a pubmedId.
      */
     public SearchResults<EntrezGene> getGenesForPubmedId(String pubmedId) throws DaoException {
-        Term term = new Term(EntrezGeneCodec.PMID_FIELD,pubmedId);
+        Term term = new Term(Fields.ENTREZGENE_PMID_FIELD,pubmedId);
 	Query query = new TermQuery(term);
 	return search(query);
     }
