@@ -416,29 +416,35 @@ public class EntrezGene {
         if (getEntrezgeneType() != null) 
             result.append("\tType: " + getEntrezgeneType());
         result.append("\n");
-        if (getOfficialSymbol() != null) 
+        if (getOfficialSymbol() != null) {
             result.append("\tOfficial_Symbol: " + getOfficialSymbol());
-        if (getOfficialFullName() != null) 
+		} else {
+            result.append("\tOfficial_Symbol not specified");
+		}
+        if (getOfficialFullName() != null) {
             result.append("\tOfficial_FullName: " + getOfficialFullName());
+		} else {
+            result.append("\tOfficial_FullName not specified");
+		}
         if (getSpeciesTaxName() != null) 
             result.append("\n\tOrg-ref_taxname: " + getSpeciesTaxName());
-        if (getSpeciesTaxonId() != null) 
-            result.append("\tOrg-ref_db taxon id: " + getSpeciesTaxonId());
-        if (getSpeciesCommonName() != null) 
-            result.append("\tOrg-ref_common: " + getSpeciesCommonName());
-        if (getGeneRefMaploc() != null) 
-            result.append("\n\tGene-ref_maploc: " + getGeneRefMaploc());
-        if (getGenomeLocus() != null) 
-            result.append("\n\tEntrezgene_locus: " + getGenomeLocus().toString());
-        if (getGeneRefName() != null) 
-            result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefName());
-        if (getGeneRefSyns() != null) {
-            String[] syns = getGeneRefSyns();
-            result.append("\n\tGene-ref_syns: ");
-            for (int i=0;i<syns.length;i++) {
-                result.append(syns[i]+", ");
-            }
-        }
+		if (getSpeciesTaxonId() != null) 
+			result.append("\tOrg-ref_db taxon id: " + getSpeciesTaxonId());
+		if (getSpeciesCommonName() != null) 
+			result.append("\tOrg-ref_common: " + getSpeciesCommonName());
+		if (getGeneRefMaploc() != null) 
+			result.append("\n\tGene-ref_maploc: " + getGeneRefMaploc());
+		if (getGenomeLocus() != null) 
+			result.append("\n\tEntrezgene_locus: " + getGenomeLocus().toString());
+		if (getGeneRefName() != null) 
+			result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefName());
+		if (getGeneRefSyns() != null) {
+			String[] syns = getGeneRefSyns();
+			result.append("\n\tGene-ref_syns: ");
+			for (int i=0;i<syns.length;i++) {
+				result.append(syns[i]+", ");
+			}
+		}
         if (getGeneRefDesc() != null) 
             result.append("\n\tGene-ref_desc: "+getGeneRefDesc());
         if (getProtRefNames() != null) {
@@ -450,13 +456,15 @@ public class EntrezGene {
         }
         if (getProtRefDesc() != null) 
             result.append("\n\tProt-ref_desc (Preferred name): "+getProtRefDesc());
-        if (getGeneSummary() != null) 
+        if (getGeneSummary() != null) {
             result.append("\n\tEntrezgene_summary: "+getGeneSummary());
-
+		} else {
+            result.append("\n\tEntrezgene_summary not specified");
+		}
         if (getPubMedRefs() != null) {
             result.append("\n\tPubmed article refs: "+countUniquePubMedRefs());
             for (Pair<String,String> ref : mPubMedRefs) {
-                result.append("\n\t" + ref.a());
+                result.append("\n\tpmid " + ref.a());
                 if (ref.b() != null) {
                     result.append(": " + ref.b());
                 }
@@ -509,11 +517,45 @@ public class EntrezGene {
         if (getPubMedRefs() != null) {
             String[] geneRifs = getGeneRifLabels();
             for (String geneRif : geneRifs) {
-                    result.append(geneRif + ", ");
+				result.append(geneRif + ", ");
             }
         }
         return result.toString();
     }
+
+    /**
+     * Returns comma-separated concatentation of all 
+     * natural language texts from an <code>EntrezGene</code>.
+     * Includes GenRIF labels, omits PubMed and database ids.
+     */
+    public String getAllNames() {
+        StringBuffer result = new StringBuffer();
+        if (getOfficialSymbol() != null) 
+            result.append(" [" + getOfficialSymbol() + "], ");
+        if (getOfficialFullName() != null) 
+            result.append(" [" + getOfficialFullName() +"], ");
+        if (getGeneRefName() != null) 
+            result.append(" [" + getGeneRefName() + "], ");
+        if (getGeneRefSyns() != null) {
+            String[] syns = getGeneRefSyns();
+            for (int i=0;i<syns.length;i++) {
+                result.append("[" + syns[i] + "], ");
+            }
+        }
+        if (getGeneRefDesc() != null) 
+            result.append("[" + getGeneRefDesc() + "], ");
+        if (getProtRefNames() != null) {
+            String[] names = getProtRefNames();
+            for (int i=0;i<names.length;i++) {
+                result.append("["+ names[i] + "], ");
+            }
+        }
+        if (getProtRefDesc() != null) 
+            result.append(" [" + getProtRefDesc() + "], ");
+        return result.toString();
+    }
+
+
     /**
      * Returns array of all GeneRIF labels.
      */
@@ -532,6 +574,7 @@ public class EntrezGene {
     void setXmlString(String xmlString) {
         mXmlString = xmlString;
     }
+
     /**
      * Returns the XML underlying this citation as a string.  Note
      * that there will be no XML declaration in this string, nor

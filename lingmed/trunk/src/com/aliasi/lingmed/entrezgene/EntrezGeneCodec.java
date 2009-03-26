@@ -24,14 +24,6 @@ import com.aliasi.lingmed.dao.SearchResults;
 import com.aliasi.lingmed.lucene.Fields;
 import com.aliasi.lingmed.lucene.LuceneAnalyzer;
 
-import com.aliasi.tokenizer.EnglishStopListFilterTokenizer;
-import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;
-import com.aliasi.tokenizer.LowerCaseFilterTokenizer;
-import com.aliasi.tokenizer.PorterStemmerFilterTokenizer;
-import com.aliasi.tokenizer.RegExTokenizerFactory;
-import com.aliasi.tokenizer.Tokenizer;
-import com.aliasi.tokenizer.TokenizerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -164,30 +156,19 @@ public class EntrezGeneCodec implements Codec<EntrezGene> {
      */
     static class EntrezGeneAnalyzer extends LuceneAnalyzer {
 
-        static class StandardTokenizerFactory implements TokenizerFactory {
-            public Tokenizer tokenizer(char[] cs, int start, int length) {
-                Tokenizer tokenizer = SIMPLE_TOKENIZER_FACTORY.tokenizer(cs,start,length);
-                tokenizer = new LowerCaseFilterTokenizer(tokenizer);
-                tokenizer = new EnglishStopListFilterTokenizer(tokenizer);
-                tokenizer = new PorterStemmerFilterTokenizer(tokenizer);
-                return tokenizer;
-            }
-        } // acts like Lucene's StandardAnalyzer
-        public TokenizerFactory TEXT_TOKENIZER_FACTORY
-            = new StandardTokenizerFactory();
-
-		// like Lucene's analysis.SimpleAnalyzer, but with digits, too
-		public static final TokenizerFactory SIMPLE_TOKENIZER_FACTORY
-			= new RegExTokenizerFactory("\\p{L}+|\\p{Digit}+");
 
 
         public static final EntrezGeneAnalyzer INSTANCE
             = new EntrezGeneAnalyzer();
 
+		// default fields use LuceneAnalyzer.KEYWORD_TOKENIZER_FACTORY
         private EntrezGeneAnalyzer() {
-			setTokenizer(Fields.ID_FIELD,SIMPLE_TOKENIZER_FACTORY);
-			setTokenizer(Fields.ENTREZGENE_PMID_FIELD,SIMPLE_TOKENIZER_FACTORY);
-			setTokenizer(Fields.ENTREZGENE_TEXTS_FIELD,TEXT_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ID_FIELD,LuceneAnalyzer.KEYWORD_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ENTREZGENE_PMID_FIELD,LuceneAnalyzer.KEYWORD_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ENTREZGENE_SPECIES_FIELD,LuceneAnalyzer.KEYWORD_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ENTREZGENE_STATUS_FIELD,LuceneAnalyzer.KEYWORD_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ENTREZGENE_SYMBOL_FIELD,LuceneAnalyzer.KEYWORD_TOKENIZER_FACTORY);
+			setTokenizer(Fields.ENTREZGENE_TEXTS_FIELD,LuceneAnalyzer.INDOEUROPEAN_LC_TOKENIZER_FACTORY);
         }
 
     }
