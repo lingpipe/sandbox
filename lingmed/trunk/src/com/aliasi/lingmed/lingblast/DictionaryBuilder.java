@@ -283,10 +283,15 @@ public class DictionaryBuilder extends AbstractCommand {
             HashSet<String> names = new HashSet<String>();
             String[] aliases = entrezGene.getUniqueAliases();
             for (String alias : aliases) {
+                mLogger.debug("alias: "+alias);
                 if (alias.toLowerCase().startsWith("similar to")) continue;
+                if (alias.startsWith("LOC") || alias.startsWith("OTTHUMP")) {
+                    names.add(alias);
+                }
                 String[] variants = GeneNameMutator.getVariants(alias);
                 for (String variant : variants) {
                     names.add(variant);
+                    mLogger.debug("variant: "+variant);
                 }
             }
             String[] linkIds = entrezGene.getLinkIds();
