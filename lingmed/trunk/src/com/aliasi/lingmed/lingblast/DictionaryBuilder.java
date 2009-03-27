@@ -183,29 +183,9 @@ public class DictionaryBuilder extends AbstractCommand {
         mMinNameLen = getArgumentInt(MIN_NAME_LENGTH);
         mMaxNameLen = getArgumentInt(MAX_NAME_LENGTH);
         mMaxPubmedHits = getArgumentInt(MAX_PUBMED_HITS);
-
         reportParameters();
 
         mDictFile = FileUtils.checkOutputFile(mDictFileName);
-
-        if (mGenHtml) {
-            File htmlFile = FileUtils.checkOutputFile(mDictFileName+".html");
-            mHtmlOut = new PrintStream(new FileOutputStream(htmlFile));
-            mHtmlOut.println("<HTML><BODY><TABLE BORDER=\"1\" CELLPADDING=\"1\">");
-            mHtmlOut.println("<TR><TH>Pubmed Hits</TH><TH>EntrezGene Hits</TH><TH>Phrase</TH><TH>Include?</TH></TR>");
-        }
-
-        if (mAllowedNamesFileName != null) {
-            File allowedNames = FileUtils.checkInputFile(mAllowedNamesFileName);
-            String line = null;
-            LineNumberReader in = new LineNumberReader(new FileReader(allowedNames));
-            while ((line = in.readLine()) != null) {
-                mAllowed.add(line);
-            }
-            in.close();
-            if (mLogger.isDebugEnabled()) 
-                mLogger.debug("total allowed gene names: "+mAllowed.size());
-        }
 
         if (mSearchHost.equals("localhost")) {
             FileUtils.checkIndex(mEntrezService,false);
@@ -224,76 +204,26 @@ public class DictionaryBuilder extends AbstractCommand {
             Searcher medlineRemoteSearcher = medlineClient.getSearcher();
             mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
         }
-    }
-
-    private void reportParameters() {
-        mLogger.info("DictionaryBuilder "
-                     + "\n\tDictionary=" + mDictFileName
-                     + "\n\tAllowedNames=" + mAllowedNamesFileName
-                     + "\n\tmaximum pubmed articles per name=" + mMaxPubmedHits
-                     + "\n\tminimum name length=" + mMinNameLen
-                     + "\n\tmaximum name length=" + mMaxNameLen
-                     + "\n\tsearch host=" + mSearchHost
-                     + "\n\tEntrezService=" + mEntrezService
-                     + "\n\tMedlineService=" + mMedlineService
-                     + "\n\tgenerate Html?=" + mGenHtml
-                     );
+        if (mGenHtml) {
+            openHtml();
+        }
+        if (mAllowedNamesFileName != null) {
+            getAllowedNames(mAllowedNamesFileName);
+        }
     }
 
     public void run() {
         mLogger.info("\nBegin");
         try {
-            for (EntrezGene entrezGene : mEntrezGeneSearcher) {
-                String geneId = entrezGene.getGeneId();
-                if (mLogger.isDebugEnabled())
-                    mLogger.debug("\nprocessing EntrezGene Id: "+geneId);
-
-                HashSet<String> names = new HashSet<String>();
-                String[] aliases = entrezGene.getUniqueAliases();
-                for (String alias : aliases) {
-					// munge name into variants
-					names.add(alias);
-				}
-                String[] linkIds = entrezGene.getLinkIds();
-                for (String linkId : linkIds) {
-					try {
-						Float.valueOf(linkId);
-						mLogger.debug("ignore link id: "+linkId);
-
-					} catch (NumberFormatException e) {
-						names.add(linkId);
-					}
-				}
-                if (mLogger.isDebugEnabled()) 
-                    mLogger.debug("entrez names: "+names.size());
-
-                for (String name: names) {
-                    if (name.length() >= mMinNameLen
-                        && name.length() <= mMaxNameLen ) {
-                        Set<String> ids = null;
-                        if (!mDictMap.containsKey(name)) {
-                            ids = new HashSet<String>();
-                        } else {
-                            if (mLogger.isDebugEnabled())
-                                mLogger.debug("ambiguous name: "+name);
-                            ids = mDictMap.get(name);
-                        }
-                        ids.add(geneId);
-                        mDictMap.put(name,ids);
-                    } else {
-                        if (mLogger.isDebugEnabled())
-                            mLogger.debug("not using name: "+name+ ", geneId: "+geneId);
-                    }
-                }
-            }
+            mapEntrezGene();
 
             mLogger.info("\nCreate dictionary");
             TrieDictionary<String> mTrieDict = new TrieDictionary<String>();
+
             for (Iterator dictIt=mDictMap.entrySet().iterator(); dictIt.hasNext(); ) {
                 Entry<String,Set<String>> entry = (Entry<String,Set<String>>)dictIt.next();
                 String alias = entry.getKey();
                 Set<String> ids = entry.getValue();
-                
                 int pubmedHits = mMedlineSearcher.numExactPhraseMatches(alias);
                 if (mGenHtml) {
                     mHtmlOut.print("<TR><TD>"+pubmedHits+"</TD><TD>"+ids.size()+"</TD><TD>"+alias+"</TD>");
@@ -304,7 +234,6 @@ public class DictionaryBuilder extends AbstractCommand {
                 } else {
                     if (mGenHtml) mHtmlOut.println("<TD>yes</TD></TR>");
                 }
-
 
                 String[] categoryArray = new String[ids.size()];
                 categoryArray = ids.toArray(categoryArray);
@@ -321,6 +250,7 @@ public class DictionaryBuilder extends AbstractCommand {
             ObjectOutputStream compiledDict = new ObjectOutputStream(new FileOutputStream(mDictFileName));
             mTrieDict.compileTo(compiledDict);
             compiledDict.close();
+
             mLogger.info("Processing complete.");
         } catch (Exception e) {
             mLogger.warn("Unexpected Exception: "+e.getMessage());
@@ -332,10 +262,89 @@ public class DictionaryBuilder extends AbstractCommand {
         }
     }
 
+    private void getAllowedNames(String filename) throws IOException {
+        File allowedNames = FileUtils.checkInputFile(filename);
+        String line = null;
+        LineNumberReader in = new LineNumberReader(new FileReader(allowedNames));
+        while ((line = in.readLine()) != null) {
+            mAllowed.add(line);
+        }
+        in.close();
+        if (mLogger.isDebugEnabled()) 
+            mLogger.debug("total allowed gene names: "+mAllowed.size());
+    }
+
+    private void mapEntrezGene() {
+        for (EntrezGene entrezGene : mEntrezGeneSearcher) {
+            String geneId = entrezGene.getGeneId();
+            if (mLogger.isDebugEnabled())
+                mLogger.debug("\nprocessing EntrezGene Id: "+geneId);
+
+            HashSet<String> names = new HashSet<String>();
+            String[] aliases = entrezGene.getUniqueAliases();
+            for (String alias : aliases) {
+                if (alias.toLowerCase().startsWith("similar to")) continue;
+                String[] variants = GeneNameMutator.getVariants(alias);
+                for (String variant : variants) {
+                    names.add(variant);
+                }
+            }
+            String[] linkIds = entrezGene.getLinkIds();
+            for (String linkId : linkIds) {
+                try {
+                    Float.valueOf(linkId);
+                    mLogger.debug("ignore link id: "+linkId);
+                } catch (NumberFormatException e) {
+                    names.add(linkId);
+                }
+            }
+            if (mLogger.isDebugEnabled()) 
+                mLogger.debug("entrez names: "+names.size());
+
+            for (String name: names) {
+                if (name.length() >= mMinNameLen
+                    && name.length() <= mMaxNameLen ) {
+                    Set<String> ids = null;
+                    if (!mDictMap.containsKey(name)) {
+                        ids = new HashSet<String>();
+                    } else {
+                        if (mLogger.isDebugEnabled())
+                            mLogger.debug("ambiguous name: "+name);
+                        ids = mDictMap.get(name);
+                    }
+                    ids.add(geneId);
+                    mDictMap.put(name,ids);
+                } else {
+                    if (mLogger.isDebugEnabled())
+                        mLogger.debug("not using name: "+name+ ", geneId: "+geneId);
+                }
+            }
+        }
+    }
+
+    private void openHtml() throws IOException {
+            File htmlFile = FileUtils.checkOutputFile(mDictFileName+".html");
+            mHtmlOut = new PrintStream(new FileOutputStream(htmlFile));
+            mHtmlOut.println("<HTML><BODY><TABLE BORDER=\"1\" CELLPADDING=\"1\">");
+            mHtmlOut.println("<TR><TH>Pubmed Hits</TH><TH>EntrezGene Hits</TH><TH>Phrase</TH><TH>Include?</TH></TR>");
+    }
+
+    private void reportParameters() {
+        mLogger.info("DictionaryBuilder "
+                     + "\n\tDictionary=" + mDictFileName
+                     + "\n\tAllowedNames=" + mAllowedNamesFileName
+                     + "\n\tmaximum pubmed articles per name=" + mMaxPubmedHits
+                     + "\n\tminimum name length=" + mMinNameLen
+                     + "\n\tmaximum name length=" + mMaxNameLen
+                     + "\n\tsearch host=" + mSearchHost
+                     + "\n\tEntrezService=" + mEntrezService
+                     + "\n\tMedlineService=" + mMedlineService
+                     + "\n\tgenerate Html?=" + mGenHtml
+                     );
+    }
+
     public static void main(String[] args) throws Exception {
         DictionaryBuilder builder = new DictionaryBuilder(args);
         builder.run();
     }
-
-
 }
