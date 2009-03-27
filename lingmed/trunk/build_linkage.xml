@@ -7,14 +7,20 @@
 
 <property file="build.properties"/>
 
+<property name="lingblast.dir"
+          value="/data/lingblast"/>
+
 <property name="dictionary"
-          value="/data/lingblast/exactDictEntrezGene"/>
+          value="${lingblast.dir}/exactDictEntrezGene"/>
 
 <property name="model.dir"
-          value="/data/lingblast/models"/>
+          value="${lingblast.dir}/models"/>
+
+<property name="lucene.dir"
+          value="/data/lucene"/>
 
 <property name="medline.lucene.index"
-          value="/data/lucene/medline2009"/>
+          value="${lucene.dir}/medline2009"/>
 
 <property name="entrezgene.lucene.index"
           value="/data/lucene/allEntrezGene"/>
@@ -31,9 +37,9 @@
     <arg value="-dictFile=${dictionary}"/>
     <arg value="-medline=${medline.lucene.index}"/>
     <arg value="-entrezgene=${entrezgene.lucene.index}"/>
-    <arg value="-maxPubmedHitsPerAlias=10000"/>
+    <arg value="-maxPubmedHitsPerAlias=5000"/>
     <arg value="-genHtml=true"/>
-<!--    <arg value="-allowedNames=hifreq_names.txt"/> -->
+    <arg value="-allowedNames=/data/lingblast/hifreq_names.txt"/>
   </java>
 </target>
 
