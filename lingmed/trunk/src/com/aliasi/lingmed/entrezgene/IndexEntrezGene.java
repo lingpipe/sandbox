@@ -110,10 +110,10 @@ public class IndexEntrezGene extends AbstractCommand {
         super(args,DEFAULT_PARAMS);
         mIndexName = getExistingArgument(LUCENE_INDEX);
         mDistFileName = getExistingArgument(DIST_FILE);
+        mType = getArgument(TYPE);
         reportParameters();
         mIndex = FileUtils.checkIndex(mIndexName,true);
         mDistFile = FileUtils.checkInputFile(mDistFileName);
-        mType = getArgument(TYPE);
 		if (! (TYPE_GENE.equalsIgnoreCase(mType)
 			   || TYPE_LIVE.equalsIgnoreCase(mType)
 			   || TYPE_LIVEGENE.equalsIgnoreCase(mType))) {
