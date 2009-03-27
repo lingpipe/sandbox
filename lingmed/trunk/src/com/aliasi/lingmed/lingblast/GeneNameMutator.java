@@ -88,15 +88,27 @@ public class GeneNameMutator {
              } else if (R4.equals(token)) {
                  var.append("4");
                  var.append(ws);
+             } else if (token.length() > 1 && token.endsWith(A)) {
+                 var.append(token.substring(0,token.length()-1));
+                 var.append("-Alpha");
+             } else if (token.length() > 1 && token.endsWith(B)) {
+                 var.append(token.substring(0,token.length()-1));
+                 var.append("-Beta");
+             } else if (token.length() > 1 && token.endsWith(G)) {
+                 var.append(token.substring(0,token.length()-1));
+                 var.append("-Gamma");
+             } else if (token.length() > 1 && token.endsWith(D)) {
+                 var.append(token.substring(0,token.length()-1));
+                 var.append("-Delta");
              } else {
                  var.append(token);
                  var.append(ws);
              }
          }
-         var.setLength(var.length()-1);
          String variant = var.toString().trim();
          variants.add(variant);
          variants.add(variant.replaceAll("-"," "));
+         variants.add(variant.replaceAll("-",""));
          variants.add(variant.replaceAll("[\\(\\)\\,]",""));
     }
 
@@ -112,51 +124,19 @@ public class GeneNameMutator {
         }
     }
 
-    private static void finalGreek(char[] cs, HashSet<String> variants) {
-        Tokenizer tokenizer = byCaseTokenizerFactory.tokenizer(cs,0,cs.length);
-         StringBuffer var = new StringBuffer();
-         String token = null;
-         while ((token = tokenizer.nextToken()) != null) {
-             String ws = tokenizer.nextWhitespace();
-             if  (ws == null || ws.length() == 0) {
-                 if (A.equals(token)) {
-                     var.append("Alpha");
-                 } else if (B.equals(token)) {
-                     var.append("Beta");
-                 } else if (G.equals(token)) {
-                     var.append("Gamma");
-                 } else if (D.equals(token)) {
-                     var.append("Delta");
-                 } else {
-                     var.append(token);
-                 }
-             } else {
-                 var.append(ws);
-                 var.append(token);
-             }
-         }
-         variants.add(var.toString().trim());
-    }
 
      public static  String[] getVariants(String text) {
-         char[] cs = text.toCharArray();
          HashSet<String> variants = new HashSet<String>();
          variants.add(text);
+         variants.add(text.toLowerCase());
          variants.add(text.replaceAll("-"," "));
+         variants.add(text.toLowerCase().replaceAll("-"," "));
          variants.add(text.replaceAll("[\\(\\)\\,]",""));
+         variants.add(text.toLowerCase().replaceAll("[\\(\\)\\,]",""));
 
+         char[] cs = text.toCharArray();
          munge(indoEuropeanTokenizerFactory.tokenizer(cs,0,cs.length),variants);
 
-         if (text.indexOf(", ") > 0) {
-             permute(text,variants);
-         }
-
-         if (text.indexOf(A) > 2
-             || text.indexOf(B) > 2
-             || text.indexOf(D) > 2
-             || text.indexOf(G) > 2) {
-             finalGreek(cs,variants);
-         }
          String[] result = new String[variants.size()];
          result = variants.toArray(result);
          return result;
