@@ -34,8 +34,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 
-import org.apache.lucene.search.Hits;
-import org.apache.lucene.search.HitCollector;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
@@ -55,7 +55,7 @@ import org.apache.log4j.Logger;
 
 public class DaoSearcherImpl<E> implements DaoSearcher<E> {
     private final Logger mLogger
-	= Logger.getLogger(DaoSearcherImpl.class);
+        = Logger.getLogger(DaoSearcherImpl.class);
 
     private final Analyzer mQueryAnalyzer;
     private final Codec<E> mCodec;
@@ -72,10 +72,10 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
      */
     public DaoSearcherImpl(Codec<E> codec,
                            Searcher searcher) throws IOException {
-	mQueryAnalyzer = codec.getAnalyzer();
-	mCodec = codec;
-	mQueryParser = new QueryParser(Fields.DEFAULT_FIELD,mQueryAnalyzer);
-	mSearcher = searcher;
+        mQueryAnalyzer = codec.getAnalyzer();
+        mCodec = codec;
+        mQueryParser = new QueryParser(Fields.DEFAULT_FIELD,mQueryAnalyzer);
+        mSearcher = searcher;
     }
 
     /**
@@ -84,17 +84,17 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
      * Objects are instantiated when <code>next()</code> is called.
      */
     public Iterator<E> iterator() {
-	try {
-	    // check index version??
-	    return new LuceneDocIterator(mCodec);
-	} catch (Exception e) {
-	    String msg = "Index corrupted."
-		+ " Exception=" + e;
-	    IllegalStateException e2 
-		= new IllegalStateException(msg);
-	    e2.setStackTrace(e.getStackTrace());
-	    throw e2;
-	}
+        try {
+            // check index version??
+            return new LuceneDocIterator(mCodec);
+        } catch (Exception e) {
+            String msg = "Index corrupted."
+                + " Exception=" + e;
+            IllegalStateException e2 
+                = new IllegalStateException(msg);
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
+        }
     }
 
     /**
@@ -106,15 +106,15 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
      * @throws DaoException
      */
     public E getById(String id) throws DaoException {
-	SearchResults<E> results = search(Fields.ID_FIELD + ":" + id);
-	// ??
-	if (results.size() == 0) 
-	    return null; // ?? or return diff exception?
-	if (results.size() > 1) {
-	    String msg = "Multiple entries with id=" + id;
-	    throw new DaoException(msg);
-	}
-	return results.getResult(0);
+        SearchResults<E> results = search(Fields.ID_FIELD + ":" + id);
+        // ??
+        if (results.size() == 0) 
+            return null; // ?? or return diff exception?
+        if (results.size() > 1) {
+            String msg = "Multiple entries with id=" + id;
+            throw new DaoException(msg);
+        }
+        return results.getResult(0);
     }
 
 
@@ -128,14 +128,14 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
      * @throws DaoException
      */
     public SearchResults<E> search(Query query)
-	throws DaoException {
-	try {
-	    Hits hits = mSearcher.search(query);
-	    return new LuceneSearchResults(mCodec,hits);
-	} catch (Exception e) {
-	    String message = "search exception: "+e.getMessage();
-	    throw new DaoException(message, e);
-	}
+        throws DaoException {
+        try {
+            TopDocs results = mSearcher.search(query,mSearcher.maxDoc());
+            return new LuceneSearchResults(mCodec,results);
+        } catch (Exception e) {
+            String message = "search exception: "+e.getMessage();
+            throw new DaoException(message, e);
+        }
     }
 
     /**
@@ -149,14 +149,14 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
      * @throws DaoException
      */
     public SearchResults<E> search(String queryString) 
-	throws DaoException {
-	try {
-	    Query query = mQueryParser.parse(queryString);
-	    return search(query);
-	} catch (Exception e) {
-	    String message = "search("+queryString+") exception: "+e.getMessage();
-	    throw new DaoException(message, e);
-	}
+        throws DaoException {
+        try {
+            Query query = mQueryParser.parse(queryString);
+            return search(query);
+        } catch (Exception e) {
+            String message = "search("+queryString+") exception: "+e.getMessage();
+            throw new DaoException(message, e);
+        }
     }
 
     /**      
@@ -167,100 +167,95 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
      * @throws DaoException
      */
     public int numHits(String queryString) throws DaoException {
-	try {
-	    Query query = mQueryParser.parse(queryString);
-	    Hits hits = mSearcher.search(query);
-	    return hits.length();
-	} catch (Exception e) {
-	    String message = "search exception: "+e.getMessage();
-	    throw new DaoException(message, e);
-	}
+        try {
+            Query query = mQueryParser.parse(queryString);
+            TopDocs results = mSearcher.search(query,mSearcher.maxDoc());
+            return results.totalHits;
+        } catch (Exception e) {
+            String message = "search exception: "+e.getMessage();
+            throw new DaoException(message, e);
+        }
     }
 
     class LuceneDocIterator extends Iterators.Buffered<E> {
-	private final Codec<E> mCodec;
-	int mCurrentDoc = 0;
-	final int mMaxDoc;
-	public LuceneDocIterator(Codec<E> codec) throws IOException {
-	    mCodec = codec;
+        private final Codec<E> mCodec;
+        int mCurrentDoc = 0;
+        final int mMaxDoc;
+        public LuceneDocIterator(Codec<E> codec) throws IOException {
+            mCodec = codec;
             mMaxDoc = mSearcher.maxDoc();
             Logger.getLogger(LuceneDocIterator.class).debug("maxDoc: " + mMaxDoc);
-	}
+        }
         public E bufferNext() {
-	    try {
-		while (mCurrentDoc < mMaxDoc) {
-		    Document doc = mSearcher.doc(mCurrentDoc);
-		    mCurrentDoc++;
-		    if (doc != null) {
-			E obj = mCodec.toObject(doc);
+            try {
+                while (mCurrentDoc < mMaxDoc) {
+                    Document doc = mSearcher.doc(mCurrentDoc);
+                    mCurrentDoc++;
+                    if (doc != null) {
+                        E obj = mCodec.toObject(doc);
                         if (obj != null)
                             return obj;
                     }
-		}
+                }
                 return null;
-	    } catch (IOException e) {
-		String msg = "Index corrupted."
-		    + " IOException=" + e;
-		NoSuchElementException e2 
-		    = new NoSuchElementException(msg);
-		e2.setStackTrace(e.getStackTrace());
-		throw e2;
-	    }
-	}
+            } catch (IOException e) {
+                String msg = "Index corrupted."
+                    + " IOException=" + e;
+                NoSuchElementException e2 
+                    = new NoSuchElementException(msg);
+                e2.setStackTrace(e.getStackTrace());
+                throw e2;
+            }
+        }
     }
  
     private class LuceneSearchResults implements SearchResults {
-	private final Codec<E> mCodec;
-	private final Hits mHits;
-	LuceneSearchResults(Codec<E> codec, Hits hits) {
-	    mCodec = codec;
-	    mHits = hits;
-	}
-	public int size() {
-	    return mHits.length();
-	}
-	public double getScore(int rank) throws DaoException {
-	    try {
-		return mHits.score(rank);
-	    } catch (IOException ioe) {
-		String message = "getScore("+rank+") exception: "+ioe.getMessage();
-		throw new DaoException(message, ioe);
-	    }
-	}
-	public E getResult(int rank) throws DaoException {
-	    try {
-		Document d = mHits.doc(rank);
-		return mCodec.toObject(d);
-	    } catch (IOException ioe) {
-		String message = "getResult("+rank+") exception: "+ioe.getMessage();
-		throw new DaoException(message, ioe);
-	    }
-	}
-	public Iterator<E> iterator() {
-	    return new ResultsIterator();
-	}
-	class ResultsIterator implements Iterator<E> {
-	    int mNextHit = 0;
-	    public boolean hasNext() {
-		return mNextHit < mHits.length();
-	    }
-	    public E next() {
-		if (!hasNext()) {
-		    String msg = "No more results.";
-		    throw new NoSuchElementException(msg);
-		}
-		try {
-		    return getResult(mNextHit++);
-		} catch (DaoException dao) {
-		    String message = "getResult("+(mNextHit-1)+") exception: "+dao.getMessage();
-		    throw new NoSuchElementException(message);
-		}
-	    }
-	    public void remove() {
-		String msg = "Cannot remove documents through iterators.";
-		throw new UnsupportedOperationException(msg);
-	    }
-	}
+        private final Codec<E> mCodec;
+        private final TopDocs mResults;
+        LuceneSearchResults(Codec<E> codec, TopDocs results) {
+            mCodec = codec;
+            mResults = results;
+        }
+        public int size() {
+            return mResults.totalHits;
+        }
+        public double getScore(int rank) {
+            return mResults.scoreDocs[rank].score;
+        }
+        public E getResult(int rank) throws DaoException {
+            try {
+                Document d = mSearcher.doc(mResults.scoreDocs[rank].doc);
+                return mCodec.toObject(d);
+            } catch (IOException ioe) {
+                String message = "getResult("+rank+") exception: "+ioe.getMessage();
+                throw new DaoException(message, ioe);
+            }
+        }
+        public Iterator<E> iterator() {
+            return new ResultsIterator();
+        }
+        class ResultsIterator implements Iterator<E> {
+            int mNextHit = 0;
+            public boolean hasNext() {
+                return mNextHit < mResults.totalHits;
+            }
+            public E next() {
+                if (!hasNext()) {
+                    String msg = "No more results.";
+                    throw new NoSuchElementException(msg);
+                }
+                try {
+                    return getResult(mNextHit++);
+                } catch (DaoException dao) {
+                    String message = "getResult("+(mNextHit-1)+") exception: "+dao.getMessage();
+                    throw new NoSuchElementException(message);
+                }
+            }
+            public void remove() {
+                String msg = "Cannot remove documents through iterators.";
+                throw new UnsupportedOperationException(msg);
+            }
+        }
     }
 
 }
