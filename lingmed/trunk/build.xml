@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="lingmed" default="compile" basedir=".">
 
-<property name="mxMem" value="4G" />
+<property name="mxMem" value="2G" />
 
 <property file="build.properties"/>
 
@@ -35,7 +35,7 @@
           value="com.aliasi.lingmed.medline.MedlineCodec"/>
 
 <property name="medline.index.sleep"
-          value="-1"/>
+          value="240"/>
 
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM"
@@ -74,7 +74,7 @@
 <target name="rmiMedline"
         description="rmi MEDLINE search service"
         depends="jar">
-  <searchService host="localhost"
+  <searchService host="${rmi.server.address}"
                  port="1099"
                  service="medline"
                  index="${medline.lucene.index.searchable}" />
@@ -82,23 +82,28 @@
 
 <!-- **** Entrez Gene tasks **** -->
 
+
+<!-- human.xml.gz, Rattus_norvegicus.xml.gz, mouse.xml.gz, Gallus_gallus.xml.gz  -->
+
 <property name="entrezgene.dist.file"
           value="${nlm.data}/entrezgene/All_Data.xml.gz"/>
+
 <property name="entrezgene.lucene.index.dir"
-          value="/lucene_data/indexes/allEntrezGene"/>
+          value="/lucene_data/indexes/hmrcLiveGene"/>
+<!--           value="/data/lucene/allLiveGene" -->
 
 <target name="indexEntrezGene"
         description="create Lucene EntrezGene index"
         depends="jar">
   <indexEntrezGene distFile="${entrezgene.dist.file}"
                    index="${entrezgene.lucene.index.dir}"
-                   type="all" />
+                   type="live_gene" />
 </target>
 
 <target name="rmiEntrezGene"
         description="rmi EntrezGene search serice"
         depends="jar">
-  <searchService host="localhost"
+  <searchService host="${rmi.server.address}"
                  port="1099"
                  service="entrezgene"
                  index="${entrezgene.lucene.index.dir}" />
