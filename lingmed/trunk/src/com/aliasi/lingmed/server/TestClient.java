@@ -30,77 +30,96 @@ import org.apache.log4j.Logger;
 
 public class TestClient {
     private final Logger mLogger
-	= Logger.getLogger(TestClient.class);
+        = Logger.getLogger(TestClient.class);
 
     private final static int SECOND = 1000;
     private final static int MINUTE = 60*SECOND;
 
-
-    public static void main(String[] args) throws Exception {
-
-	if (args.length < 2) {
-	    System.out.println("args: <hostname> <pmidsfile>");
-	    System.exit(-1);
-	}
-
-	String hostname = args[0];
-	    
-	String filename = args[1];
-	File file = new File(filename);
-	if (!file.exists()) {
-	    System.out.println("no such file: "+filename);
-	    System.exit(-1);
-	}
-
-	System.out.println("test remote search on host: "+hostname);
-	TestClient client = new TestClient();
-	client.doSearch(hostname,filename);
-    }
-
-    public void doSearch(String hostname,String fileName) throws Exception {
-	MedlineCodec medlineCodec = new MedlineCodec();
-	SearchClient medlineClient = new SearchClient("medline",hostname,1099);
-	while (true) {
-	    String id;
-	    LineNumberReader in = new LineNumberReader(new BufferedReader(new FileReader(fileName)));
-	    while ((id = in.readLine()) != null) {
-		mLogger.info("\n"+in.getLineNumber()+"\tid: "+id);
-
-		Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-		MedlineSearcher medlineSearcher = new MedlineSearcherImpl(medlineCodec,medlineRemoteSearcher);
-
-		int numHits = medlineSearcher.numExactPhraseMatches("gene");
-		mLogger.info("num hits for \"gene\": "+numHits);
-
-		long startPubmedTime = System.currentTimeMillis();
-		MedlineCitation mc = medlineSearcher.getById(id);
-		if (mc == null) {
-		    mLogger.info("id not found: "+id);
-		} else {
-		    mLogger.info(id+": "+mc.status());
-		    if (mc.article() != null) 
-			mLogger.info(mc.article().articleTitle());
-		}
-		updatePubmedTimes(System.currentTimeMillis()-startPubmedTime);
-		mLogger.info("mean pubmed lookup time in ms: "+meanPubmed);
-		mLogger.info("dev pubmed lookup time in ms: "+devPubmed);
-	    }
-	    Thread.sleep(10*SECOND);
-	}
-    }
-
     // timing utils
-
     double PERIOD = 1000;
+    int REPORT_FREQ = 100;
 
     double meanPubmed = 0;
     double varPubmed = 0;
     double devPubmed = 0;
 
+    public static void main(String[] args) throws Exception {
+
+        if (args.length < 2) {
+            System.out.println("args: <hostname> <pmidsfile>");
+            System.exit(-1);
+        }
+
+        String hostname = args[0];
+            
+        String filename = args[1];
+        File file = new File(filename);
+        if (!file.exists()) {
+            System.out.println("no such file: "+filename);
+            System.exit(-1);
+        }
+
+        System.out.println("test remote search on host: "+hostname);
+        TestClient client = new TestClient();
+        client.doSearch(hostname,filename);
+    }
+
+    public void doSearch(String hostname,String fileName) throws Exception {
+        MedlineCodec medlineCodec = new MedlineCodec();
+        SearchClient medlineClient = new SearchClient("medline",hostname,1099);
+        int ct = 0;
+        while (true) {
+
+            Searcher medlineRemoteSearcher = medlineClient.getSearcher();
+            MedlineSearcher medlineSearcher = new MedlineSearcherImpl(medlineCodec,medlineRemoteSearcher);
+
+            int numHits = medlineSearcher.numExactPhraseMatches("gene");
+            mLogger.info("num articles which contain phrase: \"gene\": "+numHits);
+
+            String id;
+            LineNumberReader in = new LineNumberReader(new BufferedReader(new FileReader(fileName)));
+            while ((id = in.readLine()) != null) {
+                ++ct;
+                if (mLogger.isDebugEnabled()) {
+                    mLogger.debug(in.getLineNumber()+"\tid: "+id);
+                }
+
+                long startPubmedTime = System.currentTimeMillis();
+                MedlineCitation mc = medlineSearcher.getById(id);
+                updatePubmedTimes(System.currentTimeMillis()-startPubmedTime);
+                if (mc == null) {
+                    if (mLogger.isDebugEnabled()) {
+                        mLogger.debug("id not found: "+id);
+                    }
+                } else {
+                    if (mLogger.isDebugEnabled()) {
+                        mLogger.debug(id+": "+mc.status());
+                        if (mc.article() != null) 
+                            mLogger.debug(mc.article().articleTitle());
+                    }
+                }
+                if (mLogger.isDebugEnabled()) {
+                    mLogger.debug("mean pubmed lookup time in millis: "+meanPubmed);
+                    mLogger.debug("stddev pubmed lookup time in millis: "+devPubmed);
+                } else if ((ct%REPORT_FREQ) == 0) {
+                    mLogger.info("lookups: " + ct);
+                    mLogger.info("mean pubmed lookup time in millis: "+meanPubmed);
+                    mLogger.info("stddev pubmed lookup time in millis: "+devPubmed);
+                }
+            }
+            mLogger.info("lookups: " + ct);
+            mLogger.info("mean pubmed lookup time in millis: "+meanPubmed);
+            mLogger.info("dev pubmed lookup time in millis: "+devPubmed);
+            Thread.sleep(10*SECOND);
+        }
+    }
+
+
     public void updatePubmedTimes(double x) {
-	meanPubmed = meanPubmed*(PERIOD-1)/PERIOD + x/PERIOD;
-	varPubmed = varPubmed*(PERIOD-1)/PERIOD + (x-meanPubmed)*(x-meanPubmed)/PERIOD;
-	devPubmed = Math.sqrt(varPubmed);
+        mLogger.debug("elasped time: "+x);
+        meanPubmed = meanPubmed*(PERIOD-1)/PERIOD + x/PERIOD;
+        varPubmed = varPubmed*(PERIOD-1)/PERIOD + (x-meanPubmed)*(x-meanPubmed)/PERIOD;
+        devPubmed = Math.sqrt(varPubmed);
     }
 
     double meanEntrez = 0;
@@ -108,9 +127,9 @@ public class TestClient {
     double devEntrez = 0;
 
     public void updateEntrezTimes(double x) {
-	meanEntrez = meanEntrez*(PERIOD-1)/PERIOD + x/PERIOD;
-	varEntrez = varEntrez*(PERIOD-1)/PERIOD + (x-meanEntrez)*(x-meanEntrez)/PERIOD;
-	devEntrez = Math.sqrt(varEntrez);
+        meanEntrez = meanEntrez*(PERIOD-1)/PERIOD + x/PERIOD;
+        varEntrez = varEntrez*(PERIOD-1)/PERIOD + (x-meanEntrez)*(x-meanEntrez)/PERIOD;
+        devEntrez = Math.sqrt(varEntrez);
     }
 
 

@@ -226,6 +226,9 @@ public class DictionaryBuilder extends AbstractCommand {
                 Set<String> ids = entry.getValue();
                 try {
                     int pubmedHits = mMedlineSearcher.numExactPhraseMatches(alias);
+                    if (pubmedHits > mMaxPubmedHits && !mAllowed.contains(alias)) {
+                        mLogger.info("alias: " + alias + " hits:" + pubmedHits + " exceeds max");
+                    }
                     if (mGenHtml) {
                         mHtmlOut.print("<TR><TD>"+pubmedHits+"</TD><TD>"+ids.size()+"</TD><TD>"+alias+"</TD>");
                     }
@@ -294,16 +297,16 @@ public class DictionaryBuilder extends AbstractCommand {
             String[] aliases = entrezGene.getUniqueAliases();
             for (String alias : aliases) {
                 mLogger.debug("alias: "+alias);
-                // uninformative names
-                if (alias.toLowerCase().startsWith("similar to")
-                    || alias.toLowerCase().startsWith("hypothetical protein")
-                    || alias.toLowerCase().startsWith("hypothetical loc")) {
-                    mLogger.debug("ignore alias: "+alias);
+                // minimally informative names
+                if (alias.startsWith("LOC") 
+                    || alias.startsWith("OTTHUMP")) {
+                    names.add(alias);
                     continue;
                 }
-                // minimally informative names
-                if (alias.startsWith("LOC") || alias.startsWith("OTTHUMP")) {
-                    names.add(alias);
+                // uninformative names
+                if (alias.toLowerCase().startsWith("similar to")
+                    || alias.toLowerCase().startsWith("hypothetical")) {
+                    mLogger.debug("ignore alias: "+alias);
                     continue;
                 }
                 String[] variants = GeneNameMutator.getVariants(alias);
