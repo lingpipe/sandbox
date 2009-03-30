@@ -23,7 +23,10 @@
           value="${lucene.dir}/medline2009"/>
 
 <property name="entrezgene.lucene.index"
-          value="/data/lucene/allEntrezGene"/>
+          value="/lucene_data/indexes/hmrcLiveGene"/>
+
+<!--          value="/data/lucene/allLiveGene" -->
+<!--          value="/lucene_data/indexes/pigEntrezGene" -->
 
 <!-- **** LingBlast, GeneLinkage **** -->
 <target name="buildDict"
@@ -37,8 +40,8 @@
     <arg value="-dictFile=${dictionary}"/>
     <arg value="-medline=${medline.lucene.index}"/>
     <arg value="-entrezgene=${entrezgene.lucene.index}"/>
-    <arg value="-maxPubmedHitsPerAlias=5000"/>
-    <arg value="-genHtml=true"/>
+    <arg value="-maxPubmedHitsPerAlias=50000"/>
+    <arg value="-genHtml=false"/>
     <arg value="-allowedNames=/data/lingblast/hifreq_names.txt"/>
   </java>
 </target>
@@ -71,6 +74,16 @@
     <arg value="-modelDir=${model.dir}"/>
     <arg value="-sqlDir=/data/genelinkage/sql"/>
     <arg value="-genomicsThreshold=100"/>
+  </java>
+</target>
+
+<target name="munge"
+        description="interactive test of name variant generator"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.lingblast.GeneNameMutator"
+        maxMemory="512M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
   </java>
 </target>
 
