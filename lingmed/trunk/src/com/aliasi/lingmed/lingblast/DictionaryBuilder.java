@@ -224,22 +224,32 @@ public class DictionaryBuilder extends AbstractCommand {
                 Entry<String,Set<String>> entry = (Entry<String,Set<String>>)dictIt.next();
                 String alias = entry.getKey();
                 Set<String> ids = entry.getValue();
-                int pubmedHits = mMedlineSearcher.numExactPhraseMatches(alias);
-                if (mGenHtml) {
-                    mHtmlOut.print("<TR><TD>"+pubmedHits+"</TD><TD>"+ids.size()+"</TD><TD>"+alias+"</TD>");
-                }
-                if (pubmedHits > mMaxPubmedHits && !mAllowed.contains(alias)) {
-                    if (mGenHtml) mHtmlOut.println("<TD><B>no</B></TD></TR>");
-                    continue;
-                } else {
-                    if (mGenHtml) mHtmlOut.println("<TD>yes</TD></TR>");
-                }
+                try {
+                    int pubmedHits = mMedlineSearcher.numExactPhraseMatches(alias);
+                    if (mGenHtml) {
+                        mHtmlOut.print("<TR><TD>"+pubmedHits+"</TD><TD>"+ids.size()+"</TD><TD>"+alias+"</TD>");
+                    }
+                    if (pubmedHits > mMaxPubmedHits && !mAllowed.contains(alias)) {
+                        if (mGenHtml) mHtmlOut.println("<TD><B>no</B></TD></TR>");
+                        continue;
+                    } else {
+                        if (mGenHtml) mHtmlOut.println("<TD>yes</TD></TR>");
+                    }
 
-                String[] categoryArray = new String[ids.size()];
-                categoryArray = ids.toArray(categoryArray);
-                String category = Arrays.arrayToCSV(categoryArray);
-                DictionaryEntry<String> dictEntry = new DictionaryEntry<String>(alias,category,1.00d);
-                mTrieDict.addEntry(dictEntry);
+                    String[] categoryArray = new String[ids.size()];
+                    categoryArray = ids.toArray(categoryArray);
+                    String category = Arrays.arrayToCSV(categoryArray);
+                    DictionaryEntry<String> dictEntry = new DictionaryEntry<String>(alias,category,1.00d);
+                    mTrieDict.addEntry(dictEntry);
+                } catch (DaoException de) {
+                    mLogger.info("MEDLINE search threw DaoException: "+de.getMessage());
+                    mLogger.info("bad alias: "+alias);
+                    if (mGenHtml) {
+                        mHtmlOut.print("<TR><TD>n/a</TD><TD>n/a</TD><TD>"
+                                       + alias 
+                                       + "</TD><TD><B>no</B></TD></TR>");
+                    }
+                }
             }
             if (mGenHtml) {
                 mHtmlOut.println("</TABLE></BODY></HTML>");
@@ -285,8 +295,10 @@ public class DictionaryBuilder extends AbstractCommand {
             for (String alias : aliases) {
                 mLogger.debug("alias: "+alias);
                 if (alias.toLowerCase().startsWith("similar to")) continue;
+                if (alias.toLowerCase().startsWith("hypothetical protein")) continue;
                 if (alias.startsWith("LOC") || alias.startsWith("OTTHUMP")) {
                     names.add(alias);
+                    continue;
                 }
                 String[] variants = GeneNameMutator.getVariants(alias);
                 for (String variant : variants) {

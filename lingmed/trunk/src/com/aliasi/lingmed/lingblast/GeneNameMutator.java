@@ -125,21 +125,20 @@ public class GeneNameMutator {
     }
 
 
-     public static  String[] getVariants(String text) {
-         HashSet<String> variants = new HashSet<String>();
-         variants.add(text);
-         variants.add(text.toLowerCase());
-         variants.add(text.replaceAll("-"," "));
-         variants.add(text.toLowerCase().replaceAll("-"," "));
-         variants.add(text.replaceAll("[\\(\\)\\,]",""));
-         variants.add(text.toLowerCase().replaceAll("[\\(\\)\\,]",""));
+    public static  String[] getVariants(String text) {
+        HashSet<String> variants = new HashSet<String>();
+        variants.add(text);
+        variants.add(text.toLowerCase());
+        variants.add(text.replaceAll("-"," "));
+        variants.add(text.toLowerCase().replaceAll("-"," "));
+        variants.add(text.replaceAll("[\\(\\)\\,]",""));
+        variants.add(text.toLowerCase().replaceAll("[\\(\\)\\,]",""));
 
-         char[] cs = text.toCharArray();
-         munge(indoEuropeanTokenizerFactory.tokenizer(cs,0,cs.length),variants);
-
-         String[] result = new String[variants.size()];
-         result = variants.toArray(result);
-         return result;
+        char[] cs = text.toCharArray();
+        munge(indoEuropeanTokenizerFactory.tokenizer(cs,0,cs.length),variants);
+        String[] result = new String[variants.size()];
+        result = variants.toArray(result);
+        return result;
     }
 
 
