@@ -294,8 +294,14 @@ public class DictionaryBuilder extends AbstractCommand {
             String[] aliases = entrezGene.getUniqueAliases();
             for (String alias : aliases) {
                 mLogger.debug("alias: "+alias);
-                if (alias.toLowerCase().startsWith("similar to")) continue;
-                if (alias.toLowerCase().startsWith("hypothetical protein")) continue;
+                // uninformative names
+                if (alias.toLowerCase().startsWith("similar to")
+                    || alias.toLowerCase().startsWith("hypothetical protein")
+                    || alias.toLowerCase().startsWith("hypothetical loc")) {
+                    mLogger.debug("ignore alias: "+alias);
+                    continue;
+                }
+                // minimally informative names
                 if (alias.startsWith("LOC") || alias.startsWith("OTTHUMP")) {
                     names.add(alias);
                     continue;
