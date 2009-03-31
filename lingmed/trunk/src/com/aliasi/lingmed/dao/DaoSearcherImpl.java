@@ -62,6 +62,8 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
     private final QueryParser mQueryParser;
     private final Searcher mSearcher;
 
+    private static final int MAX_HITS = 10000;
+
     /**
      * Instantiate the <code>DaoSearcher</code> for an index.
      *
@@ -130,7 +132,7 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
     public SearchResults<E> search(Query query)
         throws DaoException {
         try {
-            TopDocs results = mSearcher.search(query,mSearcher.maxDoc());
+            TopDocs results = mSearcher.search(query,MAX_HITS);
             return new LuceneSearchResults(mCodec,results);
         } catch (Exception e) {
             String message = "search exception: "+e.getMessage();
@@ -169,7 +171,7 @@ public class DaoSearcherImpl<E> implements DaoSearcher<E> {
     public int numHits(String queryString) throws DaoException {
         try {
             Query query = mQueryParser.parse(queryString);
-            TopDocs results = mSearcher.search(query,mSearcher.maxDoc());
+            TopDocs results = mSearcher.search(query,MAX_HITS);
             return results.totalHits;
         } catch (Exception e) {
             String message = "search exception: "+e.getMessage();
