@@ -35,24 +35,37 @@ public class TestClient {
     private final static int SECOND = 1000;
     private final static int MINUTE = 60*SECOND;
 
-    // timing utils
-    double PERIOD = 1000;
-    int REPORT_FREQ = 100;
+    private final static String TEST_MEDLINE = "medline";
+    private final static String TEST_ENTREZGENE = "entrezgene";
+    private final static String TEST_BOTH = "both";
 
-    double meanPubmed = 0;
-    double varPubmed = 0;
-    double devPubmed = 0;
+    private static boolean doMedline = false;
+    private static boolean doEntrezGene = false;
 
     public static void main(String[] args) throws Exception {
 
         if (args.length < 2) {
-            System.out.println("args: <hostname> <pmidsfile>");
+            System.out.println("args: <type> <hostname> <pmidsfile>");
             System.exit(-1);
         }
 
-        String hostname = args[0];
+        String type = args[0];
+        if (TEST_MEDLINE.equalsIgnoreCase(type)) {
+            doMedline = true;
+        } else if (TEST_ENTREZGENE.equalsIgnoreCase(type)) {
+            doEntrezGene = true;
+        } else if (TEST_BOTH.equalsIgnoreCase(type)) {
+            doMedline = true;
+            doEntrezGene = true;
+        } else {
+            System.out.println("args: <type> <hostname> <pmidsfile>");
+            System.out.println("type is one of {medline, entrezgene, both}");
+            System.exit(-1);
+        }
+
+        String hostname = args[1];
             
-        String filename = args[1];
+        String filename = args[2];
         File file = new File(filename);
         if (!file.exists()) {
             System.out.println("no such file: "+filename);
@@ -65,74 +78,122 @@ public class TestClient {
     }
 
     public void doSearch(String hostname,String fileName) throws Exception {
+
         MedlineCodec medlineCodec = new MedlineCodec();
         SearchClient medlineClient = new SearchClient("medline",hostname,1099);
+
+        EntrezGeneCodec entrezGeneCodec = new EntrezGeneCodec();
+        SearchClient entrezgeneClient = new SearchClient("entrezgene",hostname,1099);
+
+        MedlineSearcher medlineSearcher = null;
+        EntrezGeneSearcher entrezGeneSearcher = null;
+
+        Timing medlineTimes = new Timing();
+        Timing entrezgeneTimes = new Timing();
+
         int ct = 0;
         while (true) {
+            if (doMedline) {
+                Searcher medlineRemoteSearcher = medlineClient.getSearcher();
+                medlineSearcher = new MedlineSearcherImpl(medlineCodec,medlineRemoteSearcher);
 
-            Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-            MedlineSearcher medlineSearcher = new MedlineSearcherImpl(medlineCodec,medlineRemoteSearcher);
-
-            int numHits = medlineSearcher.numExactPhraseMatches("gene");
-            mLogger.info("num articles which contain phrase: \"gene\": "+numHits);
-
+                int numHits = medlineSearcher.numExactPhraseMatches("gene");
+                mLogger.info("num articles which contain phrase: \"gene\": "+numHits);
+            }
+            if (doEntrezGene) {
+                Searcher entrezGeneRemoteSearcher = entrezgeneClient.getSearcher();
+                entrezGeneSearcher = new EntrezGeneSearcherImpl(entrezGeneCodec,entrezGeneRemoteSearcher);
+            }
             String id;
             LineNumberReader in = new LineNumberReader(new BufferedReader(new FileReader(fileName)));
             while ((id = in.readLine()) != null) {
                 ++ct;
                 if (mLogger.isDebugEnabled()) {
-                    mLogger.debug(in.getLineNumber()+"\tid: "+id);
+                    mLogger.debug("test: " + ct + ", line: " + in.getLineNumber() + "\tid: "+id);
+                }
+                if (doMedline) {
+                    long startTime = System.currentTimeMillis();
+                    MedlineCitation mc = medlineSearcher.getById(id);
+                    medlineTimes.update(System.currentTimeMillis()-startTime);
+                    if (mc == null) {
+                        if (mLogger.isDebugEnabled()) {
+                            mLogger.debug("id not found: " + id);
+                        }
+                    } else {
+                        if (mLogger.isDebugEnabled()) {
+                            mLogger.debug(id + ": " + mc.status());
+                            if (mc.article() != null) 
+                                mLogger.debug(mc.article().articleTitle());
+                        }
+                    }
+                    if (mLogger.isDebugEnabled()) {
+                        mLogger.debug("mean pubmed lookup time in millis: " + medlineTimes.getMean());
+                        mLogger.debug("stddev pubmed lookup time in millis: " + medlineTimes.getStdDev());
+                    } else if ((ct%Timing.REPORT_FREQ) == 0) {
+                        mLogger.info("\nlookups: " + ct);
+                        mLogger.info("mean pubmed lookup time in millis: " + medlineTimes.getMean());
+                        mLogger.info("stddev pubmed lookup time in millis: " + medlineTimes.getStdDev());
+                    }
+                }
+                if (doEntrezGene) {
+                    long startTime = System.currentTimeMillis();
+                    SearchResults<EntrezGene> hits = entrezGeneSearcher.getGenesForPubmedId(id);
+                    entrezgeneTimes.update(System.currentTimeMillis()-startTime);
+                    if (hits.size() == 0) {
+                        if (mLogger.isDebugEnabled()) {
+                            mLogger.debug("no genes reference article: " + id);
+                        }
+                    } else {
+                        if (mLogger.isDebugEnabled()) {
+                            mLogger.debug("article: " + id + " referenced by " + hits.size() + " genes");
+                        }
+                    }
+                    if (mLogger.isDebugEnabled()) {
+                        mLogger.debug("mean entrezgene lookup time in millis: " + entrezgeneTimes.getMean());
+                        mLogger.debug("stddev entrezgene lookup time in millis: " + entrezgeneTimes.getStdDev());
+                    } else if ((ct%Timing.REPORT_FREQ) == 0) {
+                        mLogger.info("\nlookups: " + ct);
+                        mLogger.info("mean entrezgene lookup time in millis: " + entrezgeneTimes.getMean());
+                        mLogger.info("stddev entrezgene lookup time in millis: " + entrezgeneTimes.getStdDev());
+                    }
                 }
 
-                long startPubmedTime = System.currentTimeMillis();
-                MedlineCitation mc = medlineSearcher.getById(id);
-                updatePubmedTimes(System.currentTimeMillis()-startPubmedTime);
-                if (mc == null) {
-                    if (mLogger.isDebugEnabled()) {
-                        mLogger.debug("id not found: "+id);
-                    }
-                } else {
-                    if (mLogger.isDebugEnabled()) {
-                        mLogger.debug(id+": "+mc.status());
-                        if (mc.article() != null) 
-                            mLogger.debug(mc.article().articleTitle());
-                    }
-                }
-                if (mLogger.isDebugEnabled()) {
-                    mLogger.debug("mean pubmed lookup time in millis: "+meanPubmed);
-                    mLogger.debug("stddev pubmed lookup time in millis: "+devPubmed);
-                } else if ((ct%REPORT_FREQ) == 0) {
-                    mLogger.info("lookups: " + ct);
-                    mLogger.info("mean pubmed lookup time in millis: "+meanPubmed);
-                    mLogger.info("stddev pubmed lookup time in millis: "+devPubmed);
-                }
             }
-            mLogger.info("lookups: " + ct);
-            mLogger.info("mean pubmed lookup time in millis: "+meanPubmed);
-            mLogger.info("dev pubmed lookup time in millis: "+devPubmed);
+            mLogger.info("\nlookups: " + ct);
+            if (doMedline) {
+                mLogger.info("mean pubmed lookup time in millis: " + medlineTimes.getMean());
+                mLogger.info("dev pubmed lookup time in millis: " + medlineTimes.getStdDev());
+            }
+            if (doEntrezGene) {
+                mLogger.info("mean entrezgene lookup time in millis: " + entrezgeneTimes.getMean());
+                mLogger.info("stddev entrezgene lookup time in millis: " + entrezgeneTimes.getStdDev());
+            }
             Thread.sleep(10*SECOND);
         }
     }
 
 
-    public void updatePubmedTimes(double x) {
-        mLogger.debug("elasped time: "+x);
-        meanPubmed = meanPubmed*(PERIOD-1)/PERIOD + x/PERIOD;
-        varPubmed = varPubmed*(PERIOD-1)/PERIOD + (x-meanPubmed)*(x-meanPubmed)/PERIOD;
-        devPubmed = Math.sqrt(varPubmed);
+    // timing util
+    static class Timing {
+
+        static final double PERIOD = 1000;
+        static final int REPORT_FREQ = 100;
+
+        private double mean = 0;
+        private double var = 0;
+        private double stddev = 0;
+        
+
+        public void update(double x) {
+            mean = mean*(PERIOD-1)/PERIOD + x/PERIOD;
+            var = var*(PERIOD-1)/PERIOD + (x-mean)*(x-mean)/PERIOD;
+            stddev = Math.sqrt(var);
+        }
+
+        public double getMean() { return mean; }
+        public double getStdDev() { return stddev; }
+
     }
-
-    double meanEntrez = 0;
-    double varEntrez = 0;
-    double devEntrez = 0;
-
-    public void updateEntrezTimes(double x) {
-        meanEntrez = meanEntrez*(PERIOD-1)/PERIOD + x/PERIOD;
-        varEntrez = varEntrez*(PERIOD-1)/PERIOD + (x-meanEntrez)*(x-meanEntrez)/PERIOD;
-        devEntrez = Math.sqrt(varEntrez);
-    }
-
-
 
 
 }
