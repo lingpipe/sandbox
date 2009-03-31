@@ -1,28 +1,38 @@
 <web-app>
+
      <servlet>
          <servlet-name>SearchServlet</servlet-name>
          <servlet-class>com.aliasi.lingmed.genelinkage.SearchServlet</servlet-class>
 	 <init-param>
 	      <param-name>medlineHost</param-name>
-	      <param-value>localhost</param-value>
+	      <param-value>192.168.1.100</param-value>
 	 </init-param>
 	 <init-param>
 	      <param-name>medlineService</param-name>
-	      <param-value>/data/lucene/medline2009</param-value>
+	      <param-value>medline</param-value>
 	 </init-param>
 	 <init-param>
 	      <param-name>entrezgeneHost</param-name>
-	      <param-value>localhost</param-value>
+	      <param-value>192.168.1.100</param-value>
 	 </init-param>
 	 <init-param>
 	      <param-name>entrezgeneService</param-name>
-	      <param-value>/data/lucene/allEntrezGene</param-value>
+	      <param-value>entrezgene</param-value>
 	 </init-param>
      </servlet>
-
      <servlet-mapping>
        <servlet-name>SearchServlet</servlet-name>
        <url-pattern>/search/*</url-pattern>
+     </servlet-mapping>      
+
+
+     <servlet>
+         <servlet-name>DbTestServlet</servlet-name>
+         <servlet-class>com.aliasi.lingmed.genelinkage.DbTestServlet</servlet-class>
+     </servlet>
+     <servlet-mapping>
+       <servlet-name>DbTestServlet</servlet-name>
+       <url-pattern>/test/*</url-pattern>
      </servlet-mapping>      
 
   <resource-ref>
