@@ -347,7 +347,7 @@ Here is the ant macro which starts a remote search service:
     <java classname="com.aliasi.lingmed.server.SearchService"
           fork="true">
       <classpath refid="classpath.standard"/>
-      <jvmarg value="-Djava.rmi.server.codebase=${rmijars} "/>
+      <jvmarg value="-Djava.rmi.server.codebase=${rmi.jars} "/>
       <jvmarg value="-Djava.rmi.server.hostname=@{host}"/>
       <arg value="-port=@{port}"/>
       <arg value="-service=@{service}"/>
@@ -377,6 +377,31 @@ and in the user forums.  Here is a good starting point:
 http://java.sun.com/docs/books/tutorial/rmi/index.html
 and here is more information on running the rmiregistry.
 http://java.sun.com/docs/books/tutorial/rmi/running.html
+
+The ant file "build_dev.xml" contains a task "test-rmi"
+which can be used to test whether or not this index is available.
+To run this test you need to first create a file of pubmed ids, 
+one per line.  Then you need to edit the "test-rmi" task,
+which sets up the call to the TestClient program, and passes
+in 3 arguments:  whether to test medline, entrezgene, or both;
+the hostname or ip address of the remote search server;
+and the name of the file of pubmed ids.
+Here is the task:
+
+<target name="test-rmi"
+        description="test rmi search"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.server.TestClient"
+        maxMemory="1G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="both"/>
+    <arg value="192.168.1.100"/>
+    <arg value="test_pmids.txt"/>
+  </java>
+</target>
+
+
 
 
 2. EntrezGene Index
@@ -453,6 +478,9 @@ It calls the com.aliasi.lingmed.server.SearchService program,
 setting the -service argument to "entrezgene"
 and the -index argument to the location of the Lucene EntrezGene index.
 
+As with MEDLINE, the "test-rmi" task defined in "build_dev.xml"
+can be used to test whether or not this index is available.
+(see 1.5 above).
 
 3. OMIM Index
 ==============
@@ -591,6 +619,7 @@ For example, the EntrezGeneSearcher interface extends DaoSearcher
 by adding functionality to find genes associated by a pubmed id:
 
     public SearchResults<EntrezGene> getGenesForPubmedId(String pubmedId) throws DaoException;
+
 
 
 6. com.aliasi.lingmed.lingblast:  using lingmed and lingpipe together
