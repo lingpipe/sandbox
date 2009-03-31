@@ -69,11 +69,11 @@
 
 <target name="jar"
         depends="compile">
-<!--    description="create LingMed jarfile" -->
   <copy todir="build/classes">
     <fileset dir="${basedir}">
       <patternset id="properties">
          <include name="jndi.properties" />
+         <include name="log4j.properties" />
          <include name="src/**/*.properties" />
       </patternset>
     </fileset>
