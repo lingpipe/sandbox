@@ -1,28 +1,32 @@
 # Example properties file for log4j logging
-
-# COPY THIS FILE TO /log4j.properties AND EDIT
+# COPY THIS FILE TO log4j.properties AND EDIT
 
 # rootLogger specifies types of logging, overall verbosity
-# properties File, MaxFileSize, MaxBackupIndex control size, number of logfiles
-
-# default log level=INFO, loggers
-log4j.rootLogger=INFO, stdout, R
+#log4j.rootLogger=INFO, stdout, R
+log4j.rootLogger=WARN, R
 
 # Appender: stdout
 log4j.appender.stdout=org.apache.log4j.ConsoleAppender
 log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
 log4j.appender.stdout.layout.ConversionPattern=%d{HH:mm:ss} %5p [%t] (%F:%L) - %m%n
 
-# Appender: R 
+# Appender: R
+# properties File, MaxFileSize, MaxBackupIndex control size, number of logfiles
+# appends output to file "lingmed.log"
 log4j.appender.R=org.apache.log4j.RollingFileAppender
 log4j.appender.R.layout=org.apache.log4j.PatternLayout
 log4j.appender.R.layout.ConversionPattern=%d{HH:mm:ss} %5p [%t] (%F:%L) - %m%n
-log4j.appender.R.File=medling_console.log
+log4j.appender.R.File=lingmed.log
 log4j.appender.R.MaxFileSize=10MB
 log4j.appender.R.MaxBackupIndex=0
 
-
 # Levels (DEBUG,INFO,WARN,ERROR,FATAL)
-log4j.logger.com.aliasi.lingmed.medline=DEBUG
+log4j.logger.com.aliasi.lingmed=INFO
+
+log4j.logger.com.aliasi.lingmed.entrezgene=INFO
+log4j.logger.com.aliasi.lingmed.lingblast=INFO
+log4j.logger.com.aliasi.lingmed.medline=INFO
+log4j.logger.com.aliasi.lingmed.server=INFO
+
 
 
