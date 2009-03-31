@@ -5,6 +5,9 @@ import com.aliasi.chunk.Chunk;
 import com.aliasi.lingmed.dao.DaoException;
 import com.aliasi.lingmed.utils.Logging;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import java.sql.SQLException;    
 
 import javax.naming.Context;
