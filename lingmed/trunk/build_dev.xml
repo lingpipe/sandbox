@@ -87,14 +87,15 @@
   </java>
 </target>
 
-<target name="test-rmiMedline"
-        description="test rmi MEDLINE search"
+<target name="test-rmi"
+        description="test rmi search"
         depends="jar">
   <java classname="com.aliasi.lingmed.server.TestClient"
         maxMemory="1G"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="localhost"/>
+    <arg value="both"/>
+    <arg value="192.168.1.100"/>
     <arg value="test_pmids.txt"/>
   </java>
 </target>
