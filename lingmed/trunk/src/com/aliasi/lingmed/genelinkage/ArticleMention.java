@@ -46,7 +46,11 @@ public class ArticleMention {
     }
 
     String pubmedId() { return mPubmedId; }
+
     String text() { return mText; }
+
     double totalScore() { return mTotalScore; }
+
     Set<Chunk> chunkSet() { return mChunkSet; }
+
 }
