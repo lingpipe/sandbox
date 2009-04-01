@@ -1,4 +1,4 @@
- /*
+/*
  * LingPipe v. 2.0
  * Copyright (C) 2003-5 Alias-i
  *
@@ -148,7 +148,7 @@ public class GeneLinkageSearcher {
                 geneScore = chunk.score();
                 break;
             }
-			result.append("<h4>PubmedId: ");
+            result.append("<h4>PubmedId: ");
             result.append("<A href=\""
                           + PUBMED_PREFIX
                           + mentions[i].pubmedId()
@@ -161,20 +161,20 @@ public class GeneLinkageSearcher {
                           + formatter.format(mentions[i].totalScore())
                           + " Gene score: "
                           + formatter.format(geneScore)
-						  + "</b>");
+                          + "</b>");
         }
         return result.toString();
     }
 
-	private String formatCitation(String text) {
-		StringBuffer result = new StringBuffer();
-		int idx = text.indexOf(Strings.NEWLINE_CHAR);
-		result.append(text.substring(0,idx));
-		result.append("</h4>");
-		if (idx < text.length()) {
-			result.append(text.substring(idx+1,text.length()));
-		}
-		return result.toString();
-	}
+    private String formatCitation(String text) {
+        StringBuffer result = new StringBuffer();
+        int idx = text.indexOf(Strings.NEWLINE_CHAR);
+        result.append(text.substring(0,idx));
+        result.append("</h4>");
+        if (idx < text.length()) {
+            result.append(text.substring(idx+1,text.length()));
+        }
+        return result.toString();
+    }
 
 }

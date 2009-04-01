@@ -55,7 +55,6 @@ public interface GeneLinkageDao {
      */
     public Pair<Double,Set<Chunk>> getGeneMentionsForPubmedId(int pubmedId) throws SQLException;
 
-
     //    public Pair<String,double>[] getArticleScoresForGeneId(String geneId) throws SQLException;
     //    public Pair<String,double>[] getGeneScoresForArticle(String articleId) throws SQLException;
 
