@@ -20,10 +20,9 @@ package com.aliasi.lingmed.genelinkage;
 import com.aliasi.chunk.Chunk;
 
 import com.aliasi.cluster.CompleteLinkClusterer;
+import com.aliasi.cluster.HierarchicalClusterer;
 import com.aliasi.cluster.SingleLinkClusterer;
 import com.aliasi.cluster.Dendrogram;
-import com.aliasi.cluster.LeafDendrogram;
-import com.aliasi.cluster.LinkDendrogram;
 
 import com.aliasi.lingmed.dao.DaoException;
 import com.aliasi.lingmed.entrezgene.EntrezGene;
@@ -42,6 +41,7 @@ import com.aliasi.matrix.ProximityMatrix;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Counter;
+import com.aliasi.util.Distance;
 import com.aliasi.util.Files;
 import com.aliasi.util.NBestSet;
 import com.aliasi.util.ObjectToCounterMap;
@@ -239,12 +239,13 @@ public class ClusterArticles extends AbstractCommand {
             HashSet<String> allGenes = new HashSet<String>();
 
             String[] seedGeneIds = getGeneIds(mGeneIdFile);
-            ObjectToCounterMap[] geneCooccurance 
-                = new ObjectToCounterMap[seedGeneIds.length];
+            HashSet<ObjectToCounterMap> geneCooccuranceSet
+                = new HashSet<ObjectToCounterMap>();
 
             for (int i=0; i<seedGeneIds.length; i++) {
                 String geneId = seedGeneIds[i];
-                geneCooccurance[i] = new ObjectToCounterMap();
+                ObjectToCounterMap geneObjectToCounterMap 
+                    = new ObjectToCounterMap();
                 ArticleMention[] mentions
                     = mGeneLinkageSearcher.findTopMentions(geneId,mMaxArticles);
                 if (mLogger.isDebugEnabled()) {
@@ -260,7 +261,7 @@ public class ClusterArticles extends AbstractCommand {
                         Set<Chunk> gMentions = geneMentions.b();
                         for (Chunk gMention : gMentions) {
                             allGenes.add(gMention.type());
-                            geneCooccurance[i].increment(gMention.type());
+                            geneObjectToCounterMap.increment(gMention.type());
                         }
                         if (mLogger.isDebugEnabled()) {
                             mLogger.debug("pmid: "+mention.pubmedId());
@@ -269,15 +270,18 @@ public class ClusterArticles extends AbstractCommand {
                     } catch (NumberFormatException nfe) {
                     }
                 }
+                geneCooccuranceSet.add(geneObjectToCounterMap);
             }
             mLogger.info("seed genes: "+ seedGeneIds.length);
             mLogger.info("total articles: "+allArticles.size());
             mLogger.info("all genes: "+ allGenes.size());
 
+            ObjectToCounterMap[] geneCooccurance = new ObjectToCounterMap[geneCooccuranceSet.size()];
+            geneCooccurance = geneCooccuranceSet.toArray(geneCooccurance);
             ProximityMatrix prox = new ProximityMatrix(seedGeneIds.length);
             for (int i = 0; i < seedGeneIds.length; ++i) {
                 for (int j = i + 1; j < seedGeneIds.length; ++j) {
-                    double cosine = cosine(geneCooccurance[i],
+                    double cosine = COSINE_DISTANCE.distance(geneCooccurance[i],
                                            geneCooccurance[j]);
                     prox.setValue(i,j,cosine);
                     if (mLogger.isDebugEnabled()) {
@@ -288,12 +292,11 @@ public class ClusterArticles extends AbstractCommand {
                 }
             }
 
-            CompleteLinkClusterer clusterer = new CompleteLinkClusterer();
-            Dendrogram[] dendrograms = clusterer.hierarchicalCluster(prox,1.0);
-            for (int i = 0; i < dendrograms.length; ++i) {
-                System.out.println("dendogram[" + i + "]: "
-                                   + dendrograms[i]);
-            }
+            HierarchicalClusterer<ObjectToCounterMap> clClusterer
+                = new CompleteLinkClusterer<ObjectToCounterMap>(1.0,COSINE_DISTANCE);
+            Dendrogram<ObjectToCounterMap> completeLinkDendrogram
+                = clClusterer.hierarchicalCluster(geneCooccuranceSet);  
+            System.out.println(completeLinkDendrogram.prettyPrint());
 
         } catch (Exception e) {
             mLogger.warn("Unexpected Exception: "+e.getMessage());
@@ -357,10 +360,14 @@ public class ClusterArticles extends AbstractCommand {
         }
     }
 
-    static double cosine(ObjectToCounterMap doc1, ObjectToCounterMap doc2) {
-        //        System.out.println("Dot product is :" + dotProduct(doc1,doc2));
-        return dotProduct(doc1,doc2) / (length(doc1) * length(doc2));
-    }
+    static Distance<ObjectToCounterMap> COSINE_DISTANCE
+        = new Distance<ObjectToCounterMap>() {
+        public double distance(ObjectToCounterMap doc1, 
+                               ObjectToCounterMap doc2) {
+            return dotProduct(doc1,doc2)/(length(doc1) * length(doc2));
+        }
+    };
+
 
     static double dotProduct(ObjectToCounterMap doc1, 
                              ObjectToCounterMap doc2) {
@@ -397,6 +404,5 @@ public class ClusterArticles extends AbstractCommand {
                      + "\n\tdb user name=" + mDbUserName
                      );
     }
-
 
 }
