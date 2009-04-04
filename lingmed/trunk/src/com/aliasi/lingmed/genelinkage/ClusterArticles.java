@@ -259,13 +259,13 @@ public class ClusterArticles extends AbstractCommand {
                         Pair<Double,Set<Chunk>> geneMentions 
                             = mGeneLinkageDao.getGeneMentionsForPubmedId(pmid);
                         Set<Chunk> gMentions = geneMentions.b();
-                        for (Chunk gMention : gMentions) {
-                            allGenes.add(gMention.type());
-                            geneObjectToCounterMap.increment(gMention.type());
-                        }
                         if (mLogger.isDebugEnabled()) {
                             mLogger.debug("pmid: "+mention.pubmedId());
                             mLogger.debug("genes mentioned: "+ gMentions.size());
+                        }
+                        for (Chunk gMention : gMentions) {
+                            allGenes.add(gMention.type());
+                            geneObjectToCounterMap.increment(gMention.type());
                         }
                     } catch (NumberFormatException nfe) {
                     }
@@ -286,8 +286,8 @@ public class ClusterArticles extends AbstractCommand {
                     prox.setValue(i,j,cosine);
                     if (mLogger.isDebugEnabled()) {
                         mLogger.debug("gene_i : " + seedGeneIds[i]
-                                      + "gene_j : " + seedGeneIds[j]
-                                      + "cosine : " + cosine);
+                                      + " gene_j : " + seedGeneIds[j]
+                                      + " cosine : " + cosine);
                     }
                 }
             }
