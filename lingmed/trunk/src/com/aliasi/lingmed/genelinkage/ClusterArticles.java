@@ -233,10 +233,9 @@ public class ClusterArticles extends AbstractCommand {
     
 
     public void run() {
-        mLogger.info("find articleMentions for gene Ids");
+        mLogger.info("find co-occurances of genes in articles");
         try {
             HashSet<String> allArticles = new HashSet<String>();
-            HashSet<String> allGenes = new HashSet<String>();
 
             String[] seedGeneIds = getGeneIds(mGeneIdFile);
             HashSet<ObjectToCounterMap> geneCooccuranceSet
@@ -244,27 +243,31 @@ public class ClusterArticles extends AbstractCommand {
 
             for (int i=0; i<seedGeneIds.length; i++) {
                 String geneId = seedGeneIds[i];
-                ObjectToCounterMap geneObjectToCounterMap 
-                    = new ObjectToCounterMap();
+                if (mLogger.isDebugEnabled()) {
+                    mLogger.debug("geneId: "+geneId);
+                }
                 ArticleMention[] mentions
                     = mGeneLinkageSearcher.findTopMentions(geneId,mMaxArticles);
                 if (mLogger.isDebugEnabled()) {
-                    mLogger.debug("geneId: "+geneId);
-                    mLogger.debug("best article mentions: "+ mentions.length);
+                    mLogger.debug("total article mentions: " + mentions.length);
                 }
+                ObjectToCounterMap geneObjectToCounterMap 
+                    = new ObjectToCounterMap();
                 for (ArticleMention mention : mentions) {
                     allArticles.add(mention.pubmedId());
+                    if (mLogger.isDebugEnabled()) {
+                        mLogger.debug("mentioned in article: " + mention.pubmedId());
+                    }
                     try {
                         int pmid = Integer.parseInt(mention.pubmedId());
                         Pair<Double,Set<Chunk>> geneMentions 
                             = mGeneLinkageDao.getGeneMentionsForPubmedId(pmid);
                         Set<Chunk> gMentions = geneMentions.b();
                         if (mLogger.isDebugEnabled()) {
-                            mLogger.debug("pmid: "+mention.pubmedId());
-                            mLogger.debug("genes mentioned: "+ gMentions.size());
+                            mLogger.debug("total genes mentioned: "+ gMentions.size());
                         }
+                        // for each mention, grab the gene id and increment its count
                         for (Chunk gMention : gMentions) {
-                            allGenes.add(gMention.type());
                             geneObjectToCounterMap.increment(gMention.type());
                         }
                     } catch (NumberFormatException nfe) {
@@ -274,7 +277,6 @@ public class ClusterArticles extends AbstractCommand {
             }
             mLogger.info("seed genes: "+ seedGeneIds.length);
             mLogger.info("total articles: "+allArticles.size());
-            mLogger.info("all genes: "+ allGenes.size());
 
             ObjectToCounterMap[] geneCooccurance = new ObjectToCounterMap[geneCooccuranceSet.size()];
             geneCooccurance = geneCooccuranceSet.toArray(geneCooccurance);
