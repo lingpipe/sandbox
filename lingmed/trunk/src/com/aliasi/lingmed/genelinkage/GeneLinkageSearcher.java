@@ -117,6 +117,12 @@ public class GeneLinkageSearcher {
     private String getTitleAbstract(String pubmedId) throws DaoException {
         MedlineCodec codec = new MedlineCodec();
         MedlineCitation citation = mMedlineSearcher.getById(pubmedId);
+        if (mLogger.isDebugEnabled()) {
+            if (citation == null) {
+                mLogger.info("missing citation from index: " + pubmedId);
+            }
+        }
+        if (citation == null) return pubmedId;
         return codec.titleAbstract(citation);
     }
 
