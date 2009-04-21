@@ -57,7 +57,7 @@ import org.apache.log4j.Logger;
  * runs each medline citation through {@link LingBlast#lingblast}
  * and outputs its results as a set of tables
  * in tab-delimited text file format.
- * 
+ *
  * The tables are:
  * <ul>
  * <li>article_score.sql:  genomics score for each citation<br>
@@ -65,7 +65,7 @@ import org.apache.log4j.Logger;
  *
  * <li>gene_article_score.sql:  per-gene score for each gene found in a citation<br>
  * columns: geneid, pmid, per-gene score, total (genomic score + per-gene score)
- * 
+ *
  * <li>gene_article_mention.sql: all gene mentions found in a citation.<br>
  * columns: geneid, pmid, text, offset
  * </ul>
@@ -92,7 +92,7 @@ import org.apache.log4j.Logger;
  *
  * <dt><code>-host</code></dt>
  * <dd>Name of Lucene search server.
- * If value is &quot;localhost&quot; then search 
+ * If value is &quot;localhost&quot; then search
  * the local Lucene indexes,
  * else search remote Lucene indexes (via RMI).
  * </dd>
@@ -115,7 +115,7 @@ import org.apache.log4j.Logger;
 
 public class LingBlastMedline extends AbstractCommand {
     private final Logger mLogger
-		= Logger.getLogger(LingBlastMedline.class);
+        = Logger.getLogger(LingBlastMedline.class);
 
     private boolean mGenHtml;
     private PrintStream mHtmlOut;
@@ -157,97 +157,97 @@ public class LingBlastMedline extends AbstractCommand {
         DEFAULT_PARAMS.setProperty(MEDLINE_SERVICE,Constants.MEDLINE_SERVICE);
     }
 
-    // Instantiate LingBlastMedline object and 
+    // Instantiate LingBlastMedline object and
     // initialize instance variables per command line args
     private LingBlastMedline(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mSearchHost = getExistingArgument(SEARCH_HOST);
-		mModelDirPath = getExistingArgument(MODEL_DIR);
-		mSqlDirPath = getExistingArgument(SQL_DIR);
-		mDictFilePath = getExistingArgument(DICTIONARY);
+        mModelDirPath = getExistingArgument(MODEL_DIR);
+        mSqlDirPath = getExistingArgument(SQL_DIR);
+        mDictFilePath = getExistingArgument(DICTIONARY);
         mGenomicsThreshold = getArgumentDouble(GENOMICS_THRESHOLD);
 
-		reportParameters();
+        reportParameters();
 
-		mDictFile = FileUtils.checkInputFile(mDictFilePath);
-		mModelDir = FileUtils.checkDir(mModelDirPath);
+        mDictFile = FileUtils.checkInputFile(mDictFilePath);
+        mModelDir = FileUtils.checkDir(mModelDirPath);
 
-		mSqlDir = new File(mSqlDirPath);
-		FileUtils.ensureDirExists(mSqlDir);
+        mSqlDir = new File(mSqlDirPath);
+        FileUtils.ensureDirExists(mSqlDir);
 
-		if (mSearchHost.equals("localhost")) {
-			FileUtils.checkIndex(mMedlineService,false);
-			Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
-			mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
-		} else {
-			SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
-			Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-			mMedlineSearcher = 
-				new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
-		}
-		mLogger.info("instantiated medline searcher");
+        if (mSearchHost.equals("localhost")) {
+            FileUtils.checkIndex(mMedlineService,false);
+            Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
+            mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
+        } else {
+            SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
+            Searcher medlineRemoteSearcher = medlineClient.getSearcher();
+            mMedlineSearcher =
+                new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
+        }
+        mLogger.info("instantiated medline searcher");
     }
 
     private void reportParameters() {
         mLogger.info("LingBlastMedline "
-					 + "\n\tModels Directory=" + mModelDirPath
-					 + "\n\tDictionary=" + mDictFilePath
-					 + "\n\tsearch host=" + mSearchHost
-					 + "\n\tMedlineService=" + mMedlineService
-					 + "\n\tgenomics threshold=" + mGenomicsThreshold
-					 + "\n\tSql Directory=" + mSqlDirPath
-					 );
+                     + "\n\tModels Directory=" + mModelDirPath
+                     + "\n\tDictionary=" + mDictFilePath
+                     + "\n\tsearch host=" + mSearchHost
+                     + "\n\tMedlineService=" + mMedlineService
+                     + "\n\tgenomics threshold=" + mGenomicsThreshold
+                     + "\n\tSql Directory=" + mSqlDirPath
+                     );
     }
 
     public void run() {
-		mLogger.info("Begin");
-		try {
-			openSqlFiles(mSqlDir);
-			TrieDictionary dictionary = (TrieDictionary)
-				AbstractExternalizable.readObject(mDictFile);
-			mLogger.info("Read dictionary "+mDictFilePath);
-			ExactDictionaryChunker dictionaryChunkerTT
-				= new ExactDictionaryChunker(dictionary,
-											 IndoEuropeanTokenizerFactory.FACTORY,
-											 true,true);
-			LingBlast lb = new LingBlast(mMedlineSearcher,
-										 mEntrezGeneSearcher,
-										 dictionaryChunkerTT,
-										 mModelDir,
-										 mGenomicsThreshold);
+        mLogger.info("Begin");
+        try {
+            openSqlFiles(mSqlDir);
+            TrieDictionary dictionary = (TrieDictionary)
+                AbstractExternalizable.readObject(mDictFile);
+            mLogger.info("Read dictionary "+mDictFilePath);
+            ExactDictionaryChunker dictionaryChunkerTT
+                = new ExactDictionaryChunker(dictionary,
+                                             IndoEuropeanTokenizerFactory.FACTORY,
+                                             true,true);
+            LingBlast lb = new LingBlast(mMedlineSearcher,
+                                         mEntrezGeneSearcher,
+                                         dictionaryChunkerTT,
+                                         mModelDir,
+                                         mGenomicsThreshold);
 
-			int tot = 0;
-			for (MedlineCitation citation : mMedlineSearcher) {
-				if (mLogger.isDebugEnabled())
-					mLogger.debug((++tot) + ". citation: " + citation.pmid());
-				if (citation.article() == null 
-					|| citation.article().articleTitleText() == null) { 
-					if (mLogger.isDebugEnabled())
-						mLogger.debug("skip - no text");
-					continue;
-				}
-				StringBuffer textBuf = new StringBuffer();
-				textBuf.append(citation.article().articleTitleText());
-				textBuf.append(Strings.NEWLINE_CHAR);
-				if (citation.article().abstrct() != null) {
-					textBuf.append(citation.article().abstrct().textWithoutTruncationMarker());
-					textBuf.append(Strings.NEWLINE_CHAR);
-				}
-				String text = textBuf.toString();
+            int tot = 0;
+            for (MedlineCitation citation : mMedlineSearcher) {
+                if (mLogger.isDebugEnabled())
+                    mLogger.debug((++tot) + ". citation: " + citation.pmid());
+                if (citation.article() == null
+                    || citation.article().articleTitleText() == null) {
+                    if (mLogger.isDebugEnabled())
+                        mLogger.debug("skip - no text");
+                    continue;
+                }
+                StringBuffer textBuf = new StringBuffer();
+                textBuf.append(citation.article().articleTitleText());
+                textBuf.append(Strings.NEWLINE_CHAR);
+                if (citation.article().abstrct() != null) {
+                    textBuf.append(citation.article().abstrct().textWithoutTruncationMarker());
+                    textBuf.append(Strings.NEWLINE_CHAR);
+                }
+                String text = textBuf.toString();
                 if (mLogger.isDebugEnabled())
                     mLogger.debug("lingblast text:\n" + text);
-                Pair<Double,Chunking> lingblastCitation = 
+                Pair<Double,Chunking> lingblastCitation =
                     lb.lingblast(text);
                 recordChunking(citation.pmid(),lingblastCitation);
-				if (mLogger.isDebugEnabled())mLogger.debug("\n\n");
+                if (mLogger.isDebugEnabled())mLogger.debug("\n\n");
             }
             closeSqlFiles();
             mLogger.info("Processing complete.");
         } catch (Exception e) {
             mLogger.warn("Unexpected Exception: "+e.getMessage());
             mLogger.warn("stack trace: "+Logging.logStackTrace(e));
-            IllegalStateException e2 
+            IllegalStateException e2
                 = new IllegalStateException(e.getMessage());
             e2.setStackTrace(e.getStackTrace());
             throw e2;
@@ -255,31 +255,31 @@ public class LingBlastMedline extends AbstractCommand {
     }
 
     private void openSqlFiles(File sqlDir) throws IOException {
-        File articleScoreFile = 
+        File articleScoreFile =
             new File(sqlDir,Constants.ARTICLE_SCORE_SQL);
-        File geneArticleScoreFile = 
+        File geneArticleScoreFile =
             new File(sqlDir,Constants.GENE_ARTICLE_SCORE_SQL);
-        File geneArticleMentionFile = 
+        File geneArticleMentionFile =
             new File(sqlDir,Constants.GENE_ARTICLE_MENTION_SQL);
 
-        mArticleScoreOut = 
+        mArticleScoreOut =
             new BufferedOutputStream(new FileOutputStream(articleScoreFile));
-        mGeneArticleScoreOut = 
+        mGeneArticleScoreOut =
             new BufferedOutputStream(new FileOutputStream(geneArticleScoreFile));
-        mGeneArticleMentionOut = 
+        mGeneArticleMentionOut =
             new BufferedOutputStream(new FileOutputStream(geneArticleMentionFile));
 
-        String articleScoreHeader = 
+        String articleScoreHeader =
             "PMID\tSCORE\n";
         mArticleScoreOut.write(articleScoreHeader.getBytes(),
                                0,articleScoreHeader.length());
 
-        String geneArticleScoreHeader = 
+        String geneArticleScoreHeader =
             "GENEID\tPMID\tGENE SCORE\tTOTAL SCORE\n";
         mGeneArticleScoreOut.write(geneArticleScoreHeader.getBytes(),
                                    0,geneArticleScoreHeader.length());
 
-        String geneArticleMentionHeader = 
+        String geneArticleMentionHeader =
             "GENEID\tPMID\tTEXT\tOFFSET\n";
         mGeneArticleMentionOut.write(geneArticleMentionHeader.getBytes(),
                                      0,geneArticleMentionHeader.length());
@@ -293,11 +293,11 @@ public class LingBlastMedline extends AbstractCommand {
         mGeneArticleMentionOut.flush();
         mGeneArticleMentionOut.close();
     }
-    
+
     private void recordChunking(String pmid, Pair<Double,Chunking> scoredCitation) throws IOException {
         NumberFormat formatter = new DecimalFormat("#.######");
         double genomicsScore = scoredCitation.a();
-        String articleScoreRecord = 
+        String articleScoreRecord =
             pmid+"\t"
             +formatter.format(genomicsScore)
             +"\n";
@@ -324,7 +324,7 @@ public class LingBlastMedline extends AbstractCommand {
             if (!genes.contains(geneId))  {
                 genes.add(geneId);
                 double total = genomicsScore + score;
-                String geneArticleScoreRecord = 
+                String geneArticleScoreRecord =
                     geneId+"\t"
                     +pmid+"\t"
                     +formatter.format(score)+"\t"
@@ -332,13 +332,13 @@ public class LingBlastMedline extends AbstractCommand {
                 mGeneArticleScoreOut.write(geneArticleScoreRecord.getBytes(),
                                            0,geneArticleScoreRecord.length());
             }
-            String geneArticleMentionRecord = 
+            String geneArticleMentionRecord =
                 geneId + "\t"
                 + pmid + "\t"
                 + quoteForMysql(phrase) + "\t"
                 + start + "\n";
             mGeneArticleMentionOut.write(geneArticleMentionRecord.getBytes(),
-										 0,geneArticleMentionRecord.length());
+                                         0,geneArticleMentionRecord.length());
         }
     }
 
