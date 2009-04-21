@@ -368,7 +368,8 @@ the MEDLINE index:
 </target>
 
 The values for the properties ${rmijars} and ${server.address}
-must be set in the build.xml file.
+must be set in the build.xml file. The server address is the 
+external IP address of the machine, not 127.0.0.1.
 
 More information is available from Sun, both in the Java tutorials
 and in the user forums.  Here is a good starting point:
@@ -478,6 +479,7 @@ and the -index argument to the location of the Lucene EntrezGene index.
 
 As with MEDLINE, the "test-rmi" task defined in "build_dev.xml"
 can be used to test whether or not this index is available.
+
 (see 1.5 above).
 
 3. OMIM Index
