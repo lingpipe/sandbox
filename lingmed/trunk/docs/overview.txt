@@ -24,7 +24,7 @@ build_web.xml - targets that launch the genelinkage webapp
 The ant -f flag is used to specify a particular build file,
 else ant will use the file "build.xml".
 
-The default build file, and the dev, prod, and web files 
+The default build file, and the dev, prod, and web files
 all start by accessing build.lingmed.properties and build_common.xml:
 
  <import file="build_common.xml"/>
@@ -105,17 +105,17 @@ Lucene Indexes
 1.1 Medline distribution files
 ==============
 
-Medline is distributed in 2 parts:  
+Medline is distributed in 2 parts:
 a. the baseline distribution,
 b. updates files, released every weekday.
 
 The baseline and updates files are stored in different
 directories on the NLM site, and so our local repository
 mirrors this structure:
-	medline/dist/2009/baseline
-	medline/dist/2009/updates
+        medline/dist/2009/baseline
+        medline/dist/2009/updates
 
-Baseline files contain unique citation entries.  
+Baseline files contain unique citation entries.
 Updates files contain new citation entries as well as
 revisions of existing entries.  Updates files may also
 contain instructions to delete existing entries.
@@ -138,29 +138,29 @@ The required arguments to this command are:
 -path
     Path on the domain from which to download the citations.
 -user
-    User name assigned by NLM. 
+    User name assigned by NLM.
 -password
-    Password assigned by NLM. 
+    Password assigned by NLM.
 -repositoryPath
     Name of NLM directory where the distribution files are found.
-    This is not under our control, and the path specified in 
+    This is not under our control, and the path specified in
     build.lingmed.properties should work.
 -targetDir
-    Name of directory where distribution files are downloaded to. 
-    If downloading from baseline repository, 
-    target should be local baseline directory, 
-    and if downloading from updates repository, 
+    Name of directory where distribution files are downloaded to.
+    If downloading from baseline repository,
+    target should be local baseline directory,
+    and if downloading from updates repository,
     target should be local updates directory.
 
 The following arguments are optional:
 -maxTries
-    Maximum number of download attempts per session. 
+    Maximum number of download attempts per session.
 -sleep
-    Number of minutes to sleep between download sessions. 
+    Number of minutes to sleep between download sessions.
     If this parameter is < 1, the program will only make one download attempt.
 
 There are explicit ant tasks to download the baseline and
-updates files, to avoid putting baseline files in the 
+updates files, to avoid putting baseline files in the
 updates directory, and visa-versa.
 
 Here is the ant macro:
@@ -209,7 +209,7 @@ tutorial readme.html doc.
 1.3 Creating a searchable Lucene Index over all of MEDLINE.
 ==============
 
-The IndexMedline program 
+The IndexMedline program
 parses the downloaded distribution files
 and adds the citation entries that it finds to a Lucene index.
 
@@ -218,9 +218,9 @@ The daily update files contain deletions and updates.
 
 In order to maintain data integrity, we must process
 all of the files in the baseline distribution before processing the updates,
-and then the updates files should be processed 
+and then the updates files should be processed
 in the order in which they are released.
-Baseline files should only be processed once, 
+Baseline files should only be processed once,
 else this will create duplicate entries in the index.
 
 The distribution files from NLM are named using a naming convention
@@ -231,23 +231,23 @@ in the correct order.
 The required arguments to the IndexMedline command are:
 
 -distType
-    If value is "baseline" then all citations are added to the index, 
-    and deletions are not allowed. 
-    Otherwise the files will be processed as updates files. 
+    If value is "baseline" then all citations are added to the index,
+    and deletions are not allowed.
+    Otherwise the files will be processed as updates files.
 -index
-    Path to the Lucene index file. 
+    Path to the Lucene index file.
 -distDir
-    Path to the directory containing the distribution files. 
-    All files in the directory which end in ".xml" or ".xml.gz" will be processed. 
+    Path to the directory containing the distribution files.
+    All files in the directory which end in ".xml" or ".xml.gz" will be processed.
 -codec
-    The name of the class which is used to transform 
-    a MedlineCitation object to a Lucene Document. 
-    Must implement com.aliasi.lingmed.dao.Codec. 
+    The name of the class which is used to transform
+    a MedlineCitation object to a Lucene Document.
+    Must implement com.aliasi.lingmed.dao.Codec.
 
 The following arguments are optional:
 
 -sleep
-    Number of minutes to sleep between indexing sessions. 
+    Number of minutes to sleep between indexing sessions.
 
 Here is the ant macro:
 
@@ -314,30 +314,28 @@ To start the RMI registry on a linux server use the command:
 
 >  nohup rmiregistry &
 
-The SearchService command instantiates a remote searcher over 
-a local Lucene index and registers this object with RMI, 
-via a com.aliasi.lingmed.server.SearchServer.
+The program com.aliasi.lingmed.server.SearchService starts up a remote
+search service on the server.  The SearchService class instantiates a
+remote searcher over a local Lucene index and registers this object
+with RMI, via a com.aliasi.lingmed.server.SearchServer.
 
 The following arguments are all required:
 
 -port
-    Port on which RMI registry service is listening. 
+    Port on which RMI registry service is listening.
 -service
-    Name of service. Used by RMI clients. 
+    Name of service. Used by RMI clients.
 -index
-    Path to the Lucene index file. 
-The program com.aliasi.lingmed.server.SearchService starts up
-a remote search service on the server.  The 3 command line arguments
-to this program are:  
-   port 
-   service name
-   local Lucene directory (on disk).
+    Path to the Lucene index file.
 
-Because the RMI registry is running in a separte JVM, 
+
+
+Because the RMI registry is running in a separte JVM,
 classpath information about the remote functions must be passed in as a JVM arg.
 On Ubuntu systems, it is necessary to specify the hostname as well.
 
 Here is the ant macro which starts a remote search service:
+
 <macrodef name="searchService">
   <attribute name="host"/>
   <attribute name="port"/>
@@ -380,7 +378,7 @@ http://java.sun.com/docs/books/tutorial/rmi/running.html
 
 The ant file "build_dev.xml" contains a task "test-rmi"
 which can be used to test whether or not this index is available.
-To run this test you need to first create a file of pubmed ids, 
+To run this test you need to first create a file of pubmed ids,
 one per line.  Then you need to edit the "test-rmi" task,
 which sets up the call to the TestClient program, and passes
 in 3 arguments:  whether to test medline, entrezgene, or both;
@@ -413,7 +411,7 @@ Here is the task:
 We do not have an automatic process for downloading EntrezGene.
 Unlike Medline, EntrezGene is distributed as one fixed dataset,
 and each new release replaces the previous release.
-There is no versioning information on the release, 
+There is no versioning information on the release,
 and we have not figured out how to automatically determine
 when a new version should be downloaded and processed.
 Instead, we periodically download a release, process it,
@@ -430,12 +428,12 @@ This is done via a the gene2xml program, also distributed by nlm.
 Example of running the converter over an .ags file:
  > ./linux.gene2xml -b <All_Data.ags | grep -v 'NCBI_Entrezgene.dtd' > allData.xml
 
-The output of gene2xml is piped through grep because the 
-pEntrezGene DTDs don't validate properly. 
+The output of gene2xml is piped through grep because the
+pEntrezGene DTDs don't validate properly.
 
 The ASN to XML converters are available for FTP download from:
 ftp://ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/gene2xml/
-Documentation on the data values is found at 
+Documentation on the data values is found at
 http://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/lxr/source/src/objects/entrezgene/entrezgene.asn
 
 2.2 Creating a Lucene Index for EntrezGene.
@@ -446,9 +444,9 @@ and adds the EntrezGene entries to a Lucene index.
 
 The following arguments are required:
 -index
-    Path to the Lucene index file. 
+    Path to the Lucene index file.
 -distFile
-    Path to the XML file. 
+    Path to the XML file.
 
 Here is the ant task which does this:
 
@@ -490,12 +488,12 @@ This database is maintained and distributed by NLM.
 
 3.1 Downloading OMIM
 ==============
-OMIM is available for FTP download from 
+OMIM is available for FTP download from
  ftp://ftp.ncbi.nih.gov/repository/OMIM/omim.txt.Z
 
 Like EntrezGene, OMIM is distributed as one dataset,
 and each new release replaces the previous release.
-There is no versioning information on the release, 
+There is no versioning information on the release,
 and we have not figured out how to automatically determine
 when a new version should be downloaded and processed.
 Instead, we periodically download a release, process it,
@@ -509,7 +507,7 @@ and adds them to a Lucene index.
 
 The following arguments are required:
 -index
-    Path to the Lucene index file. 
+    Path to the Lucene index file.
 -distFile
     Path to the OMIM distribution text file.
 
@@ -533,12 +531,12 @@ and the -index argument to the location of the Lucene Omim index.
 
 4.1 Downloading Homologene
 ==============
-Homologene is available for FTP download from 
+Homologene is available for FTP download from
 ftp://ftp.ncbi.nih.gov/pub/HomoloGene/current/homologene.xml.gz
 
 Like EntrezGene, Homologene is distributed as one dataset,
 and each new release replaces the previous release.
-There is no versioning information on the release, 
+There is no versioning information on the release,
 and we have not figured out how to automatically determine
 when a new version should be downloaded and processed.
 Instead, we periodically download a release, process it,
@@ -552,7 +550,7 @@ and adds the HomologeneGroup entries to a Lucene index.
 
 The following arguments are required:
 -index
-    Path to the Lucene index file. 
+    Path to the Lucene index file.
 -distFile
     Path to the Homologene distribution XML file.
 
@@ -574,14 +572,14 @@ and the -index argument to the location of the Lucene Homologene index.
 5. com.aliasi.lingmed.dao.DaoSearcher: search over a Lucene index
 ==============
 
-A DaoSearcher is used to query a Lucene index 
+A DaoSearcher is used to query a Lucene index
 and return search results as Java objects of the generic type,
 (instead of as a set of org.apache.lucene.document.Document objects).
 The DaoSearcher interface extends the Iterable interface,
 and so can be used to walk over the entire index (as objects
 of the generic type).
 
-The com.aliasi.lingmed.dao.DaoSearcherImpl is the base implementation 
+The com.aliasi.lingmed.dao.DaoSearcherImpl is the base implementation
 of this interface.  The constructor requires 2 arguments:
 A Codec<E> is used to convert Lucene documents to objects of the generic type.
 An org.apache.lucene.search.Searcher is used to search the index.
@@ -592,30 +590,30 @@ over an index, and then iterate over all the objects in it:
 
      // instantiate a search client over a local Lucene index
      Searcher egLocalSearcher = new IndexSearcher(indexDir);
-     EntrezGeneSearcher entrezgeneSearcher = 
+     EntrezGeneSearcher entrezgeneSearcher =
          new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
 
      // process all genes
      for (EntrezGene entrezGene : mEntrezGeneSearcher) {
-	 System.out.println("processing EntrezGene Id: "
-	                     +entrezGene.getGeneId());
-         ... 
+         System.out.println("processing EntrezGene Id: "
+                             +entrezGene.getGeneId());
+         ...
     }
 
 
 The method getById executes a search against the document ID field.
-and returns an object of the generic type which matches that ID, 
+and returns an object of the generic type which matches that ID,
 or null if no object with that ID is found in the index.
-The Codec of the generic type determines the mapping between 
+The Codec of the generic type determines the mapping between
 document ID and the identifying information in the generic object.
 For the NLM data this is a simple mapping between the data ID
-and the document ID:  e.g. a the PubMedId of a MedlineCitation object 
+and the document ID:  e.g. a the PubMedId of a MedlineCitation object
 is the same as the value of the ID field on the corresponding document
 in the Medline Lucene index.
 
-The DaoSearcher interface is extended for searches specific to a 
+The DaoSearcher interface is extended for searches specific to a
 particular data store.
-For example, the EntrezGeneSearcher interface extends DaoSearcher 
+For example, the EntrezGeneSearcher interface extends DaoSearcher
 by adding functionality to find genes associated by a pubmed id:
 
     public SearchResults<EntrezGene> getGenesForPubmedId(String pubmedId) throws DaoException;
@@ -625,14 +623,14 @@ by adding functionality to find genes associated by a pubmed id:
 6. com.aliasi.lingmed.lingblast:  using lingmed and lingpipe together
 ==============
 
-LingBlast is an app which links Entrez-Gene identifiers 
+LingBlast is an app which links Entrez-Gene identifiers
 to Entrez-Pubmed identifiers with confidence scores.
 The idea behind this app is based on an analogy to BLAST:
 Altschul et al.'s Basic Local Alignment Search Tool, which finds
 homologous (approximately matching) genes or proteins given a set of
 samples to match.  LingBlast finds homologous gene or protein names
 (mentions) in text given a set of samples (aliases) to match.
-The confidence score is based on how well the gene's surrounding context 
+The confidence score is based on how well the gene's surrounding context
 matches that of the known references for that gene.
 
 The components needed for this app are:
@@ -647,15 +645,15 @@ The ModelCompiler command creates a set of these models.
 6.1 the DictionaryBuilder command
 ==============
 
-The DictionaryBuilder command creates an exact-match dictionary over 
-a set of gene names from EntrezGene where all matches are scored 1.0. 
-The category assigned to a dictionary entry 
+The DictionaryBuilder command creates an exact-match dictionary over
+a set of gene names from EntrezGene where all matches are scored 1.0.
+The category assigned to a dictionary entry
 is the set of all geneIds for which the entry is a name or alias.
 
 The following arguments are required:
 
 -dictFile
-    Name of file for serialized dictionary 
+    Name of file for serialized dictionary
 -host
     Name of Lucene search server.
     If value is "localhost" then search uses local Lucene indexes,
@@ -663,38 +661,38 @@ The following arguments are required:
 
 The following arguments are optional:
 -entrezgene
-    Name of remote entrezgene search service, 
-    or path to local Lucene entrezgene index dir. 
-    Defaults to "entrezgene". 
+    Name of remote entrezgene search service,
+    or path to local Lucene entrezgene index dir.
+    Defaults to "entrezgene".
 -medline
-    Name of remote medline search service, 
-    or path to local Lucene medline index dir. 
-    Defaults to "medline". 
+    Name of remote medline search service,
+    or path to local Lucene medline index dir.
+    Defaults to "medline".
 -minNameLen
-    Minimum allowed name length of dictionary entry. 
-    Defaults to 1. 
+    Minimum allowed name length of dictionary entry.
+    Defaults to 1.
 -maxNameLen
-    Maxmimum allowed name length of dictionary entry. 
-    Defaults to 1024. 
+    Maxmimum allowed name length of dictionary entry.
+    Defaults to 1024.
 -maxGenesPerAlias
-    For any dictionary entry, maxmimum number of genes 
-    which which have this entry among their aliases. 
-    This is used to eliminate overly ambiguous aliases 
-    such as "hypothetical protein". Defaults to 100. 
+    For any dictionary entry, maxmimum number of genes
+    which which have this entry among their aliases.
+    This is used to eliminate overly ambiguous aliases
+    such as "hypothetical protein". Defaults to 100.
 -maxPubmedHitsPerAlias
-    For any dictionary entry, maxmimum number of 
-    pubmed articles which contain this entry. 
-    This is used to eliminate uninformative aliases, 
-    such as "Is". Defaults to 10000. 
+    For any dictionary entry, maxmimum number of
+    pubmed articles which contain this entry.
+    This is used to eliminate uninformative aliases,
+    such as "Is". Defaults to 10000.
 -allowedNames
-    Name of file containing dictionary entries 
-    which should be included in dictionary, even if 
-    they exceed maxGenesPerAlias or maxPubmedHitsPerAlias. 
+    Name of file containing dictionary entries
+    which should be included in dictionary, even if
+    they exceed maxGenesPerAlias or maxPubmedHitsPerAlias.
 -genHtml
-    If true, the program will output an html page which 
-    contains a list of all entries found, 
-    and whether or not they were used in the dictionary. 
-    Defaults to false. 
+    If true, the program will output an html page which
+    contains a list of all entries found,
+    and whether or not they were used in the dictionary.
+    Defaults to false.
 
 Here is the ant task to run the DictionaryBuilder command:
 
@@ -715,45 +713,45 @@ Here is the ant task to run the DictionaryBuilder command:
 
 6.2 the ModelCompiler command
 ==============
-The ModelCompiler command builds a set of 
-language models for the genes in EntrezGene. 
-A gene-specific language model is created for 
+The ModelCompiler command builds a set of
+language models for the genes in EntrezGene.
+A gene-specific language model is created for
 those genes which have descriptive text.
-A general genomics language model is created 
+A general genomics language model is created
 from the union of all these descriptive texts.
 
 The following arguments are required:
 
 -modelDir
-    Name of directory for compiled Language Model files. 
+    Name of directory for compiled Language Model files.
 -host
-    Name of Lucene search server. 
-    If value is "localhost" then search the local Lucene indexes, 
-    else search remote Lucene indexes (via RMI). 
+    Name of Lucene search server.
+    If value is "localhost" then search the local Lucene indexes,
+    else search remote Lucene indexes (via RMI).
 
 The following arguments are optional:
 -entrezgene
-    Name of remote entrezgene search service, 
-    or path to local Lucene entrezgene index dir. 
-    Defaults to "entrezgene". 
+    Name of remote entrezgene search service,
+    or path to local Lucene entrezgene index dir.
+    Defaults to "entrezgene".
 -medline
-    Name of remote medline search service, 
-    or path to local Lucene medline index dir. 
-    Defaults to "medline". 
+    Name of remote medline search service,
+    or path to local Lucene medline index dir.
+    Defaults to "medline".
 -maxNGram
-    Maximum length nGram for language model. 
-    Defaults to 5. 
+    Maximum length nGram for language model.
+    Defaults to 5.
 -maxGeneHits
-    Maximum number of genes mentioned in an article. 
-    Used to exclude texts which are too general. 
-    Defaults to 100. 
+    Maximum number of genes mentioned in an article.
+    Used to exclude texts which are too general.
+    Defaults to 100.
 -genHtml
-    If true, the program will create html pages 
-    as well as languages models.  Writes a page 
+    If true, the program will create html pages
+    as well as languages models.  Writes a page
     for each per-gene language model listing
-    the texts used to create that model. 
-    Also creates an index page over all gene entries. 
-    Defaults to false. 
+    the texts used to create that model.
+    Also creates an index page over all gene entries.
+    Defaults to false.
 
 Here is the ant task to run the ModelCompiler command:
 
@@ -776,7 +774,7 @@ Here is the ant task to run the ModelCompiler command:
 The class com.aliasi.lingmed.lingblast.LingBlast class is used to process a text.
 
 The LingBlastMedline command processes all of MEDLINE.
-It runs each medline citation through LingBlast.lingblast(java.lang.CharSequence)  
+It runs each medline citation through LingBlast.lingblast(java.lang.CharSequence)
 and outputs its results as a set of tables in tab-delimited text file format.
 The tables are:
 
@@ -787,30 +785,30 @@ The tables are:
   columns: geneid, pmid, per-gene score, total (genomic score + per-gene score)
 
 * gene_article_mention.sql: all genes mentions found in a citation.
-  columns: geneid, pmid, text, offset 
+  columns: geneid, pmid, text, offset
 
 The following arguments are required:
 
 -dictionary
-    Name of file for serialized dictionary 
+    Name of file for serialized dictionary
 -modelDir
-    Name of directory for compiled Language Model files. 
+    Name of directory for compiled Language Model files.
 -sqlDir
-    Name of directory to output sql tables to. 
+    Name of directory to output sql tables to.
 -genomicsThreshold
-    maximum allowable genomics score for citation. 
-    Citations with high genomics score are not run through lingblast. 
+    maximum allowable genomics score for citation.
+    Citations with high genomics score are not run through lingblast.
 -host
-    Name of Lucene search server. 
-    If value is "localhost" then search the local Lucene indexes, 
-    else search remote Lucene indexes (via RMI). 
+    Name of Lucene search server.
+    If value is "localhost" then search the local Lucene indexes,
+    else search remote Lucene indexes (via RMI).
 
 The following arguments are optional:
 
 -medline
-    Name of remote medline search service, or 
-    path to local Lucene medline index dir. 
-    Defaults to "medline". 
+    Name of remote medline search service, or
+    path to local Lucene medline index dir.
+    Defaults to "medline".
 
 Here is the ant task to run the LingBlastMedline command:
 
@@ -850,18 +848,18 @@ provides general functionality for interacting with MySQL databases.
 GeneLinkageDao allows 3 possible searches:
 
 getArticleMentionsForGeneId
-    Given geneId, find all articles which mention it. 
-    Returns a Map from article ids to a pair consisting of 
+    Given geneId, find all articles which mention it.
+    Returns a Map from article ids to a pair consisting of
     the article genomics_score, and a set of gene mentions.
 
 getNArticleMentionsForGeneId
-    Given geneId, find N best articles which mention it. 
-    Returns a Map from article ids to a pair consisting of 
-    the article genomics_score, and a set of gene mentions, 
+    Given geneId, find N best articles which mention it.
+    Returns a Map from article ids to a pair consisting of
+    the article genomics_score, and a set of gene mentions,
     ordered by total score.
 
 getGeneMentionsForPubmedId
-    Given pubmedId, find all gene mentions. 
+    Given pubmedId, find all gene mentions.
     Returns the article genomics_score, and a set of gene mentions.
 
 7.2 gene_linkage database
@@ -884,7 +882,7 @@ To create the gene_linkage database:
 
 3. create the database schema, by executing script lingmed/db/schema.sql
 
-4. load the data into the database, using the tables generated 
+4. load the data into the database, using the tables generated
    by the LingBlastMedline command, by executing script lingmed/db/load.sql
    (on uniblab, total load time, approx 45 minutes)
 
@@ -897,16 +895,16 @@ size of database: 7G
 8. com.aliasi.lingmed.genelinkage: putting it all together
 ==============
 
-GeneLinkage is an app which allows searches over a 
+GeneLinkage is an app which allows searches over a
 database of gene mentions in pubmed citations.
-A simple servlet wrapper is provided, as well as 
+A simple servlet wrapper is provided, as well as
 a command-line program which accepts lists of geneIds as input.
 
 8.1 NBestArticles: command line search.
 ==============
 
-The NBestArticles command reads in a file containing geneIds, 
-1 per line, and outputs html pages, 1 per geneId, 
+The NBestArticles command reads in a file containing geneIds,
+1 per line, and outputs html pages, 1 per geneId,
 listing the N best-scoring articles which mention this gene.
 
 This command is a useful way to generate a set of static HTML pages
@@ -916,35 +914,35 @@ for a some subset of the genes in EntrezGene.
 The following arguments are required:
 
 -geneIds
-    Name of input file containing geneIds. 
+    Name of input file containing geneIds.
 -host
-    Name of Lucene search server. 
-    If value is "localhost" then search the local Lucene indexes, 
-    else search remote Lucene indexes (via RMI). 
+    Name of Lucene search server.
+    If value is "localhost" then search the local Lucene indexes,
+    else search remote Lucene indexes (via RMI).
 -dbUserName
-    Name of database user. 
+    Name of database user.
 -dbUserPassword
-    Password for database user. 
+    Password for database user.
 
 The following arguments are optional:
 
 -htmlDir
-    Directory for html pages. Defaults to "html". 
+    Directory for html pages. Defaults to "html".
 -entrezgene
-    Name of remote entrezgene search service, 
-    or path to local Lucene entrezgene index dir. 
-    Defaults to "entrezgene". 
+    Name of remote entrezgene search service,
+    or path to local Lucene entrezgene index dir.
+    Defaults to "entrezgene".
 -medline
-    Name of remote medline search service, or 
-    path to local Lucene medline index dir. 
-    Defaults to "medline". 
+    Name of remote medline search service, or
+    path to local Lucene medline index dir.
+    Defaults to "medline".
 -dbUrl
-    Url of database to connect to (for jdbc). 
-    Defaults to "jdbc:mysql://localhost:3306/gene_linkage" 
+    Url of database to connect to (for jdbc).
+    Defaults to "jdbc:mysql://localhost:3306/gene_linkage"
 -dbName
-    Database name. Defaults to "gene_linkage". 
+    Database name. Defaults to "gene_linkage".
 -maxArticles
-    Maximum number of articles to return. Defaults to 100. 
+    Maximum number of articles to return. Defaults to 100.
 
 Here is the ant task "gene-articles", which runs this command:
 
@@ -975,7 +973,7 @@ provides a very simple example of how to search the gene_linkage
 database from a servlet, running from Tomcat 5.0.
 
 The servlet config files are in the directory
-lingmed/web/WEB-INF/web.xml 
+lingmed/web/WEB-INF/web.xml
 and
 lingmed/web/META-INF/context.xml
 
