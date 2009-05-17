@@ -140,24 +140,6 @@
   </sequential>
 </macrodef>
 
-<macrodef name="indexMedline">
-  <attribute name="type"/>
-  <attribute name="distdir"/>
-  <attribute name="index"/>
-  <attribute name="codec"/>
-  <sequential>
-    <java classname="com.aliasi.lingmed.medline.IndexMedline"
-          maxMemory="${mxMem}"
-          fork="true">
-      <classpath refid="classpath.standard"/>
-      <arg value="-distType=@{type}"/>
-      <arg value="-distDir=@{distdir}"/>
-      <arg value="-index=@{index}"/>
-      <arg value="-codec=@{codec}"/>
-      <arg value="-sleep=${medline.index.sleep}"/>
-    </java>
-  </sequential>
-</macrodef>
 
 <!-- **** TARGETS **** -->
 
@@ -235,19 +217,31 @@
 <target name="indexMedlineBaseline"
         description="create Lucene MEDLINE Index from Baseline"
         depends="jar">
-  <indexMedline type="baseline"
-                distdir="${medline.baseline.dir}"
-                index="${medline.lucene.index.searchable}"
-                codec="${medline.codec.class}"/>
+    <java classname="com.aliasi.lingmed.medline.IndexMedline"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distType=baseline"/>
+      <arg value="-distDir=${medline.baseline.dir}"/>
+      <arg value="-index=${medline.lucene.index.searchable}"/>
+      <arg value="-codec=${medline.codec.class}"/>
+      <arg value="-sleep=-1"/>
+    </java>
 </target>
 
 <target name="indexMedlineUpdates"
         description="add updates to Lucene MEDLINE Index"
         depends="jar">
-  <indexMedline type="updates"
-                distdir="${medline.updates.dir}"
-                index="${medline.lucene.index.searchable}"
-                codec="${medline.codec.class}"/>
+    <java classname="com.aliasi.lingmed.medline.IndexMedline"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distType=updates"/>
+      <arg value="-distDir=${medline.updates.dir}"/>
+      <arg value="-index=${medline.lucene.index.searchable}"/>
+      <arg value="-codec=${medline.codec.class}"/>
+      <arg value="-sleep=240"/>
+    </java>
 </target>
 
 <target name="rmiMedline"
@@ -496,6 +490,18 @@
   </java>
 </target>
 
+<target name="xval-genomics"
+        description="cross-validate genomics lm"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.lingblast.XValidateGenomics"
+        maxMemory="8G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="localhost"/>
+    <arg value="1099"/>
+  </java>
+</target>
+
 <target name="test-compile"
         depends="compile"
         description="Compiles test classes">
@@ -522,26 +528,19 @@
   </jar>
 </target>
 
-<target name="split-medline">
-  <java classname="com.aliasi.lingmed.medline.SplitMedlineXml" fork="true">
-    <arg value="medsamp2009.xml"/>
-    <arg value="tmp2"/>
-    <classpath>
-      <path refid="classpath.standard"/>
-    </classpath>
+<target name="test-rmi"
+        description="test rmi search"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.server.TestClient"
+        maxMemory="1G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="both"/>
+    <arg value="192.168.1.100"/>
+    <arg value="test_pmids.txt"/>
   </java>
 </target>
 
-<target name="count-entrez-refs"
-        description="gen histogram of number of unique pubmed refs per gene"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.entrezgene.CountEntrezGene"
-        maxMemory="4G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-host=localhost"/>
-  </java>
-</target>
 
 <target name="test-dict"
         description="test compiled exact match dictionary"
@@ -566,32 +565,8 @@
   </java>
 </target>
 
-<target name="xval-genomics"
-        description="cross-validate genomics lm"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.lingblast.XValidateGenomics"
-        maxMemory="8G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="localhost"/>
-    <arg value="1099"/>
-  </java>
-</target>
 
-<target name="test-rmi"
-        description="test rmi search"
-        depends="jar">
-  <java classname="com.aliasi.lingmed.server.TestClient"
-        maxMemory="1G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="both"/>
-    <arg value="192.168.1.100"/>
-    <arg value="test_pmids.txt"/>
-  </java>
-</target>
-
-<target name="db-genelinkage"
+<target name="test-db-genelinkage"
         description="test genelinkage db"
         depends="jar">
   <java classname="com.aliasi.lingmed.genelinkage.TestDb"
@@ -603,7 +578,7 @@
   </java>
 </target>
 
-<target name="num-hits"
+<target name="test-lingmed-lucene"
         depends="jar">
   <java classname="com.aliasi.lingmed.lucene.NumHits"
         fork="true">
@@ -621,7 +596,8 @@
   </java>
 </target>
 
-<target name="search-medline-codec"
+
+<target name="test-medline-codec"
         depends="jar">
   <java classname="com.aliasi.lingmed.medline.SearchableMedlineCodec"
         fork="true">
@@ -643,7 +619,7 @@
   </java>
 </target>
 
-<target name="medline-search-dates"
+<target name="test-medline-dates"
         description="test MEDLINE searcher getCitationsInYearRange"
         depends="test-jar">
   <java classname="com.aliasi.lingmed.medline.TestDateSearch"
@@ -652,6 +628,27 @@
       <path refid="classpath.standard"/>
     </classpath>
     <arg value="luceneMedline"/>
+  </java>
+</target>
+
+<target name="split-medline">
+  <java classname="com.aliasi.lingmed.medline.SplitMedlineXml" fork="true">
+    <arg value="medsamp2009.xml"/>
+    <arg value="tmp2"/>
+    <classpath>
+      <path refid="classpath.standard"/>
+    </classpath>
+  </java>
+</target>
+
+<target name="count-entrez-refs"
+        description="gen histogram of number of unique pubmed refs per gene"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.entrezgene.CountEntrezGene"
+        maxMemory="4G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="-host=localhost"/>
   </java>
 </target>
 
