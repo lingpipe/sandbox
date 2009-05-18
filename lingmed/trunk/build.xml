@@ -32,7 +32,7 @@
           value="${lucene.dir}/medline2009"/>
 
 <property name="medline.codec.class"
-          value="com.aliasi.lingmed.medline.SearchableMedlineCodec"/>
+          value="com.aliasi.lingmed.medline.CustomMedlineCodec"/>
 
 <property name="medline.simple.codec.class"
           value="com.aliasi.lingmed.medline.MedlineCodec"/>
