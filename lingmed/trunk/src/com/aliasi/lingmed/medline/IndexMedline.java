@@ -158,7 +158,8 @@ public class IndexMedline extends AbstractCommand {
     private String mDistDirPath;
     private String mType;
 
-    private final static double RAM_BUF_SIZE = 256d;
+    private final static double RAM_BUF_SIZE = 1024d;  // size of in-memory index buffer, in MB
+    private final static int MERGE_FACTOR_HI = 100;  // higher number = fewer merges
 
     private final static int SECOND = 1000;
     private final static int MINUTE = 60*SECOND;
@@ -216,8 +217,9 @@ public class IndexMedline extends AbstractCommand {
                 IndexWriter indexWriter = 
                     new IndexWriter(FSDirectory.getDirectory(mIndex),
                                     mCodec.getAnalyzer(),
-                                    new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
-				indexWriter.setRAMBufferSizeMB(RAM_BUF_SIZE);
+                                    new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH)); 
+                indexWriter.setRAMBufferSizeMB(RAM_BUF_SIZE);
+                if (sIsBaseline) indexWriter.setMergeFactor(MERGE_FACTOR_HI);
                 for (File file: files) {
                     mLogger.info("processing file:" + file);
                     MedlineIndexer indexer = new MedlineIndexer(indexWriter,mCodec);
@@ -248,28 +250,28 @@ public class IndexMedline extends AbstractCommand {
     private String getLastUpdate(File index) throws IOException {
         IndexReader reader = null;
         IndexSearcher searcher = null;
-		try {
-			FSDirectory fsDirectory = FSDirectory.getDirectory(index);
-			if (isNewDirectory(fsDirectory)) return LOW_SORT_STRING;
-			reader = IndexReader.open(fsDirectory,true); // open reader read-only
-			searcher = new IndexSearcher(reader);
-			Term term = new Term(Fields.MEDLINE_DIST_FIELD,Fields.MEDLINE_DIST_VALUE);
-			Sort sort = new Sort(Fields.MEDLINE_FILE_FIELD,true);
-			Query query = new TermQuery(term);
-			TopFieldDocs results = searcher.search(query,null,1,sort);
-			if (results.totalHits == 0) {
-				searcher.close();
-				reader.close();
-				return LOW_SORT_STRING;
-			}
+        try {
+            FSDirectory fsDirectory = FSDirectory.getDirectory(index);
+            if (isNewDirectory(fsDirectory)) return LOW_SORT_STRING;
+            reader = IndexReader.open(fsDirectory,true); // open reader read-only
+            searcher = new IndexSearcher(reader);
+            Term term = new Term(Fields.MEDLINE_DIST_FIELD,Fields.MEDLINE_DIST_VALUE);
+            Sort sort = new Sort(Fields.MEDLINE_FILE_FIELD,true);
+            Query query = new TermQuery(term);
+            TopFieldDocs results = searcher.search(query,null,1,sort);
+            if (results.totalHits == 0) {
+                searcher.close();
+                reader.close();
+                return LOW_SORT_STRING;
+            }
             if (mLogger.isDebugEnabled())
-				mLogger.debug("num MEDLINE_FILE docs:" + results.totalHits);
-			Document d = searcher.doc(results.scoreDocs[0].doc);
-			return d.get(Fields.MEDLINE_FILE_FIELD);
-		} finally {
-			if (searcher != null) searcher.close();
-			if (reader != null) reader.close();
-		}
+                mLogger.debug("num MEDLINE_FILE docs:" + results.totalHits);
+            Document d = searcher.doc(results.scoreDocs[0].doc);
+            return d.get(Fields.MEDLINE_FILE_FIELD);
+        } finally {
+            if (searcher != null) searcher.close();
+            if (reader != null) reader.close();
+        }
     }
 
     private File[] getLaterFiles(File index) throws IOException {
@@ -337,8 +339,8 @@ public class IndexMedline extends AbstractCommand {
 
     private void recordFile(IndexWriter indexWriter, String fileName)
         throws IOException {
-		if (mLogger.isDebugEnabled())
-			mLogger.debug("record file:" + fileName);
+        if (mLogger.isDebugEnabled())
+            mLogger.debug("record file:" + fileName);
         Document doc = new Document(); 
         Field tagField = new Field(Fields.MEDLINE_DIST_FIELD,
                                    Fields.MEDLINE_DIST_VALUE,
@@ -351,8 +353,8 @@ public class IndexMedline extends AbstractCommand {
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add(nameField);
         indexWriter.addDocument(doc);
-		if (mLogger.isDebugEnabled())
-			mLogger.debug("added doc: " + doc.toString());
+        if (mLogger.isDebugEnabled())
+            mLogger.debug("added doc: " + doc.toString());
 
     }
 

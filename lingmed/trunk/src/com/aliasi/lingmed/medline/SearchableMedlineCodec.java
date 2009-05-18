@@ -49,10 +49,6 @@ import org.apache.lucene.document.Field;
 import org.apache.log4j.Logger;
 
 
-// SEE $CVSROOT/genelinkage/src/medline/LuceneDocument.java
-//     $SANDBOX/lingarray/src/DocIndex.java
-
-
 /**
  * A <code>SearchableMedlineCodec</code> provides conversion between
  * MEDLINE citations and Lucene documents with a rich set of
@@ -234,7 +230,7 @@ public class SearchableMedlineCodec extends MedlineCodec {
         if (appendToExisting)
             text = " , " + text;
         if (TEXT_FIELD_SET.contains(fieldName)) {
-            addTextField(doc,fieldName,text); // skip this one to reduce index size
+            addTextField(doc,fieldName,text);
             addTextField(doc,fieldName+EXACT_FIELD_SUFFIX,text);
             addTextField(doc,fieldName+NGRAM_FIELD_SUFFIX,text);
         } else if (SIMPLE_FIELD_SET.contains(fieldName)) {
