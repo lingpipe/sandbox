@@ -97,15 +97,17 @@ import org.apache.log4j.Logger;
  * all of the files in the baseline distribution before processing the updates,
  * and then the updates files should be processed 
  * in the order in which they are released.
- * Baseline files should only be processed once, 
- * else this will create duplicate entries in the index.
  * The distribution files from NLM are named using a naming convention
  * which reflects the chronological order of the files.
  * The program sorts the files by filename in order to process them
- * in the correct order.
+ * in the correct order.  The names of the distribution files which 
+ * have been processed are stored in the index.  Only distribution files
+ * which are chronologically greater than the last recorded file
+ * will be processed.
  * 
- * <P>The indexer program is designed to be always running.
+ * <P>The indexer program can be set to be always running.
  * Between indexing attempts it sleeps for a specified interval.
+ * This allows new updates files to be added to the index automatically.
  *
  * <P>The following arguments are all required:
  *
@@ -138,6 +140,8 @@ import org.apache.log4j.Logger;
  * <dl>
  * <dt><code>-sleep</code></dt>
  * <dd>Number of minutes to sleep between indexing sessions.
+ * Should be a positive integer.  Values &lt; 0 cause the program
+ * to index the current set of distribution files, then exit.
  * </dd>
  * </dl>
  *
@@ -158,7 +162,7 @@ public class IndexMedline extends AbstractCommand {
     private String mDistDirPath;
     private String mType;
 
-    private final static double RAM_BUF_SIZE = 1024d;  // size of in-memory index buffer, in MB
+    private final static double RAM_BUF_SIZE = 1000d;  // size of in-memory index buffer, in MB
     private final static int MERGE_FACTOR_HI = 100;  // higher number = fewer merges
 
     private final static int SECOND = 1000;
