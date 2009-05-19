@@ -28,7 +28,7 @@
 <property name="medline.download.retries"
           value="3"/>
 
-<property name="medline.lucene.index.searchable"
+<property name="medline.lucene.index.dir"
           value="${lucene.dir}/medline2009"/>
 
 <property name="medline.codec.class"
@@ -56,7 +56,7 @@
           value="${lucene.dir}/omimIndex"/>
 
 <property name="mxMem" 
-          value="2G" />
+          value="1250M" />
 
 <property name="version" 
           value="1.3"/>
@@ -109,7 +109,7 @@
   <attribute name="index"/>
   <sequential>
     <java classname="com.aliasi.lingmed.server.SearchService"
-          maxMemory="2G"
+          maxMemory="1000M"
           fork="true">
       <classpath refid="classpath.standard"/>
       <jvmarg value="-Djava.rmi.server.codebase=${rmi.jars}"/>
@@ -127,6 +127,7 @@
   <attribute name="sleep"/>
   <sequential>
     <java classname="com.aliasi.lingmed.medline.DownloadMedline"
+        maxMemory="256M"
         fork="true">
       <classpath refid="classpath.standard"/>
       <arg value="-domain=ftp.nlm.nih.gov"/>
@@ -223,7 +224,7 @@
       <classpath refid="classpath.standard"/>
       <arg value="-distType=baseline"/>
       <arg value="-distDir=${medline.baseline.dir}"/>
-      <arg value="-index=${medline.lucene.index.searchable}"/>
+      <arg value="-index=${medline.lucene.index.dir}"/>
       <arg value="-codec=${medline.codec.class}"/>
       <arg value="-sleep=-1"/>
     </java>
@@ -238,7 +239,7 @@
       <classpath refid="classpath.standard"/>
       <arg value="-distType=updates"/>
       <arg value="-distDir=${medline.updates.dir}"/>
-      <arg value="-index=${medline.lucene.index.searchable}"/>
+      <arg value="-index=${medline.lucene.index.dir}"/>
       <arg value="-codec=${medline.codec.class}"/>
       <arg value="-sleep=240"/>
     </java>
@@ -250,7 +251,7 @@
   <searchService host="${rmi.server.address}"
                  port="1099"
                  service="medline"
-                 index="${medline.lucene.index.searchable}" />
+                 index="${medline.lucene.index.dir}" />
 </target>
 
 
@@ -645,7 +646,7 @@
         description="gen histogram of number of unique pubmed refs per gene"
         depends="jar">
   <java classname="com.aliasi.lingmed.entrezgene.CountEntrezGene"
-        maxMemory="4G"
+        maxMemory="2G"
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="-host=localhost"/>
