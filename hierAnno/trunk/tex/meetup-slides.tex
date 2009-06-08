@@ -1,0 +1,117 @@
+\documentclass{report}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{helvet}
+
+\setlength{\paperheight}{3in}
+\setlength{\paperwidth}{4in}
+\pdfpagewidth=\paperwidth
+\pdfpageheight=\paperheight
+
+\setlength{\textwidth}{3.5in}
+\setlength{\textheight}{2.5in}
+
+\setlength{\oddsidemargin}{-0.75in}
+\setlength{\evensidemargin}{-0.75in}
+\setlength{\topmargin}{-1.25in}
+
+\newcommand{\sld}[1]{\newpage{\noindent\Large \underline{#1}}\vspace*{8pt}}
+\newcommand{\itm}[1]{\vspace*{8pt}\noindent#1}
+\newcommand{\itmb}{\itm{$\bullet$}\ }
+
+
+\begin{document}
+\sf%
+\vspace*{1pt}
+\noindent
+{\huge Ground Truth, \\[4pt] 
+Machine Learning, \\[4pt]
+{\sf and the} \\[8pt]
+Mechanical Turk}
+\\[24pt]
+{\Large Bob Carpenter}
+(w.\ Emily Jamison, Breck Baldwin)
+\\[4pt]
+{\large\emph{Alias-i, Inc.}}
+
+
+
+\sld{Supervised Machine Learning}
+
+\begin{enumerate}
+\item Define coding standard mapping inputs to outputs, e.g.:
+\begin{itemize}
+\item English word $\rightarrow$ stem
+\item newswire text $\rightarrow$ person name spans
+\item biomedical text $\rightarrow$ genes mentioned
+\end{itemize}
+\item Collect inputs and code ``gold standard'' training data
+\item Develop and train statistical model using data
+\item Apply to unseen inputs
+\end{enumerate}
+
+
+
+\sld{Annotation Bottleneck}
+
+\begin{itemize}
+\item Bottleneck is collecting training corpus
+\item Commericial data's expensive (e.g.\ LDA, ELRA)
+\item Academic corpora typically restrictively licensed
+\item Limited to existing corpora
+\item For new problems, use:
+self, grad students, temps, interns, \ldots
+\vspace*{12pt}
+\item Mechanical Turk to the rescue
+\end{itemize}
+
+
+\sld{Example: Named Entities}
+
+\hspace*{-24pt}\includegraphics[width=1.05\textwidth]{pngs/big-ne-form.png}
+
+
+\sld{Discussion: Named Entities}
+
+\begin{itemize}
+\item Conveying the coding standard
+\begin{itemize}
+\item Official MUC-6 standard dozens of pages
+\item Examples are key
+\item (Maybe a qualifying exam)
+\end{itemize}
+
+\item User Interface Problem
+\begin{itemize}
+\item One entity type at a time (vs. pulldown menus)
+\item Checkboxes (vs. highlighting spans)
+\end{itemize}
+\end{itemize}
+
+\sld{Discussion: Named Entities (the good)}
+
+\begin{itemize}
+\item 190K tokens, 64K capitalized, 4K names
+\item Less than a week at 2 cents/400 tokens
+\item Turkers overall better than LDC data
+\begin{itemize}
+\item Correctly Rejected:
+{\tt\footnotesize Webster's, Seagram, Du Pont, Buick-Cadillac, Moon, erstwhile Phineas Foggs}
+\item Incorrectly Accepted: {\tt\footnotesize Tass}
+\item Missed Punctuation: {\tt\footnotesize J~E.~``Buster'' Brown}
+\end{itemize}
+\item Many Turkers no better than chance \\
+(c.f.\ social psych by Yochai Benkler, Harvard)
+\end{itemize}
+
+
+
+
+
+
+
+
+
+\end{document}
