@@ -4,16 +4,16 @@ model {
     c[i] ~ dbern(pi)
   }
   acc.0 ~ dbeta(1,1)
-  scale.0 ~ dpar(1.5,1)
+  scale.0 ~ dpar(1.5,1)  I(1,100)
   alpha.0 <- acc.0 * scale.0
   beta.0 <- (1-acc.0) * scale.0
   acc.1 ~ dbeta(1,1)
-  scale.1 ~ dpar(1.5,1)
+  scale.1 ~ dpar(1.5,1) I(1,100)
   alpha.1 <- acc.1 * scale.1
   beta.1 <- (1-acc.1) * scale.1
   for (j in 1:J) {
-    theta.0[j] ~ dbeta(alpha.0,beta.0) I(.4,.90)
-    theta.1[j] ~ dbeta(alpha.1,beta.1) I(.4,.90)
+    theta.0[j] ~ dbeta(alpha.0,beta.0) I(.4,.99)
+    theta.1[j] ~ dbeta(alpha.1,beta.1) I(.4,.99)
   }
   for (k in 1:K) {
     bern[k] <- c[ii[k]] * theta.1[jj[k]] + (1 - c[ii[k]]) * (1 - theta.0[jj[k]])

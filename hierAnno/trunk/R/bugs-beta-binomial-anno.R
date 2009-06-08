@@ -8,19 +8,20 @@ parameters <- c("c",
                 "alpha.1", "beta.1", "acc.1", "scale.1")
 
 inits <- function() {
-  list(pi=runif(1,0.4,0.6),
-       c=rbinom(I,1,0.5),
-       acc.0 <- runif(1,0.8,0.9),
-       scale.0 <- runif(1,20,30),
-       acc.1 <- runif(1,0.7,0.8),
-       scale.1 <- runif(1,10,20),
-       theta.0=runif(J,0.8,0.9),
-       theta.1=runif(J,0.7,0.8))
+  list(pi=runif(1,0.7,0.8),
+#       c=rbinom(I,1,0.5),
+       acc.0 <- runif(1,0.9,0.9),
+       scale.0 <- runif(1,5,5),
+       acc.1 <- runif(1,0.9,0.9),
+       scale.1 <- runif(1,5,5),
+       theta.0=runif(J,0.9,0.9),
+       theta.1=runif(J,0.9,0.9)
+       )
 }
 
 anno <- bugs(data, inits, parameters,
-             "c:/carp/sandbox/hierAnno/R/bugs/beta-binomial-anno.bug",
-              n.chains=3, n.iter=1000,
+             "c:/carp/devguard/sandbox/hierAnno/trunk/R/bugs/beta-binomial-anno.bug",
+              n.chains=3, n.iter=500,
 #              n.thin=5,
               debug=TRUE,
               clearWD=TRUE,
