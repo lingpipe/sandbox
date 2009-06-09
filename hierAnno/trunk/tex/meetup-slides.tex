@@ -1,4 +1,4 @@
-\documentclass{report}
+\documentclass[10pt]{report}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -83,6 +83,9 @@ self, grad students, temps, interns, \ldots
 \item Mechanical Turk to the rescue
 \end{itemize}
 
+\newpage
+\vspace*{36pt}
+{\huge Case Studies}
 
 \sld{Example: Named Entities}
 
@@ -154,15 +157,20 @@ self, grad students, temps, interns, \ldots
 
 \sld{Text to Gene Linkage Failed}
 
-
 \begin{itemize}
-\item This is what we really care about
-\item Paid for by NIH grant
 \item Could get them to pass qualifier
 \item Could not get Turkers to take task even at \$1/hit
+\item Doing annotation ourselves
 \vspace*{12pt}
 \item Are complex, specialized tasks like this possible?
+\item Turkers don't want to concentrate?
 \end{itemize}
+
+
+
+\newpage
+\vspace*{36pt}
+{\huge Inferring Gold Standards}
 
 
 \sld{Voted Gold Standard}
@@ -181,11 +189,12 @@ self, grad students, temps, interns, \ldots
 \item Performance on known cases estimates annotator accuracy
 \item Vote with adjustment for accuracy
 \vspace*{18pt}
-\item Requires large amount of annotated data for:
+\item Requires relatively large amount of annotations for
 \begin{itemize}
 \item estimating accuracies well
 \item liveness for new items
 \end{itemize}
+\item Gold may not be as pure as requesters think
 \end{itemize}
 
 
@@ -238,6 +247,34 @@ self, grad students, temps, interns, \ldots
 
 \end{picture}
 
+\sld{Sampling Notation}
+
+Annotators don't all annotate the same items
+
+\vspace*{-8pt}
+{\footnotesize
+\begin{eqnarray*}
+c_i & \sim & \mathsf{Bernoulli}(\pi)
+\\
+a_{0,j} & \sim & \mathsf{Beta}(\alpha_0,\beta_0)
+\\
+a_{1,j} & \sim & \mathsf{Beta}(\alpha_1,\beta_1)
+\\
+x_k & \sim & \mathsf{Bernoulli}(c_{i_k} a_{1,j_k}
+                                        + (1 - c_{i_k}) (1 - a_{0,j_k}))
+\\[8pt]
+\pi & \sim & \mathsf{Beta}(1,1)
+\\
+\alpha_0/(\alpha_0 + \beta_0) & \sim & \mathsf{Beta}(1,1)
+\\
+\alpha_0 + \beta_0 & \sim & \mathsf{Polynomial}(-5/2)
+\\
+\alpha_1/(\alpha_1 + \beta_1) & \sim & \mathsf{Beta}(1,1)
+\\
+\alpha_1 + \beta_1 & \sim & \mathsf{Polynomial}(-5/2)
+\\
+\end{eqnarray*}}
+
 
 \sld{Why we Need Task Difficulty}
 
@@ -246,10 +283,11 @@ self, grad students, temps, interns, \ldots
 \begin{itemize}
 \item a baseball player who goes 12 for 20?
 \item a market that goes down 9 out of 10 days?
+\item a coin that lands heads 3 out of 10 times?
 \item \ldots
 \end{itemize}
-\item Must smooth annotators with few annotations (e.g. 20 labels)
-\item Hierarchical model of accuracy prior does this
+\item Smooth estimates for annotators with few annotations
+\item Hierarchical model of accuracy prior
 \end{itemize}
 
 
@@ -262,6 +300,28 @@ self, grad students, temps, interns, \ldots
 \vspace*{12pt}
 \item Posterior uncertainty can be modeled
 \end{itemize}
+
+\sld{5 Dentists Diagnosing Cavities}
+
+{\footnotesize
+\begin{tabular}{cr|cr|cr}
+{\it Dentists} & {\it Count} &
+{\it Dentists} & {\it Count} &
+{\it Dentists} & {\it Count}
+\\ \hline
+00000 & 1880 & 10000 & 22 & 00001 & 789 \\
+10001 & 26 & 00010 & 43 & 10010 & 6 \\
+00011 & 75 & 10011 & 14 & 00100 & 23 \\
+10100 & 1 & 00101 & 63 & 10101 & 20 \\
+00110 & 8 & 10110 & 2 & 00111 & 22 \\
+10111 & 17 & 01000 & 188 & 11000 & 2 \\
+01001 & 191 & 11001 & 20 & 01010 & 17 \\
+11010 & 6 & 01011 & 67 & 11011 & 27 \\
+01100 & 15 & 11100 & 3 & 01101 & 85 \\
+11101 & 72 & 01110 & 8 & 11110 & 1 \\
+01111 & 56 & 11111 & 100
+\end{tabular}
+}
 
 
 \sld{Posteriors for Dentistry Data Items}
