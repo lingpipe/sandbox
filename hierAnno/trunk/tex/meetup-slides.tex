@@ -42,7 +42,7 @@
 \sf%
 \vspace*{1pt}
 \noindent
-{\huge Ground Truth, \\[4pt] 
+{\huge Ground Truth, \\[4pt]
 Machine Learning, \\[4pt]
 {\sf and the} \\[8pt]
 Mechanical Turk}
@@ -59,6 +59,7 @@ Mechanical Turk}
 \begin{enumerate}
 \item Define coding standard mapping inputs to outputs, e.g.:
 \begin{itemize}
+\footnotesize
 \item English word $\rightarrow$ stem
 \item newswire text $\rightarrow$ person name spans
 \item biomedical text $\rightarrow$ genes mentioned
@@ -70,7 +71,7 @@ Mechanical Turk}
 
 
 
-\sld{Annotation Bottleneck}
+\sld{Coding Bottleneck}
 
 \begin{itemize}
 \item Bottleneck is collecting training corpus
@@ -85,39 +86,47 @@ self, grad students, temps, interns, \ldots
 
 \newpage
 \vspace*{36pt}
+\noindent
 {\huge Case Studies}
 
-\sld{Example: Named Entities}
+\sld{Case 1: Named Entities}
 
 \hspace*{-24pt}\includegraphics[width=1.05\textwidth]{pngs/big-ne-form.png}
 
 
-\sld{Discussion: Named Entities}
+\sld{Named Entities Worked}
 
 \begin{itemize}
 \item Conveying the coding standard
 \begin{itemize}
-\item Official MUC-6 standard dozens of pages
-\item Examples are key
-\item (Maybe a qualifying exam)
+\footnotesize
+\item official MUC-6 standard dozens of pages
+\item examples are key
+\item (maybe a qualifying exam)
 \end{itemize}
 
 \item User Interface Problem
 \begin{itemize}
-\item One entity type at a time (vs. pulldown menus)
-\item Checkboxes (vs. highlighting spans)
+\footnotesize
+\item highlighting with mouse too fiddly (c.f. Fitt's Law)
+\item one entity type at a time (vs. pulldown menus)
+\item checkboxes (vs. highlighting spans)
 \end{itemize}
 \end{itemize}
 
-\sld{Discussion: Named Entities (the good)}
+\sld{Discussion: Named Entities}
 
+\vspace*{-6pt}
 \begin{itemize}
 \item 190K tokens, 64K capitalized, 4K names
 \item Less than a week at 2 cents/400 tokens
 \item Turkers overall better than LDC data
 \begin{itemize}
+\footnotesize
 \item Correctly Rejected:
-{\tt\footnotesize Webster's, Seagram, Du Pont, Buick-Cadillac, Moon, erstwhile Phineas Foggs}
+{\tt\footnotesize Webster's, Seagram, Du Pont,
+\\
+Buick-Cadillac, Moon, erstwhile Phineas Foggs}
 \item Incorrectly Accepted: {\tt\footnotesize Tass}
 \item Missed Punctuation: {\tt\footnotesize J~E.~``Buster'' Brown}
 \end{itemize}
@@ -126,50 +135,62 @@ self, grad students, temps, interns, \ldots
 \end{itemize}
 
 
-\sld{Morphological Stemming}
+\sld{Case 2: Morphological Stemming}
 
 \hspace*{-24pt}
 \includegraphics[width=1.05\textwidth]{pngs/stems-v4.png}
 
 
-\sld{Instructions plus Qualifying Test}
+\sld{Morphological Stemming Worked}
 
 \begin{itemize}
+\vspace*{-8pt}
+\item Three iterations on coding standard
+\begin{itemize}
+\footnotesize
+\item simplified task to one stem
+\end{itemize}
 
-\item Four rounds of annotation
-
-\item Simplified task to one stem
-
-\item Added instructions with detailed examples
+\item Four iterations on final standard instructions
+\vspace*{-6pt}
+\begin{itemize}
+\footnotesize
+\item added previously confusing examples
+\end{itemize}
 
 \includegraphics[width=0.2\textwidth]{pngs/stems-instrux.png}
 
-\item Added qualifying test 
+\item Added qualifying test
 
 \end{itemize}
 
 
 
-\sld{Gene Linkage HIT}
+\sld{Case 3: Gene Linkage}
 
 \hspace*{-24pt}
 \includegraphics[width=1.05\textwidth]{pngs/gene-task.png}
 
-\sld{Text to Gene Linkage Failed}
+\sld{Gene Linkage Failed}
 
 \begin{itemize}
-\item Could get them to pass qualifier
-\item Could not get Turkers to take task even at \$1/hit
-\item Doing annotation ourselves
+\item {\bfseries Could} get Turkers to pass qualifier
+\item {\bfseries Could not} get Turkers to take task even at \$1/hit
+\item Doing coding ourselves (5-10 minutes/HIT)
 \vspace*{12pt}
-\item Are complex, specialized tasks like this possible?
-\item Turkers don't want to concentrate?
+\item How to get Turkers do these complex tasks?
+\begin{itemize}
+\footnotesize
+\item Low concentration tasks done quickly
+\item Compatible with studies of why Turkers Turk
+\end{itemize}
 \end{itemize}
 
 
 
 \newpage
 \vspace*{36pt}
+\noindent
 {\huge Inferring Gold Standards}
 
 
@@ -186,35 +207,177 @@ self, grad students, temps, interns, \ldots
 
 \begin{itemize}
 \item Seed the data with cases with known labels
-\item Performance on known cases estimates annotator accuracy
+\item Use known cases to estimate coder accuracy
 \item Vote with adjustment for accuracy
-\vspace*{18pt}
-\item Requires relatively large amount of annotations for
+\item Requires relatively large amount of items for
 \begin{itemize}
+\footnotesize
 \item estimating accuracies well
 \item liveness for new items
 \end{itemize}
 \item Gold may not be as pure as requesters think
+\item Some preference tasks have no ``right'' answer
+\begin{itemize}
+\footnotesize
+\item e.g. Bing vs. Google, Facestat, Colors, ...
+\end{itemize}
 \end{itemize}
 
 
-\sld{Estimate Everything (may use known)}
+\sld{Estimate Everything}
 
 \begin{itemize}
 \item Gold standard labels
-\item Annotator accuracies
+\item Coder accuracies
     \begin{itemize}
+\footnotesize
       \item sensitivity (false negative rate; misses)
       \item specificity (false positive rate; false alarms)
       \item imbalance indicates bias; high values accuracy
     \end{itemize}
 \item Coding standard difficulty
     \begin{itemize}
-        \item Average accuracies
-        \item Variation among annotators
+\footnotesize
+        \item average accuracies
+        \item variation among coders
     \end{itemize}
-\item Item difficulty (not enough data)
+\item Item difficulty (important, but not enough data)
 \end{itemize}
+
+
+\sld{Benefits of Estimation}
+
+\begin{itemize}
+\item Full Bayesian posterior inference
+\begin{itemize}
+\footnotesize
+\item probabilistic ``gold standard''
+\item compatible with Bayesian machine learning
+\end{itemize}
+\item Works better than voting with threshold
+\begin{itemize}
+\footnotesize
+\item largest benefit with few Turkers/item
+\item evaluated with known ``gold standard''
+\end{itemize}
+\item Compatible with adding gold standard cases
+\end{itemize}
+
+
+\sld{Why we Need Task Difficulty}
+
+\begin{itemize}
+\item What's your estimate for:
+\begin{itemize}
+\footnotesize
+\item a baseball player who goes 12 for 20?
+\item a market that goes down 9 out of 10 days?
+\item a coin that lands heads 3 out of 10 times?
+\item \ldots
+\end{itemize}
+\item Smooth estimates for coders with few items
+\item Hierarchical model of accuracy prior
+\end{itemize}
+
+
+\sld{Soft Gold Standard}
+
+\begin{itemize}
+\item Is 24 karat gold standard even possible?
+\item Some items are really marginal
+\item Traditional approach
+\begin{itemize}
+\footnotesize
+\item censoring disagreements
+\item adjudicating disagreements (revise standard)
+\item adjudication may not converge
+\end{itemize}
+\vspace*{12pt}
+\item Posterior uncertainty can be modeled
+\end{itemize}
+
+
+
+\sld{Active Learning}
+
+\begin{itemize}
+\item Choose most useful items to code next
+\item Balance two criteria
+\begin{itemize}
+\footnotesize
+\item high uncertainty
+\item high typicality (how to measure?)
+\end{itemize}
+\item Can get away with fewer coders/item
+\item May introduce sampling bias
+\end{itemize}
+
+
+\sld{Code-a-Little, Learn-a-Little}
+
+\begin{itemize}
+\item Semi-automated coding
+\item System suggests labels
+\item Coders correct labels
+\item Much faster coding
+\item But may introduce bias
+\end{itemize}
+
+
+
+\newpage
+\vspace*{36pt}
+\noindent
+{\huge Statistical Inference Model}
+
+
+\sld{5 Dentists Diagnosing Cavities}
+
+{\footnotesize
+\begin{tabular}{cr|cr|cr}
+{\it Dentists} & {\it Count} &
+{\it Dentists} & {\it Count} &
+{\it Dentists} & {\it Count}
+\\ \hline
+00000 & 1880 & 10000 & 22 & 00001 & 789 \\
+10001 & 26 & 00010 & 43 & 10010 & 6 \\
+00011 & 75 & 10011 & 14 & 00100 & 23 \\
+10100 & 1 & 00101 & 63 & 10101 & 20 \\
+00110 & 8 & 10110 & 2 & 00111 & 22 \\
+10111 & 17 & 01000 & 188 & 11000 & 2 \\
+01001 & 191 & 11001 & 20 & 01010 & 17 \\
+11010 & 6 & 01011 & 67 & 11011 & 27 \\
+01100 & 15 & 11100 & 3 & 01101 & 85 \\
+11101 & 72 & 01110 & 8 & 11110 & 1 \\
+01111 & 56 & 11111 & 100
+\end{tabular}
+}
+
+
+\sld{Posteriors for Dentist Accuracies}
+
+\includegraphics[width=0.4\textwidth]{pngs/a-0-hist.pdf}
+\ \ \
+\includegraphics[width=0.4\textwidth]{pngs/a-1-hist.pdf}
+
+\begin{itemize}
+\item Posterior density vs. point estimates (e.g. mean)
+\end{itemize}
+
+
+\sld{Posteriors for Dentistry Data Items}
+
+\hspace*{-24pt}
+\begin{tabular}{ll}
+\includegraphics[width=0.5\textwidth]{pngs/model-4-cat-posteriors-dentistry.pdf}
+&
+\includegraphics[width=0.5\textwidth]{pngs/model-4-cat-posteriors-dentistry-2.pdf}
+\end{tabular}
+
+Accounts for bias, so very different from simple vote!
+
+
+
 
 
 \sld{Beta-Binomial ``Random Effects''}
@@ -249,7 +412,7 @@ self, grad students, temps, interns, \ldots
 
 \sld{Sampling Notation}
 
-Annotators don't all annotate the same items
+Coders don't all code the same items
 
 \vspace*{-8pt}
 {\footnotesize
@@ -276,78 +439,6 @@ x_k & \sim & \mathsf{Bernoulli}(c_{i_k} a_{1,j_k}
 \end{eqnarray*}}
 
 
-\sld{Why we Need Task Difficulty}
-
-\begin{itemize}
-\item What's your estimate for:
-\begin{itemize}
-\item a baseball player who goes 12 for 20?
-\item a market that goes down 9 out of 10 days?
-\item a coin that lands heads 3 out of 10 times?
-\item \ldots
-\end{itemize}
-\item Smooth estimates for annotators with few annotations
-\item Hierarchical model of accuracy prior
-\end{itemize}
-
-
-\sld{Hard vs. Soft Gold: Posterior Uncertainty}
-
-
-\begin{itemize}
-\item Some items are really marginal
-\item Traditionally censored or added with false confidence
-\vspace*{12pt}
-\item Posterior uncertainty can be modeled
-\end{itemize}
-
-\sld{5 Dentists Diagnosing Cavities}
-
-{\footnotesize
-\begin{tabular}{cr|cr|cr}
-{\it Dentists} & {\it Count} &
-{\it Dentists} & {\it Count} &
-{\it Dentists} & {\it Count}
-\\ \hline
-00000 & 1880 & 10000 & 22 & 00001 & 789 \\
-10001 & 26 & 00010 & 43 & 10010 & 6 \\
-00011 & 75 & 10011 & 14 & 00100 & 23 \\
-10100 & 1 & 00101 & 63 & 10101 & 20 \\
-00110 & 8 & 10110 & 2 & 00111 & 22 \\
-10111 & 17 & 01000 & 188 & 11000 & 2 \\
-01001 & 191 & 11001 & 20 & 01010 & 17 \\
-11010 & 6 & 01011 & 67 & 11011 & 27 \\
-01100 & 15 & 11100 & 3 & 01101 & 85 \\
-11101 & 72 & 01110 & 8 & 11110 & 1 \\
-01111 & 56 & 11111 & 100
-\end{tabular}
-}
-
-
-\sld{Posteriors for Dentistry Data Items}
-
-\hspace*{-24pt}
-\begin{tabular}{ll}
-\includegraphics[width=0.5\textwidth]{pngs/model-4-cat-posteriors-dentistry.pdf}
-&
-\includegraphics[width=0.5\textwidth]{pngs/model-4-cat-posteriors-dentistry-2.pdf}
-\end{tabular}
-
-Accounts for bias, so very different from simple vote!
-
-
-
-\sld{Posteriors for Dentist Accuracies}
-
-\includegraphics[width=0.4\textwidth]{pngs/a-0-hist.pdf}
-\ \ \
-\includegraphics[width=0.4\textwidth]{pngs/a-1-hist.pdf}
-
-\begin{itemize}
-\item Posterior density vs. point estimates (e.g. mean)
-\end{itemize}
-
-
 \sld{Posterior for Coding Difficulty/Variance}
 
 These are posteriors from a simulation with cross-hairs giving ``true''
@@ -361,4 +452,42 @@ answer:
 \end{tabular}
 
 
+\sld{Extending Model}
+
+\begin{itemize}
+\item Task difficulty
+\begin{itemize}
+\footnotesize
+\item Logistic Item-Response models
+\item Need more than 5-10 coders/item for tight posterior
+\end{itemize}
+\item Easy to extend coding types
+\begin{itemize}
+\footnotesize
+\item Multinomial responses
+\item Ordinal responses (e.g. Likert 1-5 scale)
+\item Scalar responses
+\end{itemize}
+\end{itemize}
+
+\sld{The End}
+
+\begin{itemize}
+\item References
+\begin{itemize}
+\item {\tt http://lingpipe-blog.com}
+\end{itemize}
+\item Contact
+\begin{itemize}
+\item
+{\tt carp@alias-i.com}
+\end{itemize}
+\item
+R/BUGS Code Subversion Repository
+\begin{itemize}
+\item {\tt http://alias-i.com/lingpipe/sandbox}
+\end{itemize}
+\end{itemize}
+
 \end{document}
+
