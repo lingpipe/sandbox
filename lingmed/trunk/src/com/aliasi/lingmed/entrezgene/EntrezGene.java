@@ -73,7 +73,7 @@ import java.util.HashSet;
  * with a published paper.  GO terms are also used as labels for a list
  * of PubMed references.
  * <P>The element <code>Entrezgene_unique-keys</element> contains links to other databases.
- * The function {@link #getUniqueKeys()} returns this information.
+ * The function {@link #getDbLinks()} returns this information.
  *
  * @author Mitzi Morris
  * @version 1.1
@@ -88,7 +88,7 @@ public class EntrezGene {
 
     private final Species mSpecies;
     private final String mGeneRefMaploc;
-	private final GenomeLocation mGenomeLocus;
+    private final GenomeLocation mGenomeLocus;
 
     private final String mOfficialSymbol;
     private final String mOfficialFullName;
@@ -108,9 +108,9 @@ public class EntrezGene {
     public EntrezGene(String entrezStatus,
                       String geneId,
                       String entrezType,
-					  Species species,
+                      Species species,
                       String geneRefMaploc,
-					  GenomeLocation geneLocus,
+                      GenomeLocation geneLocus,
                       String officialSymbol,
                       String officialFullName,
                       String geneSummary,
@@ -121,12 +121,12 @@ public class EntrezGene {
                       String protRefDesc,
                       Pair<String,String>[] pubMedRefs,
                       Pair<String,String[]>[] dbLinks) {
-		mGeneTrackStatus = entrezStatus;
+        mGeneTrackStatus = entrezStatus;
         mGeneId = geneId;
         mEntrezgeneType = entrezType;
-		mSpecies = species;
+        mSpecies = species;
         mGeneRefMaploc = geneRefMaploc;
-		mGenomeLocus = geneLocus;
+        mGenomeLocus = geneLocus;
         mOfficialSymbol = officialSymbol;
         mOfficialFullName = officialFullName;
         mGeneSummary = geneSummary;
@@ -241,13 +241,13 @@ public class EntrezGene {
     public String[] getProtRefNames() { return mProtRefNames; }
 
     /**
-	 * Returns the list of all (labeled) lists of PubMed article references.
+     * Returns the list of all (labeled) lists of PubMed article references.
      */
     public Pair<String,String>[] getPubMedRefs() { return mPubMedRefs; }
 
     /**
-	 * Returns the list of all lists of external database ids, 
-	 * labelled by database name.
+     * Returns the list of all lists of external database ids, 
+     * labelled by database name.
      */
     public Pair<String,String[]>[] getDbLinks() { return mDbLinks; }
 
@@ -307,7 +307,7 @@ public class EntrezGene {
     }
 
     /**
-	 * Returns array of MIM ids, or empty array if entry not linked to MIM.
+     * Returns array of MIM ids, or empty array if entry not linked to MIM.
      */
     public String[] getMimIds() {
         if (mDbLinks.length > 0) {
@@ -322,7 +322,7 @@ public class EntrezGene {
     
 
     /**
-	 * Returns the set of ids linking to other databases.
+     * Returns the set of ids linking to other databases.
      */
     public String[] getLinkIds() {
         if (mDbLinks == null || mDbLinks.length == 0) return new String[0];
@@ -338,7 +338,7 @@ public class EntrezGene {
     }
 
     /**
-	 * Returns the ct of ids linking to other databases.
+     * Returns the ct of ids linking to other databases.
      */
     public int ctLinkIds() {
         String[] ids = getLinkIds();
@@ -346,7 +346,7 @@ public class EntrezGene {
     }
 
     /**
-	 * Returns the set of unique PubMed ids from the list of PubMedRefs.
+     * Returns the set of unique PubMed ids from the list of PubMedRefs.
      */
     public String[] getUniquePubMedRefs() {
         if (mPubMedRefs == null || mPubMedRefs.length == 0) return new String[0];
@@ -359,7 +359,7 @@ public class EntrezGene {
     }
 
     /**
-	 * Returns the count of unique PubMed ids from the list of PubMedRefs.
+     * Returns the count of unique PubMed ids from the list of PubMedRefs.
      */
     public int countUniquePubMedRefs() {
         String[] refs = getUniquePubMedRefs();
@@ -418,33 +418,33 @@ public class EntrezGene {
         result.append("\n");
         if (getOfficialSymbol() != null) {
             result.append("\tOfficial_Symbol: " + getOfficialSymbol());
-		} else {
+        } else {
             result.append("\tOfficial_Symbol not specified");
-		}
+        }
         if (getOfficialFullName() != null) {
             result.append("\tOfficial_FullName: " + getOfficialFullName());
-		} else {
+        } else {
             result.append("\tOfficial_FullName not specified");
-		}
+        }
         if (getSpeciesTaxName() != null) 
             result.append("\n\tOrg-ref_taxname: " + getSpeciesTaxName());
-		if (getSpeciesTaxonId() != null) 
-			result.append("\tOrg-ref_db taxon id: " + getSpeciesTaxonId());
-		if (getSpeciesCommonName() != null) 
-			result.append("\tOrg-ref_common: " + getSpeciesCommonName());
-		if (getGeneRefMaploc() != null) 
-			result.append("\n\tGene-ref_maploc: " + getGeneRefMaploc());
-		if (getGenomeLocus() != null) 
-			result.append("\n\tEntrezgene_locus: " + getGenomeLocus().toString());
-		if (getGeneRefName() != null) 
-			result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefName());
-		if (getGeneRefSyns() != null) {
-			String[] syns = getGeneRefSyns();
-			result.append("\n\tGene-ref_syns: ");
-			for (int i=0;i<syns.length;i++) {
-				result.append(syns[i]+", ");
-			}
-		}
+        if (getSpeciesTaxonId() != null) 
+            result.append("\tOrg-ref_db taxon id: " + getSpeciesTaxonId());
+        if (getSpeciesCommonName() != null) 
+            result.append("\tOrg-ref_common: " + getSpeciesCommonName());
+        if (getGeneRefMaploc() != null) 
+            result.append("\n\tGene-ref_maploc: " + getGeneRefMaploc());
+        if (getGenomeLocus() != null) 
+            result.append("\n\tEntrezgene_locus: " + getGenomeLocus().toString());
+        if (getGeneRefName() != null) 
+            result.append("\n\tGene-ref_locus (LocusLink name): "+getGeneRefName());
+        if (getGeneRefSyns() != null) {
+            String[] syns = getGeneRefSyns();
+            result.append("\n\tGene-ref_syns: ");
+            for (int i=0;i<syns.length;i++) {
+                result.append(syns[i]+", ");
+            }
+        }
         if (getGeneRefDesc() != null) 
             result.append("\n\tGene-ref_desc: "+getGeneRefDesc());
         if (getProtRefNames() != null) {
@@ -458,9 +458,9 @@ public class EntrezGene {
             result.append("\n\tProt-ref_desc (Preferred name): "+getProtRefDesc());
         if (getGeneSummary() != null) {
             result.append("\n\tEntrezgene_summary: "+getGeneSummary());
-		} else {
+        } else {
             result.append("\n\tEntrezgene_summary not specified");
-		}
+        }
         if (getPubMedRefs() != null) {
             result.append("\n\tPubmed article refs: "+countUniquePubMedRefs());
             for (Pair<String,String> ref : mPubMedRefs) {
@@ -517,7 +517,7 @@ public class EntrezGene {
         if (getPubMedRefs() != null) {
             String[] geneRifs = getGeneRifLabels();
             for (String geneRif : geneRifs) {
-				result.append(geneRif + ", ");
+                result.append(geneRif + ", ");
             }
         }
         return result.toString();
