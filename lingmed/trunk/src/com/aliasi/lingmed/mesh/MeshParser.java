@@ -56,6 +56,10 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String DESCRIPTOR_NAME_ELEMENT = "DescriptorName";
     static final String DESCRIPTOR_RECORD_ELEMENT = "DescriptorRecord";
     static final String DESCRIPTOR_UI_ELEMENT = "DescriptorUI";
+    static final String ECIN_ELEMENT = "ECIN";
+    static final String ECOUT_ELEMENT = "ECOUT";
+    static final String ENTRY_COMBINATION_ELEMENT = "EntryCombination";
+    static final String ENTRY_COMBINATION_LIST_ELEMENT = "EntryCombinationList";
     static final String HISTORY_NOTE_ELEMENT = "HistoryNote";
     static final String MONTH_ELEMENT = "Month";
     static final String ONLINE_NOTE_ELEMENT = "OnlineNote";
@@ -67,6 +71,7 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String STRING_ELEMENT = "String";
     static final String YEAR_ELEMENT = "Year";
     
+
     static final String DESCRIPTOR_CLASS_ATT = "DescriptorClass";
 
     

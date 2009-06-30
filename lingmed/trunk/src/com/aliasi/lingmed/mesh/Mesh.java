@@ -32,6 +32,7 @@ public class Mesh {
     private final String mOnlineNote;
     private final String mPublicMeshNote;
     private final List<String> mPreviousIndexingList;
+    private final List<EntryCombination> mEntryCombinationList;
     
     public Mesh(DescriptorClass descriptorClass,
                 String descriptorUI,
@@ -45,7 +46,8 @@ public class Mesh {
                 String historyNote,
                 String onlineNote,
                 String publicMeshNote,
-                List<String> previousIndexingList) {
+                List<String> previousIndexingList,
+                List<EntryCombination> entryCombinationList) {
         mDescriptorClass = descriptorClass;
         mDescriptorUI = descriptorUI;
         mDescriptorName = descriptorName;
@@ -59,6 +61,7 @@ public class Mesh {
         mOnlineNote = onlineNote.length() == 0 ? null : onlineNote;
         mPublicMeshNote = publicMeshNote.length() == 0 ? null : publicMeshNote;
         mPreviousIndexingList = previousIndexingList;
+        mEntryCombinationList = entryCombinationList;
     }
 
     public DescriptorClass descriptorClass() {
@@ -114,6 +117,10 @@ public class Mesh {
         return Collections.unmodifiableList(mPreviousIndexingList);
     }
 
+    public List<EntryCombination> entryCombinationList() {
+        return Collections.unmodifiableList(mEntryCombinationList);
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Descriptor UI=" + descriptorUI() + "\n");
@@ -132,6 +139,10 @@ public class Mesh {
         sb.append("Online Note=" + onlineNote() + "\n");
         sb.append("Public Mesh Note=" + publicMeshNote() + "\n");
         sb.append("Previous Indexing List=" + previousIndexingList());
+        List<EntryCombination> entryCombinationList = entryCombinationList();
+        for (int i = 0; i < entryCombinationList.size(); ++i)
+            sb.append("Entry Combination["  + i + "]="
+                      + entryCombinationList.get(i) + "\n");
         return sb.toString();
     }
 
@@ -149,6 +160,7 @@ public class Mesh {
         private final TextAccumulatorHandler mOnlineNoteHandler;
         private final TextAccumulatorHandler mPublicMeshNoteHandler;
         private final ListHandler mPreviousIndexingListHandler;
+        private final EntryCombination.ListHandler mEntryCombinationListHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mDescriptorNameHandler = new StringHandler(parent);
@@ -190,6 +202,10 @@ public class Mesh {
                 = new ListHandler(parent,MeshParser.PREVIOUS_INDEXING_ELEMENT);
             setDelegate(MeshParser.PREVIOUS_INDEXING_LIST_ELEMENT,
                         mPreviousIndexingListHandler);
+            mEntryCombinationListHandler
+                = new EntryCombination.ListHandler(parent);
+            setDelegate(MeshParser.ENTRY_COMBINATION_LIST_ELEMENT,
+                        mEntryCombinationListHandler);
         }
 
         @Override
@@ -208,6 +224,7 @@ public class Mesh {
             mOnlineNoteHandler.reset();
             mPublicMeshNoteHandler.reset();
             mPreviousIndexingListHandler.reset();
+            mEntryCombinationListHandler.reset();
         }
 
         @Override
@@ -241,7 +258,8 @@ public class Mesh {
                             mHistoryNoteHandler.getText(),
                             mOnlineNoteHandler.getText(),
                             mPublicMeshNoteHandler.getText(),
-                            mPreviousIndexingListHandler.getList());
+                            mPreviousIndexingListHandler.getList(),
+                            mEntryCombinationListHandler.getEntryCombinationList());
         }
     }
 
