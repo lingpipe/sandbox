@@ -44,8 +44,11 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
         }
     }
 
+    static final String DESCRIPTOR_NAME_ELEMENT = "DescriptorName";
     static final String DESCRIPTOR_RECORD_ELEMENT = "DescriptorRecord";
-
+    static final String DESCRIPTOR_UI_ELEMENT = "DescriptorUI";
+    static final String STRING_ELEMENT = "String";
+    
 
     static final String DESCRIPTOR_CLASS_ATT = "DescriptorClass";
 

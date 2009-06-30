@@ -2,6 +2,7 @@ package com.aliasi.lingmed.mesh;
 
 import com.aliasi.xml.DelegateHandler;
 import com.aliasi.xml.DelegatingHandler;
+import com.aliasi.xml.TextAccumulatorHandler;
 
 
 import org.xml.sax.Attributes;
@@ -47,22 +48,31 @@ public class Mesh {
 
     static class Handler extends DelegateHandler {
         private DescriptorClass mDescriptorClass;
-        private String mDescriptorUI;
-        private String mDescriptorName;
+        private StringHandler mDescriptorNameHandler;
+        private TextAccumulatorHandler mDescriptorUIHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
+            mDescriptorNameHandler = new StringHandler(parent);
+            setDelegate(MeshParser.DESCRIPTOR_NAME_ELEMENT,
+                        mDescriptorNameHandler);
+            mDescriptorUIHandler = new TextAccumulatorHandler();
+            setDelegate(MeshParser.DESCRIPTOR_UI_ELEMENT,
+                        mDescriptorUIHandler);
         }
 
         @Override
-        public void startDocument() {
+        public void startDocument() throws SAXException {
+            super.startDocument();
             mDescriptorClass = null;
-            mDescriptorUI = null;
-            mDescriptorName = null;
+            mDescriptorUIHandler.reset();
+            mDescriptorNameHandler.reset();
         }
 
         @Override
         public void startElement(String namespaceURI, String localName, String qName, Attributes atts) 
             throws SAXException {
+
+            super.startElement(namespaceURI,localName,qName,atts);
             if (MeshParser.DESCRIPTOR_RECORD_ELEMENT.equals(qName)) {
                 String descriptorString = atts.getValue(MeshParser.DESCRIPTOR_CLASS_ATT);
                 if ("2".equals(descriptorString))
@@ -78,8 +88,27 @@ public class Mesh {
         }
         public Mesh getMesh() {
             return new Mesh(mDescriptorClass,
-                            mDescriptorUI,
-                            mDescriptorName);
+                            mDescriptorUIHandler.getText(),
+                            mDescriptorNameHandler.getText());
+        }
+    }
+
+    static class StringHandler extends DelegateHandler {
+        private final TextAccumulatorHandler mTextAccumulator = new TextAccumulatorHandler();
+        public StringHandler(DelegatingHandler parent) {
+            super(parent);
+            setDelegate(MeshParser.STRING_ELEMENT,mTextAccumulator);
+        }
+        @Override
+        public void startDocument() throws SAXException {
+            super.startDocument();
+            reset();
+        }
+        public String getText() {
+            return mTextAccumulator.getText();
+        }
+        public void reset() {
+            mTextAccumulator.reset();
         }
     }
     
