@@ -175,9 +175,11 @@
       </patternset>
     </fileset>
   </copy>
+  <copy file="src/com/aliasi/lingmed/mesh/desc2009.dtd"
+        todir="build/classes/com/aliasi/lingmed/mesh"/>
   <jar destfile="${jar}">
     <fileset dir="build/classes"
-             includes="**/*.class **/*.properties" />
+             includes="**/*.class **/*.properties **/*.dtd" />
   </jar>
 </target>
 
@@ -667,7 +669,7 @@
 
 <target name="mesh"
         depends="jar">
-  <java classname="com.aliasi.lingmed.entrezgene.CountEntrezGene"
+  <java classname="com.aliasi.lingmed.mesh.MeshDemoCommand"
         maxMemory="2G"
         fork="true">
     <classpath refid="classpath.standard"/>
