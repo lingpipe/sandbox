@@ -31,7 +31,13 @@ public class MeshDemoCommand {
         InputSource inSource = new InputSource(gzipIn);
         inSource.setEncoding(Strings.UTF8);
         
-        parser.parse(inSource);
+        try { 
+            parser.parse(inSource);
+        } catch (Exception e) {
+            System.out.println("Exception=" + e);
+            e.printStackTrace(System.out);
+            System.exit(0);
+        }
         System.out.println("\n===================================================");
         System.out.println("Final record count=" + handler.mRecordCount);
     }
