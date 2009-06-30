@@ -83,13 +83,6 @@ public class MedlineSearcherImpl extends DaoSearcherImpl<MedlineCitation>
         return search(rangeQuery);
     }
 
-    /**
-     * Clean me up, please.
-     */
-    @Override
-    public String getPubmedIdForEndnote(com.aliasi.lingmed.wormbase.EndnoteRecord foo) {
-        throw new UnsupportedOperationException("get rid of this dependency or implement it");
-    }
 
     // check that year is string of 4 digits
     private boolean isYear(String s) {
