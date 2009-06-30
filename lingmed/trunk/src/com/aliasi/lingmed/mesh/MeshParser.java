@@ -44,7 +44,11 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
         }
     }
 
+    static final String ABBREVIATION_ELEMENT = "Abbreviation";
     static final String ACTIVE_MESH_YEAR_LIST_ELEMENT = "ActiveMeSHYearList";
+    static final String ALLOWABLE_QUALIFIER_ELEMENT = "AllowableQualifier";
+    static final String ALLOWABLE_QUALIFIERS_LIST_ELEMENT = "AllowableQualifiersList";
+    static final String ANNOTATION_ELEMENT = "Annotation";
     static final String DATE_CREATED_ELEMENT = "DateCreated";
     static final String DATE_REVISED_ELEMENT = "DateRevised";
     static final String DATE_ESTABLISHED_ELEMENT = "DateEstablished";
@@ -52,11 +56,17 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String DESCRIPTOR_NAME_ELEMENT = "DescriptorName";
     static final String DESCRIPTOR_RECORD_ELEMENT = "DescriptorRecord";
     static final String DESCRIPTOR_UI_ELEMENT = "DescriptorUI";
+    static final String HISTORY_NOTE_ELEMENT = "HistoryNote";
     static final String MONTH_ELEMENT = "Month";
+    static final String ONLINE_NOTE_ELEMENT = "OnlineNote";
+    static final String PREVIOUS_INDEXING_ELEMENT = "PreviousIndexing";
+    static final String PREVIOUS_INDEXING_LIST_ELEMENT = "PreviousIndexingList";
+    static final String PUBLIC_MESH_NOTE_ELEMENT = "PublicMeSHNote";
+    static final String QUALIFIER_UI_ELEMENT = "QualifierUI";
+    static final String QUALIFIER_NAME_ELEMENT = "QualifierName";
     static final String STRING_ELEMENT = "String";
     static final String YEAR_ELEMENT = "Year";
     
-
     static final String DESCRIPTOR_CLASS_ATT = "DescriptorClass";
 
     
