@@ -665,4 +665,14 @@
 </target>
 
 
+<target name="mesh"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.entrezgene.CountEntrezGene"
+        maxMemory="2G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${mesh.desc.gz}"/>
+  </java>
+</target>
+
 </project>
