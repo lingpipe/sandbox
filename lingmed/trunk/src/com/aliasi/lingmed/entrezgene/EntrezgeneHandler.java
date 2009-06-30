@@ -226,6 +226,8 @@ class EntrezgeneHandler extends DelegatingHandler {
         mProtRefDescHandler.reset();
         mEntrezgeneSummaryHandler.reset();
 
+        mGeneTrackStatusHandler.reset();
+
         curGeneTrackStatus = null;
         curGeneId = null;
         curEntrezgeneType = null;
