@@ -51,5 +51,12 @@ public interface MedlineSearcher extends DaoSearcher<MedlineCitation> {
     public SearchResults<MedlineCitation> getCitationsInYearRange(String fromYear, String toYear) throws DaoException;
 
 
+    /**      
+     * Find Pubmed Id for Citation for Endnote Record, or null if not found.
+     * Assumes that only 0 or 1 MEDLINE citations match Endnote citation.
+     */
+    public String getPubmedIdForEndnote(com.aliasi.lingmed.wormbase.EndnoteRecord endnote) throws DaoException;
+
+
 
 }
