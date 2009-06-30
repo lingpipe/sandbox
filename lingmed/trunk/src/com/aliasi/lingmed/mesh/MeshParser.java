@@ -44,10 +44,17 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
         }
     }
 
+    static final String ACTIVE_MESH_YEAR_LIST_ELEMENT = "ActiveMeSHYearList";
+    static final String DATE_CREATED_ELEMENT = "DateCreated";
+    static final String DATE_REVISED_ELEMENT = "DateRevised";
+    static final String DATE_ESTABLISHED_ELEMENT = "DateEstablished";
+    static final String DAY_ELEMENT = "Day";
     static final String DESCRIPTOR_NAME_ELEMENT = "DescriptorName";
     static final String DESCRIPTOR_RECORD_ELEMENT = "DescriptorRecord";
     static final String DESCRIPTOR_UI_ELEMENT = "DescriptorUI";
+    static final String MONTH_ELEMENT = "Month";
     static final String STRING_ELEMENT = "String";
+    static final String YEAR_ELEMENT = "Year";
     
 
     static final String DESCRIPTOR_CLASS_ATT = "DescriptorClass";
