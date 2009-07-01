@@ -44,6 +44,7 @@ public class Mesh {
     private final List<EntryCombination> mEntryCombinationList;
     private final List<MeshDescriptor> mSeeRelatedList;
     private final String mConsiderAlso;
+    private final List<MeshDescriptor> mPharmacologicalActionList;
     
     public Mesh(DescriptorClass descriptorClass,
                 MeshDescriptor descriptor,
@@ -59,7 +60,8 @@ public class Mesh {
                 List<String> previousIndexingList,
                 List<EntryCombination> entryCombinationList,
                 List<MeshDescriptor> seeRelatedList,
-                String considerAlso) {
+                String considerAlso,
+                List<MeshDescriptor> pharmacologicalActionList) {
         mDescriptorClass = descriptorClass;
         mDescriptor = descriptor;
         mDateCreated = dateCreated;
@@ -75,6 +77,7 @@ public class Mesh {
         mEntryCombinationList = entryCombinationList;
         mSeeRelatedList = seeRelatedList;
         mConsiderAlso = considerAlso.length() == 0 ? null : considerAlso;
+        mPharmacologicalActionList = pharmacologicalActionList;
     }
 
 
@@ -139,6 +142,10 @@ public class Mesh {
         return mConsiderAlso;
     }
 
+    public List<MeshDescriptor> pharmacologicalActionList() {
+        return Collections.unmodifiableList(mPharmacologicalActionList);
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Descriptor Class=" + descriptorClass() + "\n");
@@ -164,9 +171,15 @@ public class Mesh {
                       + entryCombinationList.get(i) + "\n");
         List<MeshDescriptor> seeRelatedList = seeRelatedList();
         for (int i = 0; i < seeRelatedList.size(); ++i)
-            sb.append("SeeRelated[" + i + "]=" 
+            sb.append("See Related[" + i + "]=" 
                       + seeRelatedList.get(i) + "\n");
-        sb.append("Consider Also=" + mConsiderAlso);
+        sb.append("Consider Also=" + mConsiderAlso + "\n");
+        List<MeshDescriptor> pharmacologicalActionList
+            = pharmacologicalActionList();
+        for (int i = 0; i < pharmacologicalActionList.size(); ++i)
+            sb.append("Pharmacological Action[" + i + "]=" 
+                      + pharmacologicalActionList.get(i)
+                      + "\n");
         return sb.toString();
     }
 
@@ -187,6 +200,7 @@ public class Mesh {
         private final EntryCombination.ListHandler mEntryCombinationListHandler;
         private final MeshDescriptor.ListHandler mSeeRelatedListHandler;
         private final TextAccumulatorHandler mConsiderAlsoHandler;
+        private final MeshDescriptor.ListHandler mPharmacologicalActionListHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mDescriptorNameHandler = new StringHandler(parent);
@@ -239,6 +253,10 @@ public class Mesh {
             mConsiderAlsoHandler = new TextAccumulatorHandler();
             setDelegate(MeshParser.CONSIDER_ALSO_ELEMENT,
                         mConsiderAlsoHandler);
+            mPharmacologicalActionListHandler
+                = new MeshDescriptor.ListHandler(parent,MeshParser.PHARMACOLOGICAL_ACTION_ELEMENT);
+            setDelegate(MeshParser.PHARMACOLOGICAL_ACTION_LIST_ELEMENT,
+                        mPharmacologicalActionListHandler);
         }
 
         @Override
@@ -260,6 +278,7 @@ public class Mesh {
             mEntryCombinationListHandler.reset();
             mSeeRelatedListHandler.reset();
             mConsiderAlsoHandler.reset();
+            mPharmacologicalActionListHandler.reset();
         }
 
         @Override
@@ -296,7 +315,8 @@ public class Mesh {
                             mPreviousIndexingListHandler.getList(),
                             mEntryCombinationListHandler.getEntryCombinationList(),
                             mSeeRelatedListHandler.getDescriptorList(),
-                            mConsiderAlsoHandler.getText());
+                            mConsiderAlsoHandler.getText(),
+                            mPharmacologicalActionListHandler.getDescriptorList());
         }
     }
 

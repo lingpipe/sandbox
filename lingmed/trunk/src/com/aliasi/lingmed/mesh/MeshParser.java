@@ -65,6 +65,8 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String HISTORY_NOTE_ELEMENT = "HistoryNote";
     static final String MONTH_ELEMENT = "Month";
     static final String ONLINE_NOTE_ELEMENT = "OnlineNote";
+    static final String PHARMACOLOGICAL_ACTION_ELEMENT = "PharmacologicalAction";
+    static final String PHARMACOLOGICAL_ACTION_LIST_ELEMENT = "PharmacologicalActionList";
     static final String PREVIOUS_INDEXING_ELEMENT = "PreviousIndexing";
     static final String PREVIOUS_INDEXING_LIST_ELEMENT = "PreviousIndexingList";
     static final String PUBLIC_MESH_NOTE_ELEMENT = "PublicMeSHNote";
