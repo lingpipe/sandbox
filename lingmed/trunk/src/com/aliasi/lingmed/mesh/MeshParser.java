@@ -53,6 +53,7 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String CONCEPT_ELEMENT = "Concept";
     static final String CONCEPT_LIST_ELEMENT = "ConceptList";
     static final String CONCEPT_NAME_ELEMENT = "ConceptName";
+    static final String CONCEPT_RELATION_ELEMENT = "ConceptRelation";
     static final String CONCEPT_RELATION_LIST_ELEMENT = "ConceptRelationList";
     static final String CONCEPT_UI_ELEMENT = "ConceptUI";
     static final String CONCEPT_UMLS_UI_ELEMENT = "ConceptUMLSUI";
