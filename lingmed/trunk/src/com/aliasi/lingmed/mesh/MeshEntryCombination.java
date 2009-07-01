@@ -11,7 +11,7 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
-public class EntryCombination {
+public class MeshEntryCombination {
 
     // <!ELEMENT EntryCombinationList (EntryCombination+) >
     // <!ELEMENT EntryCombination     (ECIN,ECOUT)>
@@ -32,10 +32,10 @@ public class EntryCombination {
     private final String mInQualifier;
     private final String mOutDescriptor;
     private final String mOutQualifier;
-    public EntryCombination(String inDescriptor,
-                            String inQualifier,
-                            String outDescriptor,
-                            String outQualifier) {
+    public MeshEntryCombination(String inDescriptor,
+                                String inQualifier,
+                                String outDescriptor,
+                                String outQualifier) {
         mInDescriptor = inDescriptor;
         mInQualifier = inQualifier;
         mOutDescriptor = outDescriptor;
@@ -100,17 +100,17 @@ public class EntryCombination {
             mQualifierUiAccumulator.reset();
             mQualifierNameHandler.reset();
         }
-        public EntryCombination getEntryCombination() {
-            return new EntryCombination(mDescriptorUiAccumulator.getText().trim(),
-                                        mDescriptorNameHandler.getText().trim(),
-                                        mQualifierUiAccumulator.getText().trim(),
-                                        mQualifierNameHandler.getText().trim());
+        public MeshEntryCombination getEntryCombination() {
+            return new MeshEntryCombination(mDescriptorUiAccumulator.getText().trim(),
+                                            mDescriptorNameHandler.getText().trim(),
+                                            mQualifierUiAccumulator.getText().trim(),
+                                            mQualifierNameHandler.getText().trim());
         }
     }
 
     static class ListHandler extends DelegateHandler {
-        private final List<EntryCombination> mEntryCombinationList
-            = new ArrayList<EntryCombination>();
+        private final List<MeshEntryCombination> mEntryCombinationList
+            = new ArrayList<MeshEntryCombination>();
         private final Handler mEntryCombinationHandler;
         public ListHandler(DelegatingHandler parent) {
             super(parent);
@@ -131,7 +131,7 @@ public class EntryCombination {
             mEntryCombinationList.clear();
             mEntryCombinationHandler.reset();
         }
-        public List<EntryCombination> getEntryCombinationList() {
+        public List<MeshEntryCombination> getEntryCombinationList() {
             return mEntryCombinationList;
         }
     }
