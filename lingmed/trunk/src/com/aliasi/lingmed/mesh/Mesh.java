@@ -43,6 +43,7 @@ public class Mesh {
     private final List<String> mPreviousIndexingList;
     private final List<EntryCombination> mEntryCombinationList;
     private final List<MeshDescriptor> mSeeRelatedList;
+    private final String mConsiderAlso;
     
     public Mesh(DescriptorClass descriptorClass,
                 MeshDescriptor descriptor,
@@ -57,7 +58,8 @@ public class Mesh {
                 String publicMeshNote,
                 List<String> previousIndexingList,
                 List<EntryCombination> entryCombinationList,
-                List<MeshDescriptor> seeRelatedList) {
+                List<MeshDescriptor> seeRelatedList,
+                String considerAlso) {
         mDescriptorClass = descriptorClass;
         mDescriptor = descriptor;
         mDateCreated = dateCreated;
@@ -72,7 +74,9 @@ public class Mesh {
         mPreviousIndexingList = previousIndexingList;
         mEntryCombinationList = entryCombinationList;
         mSeeRelatedList = seeRelatedList;
+        mConsiderAlso = considerAlso.length() == 0 ? null : considerAlso;
     }
+
 
     public DescriptorClass descriptorClass() {
         return mDescriptorClass;
@@ -131,6 +135,10 @@ public class Mesh {
         return Collections.unmodifiableList(mSeeRelatedList);
     }
 
+    public String considerAlso() {
+        return mConsiderAlso;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Descriptor Class=" + descriptorClass() + "\n");
@@ -158,6 +166,7 @@ public class Mesh {
         for (int i = 0; i < seeRelatedList.size(); ++i)
             sb.append("SeeRelated[" + i + "]=" 
                       + seeRelatedList.get(i) + "\n");
+        sb.append("Consider Also=" + mConsiderAlso);
         return sb.toString();
     }
 
@@ -177,6 +186,7 @@ public class Mesh {
         private final ListHandler mPreviousIndexingListHandler;
         private final EntryCombination.ListHandler mEntryCombinationListHandler;
         private final MeshDescriptor.ListHandler mSeeRelatedListHandler;
+        private final TextAccumulatorHandler mConsiderAlsoHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mDescriptorNameHandler = new StringHandler(parent);
@@ -226,6 +236,9 @@ public class Mesh {
                 = new MeshDescriptor.ListHandler(parent,MeshParser.DESCRIPTOR_REFERRED_TO_ELEMENT);
             setDelegate(MeshParser.SEE_RELATED_LIST_ELEMENT,
                         mSeeRelatedListHandler);
+            mConsiderAlsoHandler = new TextAccumulatorHandler();
+            setDelegate(MeshParser.CONSIDER_ALSO_ELEMENT,
+                        mConsiderAlsoHandler);
         }
 
         @Override
@@ -245,6 +258,8 @@ public class Mesh {
             mPublicMeshNoteHandler.reset();
             mPreviousIndexingListHandler.reset();
             mEntryCombinationListHandler.reset();
+            mSeeRelatedListHandler.reset();
+            mConsiderAlsoHandler.reset();
         }
 
         @Override
@@ -280,7 +295,8 @@ public class Mesh {
                             mPublicMeshNoteHandler.getText(),
                             mPreviousIndexingListHandler.getList(),
                             mEntryCombinationListHandler.getEntryCombinationList(),
-                            mSeeRelatedListHandler.getDescriptorList());
+                            mSeeRelatedListHandler.getDescriptorList(),
+                            mConsiderAlsoHandler.getText());
         }
     }
 
