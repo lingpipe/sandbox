@@ -216,7 +216,7 @@ public class Mesh {
         sb.append("Record Originator List=" + recordOriginatorList() + "\n");
         List<MeshConcept> conceptList = conceptList();
         for (int i = 0; i < conceptList.size(); ++i)
-            sb.append("Concept[" + i + "]=" 
+            sb.append("Concept[" + i + "]=\n" 
                       + conceptList.get(i) + "\n");
         return sb.toString();
     }
