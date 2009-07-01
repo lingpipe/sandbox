@@ -46,6 +46,7 @@ public class Mesh {
     private final String mConsiderAlso;
     private final List<MeshDescriptor> mPharmacologicalActionList;
     private final String mRunningHead;
+    private final List<String> mTreeNumberList;
 
     public Mesh(DescriptorClass descriptorClass,
                 MeshDescriptor descriptor,
@@ -63,7 +64,8 @@ public class Mesh {
                 List<MeshDescriptor> seeRelatedList,
                 String considerAlso,
                 List<MeshDescriptor> pharmacologicalActionList,
-                String runningHead) {
+                String runningHead,
+                List<String> treeNumberList) {
         mDescriptorClass = descriptorClass;
         mDescriptor = descriptor;
         mDateCreated = dateCreated;
@@ -81,6 +83,7 @@ public class Mesh {
         mConsiderAlso = considerAlso.length() == 0 ? null : considerAlso;
         mPharmacologicalActionList = pharmacologicalActionList;
         mRunningHead = runningHead.length() == 0 ? null : runningHead;
+        mTreeNumberList = treeNumberList;
     }
 
 
@@ -153,6 +156,10 @@ public class Mesh {
         return mRunningHead;
     }
 
+    public List<String> treeNumberList() {
+        return Collections.unmodifiableList(mTreeNumberList);
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Descriptor Class=" + descriptorClass() + "\n");
@@ -188,6 +195,10 @@ public class Mesh {
                       + pharmacologicalActionList.get(i)
                       + "\n");
         sb.append("Running Head=" + mRunningHead + "\n");
+        List<String> treeNumberList = treeNumberList();
+        for (int i = 0; i < treeNumberList.size(); ++i)
+            sb.append("Tree Number[" + i + "]=" 
+                      + treeNumberList.get(i) + "\n");
         return sb.toString();
     }
 
@@ -210,6 +221,7 @@ public class Mesh {
         private final TextAccumulatorHandler mConsiderAlsoHandler;
         private final MeshDescriptor.ListHandler mPharmacologicalActionListHandler;
         private final TextAccumulatorHandler mRunningHeadHandler;
+        private final ListHandler mTreeNumberListHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mDescriptorNameHandler = new StringHandler(parent);
@@ -269,6 +281,9 @@ public class Mesh {
             mRunningHeadHandler = new TextAccumulatorHandler();
             setDelegate(MeshParser.RUNNING_HEAD_ELEMENT,
                         mRunningHeadHandler);
+            mTreeNumberListHandler = new ListHandler(parent,MeshParser.TREE_NUMBER_ELEMENT);
+            setDelegate(MeshParser.TREE_NUMBER_LIST_ELEMENT,
+                        mTreeNumberListHandler);
         }
 
         @Override
@@ -292,6 +307,7 @@ public class Mesh {
             mConsiderAlsoHandler.reset();
             mPharmacologicalActionListHandler.reset();
             mRunningHeadHandler.reset();
+            mTreeNumberListHandler.reset();
         }
 
         @Override
@@ -330,7 +346,8 @@ public class Mesh {
                             mSeeRelatedListHandler.getDescriptorList(),
                             mConsiderAlsoHandler.getText(),
                             mPharmacologicalActionListHandler.getDescriptorList(),
-                            mRunningHeadHandler.getText());
+                            mRunningHeadHandler.getText(),
+                            mTreeNumberListHandler.getList());
         }
     }
 

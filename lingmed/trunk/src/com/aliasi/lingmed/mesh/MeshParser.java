@@ -75,6 +75,8 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String RUNNING_HEAD_ELEMENT = "RunningHead";
     static final String SEE_RELATED_LIST_ELEMENT = "SeeRelatedList";
     static final String STRING_ELEMENT = "String";
+    static final String TREE_NUMBER_ELEMENT = "TreeNumber";
+    static final String TREE_NUMBER_LIST_ELEMENT = "TreeNumberList";
     static final String YEAR_ELEMENT = "Year";
     
 
