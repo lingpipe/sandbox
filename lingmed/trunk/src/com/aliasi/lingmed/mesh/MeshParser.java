@@ -49,6 +49,7 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String ALLOWABLE_QUALIFIER_ELEMENT = "AllowableQualifier";
     static final String ALLOWABLE_QUALIFIERS_LIST_ELEMENT = "AllowableQualifiersList";
     static final String ANNOTATION_ELEMENT = "Annotation";
+    static final String CONSIDER_ALSO_ELEMENT = "ConsiderAlso";
     static final String DATE_CREATED_ELEMENT = "DateCreated";
     static final String DATE_REVISED_ELEMENT = "DateRevised";
     static final String DATE_ESTABLISHED_ELEMENT = "DateEstablished";
