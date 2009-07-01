@@ -8,45 +8,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshConcept {
 
-    // <!ELEMENT ConceptList (Concept+)  >
-    // <!ELEMENT Concept (ConceptUI,
-    //      ConceptName,
-    //      ConceptUMLSUI?,
-    //      CASN1Name?,
-    //      RegistryNumber?,
-    //      ScopeNote?,
-    //      SemanticTypeList?,
-    //      RelatedRegistryNumberList?,
-    //      ConceptRelationList?,
-    //      TermList)>
-    // <!ELEMENT ConceptUI (#PCDATA)>
-    // <!ELEMENT ConceptName (String)>
-    // <!ELEMENT ConceptUMLSUI (#PCDATA)>
-    // <!ELEMENT CASN1Name (#PCDATA)>
-    // <!ELEMENT RegistryNumber (#PCDATA)>
-    // <!ELEMENT ScopeNote (#PCDATA)>
-    // <!ELEMENT SemanticTypeList (SemanticType+)>
-    // <!ELEMENT SemanticType (SemanticTypeUI, SemanticTypeName) >
-    // <!ELEMENT SemanticTypeUI (#PCDATA)>
-    // <!ELEMENT SemanticTypeName (#PCDATA)>
-    // <!ELEMENT RelatedRegistryNumberList (RelatedRegistryNumber+)>
-    // <!ELEMENT RelatedRegistryNumber (#PCDATA)>
-    // <!ELEMENT ConceptRelationList (ConceptRelation+) >
-    // <!ELEMENT ConceptRelation (Concept1UI,Concept2UI,RelationAttribute?)>
-    // <!ATTLIST ConceptRelation RelationName (NRW | BRD | REL) #IMPLIED >
-    // <!ELEMENT Concept1UI (#PCDATA)>
-    // <!ELEMENT Concept2UI (#PCDATA)>
-    // <!ELEMENT ConceptUMLSUI (#PCDATA)>
-    // <!ELEMENT RelationAttribute (#PCDATA)>
-    // <!ELEMENT TermList (Term+)>
-
-
+    private final boolean mPreferred;
     private final String mConceptUi;
     private final String mConceptName;
     private final String mConceptUmlsUi;
@@ -58,16 +33,18 @@ public class MeshConcept {
     private final List<MeshConceptRelation> mConceptRelationList;
     private final List<MeshTerm> mTermList;
 
-    public MeshConcept(String conceptUi,
-                       String conceptName,
-                       String conceptUmlsUi,
-                       String casn1Name,
-                       String registryNumber,
-                       String scopeNote,
-                       List<MeshSemanticType> semanticTypeList,
-                       List<String> relatedRegistryNumberList,
-                       List<MeshConceptRelation> conceptRelationList,
-                       List<MeshTerm> termList) {
+    MeshConcept(boolean preferred,
+                String conceptUi,
+                String conceptName,
+                String conceptUmlsUi,
+                String casn1Name,
+                String registryNumber,
+                String scopeNote,
+                List<MeshSemanticType> semanticTypeList,
+                List<String> relatedRegistryNumberList,
+                List<MeshConceptRelation> conceptRelationList,
+                List<MeshTerm> termList) {
+        mPreferred = preferred;
         mConceptUi = conceptUi;
         mConceptName = conceptName;
         mConceptUmlsUi = conceptUmlsUi.length() == 0 ? null : conceptUmlsUi;
@@ -78,6 +55,16 @@ public class MeshConcept {
         mRelatedRegistryNumberList = relatedRegistryNumberList;
         mConceptRelationList = conceptRelationList;
         mTermList = termList;
+    }
+
+    /**
+     * Returns {@code true} if this is the preferred concept in
+     * a list of concepts for a record.
+     *
+     * @return Preferential status of this concept.
+     */
+    public boolean preferred() {
+        return mPreferred;
     }
 
     public String conceptUi() {
@@ -149,6 +136,7 @@ public class MeshConcept {
     }
 
     static class Handler extends DelegateHandler {
+        boolean mPreferred;
         TextAccumulatorHandler mConceptUiHandler;
         Mesh.StringHandler mConceptNameHandler;
         TextAccumulatorHandler mConceptUmlsUiHandler;
@@ -192,6 +180,13 @@ public class MeshConcept {
             super.startDocument();
             reset();
         }
+        @Override
+        public void startElement(String url, String name, String qName,
+                                 Attributes atts) throws SAXException {
+            super.startElement(url,name,qName,atts);
+            if (!MeshParser.CONCEPT_ELEMENT.equals(qName)) return;
+            mPreferred = "Y".equals(atts.getValue(MeshParser.PREFERRED_CONCEPT_YN_ATT));
+        }
         public void reset() {
             mConceptUiHandler.reset();
             mConceptNameHandler.reset();
@@ -203,9 +198,11 @@ public class MeshConcept {
             mRelatedRegistryNumberListHandler.reset();
             mConceptRelationListHandler.reset();
             mTermListHandler.reset();
+            mPreferred = false;
         }
         public MeshConcept getConcept() {
-            return new MeshConcept(mConceptUiHandler.getText().trim(),
+            return new MeshConcept(mPreferred,
+                                   mConceptUiHandler.getText().trim(),
                                    mConceptNameHandler.getText().trim(),
                                    mConceptUmlsUiHandler.getText().trim(),
                                    mCasn1NameHandler.getText().trim(),

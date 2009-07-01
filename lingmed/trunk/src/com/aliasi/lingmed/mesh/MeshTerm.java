@@ -13,6 +13,13 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ *
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshTerm {
 
     // <!ELEMENT Term (TermUI,String,
@@ -47,18 +54,18 @@ public class MeshTerm {
     private final boolean mPrintFlag;
     private final boolean mRecordPreferred;
 
-    public MeshTerm(String referenceUi,
-                    String referenceString,
-                    MeshDate dateCreated,
-                    String abbreviation,
-                    String sortVersion,
-                    String entryVersion,
-                    List<String> thesaurusIdList,
-                    boolean conceptPreferred,
-                    boolean isPermuted,
-                    String lexicalTag,
-                    boolean printFlag,
-                    boolean recordPreferred) {
+    MeshTerm(String referenceUi,
+             String referenceString,
+             MeshDate dateCreated,
+             String abbreviation,
+             String sortVersion,
+             String entryVersion,
+             List<String> thesaurusIdList,
+             boolean conceptPreferred,
+             boolean isPermuted,
+             String lexicalTag,
+             boolean printFlag,
+             boolean recordPreferred) {
         mReferenceUi = referenceUi;
         mReferenceString = referenceString;
         mDateCreated = dateCreated;

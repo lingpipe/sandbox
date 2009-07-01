@@ -11,6 +11,13 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ *
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshSemanticType {
 
 
@@ -22,8 +29,8 @@ public class MeshSemanticType {
     private final String mUi;
     private final String mName;
 
-    public MeshSemanticType(String ui, 
-                            String name) {
+    MeshSemanticType(String ui, 
+                     String name) {
         mUi = ui;
         mName = name;
     }

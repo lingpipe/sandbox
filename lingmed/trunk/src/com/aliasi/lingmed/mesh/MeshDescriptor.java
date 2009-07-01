@@ -10,6 +10,12 @@ import java.util.List;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshDescriptor {
 
     // <!ENTITY  % DescriptorReference "(DescriptorUI, DescriptorName)">
@@ -19,7 +25,7 @@ public class MeshDescriptor {
     private final String mUi;
     private final String mName;
     
-    public MeshDescriptor(String ui, String name) {
+    MeshDescriptor(String ui, String name) {
         mUi = ui;
         mName = name;
     }
@@ -37,7 +43,7 @@ public class MeshDescriptor {
         return "UI=" + ui() + "; name=" + name();
     }
     
-    public static class Handler extends DelegateHandler {
+    static class Handler extends DelegateHandler {
         final TextAccumulatorHandler mUiHandler;
         final Mesh.StringHandler mNameHandler;
         public Handler(DelegatingHandler parent) {
@@ -63,7 +69,7 @@ public class MeshDescriptor {
         }
     }
 
-    public static class ListHandler extends DelegateHandler {
+    static class ListHandler extends DelegateHandler {
         final List<MeshDescriptor> mDescriptorList
             = new ArrayList<MeshDescriptor>();
         final Handler mDescriptorHandler;
