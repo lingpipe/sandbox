@@ -29,7 +29,7 @@ public class Mesh {
     // <!ELEMENT DescriptorName (String) >
 
 
-    private final DescriptorClass mDescriptorClass;
+    private final MeshDescriptorClass mDescriptorClass;
     private final MeshDescriptor mDescriptor;
     private final MeshDate mDateCreated;
     private final MeshDate mDateRevised;
@@ -41,7 +41,7 @@ public class Mesh {
     private final String mOnlineNote;
     private final String mPublicMeshNote;
     private final List<String> mPreviousIndexingList;
-    private final List<EntryCombination> mEntryCombinationList;
+    private final List<MeshEntryCombination> mEntryCombinationList;
     private final List<MeshDescriptor> mSeeRelatedList;
     private final String mConsiderAlso;
     private final List<MeshDescriptor> mPharmacologicalActionList;
@@ -50,7 +50,7 @@ public class Mesh {
     private final MeshRecordOriginatorList mRecordOriginatorList;
     private final List<MeshConcept> mConceptList;
 
-    public Mesh(DescriptorClass descriptorClass,
+    public Mesh(MeshDescriptorClass descriptorClass,
                 MeshDescriptor descriptor,
                 MeshDate dateCreated,
                 MeshDate dateRevised,
@@ -62,7 +62,7 @@ public class Mesh {
                 String onlineNote,
                 String publicMeshNote,
                 List<String> previousIndexingList,
-                List<EntryCombination> entryCombinationList,
+                List<MeshEntryCombination> entryCombinationList,
                 List<MeshDescriptor> seeRelatedList,
                 String considerAlso,
                 List<MeshDescriptor> pharmacologicalActionList,
@@ -93,7 +93,7 @@ public class Mesh {
     }
 
 
-    public DescriptorClass descriptorClass() {
+    public MeshDescriptorClass descriptorClass() {
         return mDescriptorClass;
     }
 
@@ -142,7 +142,7 @@ public class Mesh {
         return Collections.unmodifiableList(mPreviousIndexingList);
     }
 
-    public List<EntryCombination> entryCombinationList() {
+    public List<MeshEntryCombination> entryCombinationList() {
         return Collections.unmodifiableList(mEntryCombinationList);
     }
 
@@ -192,7 +192,7 @@ public class Mesh {
         sb.append("\nOnline Note=" + onlineNote());
         sb.append("\nPublic Mesh Note=" + publicMeshNote());
         sb.append("\nPrevious Indexing List=" + previousIndexingList());
-        List<EntryCombination> entryCombinationList 
+        List<MeshEntryCombination> entryCombinationList 
             = entryCombinationList();
         for (int i = 0; i < entryCombinationList.size(); ++i)
             sb.append("\nEntry Combination["  + i + "]="
@@ -221,7 +221,7 @@ public class Mesh {
     }
 
     static class Handler extends DelegateHandler {
-        private DescriptorClass mDescriptorClass;
+        private MeshDescriptorClass mDescriptorClass;
         private final StringHandler mDescriptorNameHandler;
         private final TextAccumulatorHandler mDescriptorUIHandler;
         private final MeshDate.Handler mDateCreatedHandler;
@@ -234,7 +234,7 @@ public class Mesh {
         private final TextAccumulatorHandler mOnlineNoteHandler;
         private final TextAccumulatorHandler mPublicMeshNoteHandler;
         private final ListHandler mPreviousIndexingListHandler;
-        private final EntryCombination.ListHandler mEntryCombinationListHandler;
+        private final MeshEntryCombination.ListHandler mEntryCombinationListHandler;
         private final MeshDescriptor.ListHandler mSeeRelatedListHandler;
         private final TextAccumulatorHandler mConsiderAlsoHandler;
         private final MeshDescriptor.ListHandler mPharmacologicalActionListHandler;
@@ -284,7 +284,7 @@ public class Mesh {
             setDelegate(MeshParser.PREVIOUS_INDEXING_LIST_ELEMENT,
                         mPreviousIndexingListHandler);
             mEntryCombinationListHandler
-                = new EntryCombination.ListHandler(parent);
+                = new MeshEntryCombination.ListHandler(parent);
             setDelegate(MeshParser.ENTRY_COMBINATION_LIST_ELEMENT,
                         mEntryCombinationListHandler);
             mSeeRelatedListHandler
@@ -346,13 +346,13 @@ public class Mesh {
             if (MeshParser.DESCRIPTOR_RECORD_ELEMENT.equals(qName)) {
                 String descriptorString = atts.getValue(MeshParser.DESCRIPTOR_CLASS_ATT);
                 if ("2".equals(descriptorString))
-                    mDescriptorClass = DescriptorClass.TWO;
+                    mDescriptorClass = MeshDescriptorClass.TWO;
                 else if ("3".equals(descriptorString))
-                    mDescriptorClass = DescriptorClass.THREE;
+                    mDescriptorClass = MeshDescriptorClass.THREE;
                 else if ("4".equals(descriptorString))
-                    mDescriptorClass = DescriptorClass.FOUR;
+                    mDescriptorClass = MeshDescriptorClass.FOUR;
                 else
-                    mDescriptorClass = DescriptorClass.ONE;
+                    mDescriptorClass = MeshDescriptorClass.ONE;
             }                    
             
         }

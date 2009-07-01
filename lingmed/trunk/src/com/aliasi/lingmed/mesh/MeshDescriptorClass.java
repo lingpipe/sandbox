@@ -1,6 +1,6 @@
 package com.aliasi.lingmed.mesh;
 
-public enum DescriptorClass {
+public enum MeshDescriptorClass {
 
     ONE(1), 
     TWO(2), 
@@ -9,7 +9,7 @@ public enum DescriptorClass {
         
     private final int mNumericalValue;
 
-    DescriptorClass(int numericalValue) {
+    MeshDescriptorClass(int numericalValue) {
         mNumericalValue = numericalValue;
     }
 
