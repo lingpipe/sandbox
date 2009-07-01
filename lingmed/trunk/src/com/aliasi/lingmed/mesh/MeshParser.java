@@ -49,6 +49,15 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String ALLOWABLE_QUALIFIER_ELEMENT = "AllowableQualifier";
     static final String ALLOWABLE_QUALIFIERS_LIST_ELEMENT = "AllowableQualifiersList";
     static final String ANNOTATION_ELEMENT = "Annotation";
+    static final String CASN1_NAME_ELEMENT = "CASN1Name";
+    static final String CONCEPT_ELEMENT = "Concept";
+    static final String CONCEPT_LIST_ELEMENT = "ConceptList";
+    static final String CONCEPT_NAME_ELEMENT = "ConceptName";
+    static final String CONCEPT_RELATION_LIST_ELEMENT = "ConceptRelationList";
+    static final String CONCEPT_UI_ELEMENT = "ConceptUI";
+    static final String CONCEPT_UMLS_UI_ELEMENT = "ConceptUMLSUI";
+    static final String CONCEPT_1_UI_ELEMENT = "Concept1UI";
+    static final String CONCEPT_2_UI_ELEMENT = "Concept2UI";
     static final String CONSIDER_ALSO_ELEMENT = "ConsiderAlso";
     static final String DATE_CREATED_ELEMENT = "DateCreated";
     static final String DATE_REVISED_ELEMENT = "DateRevised";
@@ -76,15 +85,26 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String RECORD_MAINTAINER_ELEMENT = "RecordMaintainer";
     static final String RECORD_ORIGINATOR_ELEMENT = "RecordOriginator";
     static final String RECORD_ORIGINATORS_LIST_ELEMENT = "RecordOriginatorsList";
+    static final String REGISTRY_NUMBER_ELEMENT = "RegistryNumber";
+    static final String RELATED_REGISTRY_NUMBER_ELEMENT = "RelatedRegistryNumber";
+    static final String RELATED_REGISTRY_NUMBER_LIST_ELEMENT = "RelatedRegistryNumberList";
+    static final String RELATION_ATTRIBUTE_ELEMENT = "RelationAttribute";
     static final String RUNNING_HEAD_ELEMENT = "RunningHead";
+    static final String SEMANTIC_TYPE_ELEMENT = "SemanticType";
+    static final String SEMANTIC_TYPE_LIST_ELEMENT = "SemanticTypeList";
+    static final String SEMANTIC_TYPE_NAME_ELEMENT = "SemanticTypeName";
+    static final String SEMANTIC_TYPE_UI_ELEMENT = "SemanticTypeUI";
+    static final String SCOPE_NOTE_ELEMENT = "ScopeNote";
     static final String SEE_RELATED_LIST_ELEMENT = "SeeRelatedList";
     static final String STRING_ELEMENT = "String";
+    static final String TERM_LIST_ELEMENT = "TermList";
     static final String TREE_NUMBER_ELEMENT = "TreeNumber";
     static final String TREE_NUMBER_LIST_ELEMENT = "TreeNumberList";
     static final String YEAR_ELEMENT = "Year";
     
 
     static final String DESCRIPTOR_CLASS_ATT = "DescriptorClass";
+    static final String RELATION_NAME_ATT = "RelationName";
 
     
 }
