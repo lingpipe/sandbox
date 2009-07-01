@@ -72,6 +72,7 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String PUBLIC_MESH_NOTE_ELEMENT = "PublicMeSHNote";
     static final String QUALIFIER_UI_ELEMENT = "QualifierUI";
     static final String QUALIFIER_NAME_ELEMENT = "QualifierName";
+    static final String RUNNING_HEAD_ELEMENT = "RunningHead";
     static final String SEE_RELATED_LIST_ELEMENT = "SeeRelatedList";
     static final String STRING_ELEMENT = "String";
     static final String YEAR_ELEMENT = "Year";
