@@ -93,9 +93,9 @@ public class MeshConceptRelation {
         }
         public MeshConceptRelation getConcept() {
             return new MeshConceptRelation(mRelationName,
-                                           mConcept1UiHandler.getText(),
-                                           mConcept2UiHandler.getText(),
-                                           mRelationAttributeHandler.getText());
+                                           mConcept1UiHandler.getText().trim(),
+                                           mConcept2UiHandler.getText().trim(),
+                                           mRelationAttributeHandler.getText().trim());
                                    
         }
     }

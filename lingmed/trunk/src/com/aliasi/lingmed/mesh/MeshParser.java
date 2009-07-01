@@ -72,6 +72,7 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String ECOUT_ELEMENT = "ECOUT";
     static final String ENTRY_COMBINATION_ELEMENT = "EntryCombination";
     static final String ENTRY_COMBINATION_LIST_ELEMENT = "EntryCombinationList";
+    static final String ENTRY_VERSION_ELEMENT = "EntryVersion";
     static final String HISTORY_NOTE_ELEMENT = "HistoryNote";
     static final String MONTH_ELEMENT = "Month";
     static final String ONLINE_NOTE_ELEMENT = "OnlineNote";
@@ -97,15 +98,25 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String SEMANTIC_TYPE_UI_ELEMENT = "SemanticTypeUI";
     static final String SCOPE_NOTE_ELEMENT = "ScopeNote";
     static final String SEE_RELATED_LIST_ELEMENT = "SeeRelatedList";
+    static final String SORT_VERSION_ELEMENT = "SortVersion";
     static final String STRING_ELEMENT = "String";
+    static final String TERM_ELEMENT = "Term";
     static final String TERM_LIST_ELEMENT = "TermList";
+    static final String TERM_UI_ELEMENT = "TermUI";
+    static final String THESAURUS_ID_ELEMENT = "ThesaurusID";
+    static final String THESAURUS_ID_LIST_ELEMENT = "ThesaurusIDlist";
     static final String TREE_NUMBER_ELEMENT = "TreeNumber";
     static final String TREE_NUMBER_LIST_ELEMENT = "TreeNumberList";
     static final String YEAR_ELEMENT = "Year";
     
 
+    static final String CONCEPT_PREFERRED_TERM_YN_ATT = "ConceptPreferredTermYN";
     static final String DESCRIPTOR_CLASS_ATT = "DescriptorClass";
+    static final String IS_PERMUTED_TERM_YN_ATT = "IsPermutedTermYN";
+    static final String LEXICAL_TAG_ATT = "LexicalTag";
+    static final String PRINT_FLAG_YN_ATT = "PrintFlagYN";
+    static final String RECORD_PREFERRED_TERM_YN_ATT = "RecordPreferredTermYN";
     static final String RELATION_NAME_ATT = "RelationName";
-
+    
     
 }

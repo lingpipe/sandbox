@@ -76,9 +76,9 @@ public class MeshAllowableQualifier {
             mAbbreviationHandler.reset();
         }
         public MeshAllowableQualifier getQualifier() {
-            return new MeshAllowableQualifier(mQualifierUiHandler.getText(),
-                                              mQualifierNameHandler.getText(),
-                                              mAbbreviationHandler.getText());
+            return new MeshAllowableQualifier(mQualifierUiHandler.getText().trim(),
+                                              mQualifierNameHandler.getText().trim(),
+                                              mAbbreviationHandler.getText().trim());
         }
     }
 

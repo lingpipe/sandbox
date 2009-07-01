@@ -68,9 +68,9 @@ public class MeshRecordOriginatorList {
             mAuthorizerHandler.reset();
         }
         public MeshRecordOriginatorList getRecordOriginatorList() {
-            return new MeshRecordOriginatorList(mOriginatorHandler.getText(),
-                                                mMaintainerHandler.getText(),
-                                                mAuthorizerHandler.getText());
+            return new MeshRecordOriginatorList(mOriginatorHandler.getText().trim(),
+                                                mMaintainerHandler.getText().trim(),
+                                                mAuthorizerHandler.getText().trim());
         }
     }
 

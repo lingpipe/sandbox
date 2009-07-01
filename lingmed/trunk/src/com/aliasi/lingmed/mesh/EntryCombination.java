@@ -101,10 +101,10 @@ public class EntryCombination {
             mQualifierNameHandler.reset();
         }
         public EntryCombination getEntryCombination() {
-            return new EntryCombination(mDescriptorUiAccumulator.getText(),
-                                        mDescriptorNameHandler.getText(),
-                                        mQualifierUiAccumulator.getText(),
-                                        mQualifierNameHandler.getText());
+            return new EntryCombination(mDescriptorUiAccumulator.getText().trim(),
+                                        mDescriptorNameHandler.getText().trim(),
+                                        mQualifierUiAccumulator.getText().trim(),
+                                        mQualifierNameHandler.getText().trim());
         }
     }
 
