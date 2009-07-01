@@ -47,6 +47,7 @@ public class Mesh {
     private final List<MeshDescriptor> mPharmacologicalActionList;
     private final String mRunningHead;
     private final List<String> mTreeNumberList;
+    private final MeshRecordOriginator mRecordOriginator;
 
     public Mesh(DescriptorClass descriptorClass,
                 MeshDescriptor descriptor,
@@ -65,7 +66,8 @@ public class Mesh {
                 String considerAlso,
                 List<MeshDescriptor> pharmacologicalActionList,
                 String runningHead,
-                List<String> treeNumberList) {
+                List<String> treeNumberList,
+                MeshRecordOriginator recordOriginator) {
         mDescriptorClass = descriptorClass;
         mDescriptor = descriptor;
         mDateCreated = dateCreated;
@@ -84,6 +86,7 @@ public class Mesh {
         mPharmacologicalActionList = pharmacologicalActionList;
         mRunningHead = runningHead.length() == 0 ? null : runningHead;
         mTreeNumberList = treeNumberList;
+        mRecordOriginator = recordOriginator;
     }
 
 
@@ -160,6 +163,10 @@ public class Mesh {
         return Collections.unmodifiableList(mTreeNumberList);
     }
 
+    public MeshRecordOriginator recordOriginatorList() {
+        return mRecordOriginator;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Descriptor Class=" + descriptorClass() + "\n");
@@ -199,6 +206,7 @@ public class Mesh {
         for (int i = 0; i < treeNumberList.size(); ++i)
             sb.append("Tree Number[" + i + "]=" 
                       + treeNumberList.get(i) + "\n");
+        sb.append("Record Originator List=" + recordOriginatorList());
         return sb.toString();
     }
 
@@ -222,6 +230,7 @@ public class Mesh {
         private final MeshDescriptor.ListHandler mPharmacologicalActionListHandler;
         private final TextAccumulatorHandler mRunningHeadHandler;
         private final ListHandler mTreeNumberListHandler;
+        private final MeshRecordOriginator.Handler mRecordOriginatorHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mDescriptorNameHandler = new StringHandler(parent);
@@ -284,6 +293,9 @@ public class Mesh {
             mTreeNumberListHandler = new ListHandler(parent,MeshParser.TREE_NUMBER_ELEMENT);
             setDelegate(MeshParser.TREE_NUMBER_LIST_ELEMENT,
                         mTreeNumberListHandler);
+            mRecordOriginatorHandler = new MeshRecordOriginator.Handler(parent);
+            setDelegate(MeshParser.RECORD_ORIGINATORS_LIST_ELEMENT,
+                        mRecordOriginatorHandler);
         }
 
         @Override
@@ -308,6 +320,7 @@ public class Mesh {
             mPharmacologicalActionListHandler.reset();
             mRunningHeadHandler.reset();
             mTreeNumberListHandler.reset();
+            mRecordOriginatorHandler.reset();
         }
 
         @Override
@@ -347,7 +360,8 @@ public class Mesh {
                             mConsiderAlsoHandler.getText(),
                             mPharmacologicalActionListHandler.getDescriptorList(),
                             mRunningHeadHandler.getText(),
-                            mTreeNumberListHandler.getList());
+                            mTreeNumberListHandler.getList(),
+                            mRecordOriginatorHandler.getRecordOriginator());
         }
     }
 
