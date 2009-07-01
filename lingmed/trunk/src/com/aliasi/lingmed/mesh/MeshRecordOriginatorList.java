@@ -9,15 +9,15 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
-public class MeshRecordOriginator {
+public class MeshRecordOriginatorList {
 
     private final String mOriginator;
     private final String mMaintainer;
     private final String mAuthorizer;
 
-    public MeshRecordOriginator(String originator,
-                                String maintainer,
-                                String authorizer) {
+    public MeshRecordOriginatorList(String originator,
+                                    String maintainer,
+                                    String authorizer) {
         mOriginator = originator;
         mMaintainer = maintainer.length() == 0 ? null : maintainer;
         mAuthorizer = authorizer.length() == 0 ? null : authorizer;
@@ -67,10 +67,10 @@ public class MeshRecordOriginator {
             mMaintainerHandler.reset();
             mAuthorizerHandler.reset();
         }
-        public MeshRecordOriginator getRecordOriginator() {
-            return new MeshRecordOriginator(mOriginatorHandler.getText(),
-                                            mMaintainerHandler.getText(),
-                                            mAuthorizerHandler.getText());
+        public MeshRecordOriginatorList getRecordOriginatorList() {
+            return new MeshRecordOriginatorList(mOriginatorHandler.getText(),
+                                                mMaintainerHandler.getText(),
+                                                mAuthorizerHandler.getText());
         }
     }
 
