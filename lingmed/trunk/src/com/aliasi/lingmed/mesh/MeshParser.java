@@ -13,8 +13,17 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 
+/**
+ *
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
 
+    public MeshParser() {
+    }
 
     protected DefaultHandler getXMLHandler() {
         return new XMLHandler();
@@ -114,9 +123,9 @@ public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
     static final String DESCRIPTOR_CLASS_ATT = "DescriptorClass";
     static final String IS_PERMUTED_TERM_YN_ATT = "IsPermutedTermYN";
     static final String LEXICAL_TAG_ATT = "LexicalTag";
+    static final String PREFERRED_CONCEPT_YN_ATT = "PreferredConceptYN";
     static final String PRINT_FLAG_YN_ATT = "PrintFlagYN";
     static final String RECORD_PREFERRED_TERM_YN_ATT = "RecordPreferredTermYN";
     static final String RELATION_NAME_ATT = "RelationName";
-    
     
 }

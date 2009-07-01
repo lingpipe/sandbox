@@ -13,6 +13,13 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+
+/**
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshConceptRelation {
 
     private final String mRelationName;
@@ -20,10 +27,10 @@ public class MeshConceptRelation {
     private final String mConcept2Ui;
     private final String mRelationAttribute;
 
-    public MeshConceptRelation(String relationName,
-                               String concept1Ui,
-                               String concept2Ui,
-                               String relationAttribute) {
+    MeshConceptRelation(String relationName,
+                        String concept1Ui,
+                        String concept2Ui,
+                        String relationAttribute) {
         mRelationName = relationName;
         mConcept1Ui = concept1Ui;
         mConcept2Ui = concept2Ui;

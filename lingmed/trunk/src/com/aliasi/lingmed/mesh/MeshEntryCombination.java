@@ -11,6 +11,12 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshEntryCombination {
 
     // <!ELEMENT EntryCombinationList (EntryCombination+) >
@@ -32,10 +38,11 @@ public class MeshEntryCombination {
     private final String mInQualifier;
     private final String mOutDescriptor;
     private final String mOutQualifier;
-    public MeshEntryCombination(String inDescriptor,
-                                String inQualifier,
-                                String outDescriptor,
-                                String outQualifier) {
+
+    MeshEntryCombination(String inDescriptor,
+                         String inQualifier,
+                         String outDescriptor,
+                         String outQualifier) {
         mInDescriptor = inDescriptor;
         mInQualifier = inQualifier;
         mOutDescriptor = outDescriptor;

@@ -6,15 +6,21 @@ import com.aliasi.xml.TextAccumulatorHandler;
 
 import org.xml.sax.SAXException;
 
+/**
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshDate {
 
     private final int mYear;
     private final int mMonth;
     private final int mDay;
 
-    public MeshDate(String year,
-                    String month,
-                    String day) {
+    MeshDate(String year,
+             String month,
+             String day) {
         mYear = Integer.valueOf(year);
         mMonth = Integer.valueOf(month);
         mDay = Integer.valueOf(day);

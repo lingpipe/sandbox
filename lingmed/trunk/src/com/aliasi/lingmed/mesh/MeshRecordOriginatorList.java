@@ -9,15 +9,22 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+/**
+ *
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshRecordOriginatorList {
 
     private final String mOriginator;
     private final String mMaintainer;
     private final String mAuthorizer;
 
-    public MeshRecordOriginatorList(String originator,
-                                    String maintainer,
-                                    String authorizer) {
+    MeshRecordOriginatorList(String originator,
+                             String maintainer,
+                             String authorizer) {
         mOriginator = originator;
         mMaintainer = maintainer.length() == 0 ? null : maintainer;
         mAuthorizer = authorizer.length() == 0 ? null : authorizer;
@@ -42,7 +49,7 @@ public class MeshRecordOriginatorList {
             + "; Authorizer=" + mAuthorizer;
     }
 
-    public static class Handler extends DelegateHandler {
+    static class Handler extends DelegateHandler {
         final TextAccumulatorHandler mOriginatorHandler;
         final TextAccumulatorHandler mMaintainerHandler;
         final TextAccumulatorHandler mAuthorizerHandler;

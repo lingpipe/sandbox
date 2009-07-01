@@ -14,20 +14,17 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * An instance of {@code Mesh} represents a single concept
- * from the Medical Subject Headings (MeSH).
+ * An instance of {@code Mesh} represents a single record for a
+ * subject heading from the NLM's Medical Subject Headings (MeSH).
+ * The {@code Mesh} object is the top-level object produced by the
+ * {@link MeshParser}.  The data contained in a record is described in
+ * the accessor methods.
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
  */
 public class Mesh {
-
-    // <!ENTITY  % DescriptorReference "
-
-    // SeeRelatedList?,
-    // <!ELEMENT SeeRelatedList (SeeRelatedDescriptor+)>
-    // <!ELEMENT SeeRelatedDescriptor (DescriptorReferredTo)>
-    // <!ELEMENT DescriptorReferredTo (DescriptorUI, DescriptorName) >
-    // <!ELEMENT DescriptorUI (#PCDATA) >
-    // <!ELEMENT DescriptorName (String) >
-
 
     private final MeshDescriptorClass mDescriptorClass;
     private final MeshDescriptor mDescriptor;
@@ -50,26 +47,27 @@ public class Mesh {
     private final MeshRecordOriginatorList mRecordOriginatorList;
     private final List<MeshConcept> mConceptList;
 
-    public Mesh(MeshDescriptorClass descriptorClass,
-                MeshDescriptor descriptor,
-                MeshDate dateCreated,
-                MeshDate dateRevised,
-                MeshDate dateEstablished,
-                List<String> activeMeshYearList,
-                List<MeshAllowableQualifier> allowableQualifierList,
-                String annotation,
-                String historyNote,
-                String onlineNote,
-                String publicMeshNote,
-                List<String> previousIndexingList,
-                List<MeshEntryCombination> entryCombinationList,
-                List<MeshDescriptor> seeRelatedList,
-                String considerAlso,
-                List<MeshDescriptor> pharmacologicalActionList,
-                String runningHead,
-                List<String> treeNumberList,
-                MeshRecordOriginatorList recordOriginatorList,
-                List<MeshConcept> conceptList) {
+    Mesh(MeshDescriptorClass descriptorClass,
+         MeshDescriptor descriptor,
+         MeshDate dateCreated,
+         MeshDate dateRevised,
+         MeshDate dateEstablished,
+         List<String> activeMeshYearList,
+         List<MeshAllowableQualifier> allowableQualifierList,
+         String annotation,
+         String historyNote,
+         String onlineNote,
+         String publicMeshNote,
+         List<String> previousIndexingList,
+         List<MeshEntryCombination> entryCombinationList,
+         List<MeshDescriptor> seeRelatedList,
+         String considerAlso,
+         List<MeshDescriptor> pharmacologicalActionList,
+         String runningHead,
+         List<String> treeNumberList,
+         MeshRecordOriginatorList recordOriginatorList,
+         List<MeshConcept> conceptList) {
+
         mDescriptorClass = descriptorClass;
         mDescriptor = descriptor;
         mDateCreated = dateCreated;
@@ -92,88 +90,242 @@ public class Mesh {
         mConceptList = conceptList;
     }
 
-
+    /**
+     * Returns the descriptor class value for this MeSH term.
+     *
+     * @return The descriptor class.
+     */
     public MeshDescriptorClass descriptorClass() {
         return mDescriptorClass;
     }
 
+    /**
+     * Returns the top-level descriptor associated with this term,
+     * which includes both its name and its unique identifier (UI).
+     *
+     * @return The top-level descriptor.
+     */
     public MeshDescriptor descriptor() {
         return mDescriptor;
     }
     
+    /**
+     * Returns the date when a term or record was first entered into
+     * the MeSH data entry system.  All terms created before January 1,
+     * 1999, have that date as their creation date.
+     *
+     * <p><b>Warning:</b> The DTD doesn't match the description
+     * for this element; it may not be {@code null} according to the DTD,
+     * but is optional according to the descriptions.
+     *
+     * @return The date this record was created.
+     */
     public MeshDate dateCreated() {
         return mDateCreated;
     }
 
+    /**
+     * Returns the date when this record was last changed, or
+     * {@code null} if it has never been changed.
+     *
+     * @return The date when this record was last changed.
+     */
     public MeshDate dateRevised() {
         return mDateRevised;
     }
 
+    /**
+     * Returns the first full month in which this record
+     * was available for searching, or {@code null} if
+     * it has not been established.
+     *
+     * <p><b>Warning:</b> The DTD doesn't match the description
+     * for this element; it may be {@code null} according to the DTD,
+     * but not according to the descriptions.
+     */
     public MeshDate dateEstablished() {
         return mDateEstablished;
     }
     
-    // string because of years like 2006A.  Doh!
+    /**
+     * Returns a list of dates represented as strings for the active
+     * years for this record since its last modification.  The list
+     * elements must be strings because of &quot;years&quot; values
+     * like &quot;2006A&quot;.  There will be an entry for each year
+     * in which this record has been active since its last
+     * modification.
+     *
+     * @return The active years since the last modification of this
+     * record.
+     */
     public List<String> activeYearList() {
         return Collections.unmodifiableList(mActiveMeshYearList);
     }
 
+    /**
+     * Returns the list of qualifiers which may be used with the
+     * descriptor for indexing.
+     *
+     * @return The list of allowable qualifiers for this record's
+     * descriptor.
+     */
     public List<MeshAllowableQualifier> allowableQualifierList() {
         return Collections.unmodifiableList(mAllowableQualifierList);
     }
 
+    /**
+     * Returns free text intended for indexers and catalogers concerning
+     * the descriptor or qualifiers for this record or {@code null} if
+     * there is no annotation.  
+     *
+     * @return The annotation for this record.
+     */
     public String annotation() {
         return mAnnotation;
     }
 
+    /**
+     * Returns free text describing the history of this record or
+     * {@code null} if there is no note.  The initial characters are
+     * dates of the year in which the record appeared in its current
+     * form.  Dates in parentheses indicate the oldest creation dates
+     * of terms, provisional headings or minor headings.  Entries with
+     * no dates are records from 1963-1966.
+     *
+     * @return Free text historical note for this record.
+     */
     public String historyNote() {
         return mHistoryNote;
     }
 
+    /**
+     * Returns free text to help online search or {@code null} if
+     * there is no note.  This field has been deprecated and replaced
+     * with the history note {@link #historyNote()}.
+     *
+     * @return Onlilne search help notes. 
+     */
     public String onlineNote() {
         return mOnlineNote;
     }
 
+    /**
+     * Returns free text that may be helpful to users of <i>Index
+     * Medicus</i>.  Note that the index was discontinued in 2005.
+     * The note includes the creation date, changes in preferred
+     * terms, etc.  MeSH terms in the note are in upper case.
+     */
     public String publicMeshNote() {
         return mPublicMeshNote;
     }
 
+    /**
+     * Returns free text referring to descriptors (with qualifiers) that
+     * were used before the the descriptors were created.  Not currently
+     * maintained for changes.
+     *
+     * @return The list of previous indexing notes.
+     */
     public List<String> previousIndexingList() {
         return Collections.unmodifiableList(mPreviousIndexingList);
     }
 
+    /**
+     * Returns the list of entry combinations that are not allowed
+     * with preferred substitutions.
+     *
+     * @return List of entry combination substitutions.
+     */
     public List<MeshEntryCombination> entryCombinationList() {
         return Collections.unmodifiableList(mEntryCombinationList);
     }
 
+    /**
+     * Returns a list of related descriptors consisting of names
+     * and unique identifiers.
+     *
+     * @return List of related descriptors.
+     */
     public List<MeshDescriptor> seeRelatedList() {
         return Collections.unmodifiableList(mSeeRelatedList);
     }
 
+    /**
+     * Returns free-text describing cross-references for terms with
+     * realted roots, or {@code null} if there is none.
+     *
+     * @return Free text cross-referencing information.
+     */
     public String considerAlso() {
         return mConsiderAlso;
     }
 
+    /**
+     * Returns a list of descriptors describing observed biological activity
+     * of an exogenously administered chemical.
+     *
+     * @return List of descriptors for pharamacological actions for
+     * this record.
+     */
     public List<MeshDescriptor> pharmacologicalActionList() {
         return Collections.unmodifiableList(mPharmacologicalActionList);
     }
 
+    /**
+     * Returns the header printed at the top of each page of the
+     * printed MeSH, or {@code null} if there is none.  There is a
+     * separate header for the 114 subcategories.
+     *
+     * @return The header printed above this entry in the printed
+     * form of MeSH.
+     */
     public String runningHead() {
         return mRunningHead;
     }
 
+    /**
+     * Returns a list of tree numbers referring to a location within the
+     * descriptor or qualifier hierarchy.  Note that the numbers are
+     * structured with periods.
+     *
+     * @return The list of tree numbers for this record.
+     */
     public List<String> treeNumberList() {
         return Collections.unmodifiableList(mTreeNumberList);
     }
 
+    /**
+     * Returns a structured object naming the NLM editor(s) who
+     * created, maintained or authorized this record.  
+     * 
+     * @return Structured record of originators, maintainers and
+     * authorizes of this record.
+     */
     public MeshRecordOriginatorList recordOriginatorList() {
         return mRecordOriginatorList;
     }
 
+    /**
+     * Returns one or more structured concepts for this record.  One
+     * of these concepts will be the preferred concept for this record
+     * (indicated by a flag in the returned object).  These concepts
+     * contain most of the linguistic meaning of the record terms.
+     *
+     * @return List of concepts for this record.  
+     */
     public List<MeshConcept> conceptList() {
         return Collections.unmodifiableList(mConceptList);
     }
 
+    /**
+     * Returns a complete string-based representation of this MeSH
+     * record.  All of the information returned here is derived
+     * by applying the relevant {@code toString()} methods to
+     * objects returned by methods.  There is no information returned
+     * here not available through methods.
+     *
+     * @return String-based representation of this record.
+     */
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Descriptor Class=" + descriptorClass());

@@ -11,6 +11,12 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ *
+ * @author Bob Carpenter
+ * @version 1.3
+ * @since LingMed1.3
+ */
 public class MeshAllowableQualifier {
 
     // <!ELEMENT AllowableQualifiersList (AllowableQualifier+) >
@@ -27,7 +33,7 @@ public class MeshAllowableQualifier {
     final String mQualifierName;
     final String mAbbreviation;
 
-    public MeshAllowableQualifier(String qualifierUi,
+    MeshAllowableQualifier(String qualifierUi,
                                   String qualifierName,
                                   String abbreviation) {
         mQualifierUi = qualifierUi;
