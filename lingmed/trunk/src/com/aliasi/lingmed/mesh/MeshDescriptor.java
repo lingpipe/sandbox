@@ -50,8 +50,8 @@ public class MeshDescriptor {
                         mNameHandler);
         }
         public MeshDescriptor getDescriptor() {
-            return new MeshDescriptor(mUiHandler.getText(),
-                                      mNameHandler.getText());
+            return new MeshDescriptor(mUiHandler.getText().trim(),
+                                      mNameHandler.getText().trim());
         }
         public void reset() {
             mUiHandler.reset();

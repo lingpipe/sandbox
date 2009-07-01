@@ -45,18 +45,6 @@ public class MeshConcept {
     // <!ELEMENT ConceptUMLSUI (#PCDATA)>
     // <!ELEMENT RelationAttribute (#PCDATA)>
     // <!ELEMENT TermList (Term+)>
-    // <!ELEMENT Term (%TermReference;,
-    //     DateCreated?,
-    //     Abbreviation?,
-    //     SortVersion?,
-    //     EntryVersion?,
-    //     ThesaurusIDlist?)>
-    // <!ATTLIST Term    ConceptPreferredTermYN (Y | N) #REQUIRED
-    //     IsPermutedTermYN (Y | N) #REQUIRED
-    //     LexicalTag (ABB|ABX|ACR|ACX|EPO|LAB|NAM|NON|TRD) #REQUIRED
-    //     PrintFlagYN (Y | N) #REQUIRED
-    //     RecordPreferredTermYN (Y | N)  #REQUIRED>
-    // <!ELEMENT TermUI (#PCDATA)>
 
 
     private final String mConceptUi;
@@ -68,6 +56,7 @@ public class MeshConcept {
     private final List<MeshSemanticType> mSemanticTypeList;
     private final List<String> mRelatedRegistryNumberList;
     private final List<MeshConceptRelation> mConceptRelationList;
+    private final List<MeshTerm> mTermList;
 
     public MeshConcept(String conceptUi,
                        String conceptName,
@@ -77,7 +66,8 @@ public class MeshConcept {
                        String scopeNote,
                        List<MeshSemanticType> semanticTypeList,
                        List<String> relatedRegistryNumberList,
-                       List<MeshConceptRelation> conceptRelationList) {
+                       List<MeshConceptRelation> conceptRelationList,
+                       List<MeshTerm> termList) {
         mConceptUi = conceptUi;
         mConceptName = conceptName;
         mConceptUmlsUi = conceptUmlsUi.length() == 0 ? null : conceptUmlsUi;
@@ -87,6 +77,7 @@ public class MeshConcept {
         mSemanticTypeList = semanticTypeList;
         mRelatedRegistryNumberList = relatedRegistryNumberList;
         mConceptRelationList = conceptRelationList;
+        mTermList = termList;
     }
 
     public String conceptUi() {
@@ -125,27 +116,35 @@ public class MeshConcept {
         return Collections.unmodifiableList(mConceptRelationList);
     }
 
+    public List<MeshTerm> termList() {
+        return Collections.unmodifiableList(mTermList);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("  Concept UI=" + conceptUi() + "\n");
-        sb.append("  Concept Name=" + conceptName() + "\n");
-        sb.append("  Concept UMLS UI=" + conceptUmlsUi() + "\n");
-        sb.append("  CASN1 Name=" + casn1Name() + "\n");
-        sb.append("  Registry Number=" + registryNumber() + "\n");
-        sb.append("  Scope Note=" + scopeNote() + "\n");
+        sb.append("  Concept UI=" + conceptUi());
+        sb.append("\n  Concept Name=" + conceptName());
+        sb.append("\n  Concept UMLS UI=" + conceptUmlsUi());
+        sb.append("\n  CASN1 Name=" + casn1Name());
+        sb.append("\n  Registry Number=" + registryNumber());
+        sb.append("\n  Scope Note=" + scopeNote());
         List<MeshSemanticType> semanticTypeList = semanticTypeList();
         for (int i = 0; i < semanticTypeList.size(); ++i)
-            sb.append("  Semantic Type=[" + i + "]="
-                      + semanticTypeList.get(i) + "\n");
+            sb.append("\n  Semantic Type=[" + i + "]="
+                      + semanticTypeList.get(i));
         List<String> relatedRegistryNumberList = relatedRegistryNumberList();
         for (int i = 0; i < relatedRegistryNumberList.size(); ++i)
-            sb.append("  Related Registry Number[" + i + "]="
-                      + relatedRegistryNumberList.get(i) + "\n");
+            sb.append("\n  Related Registry Number[" + i + "]="
+                      + relatedRegistryNumberList.get(i));
         List<MeshConceptRelation> conceptRelationList = conceptRelationList();
         for (int i = 0; i < conceptRelationList.size(); ++i)
-            sb.append("  Concept Relation[" + i + "]="
-                      + conceptRelationList.get(i) + "\n");
+            sb.append("\n  Concept Relation[" + i + "]="
+                      + conceptRelationList.get(i));
+        List<MeshTerm> termList = termList();
+        for (int i = 0; i < termList.size(); ++i)
+            sb.append("\n  Term[" + i + "]=\n" 
+                      + termList.get(i));
         return sb.toString();
     }
 
@@ -159,6 +158,7 @@ public class MeshConcept {
         MeshSemanticType.ListHandler mSemanticTypeListHandler;
         Mesh.ListHandler mRelatedRegistryNumberListHandler;
         MeshConceptRelation.ListHandler mConceptRelationListHandler;
+        MeshTerm.ListHandler mTermListHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mConceptUiHandler = new TextAccumulatorHandler();
@@ -183,6 +183,9 @@ public class MeshConcept {
             mConceptRelationListHandler = new MeshConceptRelation.ListHandler(parent);
             setDelegate(MeshParser.CONCEPT_RELATION_LIST_ELEMENT,
                         mConceptRelationListHandler);
+            mTermListHandler = new MeshTerm.ListHandler(parent);
+            setDelegate(MeshParser.TERM_LIST_ELEMENT,
+                        mTermListHandler);
         }
         @Override
         public void startDocument() throws SAXException {
@@ -199,17 +202,19 @@ public class MeshConcept {
             mSemanticTypeListHandler.reset();
             mRelatedRegistryNumberListHandler.reset();
             mConceptRelationListHandler.reset();
+            mTermListHandler.reset();
         }
         public MeshConcept getConcept() {
-            return new MeshConcept(mConceptUiHandler.getText(),
-                                   mConceptNameHandler.getText(),
-                                   mConceptUmlsUiHandler.getText(),
-                                   mCasn1NameHandler.getText(),
-                                   mRegistryNumberHandler.getText(),
-                                   mScopeNoteHandler.getText(),
+            return new MeshConcept(mConceptUiHandler.getText().trim(),
+                                   mConceptNameHandler.getText().trim(),
+                                   mConceptUmlsUiHandler.getText().trim(),
+                                   mCasn1NameHandler.getText().trim(),
+                                   mRegistryNumberHandler.getText().trim(),
+                                   mScopeNoteHandler.getText().trim(),
                                    mSemanticTypeListHandler.getList(),
                                    mRelatedRegistryNumberListHandler.getList(),
-                                   mConceptRelationListHandler.getList());
+                                   mConceptRelationListHandler.getList(),
+                                   mTermListHandler.getTermList());
         }
     }
 

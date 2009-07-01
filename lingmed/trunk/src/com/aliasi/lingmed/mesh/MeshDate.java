@@ -69,9 +69,9 @@ public class MeshDate {
         }
         public MeshDate getDate() {
             return mFound 
-                ? new MeshDate(mYearHandler.getText(),
-                               mMonthHandler.getText(),
-                               mDayHandler.getText())
+                ? new MeshDate(mYearHandler.getText().trim(),
+                               mMonthHandler.getText().trim(),
+                               mDayHandler.getText().trim())
                 : null;
         }
     }

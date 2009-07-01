@@ -38,14 +38,14 @@ public class MeshDemoCommand {
             e.printStackTrace(System.out);
             System.exit(0);
         }
-        System.out.println("\n===================================================");
+        System.out.println("============================================================");
         System.out.println("Final record count=" + handler.mRecordCount);
     }
 
     static class DemoHandler implements ObjectHandler<Mesh> {
         int mRecordCount = 0;
         public void handle(Mesh mesh) {
-            System.out.println("\n=================================================");
+            System.out.println("============================================================");
             System.out.println(mesh);
             ++mRecordCount;
         }

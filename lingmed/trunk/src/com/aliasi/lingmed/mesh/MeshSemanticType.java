@@ -60,8 +60,8 @@ public class MeshSemanticType {
             mNameHandler.reset();
         }
         public MeshSemanticType getSemanticType() {
-            return new MeshSemanticType(mUiHandler.getText(),
-                                        mNameHandler.getText());
+            return new MeshSemanticType(mUiHandler.getText().trim(),
+                                        mNameHandler.getText().trim());
         }
     }
 

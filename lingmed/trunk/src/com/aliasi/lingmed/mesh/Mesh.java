@@ -176,48 +176,47 @@ public class Mesh {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Descriptor Class=" + descriptorClass() + "\n");
-        sb.append("Descriptor=" + descriptor() + "\n");
-        sb.append("Date Created=" + dateCreated() + "\n");
-        sb.append("Date Revised=" + dateRevised() + "\n");
-        sb.append("Date Established=" + dateEstablished() + "\n");
-        sb.append("Active Year List=" + activeYearList() + "\n");
+        sb.append("Descriptor Class=" + descriptorClass());
+        sb.append("\nDescriptor=" + descriptor());
+        sb.append("\nDate Created=" + dateCreated());
+        sb.append("\nDate Revised=" + dateRevised());
+        sb.append("\nDate Established=" + dateEstablished());
+        sb.append("\nActive Year List=" + activeYearList());
         List<MeshAllowableQualifier> allowableQualifierList 
             = allowableQualifierList();
         for (int i = 0; i < allowableQualifierList.size(); ++i)
-            sb.append("Allowable Qualifiers[" + i + "]=" 
-                      + allowableQualifierList.get(i) + "\n");
-        sb.append("Annotation=" + annotation() + "\n");
-        sb.append("History Note=" + historyNote() + "\n");
-        sb.append("Online Note=" + onlineNote() + "\n");
-        sb.append("Public Mesh Note=" + publicMeshNote() + "\n");
-        sb.append("Previous Indexing List=" + previousIndexingList() + "\n");
+            sb.append("\nAllowable Qualifiers[" + i + "]=" 
+                      + allowableQualifierList.get(i));
+        sb.append("\nAnnotation=" + annotation());
+        sb.append("\nHistory Note=" + historyNote());
+        sb.append("\nOnline Note=" + onlineNote());
+        sb.append("\nPublic Mesh Note=" + publicMeshNote());
+        sb.append("\nPrevious Indexing List=" + previousIndexingList());
         List<EntryCombination> entryCombinationList 
             = entryCombinationList();
         for (int i = 0; i < entryCombinationList.size(); ++i)
-            sb.append("Entry Combination["  + i + "]="
-                      + entryCombinationList.get(i) + "\n");
+            sb.append("\nEntry Combination["  + i + "]="
+                      + entryCombinationList.get(i));
         List<MeshDescriptor> seeRelatedList = seeRelatedList();
         for (int i = 0; i < seeRelatedList.size(); ++i)
-            sb.append("See Related[" + i + "]=" 
-                      + seeRelatedList.get(i) + "\n");
-        sb.append("Consider Also=" + mConsiderAlso + "\n");
+            sb.append("\nSee Related[" + i + "]=" 
+                      + seeRelatedList.get(i));
+        sb.append("\nConsider Also=" + mConsiderAlso);
         List<MeshDescriptor> pharmacologicalActionList
             = pharmacologicalActionList();
         for (int i = 0; i < pharmacologicalActionList.size(); ++i)
-            sb.append("Pharmacological Action[" + i + "]=" 
-                      + pharmacologicalActionList.get(i)
-                      + "\n");
-        sb.append("Running Head=" + mRunningHead + "\n");
+            sb.append("\nPharmacological Action[" + i + "]=" 
+                      + pharmacologicalActionList.get(i));
+        sb.append("\nRunning Head=" + mRunningHead);
         List<String> treeNumberList = treeNumberList();
         for (int i = 0; i < treeNumberList.size(); ++i)
-            sb.append("Tree Number[" + i + "]=" 
-                      + treeNumberList.get(i) + "\n");
-        sb.append("Record Originator List=" + recordOriginatorList() + "\n");
+            sb.append("\nTree Number[" + i + "]=" 
+                      + treeNumberList.get(i));
+        sb.append("\nRecord Originator List=" + recordOriginatorList());
         List<MeshConcept> conceptList = conceptList();
         for (int i = 0; i < conceptList.size(); ++i)
-            sb.append("Concept[" + i + "]=\n" 
-                      + conceptList.get(i) + "\n");
+            sb.append("\nConcept[" + i + "]=\n" 
+                      + conceptList.get(i));
         return sb.toString();
     }
 
@@ -359,23 +358,23 @@ public class Mesh {
         }
         public Mesh getMesh() {
             return new Mesh(mDescriptorClass,
-                            new MeshDescriptor(mDescriptorUIHandler.getText(),
-                                               mDescriptorNameHandler.getText()),
+                            new MeshDescriptor(mDescriptorUIHandler.getText().trim(),
+                                               mDescriptorNameHandler.getText().trim()),
                             mDateCreatedHandler.getDate(),
                             mDateRevisedHandler.getDate(),
                             mDateEstablishedHandler.getDate(),
                             mActiveMeshYearListHandler.getList(),
                             mAllowableQualifierListHandler.getAllowableQualifierList(),
-                            mAnnotationHandler.getText(),
-                            mHistoryNoteHandler.getText(),
-                            mOnlineNoteHandler.getText(),
-                            mPublicMeshNoteHandler.getText(),
+                            mAnnotationHandler.getText().trim(),
+                            mHistoryNoteHandler.getText().trim(),
+                            mOnlineNoteHandler.getText().trim(),
+                            mPublicMeshNoteHandler.getText().trim(),
                             mPreviousIndexingListHandler.getList(),
                             mEntryCombinationListHandler.getEntryCombinationList(),
                             mSeeRelatedListHandler.getDescriptorList(),
-                            mConsiderAlsoHandler.getText(),
+                            mConsiderAlsoHandler.getText().trim(),
                             mPharmacologicalActionListHandler.getDescriptorList(),
-                            mRunningHeadHandler.getText(),
+                            mRunningHeadHandler.getText().trim(),
                             mTreeNumberListHandler.getList(),
                             mRecordOriginatorListHandler.getRecordOriginatorList(),
                             mConceptListHandler.getConceptList());
@@ -397,7 +396,7 @@ public class Mesh {
             reset();
         }
         public String getText() {
-            return mTextAccumulator.getText();
+            return mTextAccumulator.getText().trim();
         }
         public void reset() {
             mTextAccumulator.reset();
@@ -424,7 +423,7 @@ public class Mesh {
             return new ArrayList<String>(mList);
         }
         public void finishDelegate(String qName, DefaultHandler handler) {
-            mList.add(mAccumulator.getText());
+            mList.add(mAccumulator.getText().trim());
         }
     }
 
