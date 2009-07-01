@@ -45,7 +45,8 @@ public class Mesh {
     private final List<MeshDescriptor> mSeeRelatedList;
     private final String mConsiderAlso;
     private final List<MeshDescriptor> mPharmacologicalActionList;
-    
+    private final String mRunningHead;
+
     public Mesh(DescriptorClass descriptorClass,
                 MeshDescriptor descriptor,
                 MeshDate dateCreated,
@@ -61,7 +62,8 @@ public class Mesh {
                 List<EntryCombination> entryCombinationList,
                 List<MeshDescriptor> seeRelatedList,
                 String considerAlso,
-                List<MeshDescriptor> pharmacologicalActionList) {
+                List<MeshDescriptor> pharmacologicalActionList,
+                String runningHead) {
         mDescriptorClass = descriptorClass;
         mDescriptor = descriptor;
         mDateCreated = dateCreated;
@@ -78,6 +80,7 @@ public class Mesh {
         mSeeRelatedList = seeRelatedList;
         mConsiderAlso = considerAlso.length() == 0 ? null : considerAlso;
         mPharmacologicalActionList = pharmacologicalActionList;
+        mRunningHead = runningHead.length() == 0 ? null : runningHead;
     }
 
 
@@ -146,6 +149,10 @@ public class Mesh {
         return Collections.unmodifiableList(mPharmacologicalActionList);
     }
 
+    public String runningHead() {
+        return mRunningHead;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Descriptor Class=" + descriptorClass() + "\n");
@@ -180,6 +187,7 @@ public class Mesh {
             sb.append("Pharmacological Action[" + i + "]=" 
                       + pharmacologicalActionList.get(i)
                       + "\n");
+        sb.append("Running Head=" + mRunningHead + "\n");
         return sb.toString();
     }
 
@@ -201,6 +209,7 @@ public class Mesh {
         private final MeshDescriptor.ListHandler mSeeRelatedListHandler;
         private final TextAccumulatorHandler mConsiderAlsoHandler;
         private final MeshDescriptor.ListHandler mPharmacologicalActionListHandler;
+        private final TextAccumulatorHandler mRunningHeadHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mDescriptorNameHandler = new StringHandler(parent);
@@ -257,6 +266,9 @@ public class Mesh {
                 = new MeshDescriptor.ListHandler(parent,MeshParser.PHARMACOLOGICAL_ACTION_ELEMENT);
             setDelegate(MeshParser.PHARMACOLOGICAL_ACTION_LIST_ELEMENT,
                         mPharmacologicalActionListHandler);
+            mRunningHeadHandler = new TextAccumulatorHandler();
+            setDelegate(MeshParser.RUNNING_HEAD_ELEMENT,
+                        mRunningHeadHandler);
         }
 
         @Override
@@ -279,6 +291,7 @@ public class Mesh {
             mSeeRelatedListHandler.reset();
             mConsiderAlsoHandler.reset();
             mPharmacologicalActionListHandler.reset();
+            mRunningHeadHandler.reset();
         }
 
         @Override
@@ -316,7 +329,8 @@ public class Mesh {
                             mEntryCombinationListHandler.getEntryCombinationList(),
                             mSeeRelatedListHandler.getDescriptorList(),
                             mConsiderAlsoHandler.getText(),
-                            mPharmacologicalActionListHandler.getDescriptorList());
+                            mPharmacologicalActionListHandler.getDescriptorList(),
+                            mRunningHeadHandler.getText());
         }
     }
 
