@@ -46,28 +46,50 @@ public class MeshConcept {
 
 
     private final String mConceptUi;
+    private final String mConceptName;
+    private final String mConceptUmlsUi;
 
-    public MeshConcept(String conceptUi) {
+    public MeshConcept(String conceptUi,
+                       String conceptName,
+                       String conceptUmlsUi) {
         mConceptUi = conceptUi;
+        mConceptName = conceptName;
+        mConceptUmlsUi = conceptUmlsUi.length() == 0 ? null : conceptUmlsUi;
     }
 
     public String conceptUi() {
         return mConceptUi;
     }
 
+    public String conceptName() {
+        return mConceptName;
+    }
+
+    public String conceptUmlsUi() {
+        return mConceptUmlsUi;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("  Concept UI=" + conceptUi());
+        sb.append("  Concept UI=" + conceptUi() + "\n");
+        sb.append("  Concept Name=" + conceptName() + "\n");
+        sb.append("  Concept UMLS UI=" + conceptUmlsUi());
         return sb.toString();
     }
 
     static class Handler extends DelegateHandler {
         TextAccumulatorHandler mConceptUiHandler;
+        Mesh.StringHandler mConceptNameHandler;
+        TextAccumulatorHandler mConceptUmlsUiHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mConceptUiHandler = new TextAccumulatorHandler();
             setDelegate(MeshParser.CONCEPT_UI_ELEMENT,mConceptUiHandler);
+            mConceptNameHandler = new Mesh.StringHandler(parent);
+            setDelegate(MeshParser.CONCEPT_NAME_ELEMENT,mConceptNameHandler);
+            mConceptUmlsUiHandler = new TextAccumulatorHandler();
+            setDelegate(MeshParser.CONCEPT_UMLS_UI_ELEMENT,mConceptUmlsUiHandler);
         }
         @Override
         public void startDocument() throws SAXException {
@@ -76,9 +98,13 @@ public class MeshConcept {
         }
         public void reset() {
             mConceptUiHandler.reset();
+            mConceptNameHandler.reset();
+            mConceptUmlsUiHandler.reset();
         }
         public MeshConcept getConcept() {
-            return new MeshConcept(mConceptUiHandler.getText());
+            return new MeshConcept(mConceptUiHandler.getText(),
+                                   mConceptNameHandler.getText(),
+                                   mConceptUmlsUiHandler.getText());
         }
     }
 
