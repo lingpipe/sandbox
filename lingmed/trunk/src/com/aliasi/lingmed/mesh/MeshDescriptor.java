@@ -78,6 +78,7 @@ public class MeshDescriptor {
         }
         public void reset() {
             mDescriptorList.clear();
+            mDescriptorHandler.reset();
         }
         public void finishDelegate(String qName, DefaultHandler hanlder) {
             mDescriptorList.add(mDescriptorHandler.getDescriptor());
