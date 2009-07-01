@@ -19,9 +19,18 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class Mesh {
 
+    // <!ENTITY  % DescriptorReference "
+
+    // SeeRelatedList?,
+    // <!ELEMENT SeeRelatedList (SeeRelatedDescriptor+)>
+    // <!ELEMENT SeeRelatedDescriptor (DescriptorReferredTo)>
+    // <!ELEMENT DescriptorReferredTo (DescriptorUI, DescriptorName) >
+    // <!ELEMENT DescriptorUI (#PCDATA) >
+    // <!ELEMENT DescriptorName (String) >
+
+
     private final DescriptorClass mDescriptorClass;
-    private final String mDescriptorUI;
-    private final String mDescriptorName;
+    private final MeshDescriptor mDescriptor;
     private final MeshDate mDateCreated;
     private final MeshDate mDateRevised;
     private final MeshDate mDateEstablished;
@@ -33,10 +42,10 @@ public class Mesh {
     private final String mPublicMeshNote;
     private final List<String> mPreviousIndexingList;
     private final List<EntryCombination> mEntryCombinationList;
+    private final List<MeshDescriptor> mSeeRelatedList;
     
     public Mesh(DescriptorClass descriptorClass,
-                String descriptorUI,
-                String descriptorName,
+                MeshDescriptor descriptor,
                 MeshDate dateCreated,
                 MeshDate dateRevised,
                 MeshDate dateEstablished,
@@ -47,10 +56,10 @@ public class Mesh {
                 String onlineNote,
                 String publicMeshNote,
                 List<String> previousIndexingList,
-                List<EntryCombination> entryCombinationList) {
+                List<EntryCombination> entryCombinationList,
+                List<MeshDescriptor> seeRelatedList) {
         mDescriptorClass = descriptorClass;
-        mDescriptorUI = descriptorUI;
-        mDescriptorName = descriptorName;
+        mDescriptor = descriptor;
         mDateCreated = dateCreated;
         mDateRevised = dateRevised;
         mDateEstablished = dateEstablished;
@@ -62,20 +71,17 @@ public class Mesh {
         mPublicMeshNote = publicMeshNote.length() == 0 ? null : publicMeshNote;
         mPreviousIndexingList = previousIndexingList;
         mEntryCombinationList = entryCombinationList;
+        mSeeRelatedList = seeRelatedList;
     }
 
     public DescriptorClass descriptorClass() {
         return mDescriptorClass;
     }
 
-    public String descriptorUI() {
-        return mDescriptorUI;
+    public MeshDescriptor descriptor() {
+        return mDescriptor;
     }
-
-    public String descriptorName() {
-        return mDescriptorName;
-    }
-
+    
     public MeshDate dateCreated() {
         return mDateCreated;
     }
@@ -121,16 +127,20 @@ public class Mesh {
         return Collections.unmodifiableList(mEntryCombinationList);
     }
 
+    public List<MeshDescriptor> seeRelatedList() {
+        return Collections.unmodifiableList(mSeeRelatedList);
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Descriptor UI=" + descriptorUI() + "\n");
         sb.append("Descriptor Class=" + descriptorClass() + "\n");
-        sb.append("Descriptor Name=" + descriptorName() + "\n");
+        sb.append("Descriptor=" + descriptor() + "\n");
         sb.append("Date Created=" + dateCreated() + "\n");
         sb.append("Date Revised=" + dateRevised() + "\n");
         sb.append("Date Established=" + dateEstablished() + "\n");
         sb.append("Active Year List=" + activeYearList() + "\n");
-        List<MeshAllowableQualifier> allowableQualifierList = allowableQualifierList();
+        List<MeshAllowableQualifier> allowableQualifierList 
+            = allowableQualifierList();
         for (int i = 0; i < allowableQualifierList.size(); ++i)
             sb.append("Allowable Qualifiers[" + i + "]=" 
                       + allowableQualifierList.get(i) + "\n");
@@ -138,11 +148,16 @@ public class Mesh {
         sb.append("History Note=" + historyNote() + "\n");
         sb.append("Online Note=" + onlineNote() + "\n");
         sb.append("Public Mesh Note=" + publicMeshNote() + "\n");
-        sb.append("Previous Indexing List=" + previousIndexingList());
-        List<EntryCombination> entryCombinationList = entryCombinationList();
+        sb.append("Previous Indexing List=" + previousIndexingList() + "\n");
+        List<EntryCombination> entryCombinationList 
+            = entryCombinationList();
         for (int i = 0; i < entryCombinationList.size(); ++i)
             sb.append("Entry Combination["  + i + "]="
                       + entryCombinationList.get(i) + "\n");
+        List<MeshDescriptor> seeRelatedList = seeRelatedList();
+        for (int i = 0; i < seeRelatedList.size(); ++i)
+            sb.append("SeeRelated[" + i + "]=" 
+                      + seeRelatedList.get(i) + "\n");
         return sb.toString();
     }
 
@@ -161,6 +176,7 @@ public class Mesh {
         private final TextAccumulatorHandler mPublicMeshNoteHandler;
         private final ListHandler mPreviousIndexingListHandler;
         private final EntryCombination.ListHandler mEntryCombinationListHandler;
+        private final MeshDescriptor.ListHandler mSeeRelatedListHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
             mDescriptorNameHandler = new StringHandler(parent);
@@ -206,6 +222,10 @@ public class Mesh {
                 = new EntryCombination.ListHandler(parent);
             setDelegate(MeshParser.ENTRY_COMBINATION_LIST_ELEMENT,
                         mEntryCombinationListHandler);
+            mSeeRelatedListHandler
+                = new MeshDescriptor.ListHandler(parent,MeshParser.DESCRIPTOR_REFERRED_TO_ELEMENT);
+            setDelegate(MeshParser.SEE_RELATED_LIST_ELEMENT,
+                        mSeeRelatedListHandler);
         }
 
         @Override
@@ -247,8 +267,8 @@ public class Mesh {
         }
         public Mesh getMesh() {
             return new Mesh(mDescriptorClass,
-                            mDescriptorUIHandler.getText(),
-                            mDescriptorNameHandler.getText(),
+                            new MeshDescriptor(mDescriptorUIHandler.getText(),
+                                               mDescriptorNameHandler.getText()),
                             mDateCreatedHandler.getDate(),
                             mDateRevisedHandler.getDate(),
                             mDateEstablishedHandler.getDate(),
@@ -259,7 +279,8 @@ public class Mesh {
                             mOnlineNoteHandler.getText(),
                             mPublicMeshNoteHandler.getText(),
                             mPreviousIndexingListHandler.getList(),
-                            mEntryCombinationListHandler.getEntryCombinationList());
+                            mEntryCombinationListHandler.getEntryCombinationList(),
+                            mSeeRelatedListHandler.getDescriptorList());
         }
     }
 
