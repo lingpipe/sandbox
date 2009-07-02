@@ -220,7 +220,7 @@ public class MeshTerm {
         public MeshTerm getTerm() {
             return new MeshTerm(mUiHandler.getText().trim(),
                                 mReferenceStringHandler.getText().trim(),
-                                mDateHandler.getDate(),
+                                mDateHandler.getObject(),
                                 mAbbreviationHandler.getText().trim(),
                                 mSortVersionHandler.getText().trim(),
                                 mEntryVersionHandler.getText().trim(),

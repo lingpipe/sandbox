@@ -25,20 +25,37 @@ public class MeshNameUi {
     private final String mName;
     private final String mUi;
 
-    public MeshNameUi(String name,
+    MeshNameUi(String name,
                       String ui) {
         mName = name;
         mUi = ui;
     }
 
+    /**
+     * Returns the name for this object.
+     *
+     * @return Name for object.
+     */
     public String name() {
         return mName;
     }
 
+    /**
+     * Returns the unique identifier (UI) for this object.
+     *
+     * @return Unique identifier for this object.
+     */
     public String ui() {
         return mUi;
     }
 
+    /**
+     * Returns a string-based representation of this name and unique
+     * identifier.
+     *
+     * @return String-based representation of this name and unique
+     * identifier.
+     */
     @Override
     public String toString() {
         return name() + ":" + ui();

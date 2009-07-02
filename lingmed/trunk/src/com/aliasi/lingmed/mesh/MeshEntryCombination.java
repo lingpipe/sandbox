@@ -12,7 +12,14 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
+ * A {@code MeshEntryCombiation} refers to specific qualifiers which
+ * are prohibited from occuring with a descriptor in indexing,
+ * indicating a (possibly qualified) replacement descriptor.  The
+ * prohibited input descriptor and qualifier are available through
+ * methods {@link #inDescriptor()} and {@link #inQualifier()}, and the
+ * replacement output descriptors are avaialble through {@link #outDescriptor()}
+ * and (optionally) {@link #outQualifier()}.
+
  * @author Bob Carpenter
  * @version 1.3
  * @since LingMed1.3
@@ -49,18 +56,49 @@ public class MeshEntryCombination {
         mOutQualifier = outQualifier;
     }
 
+    /**
+     * Returns the name and unique identifier (UI) for
+     * the base input descriptor.
+     *
+     * @return Base input descriptor.
+     */
     public MeshNameUi inDescriptor() {
         return mInDescriptor;
     }
 
+    /**
+     * Returns the name and unique identifier (UI) for
+     * the qualifier that is prohibited from occuring
+     * with the input descriptor.
+     *
+     * @return Prohibited qualifier for input descriptor.
+     */
     public MeshNameUi inQualifier() {
         return mInQualifier;
     }
 
+    /**
+     * Returns the name and unique identifier (UI) for
+     * the output descriptor that should be used to
+     * replace the qualified input descriptor.  There
+     * may be an optional qualifier avaialble through
+     * {@link #outQualifier()}.
+     *
+     * @return Replacement descriptor for the prohibited
+     * qualified input descriptor.
+     */
     public MeshNameUi outDescriptor() {
         return mOutDescriptor;
     }
 
+    /**
+     * Return the name and unique identifier (UI) for the
+     * qualifier for the output descriptor, or {@code null}
+     * if the output is not qualified.
+     *
+     * @return Optional qualifier for the replacement
+     * descriptor.
+     */
     public MeshNameUi outQualifier() {
         return mOutQualifier;
     }

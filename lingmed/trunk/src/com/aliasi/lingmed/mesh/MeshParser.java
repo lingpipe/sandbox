@@ -14,7 +14,18 @@ import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
+ * A {@link MeshParser} is able to parse the XML for a complete
+ * MeSH distribution, sending the {@link Mesh} objects it finds
+ * to the contained object handler.
  *
+ * <p>The MeSH XML may be parsed directly from either the GZip or Zip
+ * distribution without first unpacking it.  Just construct an input
+ * stream that unpacks and wrap it in an {@link InputSource}.
+ *
+ * <p>The jar for this package includes the DTD for the MeSH XML, so
+ * it does not need to be included locally.  The package
+ * documentation, {@link com.aliasi.lingmed.mesh}, contains more
+ * information on downloading MeSH.
  *
  * @author Bob Carpenter
  * @version 1.3
@@ -22,9 +33,18 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class MeshParser extends XMLParser<ObjectHandler<Mesh>> {
 
+    /**
+     * Construct a MeSH parser.
+     */
     public MeshParser() {
     }
 
+    /**
+     * Returns the XML handler for this parser, which is used internally
+     * by the parser and should not be needed by clients.
+     *
+     * @return The XML handler for this parser.
+     */
     protected DefaultHandler getXMLHandler() {
         return new XMLHandler();
     }
