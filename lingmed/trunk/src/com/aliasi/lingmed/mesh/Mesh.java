@@ -347,7 +347,7 @@ public class Mesh {
         List<MeshEntryCombination> entryCombinationList 
             = entryCombinationList();
         for (int i = 0; i < entryCombinationList.size(); ++i)
-            sb.append("\nEntry Combination["  + i + "]="
+            sb.append("\nEntry Combination["  + i + "]=\n"
                       + entryCombinationList.get(i));
         List<MeshDescriptor> seeRelatedList = seeRelatedList();
         for (int i = 0; i < seeRelatedList.size(); ++i)
