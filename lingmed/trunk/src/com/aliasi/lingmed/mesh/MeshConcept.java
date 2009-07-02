@@ -16,7 +16,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * A {@link MeshConcept} is a structured object representing the
  * meaning of a MeSH concept.  <p>Both the concept name universal
- * identifier are unique (see {@link #nameUi()}).  The scope note (see
+ * identifier are unique (see {@link #conceptNameUi()}).  The scope note (see
  * {@link #scopeNote()}) provides the textual description of the
  * meaning of the concept.  
  *
@@ -131,6 +131,18 @@ public class MeshConcept {
         return mScopeNote;
     }
 
+    /**
+     * Returns a category from the Unified Medical Language System
+     * (MLS) semantic network which indicate properties of this
+     * concept.  The UMLS unique identifier (UI) and name are
+     * available from the returned objects in the list.
+     *
+     * <p>For more information on UMLS, see:
+     * <ul><li>NLM: <a href="http://www.nlm.nih.gov/research/umls/umlsmain.html">UMLS Home Page</a></li></ul>
+     *
+     * @return The list of UMLS semantic network categories naming
+     * properties of this concept.
+     */
     public List<MeshNameUi> semanticTypeList() {
         return Collections.unmodifiableList(mSemanticTypeList);
     }
@@ -172,6 +184,13 @@ public class MeshConcept {
         return Collections.unmodifiableList(mTermList);
     }
 
+    /**
+     * Returns a string-based representation of all of the information
+     * in this concept.  All of the information in the returned string
+     * is available programatically through this class's methods.
+     *
+     * @return String representation of this concept.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
