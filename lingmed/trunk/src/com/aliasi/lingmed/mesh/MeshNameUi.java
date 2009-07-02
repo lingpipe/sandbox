@@ -66,7 +66,7 @@ public class MeshNameUi {
             mUiHandler.reset();
         }
         public MeshNameUi getObject() {
-            String name = mNameHandler.getText();
+            String name = mNameHandler.getObject();
             String ui = mUiHandler.getText();
             return (name.length() == 0 && ui.length() == 0)
                 ? null

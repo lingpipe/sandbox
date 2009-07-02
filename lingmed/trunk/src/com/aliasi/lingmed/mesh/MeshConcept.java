@@ -203,7 +203,7 @@ public class MeshConcept {
         public MeshConcept getConcept() {
             return new MeshConcept(mPreferred,
                                    mConceptUiHandler.getText().trim(),
-                                   mConceptNameHandler.getText().trim(),
+                                   mConceptNameHandler.getObject(),
                                    mConceptUmlsUiHandler.getText().trim(),
                                    mCasn1NameHandler.getText().trim(),
                                    mRegistryNumberHandler.getText().trim(),
