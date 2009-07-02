@@ -291,7 +291,7 @@ public class MeshConcept {
                                    mSemanticTypeListHandler.getObject(),
                                    mRelatedRegistryNumberListHandler.getList(),
                                    mConceptRelationListHandler.getObject(),
-                                   mTermListHandler.getTermList());
+                                   mTermListHandler.getObject());
         }
     }
 
