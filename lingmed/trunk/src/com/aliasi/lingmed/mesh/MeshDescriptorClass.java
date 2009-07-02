@@ -81,7 +81,7 @@ public enum MeshDescriptorClass {
     @Override
     public String toString() {
         return Integer.toString(mNumericalValue)
-            + ":" + description();
+            + "(" + description() + ")";
     }
 
 }
