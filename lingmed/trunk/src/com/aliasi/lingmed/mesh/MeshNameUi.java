@@ -48,6 +48,11 @@ public class MeshNameUi {
     static class Handler extends DelegateHandler {
         final Mesh.StringHandler mNameHandler;
         final TextAccumulatorHandler mUiHandler;
+        public Handler(DelegatingHandler parent) {
+            this(parent,
+                 MeshParser.DESCRIPTOR_NAME_ELEMENT,
+                 MeshParser.DESCRIPTOR_UI_ELEMENT);
+        }
         public Handler(DelegatingHandler parent, 
                        String nameTag, String uiTag) {
             super(parent);
@@ -71,6 +76,41 @@ public class MeshNameUi {
             return (name.length() == 0 && ui.length() == 0)
                 ? null
                 : new MeshNameUi(name,ui);
+        }
+    }
+
+
+    static class ListHandler extends DelegateHandler {
+        final List<MeshNameUi> mList
+            = new ArrayList<MeshNameUi>();
+        final Handler mHandler;
+        public ListHandler(DelegatingHandler parent, String containingTag) {
+            this(parent,
+                 containingTag,
+                 MeshParser.DESCRIPTOR_NAME_ELEMENT,
+                 MeshParser.DESCRIPTOR_UI_ELEMENT);
+        }                           
+        public ListHandler(DelegatingHandler parent, 
+                           String containingTag,
+                           String nameTag, 
+                           String uiTag) {
+            super(parent);
+            mHandler = new Handler(parent,nameTag,uiTag);
+            setDelegate(containingTag,mHandler);
+        }
+        public void startDocument() throws SAXException {
+            super.startDocument();
+            reset();
+        }
+        public void reset() {
+            mList.clear();
+            mHandler.reset();
+        }
+        public void finishDelegate(String qName, DefaultHandler hanlder) {
+            mList.add(mHandler.getNameUi());
+        }
+        public List<MeshNameUi> getList() {
+            return new ArrayList<MeshNameUi>(mList); 
         }
     }
     

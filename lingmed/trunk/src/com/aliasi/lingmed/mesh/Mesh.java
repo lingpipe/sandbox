@@ -27,7 +27,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class Mesh {
 
     private final MeshDescriptorClass mDescriptorClass;
-    private final MeshDescriptor mDescriptor;
+    private final MeshNameUi mDescriptor;
     private final MeshDate mDateCreated;
     private final MeshDate mDateRevised;
     private final MeshDate mDateEstablished;
@@ -39,16 +39,16 @@ public class Mesh {
     private final String mPublicMeshNote;
     private final List<String> mPreviousIndexingList;
     private final List<MeshEntryCombination> mEntryCombinationList;
-    private final List<MeshDescriptor> mSeeRelatedList;
+    private final List<MeshNameUi> mSeeRelatedList;
     private final String mConsiderAlso;
-    private final List<MeshDescriptor> mPharmacologicalActionList;
+    private final List<MeshNameUi> mPharmacologicalActionList;
     private final String mRunningHead;
     private final List<String> mTreeNumberList;
     private final MeshRecordOriginatorList mRecordOriginatorList;
     private final List<MeshConcept> mConceptList;
 
     Mesh(MeshDescriptorClass descriptorClass,
-         MeshDescriptor descriptor,
+         MeshNameUi descriptor,
          MeshDate dateCreated,
          MeshDate dateRevised,
          MeshDate dateEstablished,
@@ -60,9 +60,9 @@ public class Mesh {
          String publicMeshNote,
          List<String> previousIndexingList,
          List<MeshEntryCombination> entryCombinationList,
-         List<MeshDescriptor> seeRelatedList,
+         List<MeshNameUi> seeRelatedList,
          String considerAlso,
-         List<MeshDescriptor> pharmacologicalActionList,
+         List<MeshNameUi> pharmacologicalActionList,
          String runningHead,
          List<String> treeNumberList,
          MeshRecordOriginatorList recordOriginatorList,
@@ -105,7 +105,7 @@ public class Mesh {
      *
      * @return The top-level descriptor.
      */
-    public MeshDescriptor descriptor() {
+    public MeshNameUi descriptor() {
         return mDescriptor;
     }
     
@@ -246,7 +246,7 @@ public class Mesh {
      *
      * @return List of related descriptors.
      */
-    public List<MeshDescriptor> seeRelatedList() {
+    public List<MeshNameUi> seeRelatedList() {
         return Collections.unmodifiableList(mSeeRelatedList);
     }
 
@@ -267,7 +267,7 @@ public class Mesh {
      * @return List of descriptors for pharamacological actions for
      * this record.
      */
-    public List<MeshDescriptor> pharmacologicalActionList() {
+    public List<MeshNameUi> pharmacologicalActionList() {
         return Collections.unmodifiableList(mPharmacologicalActionList);
     }
 
@@ -349,12 +349,12 @@ public class Mesh {
         for (int i = 0; i < entryCombinationList.size(); ++i)
             sb.append("\nEntry Combination["  + i + "]=\n"
                       + entryCombinationList.get(i));
-        List<MeshDescriptor> seeRelatedList = seeRelatedList();
+        List<MeshNameUi> seeRelatedList = seeRelatedList();
         for (int i = 0; i < seeRelatedList.size(); ++i)
             sb.append("\nSee Related[" + i + "]=" 
                       + seeRelatedList.get(i));
         sb.append("\nConsider Also=" + mConsiderAlso);
-        List<MeshDescriptor> pharmacologicalActionList
+        List<MeshNameUi> pharmacologicalActionList
             = pharmacologicalActionList();
         for (int i = 0; i < pharmacologicalActionList.size(); ++i)
             sb.append("\nPharmacological Action[" + i + "]=" 
@@ -387,9 +387,9 @@ public class Mesh {
         private final TextAccumulatorHandler mPublicMeshNoteHandler;
         private final ListHandler mPreviousIndexingListHandler;
         private final MeshEntryCombination.ListHandler mEntryCombinationListHandler;
-        private final MeshDescriptor.ListHandler mSeeRelatedListHandler;
+        private final MeshNameUi.ListHandler mSeeRelatedListHandler;
         private final TextAccumulatorHandler mConsiderAlsoHandler;
-        private final MeshDescriptor.ListHandler mPharmacologicalActionListHandler;
+        private final MeshNameUi.ListHandler mPharmacologicalActionListHandler;
         private final TextAccumulatorHandler mRunningHeadHandler;
         private final ListHandler mTreeNumberListHandler;
         private final MeshRecordOriginatorList.Handler mRecordOriginatorListHandler;
@@ -440,14 +440,14 @@ public class Mesh {
             setDelegate(MeshParser.ENTRY_COMBINATION_LIST_ELEMENT,
                         mEntryCombinationListHandler);
             mSeeRelatedListHandler
-                = new MeshDescriptor.ListHandler(parent,MeshParser.DESCRIPTOR_REFERRED_TO_ELEMENT);
+                = new MeshNameUi.ListHandler(parent,MeshParser.DESCRIPTOR_REFERRED_TO_ELEMENT);
             setDelegate(MeshParser.SEE_RELATED_LIST_ELEMENT,
                         mSeeRelatedListHandler);
             mConsiderAlsoHandler = new TextAccumulatorHandler();
             setDelegate(MeshParser.CONSIDER_ALSO_ELEMENT,
                         mConsiderAlsoHandler);
             mPharmacologicalActionListHandler
-                = new MeshDescriptor.ListHandler(parent,MeshParser.PHARMACOLOGICAL_ACTION_ELEMENT);
+                = new MeshNameUi.ListHandler(parent,MeshParser.PHARMACOLOGICAL_ACTION_ELEMENT);
             setDelegate(MeshParser.PHARMACOLOGICAL_ACTION_LIST_ELEMENT,
                         mPharmacologicalActionListHandler);
             mRunningHeadHandler = new TextAccumulatorHandler();
@@ -510,8 +510,8 @@ public class Mesh {
         }
         public Mesh getMesh() {
             return new Mesh(mDescriptorClass,
-                            new MeshDescriptor(mDescriptorUIHandler.getText().trim(),
-                                               mDescriptorNameHandler.getText().trim()),
+                            new MeshNameUi(mDescriptorUIHandler.getText().trim(),
+                                           mDescriptorNameHandler.getText().trim()),
                             mDateCreatedHandler.getDate(),
                             mDateRevisedHandler.getDate(),
                             mDateEstablishedHandler.getDate(),
@@ -523,9 +523,9 @@ public class Mesh {
                             mPublicMeshNoteHandler.getText().trim(),
                             mPreviousIndexingListHandler.getList(),
                             mEntryCombinationListHandler.getEntryCombinationList(),
-                            mSeeRelatedListHandler.getDescriptorList(),
+                            mSeeRelatedListHandler.getList(),
                             mConsiderAlsoHandler.getText().trim(),
-                            mPharmacologicalActionListHandler.getDescriptorList(),
+                            mPharmacologicalActionListHandler.getList(),
                             mRunningHeadHandler.getText().trim(),
                             mTreeNumberListHandler.getList(),
                             mRecordOriginatorListHandler.getRecordOriginatorList(),
