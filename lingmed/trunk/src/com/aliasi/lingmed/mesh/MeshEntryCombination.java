@@ -34,67 +34,97 @@ public class MeshEntryCombination {
 
 
 
-    private final String mInDescriptor;
-    private final String mInQualifier;
-    private final String mOutDescriptor;
-    private final String mOutQualifier;
+    private final MeshNameUi mInDescriptor;
+    private final MeshNameUi mInQualifier;
+    private final MeshNameUi mOutDescriptor;
+    private final MeshNameUi mOutQualifier;
 
-    MeshEntryCombination(String inDescriptor,
-                         String inQualifier,
-                         String outDescriptor,
-                         String outQualifier) {
+    MeshEntryCombination(MeshNameUi inDescriptor,
+                         MeshNameUi inQualifier,
+                         MeshNameUi outDescriptor,
+                         MeshNameUi outQualifier) {
         mInDescriptor = inDescriptor;
         mInQualifier = inQualifier;
         mOutDescriptor = outDescriptor;
-        mOutQualifier = outQualifier.length() == 0
-            ? null
-            : outQualifier;
+        mOutQualifier = outQualifier;
     }
 
-    public String inDescriptor() {
+    public MeshNameUi inDescriptor() {
         return mInDescriptor;
     }
 
-    public String inQualifier() {
+    public MeshNameUi inQualifier() {
         return mInQualifier;
     }
 
-    public String outDescriptor() {
+    public MeshNameUi outDescriptor() {
         return mOutDescriptor;
     }
 
-    // may be null
-    public String outQualifier() {
+    public MeshNameUi outQualifier() {
         return mOutQualifier;
     }
 
+
+    /**
+     * Return a string-based representation of this entry combination.
+     * All of the information in this string is available programatically
+     * through the other methods in this class.
+     *
+     * @return String-based representation of this entry combination.
+     */
     @Override
     public String toString() {
-        return "InDesc=" + inDescriptor()
-            + "; InQual=" + inQualifier()
-            + "; OutDesc=" + outDescriptor()
-            + "; OutQual=" + outQualifier();
+        return "  In Descriptor=" + inDescriptor()
+            + "\n  In Qualifier=" + inQualifier()
+            + "\n  Out Descriptor=" + outDescriptor()
+            + "\n  Out Qualifier=" + outQualifier();
+    }
+
+    static class DescriptorQualifierHandler extends DelegateHandler {
+        private final MeshNameUi.Handler mDescriptorHandler;
+        private final MeshNameUi.Handler mQualifierHandler;
+        public DescriptorQualifierHandler(DelegatingHandler parent) {
+            super(parent);
+            mDescriptorHandler 
+                = new MeshNameUi.Handler(parent,
+                                         MeshParser.DESCRIPTOR_NAME_ELEMENT,
+                                         MeshParser.DESCRIPTOR_UI_ELEMENT);
+            setDelegate(MeshParser.DESCRIPTOR_REFERRED_TO_ELEMENT,
+                        mDescriptorHandler);
+            mQualifierHandler
+                = new MeshNameUi.Handler(parent,
+                                         MeshParser.QUALIFIER_NAME_ELEMENT,
+                                         MeshParser.QUALIFIER_UI_ELEMENT);
+            setDelegate(MeshParser.QUALIFIER_REFERRED_TO_ELEMENT,
+                        mQualifierHandler);
+        }
+        public void reset() {
+            mDescriptorHandler.reset();
+            mQualifierHandler.reset();
+        }
+        @Override
+        public void startDocument() throws SAXException {
+            super.startDocument();
+            reset();
+        }
+        public MeshNameUi getDescriptor() {
+            return mDescriptorHandler.getNameUi();
+        }
+        public MeshNameUi getQualifier() {
+            return mQualifierHandler.getNameUi();
+        }
     }
 
     static class Handler extends DelegateHandler {
-        private final TextAccumulatorHandler mDescriptorUiAccumulator;
-        private final Mesh.StringHandler mDescriptorNameHandler;
-        private final TextAccumulatorHandler mQualifierUiAccumulator;
-        private final Mesh.StringHandler mQualifierNameHandler;
+        private final DescriptorQualifierHandler mInHandler;
+        private final DescriptorQualifierHandler mOutHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
-            mDescriptorUiAccumulator = new TextAccumulatorHandler();
-            setDelegate(MeshParser.DESCRIPTOR_UI_ELEMENT,
-                        mDescriptorUiAccumulator);
-            mDescriptorNameHandler = new Mesh.StringHandler(parent);
-            setDelegate(MeshParser.DESCRIPTOR_NAME_ELEMENT,
-                        mDescriptorNameHandler);
-            mQualifierUiAccumulator = new TextAccumulatorHandler();
-            setDelegate(MeshParser.QUALIFIER_UI_ELEMENT,
-                        mQualifierUiAccumulator);
-            mQualifierNameHandler = new Mesh.StringHandler(parent);
-            setDelegate(MeshParser.QUALIFIER_NAME_ELEMENT,
-                        mQualifierNameHandler);
+            mInHandler = new DescriptorQualifierHandler(parent);
+            setDelegate(MeshParser.ECIN_ELEMENT,mInHandler);
+            mOutHandler = new DescriptorQualifierHandler(parent);
+            setDelegate(MeshParser.ECOUT_ELEMENT,mOutHandler);
         }
         @Override
         public void startDocument() throws SAXException {
@@ -102,18 +132,18 @@ public class MeshEntryCombination {
             reset();
         }
         public void reset() {
-            mDescriptorUiAccumulator.reset();
-            mDescriptorNameHandler.reset();
-            mQualifierUiAccumulator.reset();
-            mQualifierNameHandler.reset();
+            mInHandler.reset();
+            mOutHandler.reset();
         }
         public MeshEntryCombination getEntryCombination() {
-            return new MeshEntryCombination(mDescriptorUiAccumulator.getText().trim(),
-                                            mDescriptorNameHandler.getText().trim(),
-                                            mQualifierUiAccumulator.getText().trim(),
-                                            mQualifierNameHandler.getText().trim());
+            return new MeshEntryCombination(mInHandler.getDescriptor(),
+                                            mInHandler.getQualifier(),
+                                            mOutHandler.getDescriptor(),
+                                            mOutHandler.getQualifier());
         }
     }
+
+        
 
     static class ListHandler extends DelegateHandler {
         private final List<MeshEntryCombination> mEntryCombinationList
@@ -142,5 +172,6 @@ public class MeshEntryCombination {
             return mEntryCombinationList;
         }
     }
+
 
 }
