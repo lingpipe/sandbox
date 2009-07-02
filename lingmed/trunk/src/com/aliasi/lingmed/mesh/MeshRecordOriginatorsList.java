@@ -10,7 +10,9 @@ import java.util.List;
 import org.xml.sax.SAXException;
 
 /**
- * A {@code MeshRecordOriginatorsList} 
+ * A {@code MeshRecordOriginatorsList} contains information on
+ * one or more of the originator, maintainer or authorizer.  See
+ * the individual method documentation for details.
  *
  * @author Bob Carpenter
  * @version 1.3
@@ -30,18 +32,42 @@ public class MeshRecordOriginatorsList {
         mAuthorizer = authorizer.length() == 0 ? null : authorizer;
     }
 
+    /**
+     * Returns the three-character user name for the NLM editor who
+     * created the original record for a concept.
+     *
+     * @return Three-character name for the originator.
+     */
     public String originator() {
         return mOriginator;
     }
 
+    /**
+     * Returns the three-character user name for the NLM editor who
+     * most recently modified a record.
+     *
+     * @return Three-character name for the most recent modifier.
+     */
     public String maintainer() {
         return mMaintainer;
     }
 
+    /**
+     * Returns the three-character user name for the NLM editor or
+     * supervisor who authorized the record.
+     *
+     * @return Three-character name for the authorizer.
+     */
     public String authorizer() {
         return mAuthorizer;
     }
 
+    /**
+     * Returns a string-based representation of the record
+     * originator, maintainer and authorizer.
+     *
+     * @return String-based representation of originators.
+     */
     @Override
     public String toString() {
         return "Originator=" + mOriginator
