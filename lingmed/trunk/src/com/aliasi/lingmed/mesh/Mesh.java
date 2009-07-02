@@ -516,7 +516,7 @@ public class Mesh {
                             mDateRevisedHandler.getDate(),
                             mDateEstablishedHandler.getDate(),
                             mActiveMeshYearListHandler.getList(),
-                            mAllowableQualifierListHandler.getAllowableQualifierList(),
+                            mAllowableQualifierListHandler.getObject(),
                             mAnnotationHandler.getText().trim(),
                             mHistoryNoteHandler.getText().trim(),
                             mOnlineNoteHandler.getText().trim(),
