@@ -45,7 +45,7 @@ public class MeshNameUi {
     }
 
 
-    static class Handler extends DelegateHandler {
+    static class Handler extends BaseHandler<MeshNameUi> {
         final Mesh.StringHandler mNameHandler;
         final TextAccumulatorHandler mUiHandler;
         public Handler(DelegatingHandler parent) {
@@ -61,16 +61,11 @@ public class MeshNameUi {
             mUiHandler = new TextAccumulatorHandler();
             setDelegate(uiTag,mUiHandler);
         }
-        @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
         public void reset() {
             mNameHandler.reset();
             mUiHandler.reset();
         }
-        public MeshNameUi getNameUi() {
+        public MeshNameUi getObject() {
             String name = mNameHandler.getText();
             String ui = mUiHandler.getText();
             return (name.length() == 0 && ui.length() == 0)
@@ -107,7 +102,7 @@ public class MeshNameUi {
             mHandler.reset();
         }
         public void finishDelegate(String qName, DefaultHandler hanlder) {
-            mList.add(mHandler.getNameUi());
+            mList.add(mHandler.getObject());
         }
         public List<MeshNameUi> getList() {
             return new ArrayList<MeshNameUi>(mList); 

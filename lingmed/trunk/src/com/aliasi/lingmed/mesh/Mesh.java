@@ -522,7 +522,7 @@ public class Mesh {
                             mOnlineNoteHandler.getText().trim(),
                             mPublicMeshNoteHandler.getText().trim(),
                             mPreviousIndexingListHandler.getList(),
-                            mEntryCombinationListHandler.getEntryCombinationList(),
+                            mEntryCombinationListHandler.getObject(),
                             mSeeRelatedListHandler.getList(),
                             mConsiderAlsoHandler.getText().trim(),
                             mPharmacologicalActionListHandler.getList(),

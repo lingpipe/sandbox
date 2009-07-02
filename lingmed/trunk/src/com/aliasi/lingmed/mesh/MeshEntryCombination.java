@@ -109,14 +109,14 @@ public class MeshEntryCombination {
             reset();
         }
         public MeshNameUi getDescriptor() {
-            return mDescriptorHandler.getNameUi();
+            return mDescriptorHandler.getObject();
         }
         public MeshNameUi getQualifier() {
-            return mQualifierHandler.getNameUi();
+            return mQualifierHandler.getObject();
         }
     }
 
-    static class Handler extends DelegateHandler {
+    static class Handler extends BaseHandler<MeshEntryCombination> {
         private final DescriptorQualifierHandler mInHandler;
         private final DescriptorQualifierHandler mOutHandler;
         public Handler(DelegatingHandler parent) {
@@ -126,16 +126,11 @@ public class MeshEntryCombination {
             mOutHandler = new DescriptorQualifierHandler(parent);
             setDelegate(MeshParser.ECOUT_ELEMENT,mOutHandler);
         }
-        @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
         public void reset() {
             mInHandler.reset();
             mOutHandler.reset();
         }
-        public MeshEntryCombination getEntryCombination() {
+        public MeshEntryCombination getObject() {
             return new MeshEntryCombination(mInHandler.getDescriptor(),
                                             mInHandler.getQualifier(),
                                             mOutHandler.getDescriptor(),
@@ -143,33 +138,9 @@ public class MeshEntryCombination {
         }
     }
 
-        
-
-    static class ListHandler extends DelegateHandler {
-        private final List<MeshEntryCombination> mEntryCombinationList
-            = new ArrayList<MeshEntryCombination>();
-        private final Handler mEntryCombinationHandler;
+    static class ListHandler extends com.aliasi.lingmed.mesh.ListHandler<MeshEntryCombination> {
         public ListHandler(DelegatingHandler parent) {
-            super(parent);
-            mEntryCombinationHandler = new Handler(parent);
-            setDelegate(MeshParser.ENTRY_COMBINATION_ELEMENT,
-                        mEntryCombinationHandler);
-        }
-        @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
-        @Override
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            mEntryCombinationList.add(mEntryCombinationHandler.getEntryCombination());
-        }
-        public void reset() {
-            mEntryCombinationList.clear();
-            mEntryCombinationHandler.reset();
-        }
-        public List<MeshEntryCombination> getEntryCombinationList() {
-            return mEntryCombinationList;
+            super(parent,new Handler(parent),MeshParser.ENTRY_COMBINATION_ELEMENT);
         }
     }
 
