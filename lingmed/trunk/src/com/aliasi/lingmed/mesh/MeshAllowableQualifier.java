@@ -73,7 +73,7 @@ public class MeshAllowableQualifier {
         return nameUi() + " (" + abbreviation() + ")";
     }
     
-    static class Handler extends DelegateHandler {
+    static class Handler extends BaseHandler<MeshAllowableQualifier> {
         private final MeshNameUi.Handler mNameUiHandler;
         private final TextAccumulatorHandler mAbbreviationHandler;
         public Handler(DelegatingHandler parent) {
@@ -86,44 +86,21 @@ public class MeshAllowableQualifier {
             setDelegate(MeshParser.ABBREVIATION_ELEMENT,mAbbreviationHandler);
         }
         @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
         public void reset() {
             mNameUiHandler.reset();
             mAbbreviationHandler.reset();
         }
-        public MeshAllowableQualifier getQualifier() {
+        public MeshAllowableQualifier getObject() {
             return new MeshAllowableQualifier(mNameUiHandler.getObject(),
                                               mAbbreviationHandler.getText().trim());
         }
     }
 
-    static class ListHandler extends DelegateHandler {
-        final List<MeshAllowableQualifier> mQualifierList
-            = new ArrayList<MeshAllowableQualifier>();
-        final Handler mAllowableQualifierHandler;
+    static class ListHandler extends BaseListHandler<MeshAllowableQualifier> {
         public ListHandler(DelegatingHandler parent) {
-            super(parent);
-            mAllowableQualifierHandler = new Handler(parent);
-            setDelegate(MeshParser.ALLOWABLE_QUALIFIER_ELEMENT,
-                        mAllowableQualifierHandler);
-        }
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
-        public void reset() {
-            mQualifierList.clear();
-            mAllowableQualifierHandler.reset(); // not really nec.
-        }
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            if (!MeshParser.ALLOWABLE_QUALIFIER_ELEMENT.equals(qName)) return;
-            mQualifierList.add(mAllowableQualifierHandler.getQualifier());
-        }
-        public List<MeshAllowableQualifier> getAllowableQualifierList() {
-            return new ArrayList<MeshAllowableQualifier>(mQualifierList);
+            super(parent,
+                  new Handler(parent),
+                  MeshParser.ALLOWABLE_QUALIFIER_ELEMENT);
         }
     }
 
