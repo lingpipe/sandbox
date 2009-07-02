@@ -11,13 +11,13 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
-class ListHandler<E> extends BaseHandler<List<E>> {
+class BaseListHandler<E> extends BaseHandler<List<E>> {
     
 
     private final BaseHandler<E> mHandler;
     private final List<E> mList;
 
-    public ListHandler(DelegatingHandler parent,
+    public BaseListHandler(DelegatingHandler parent,
                        BaseHandler<E> handler,
                        String tag) {
         super(parent);
