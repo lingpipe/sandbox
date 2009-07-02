@@ -511,7 +511,7 @@ public class Mesh {
         public Mesh getMesh() {
             return new Mesh(mDescriptorClass,
                             new MeshNameUi(mDescriptorUIHandler.getText().trim(),
-                                           mDescriptorNameHandler.getText().trim()),
+                                           mDescriptorNameHandler.getObject()),
                             mDateCreatedHandler.getDate(),
                             mDateRevisedHandler.getDate(),
                             mDateEstablishedHandler.getDate(),
@@ -533,7 +533,7 @@ public class Mesh {
         }
     }
 
-    static class StringHandler extends DelegateHandler {
+    static class StringHandler extends BaseHandler<String> {
         private final TextAccumulatorHandler mTextAccumulator = new TextAccumulatorHandler();
         public StringHandler(DelegatingHandler parent, String element) {
             super(parent);
@@ -547,7 +547,7 @@ public class Mesh {
             super.startDocument();
             reset();
         }
-        public String getText() {
+        public String getObject() {
             return mTextAccumulator.getText().trim();
         }
         public void reset() {
@@ -555,6 +555,7 @@ public class Mesh {
         }
     }
 
+    // can't genericize because TextAccumulatorHandler doesn't return an object
     static class ListHandler extends DelegateHandler {
         private List<String> mList = new ArrayList<String>();
         private TextAccumulatorHandler mAccumulator;
