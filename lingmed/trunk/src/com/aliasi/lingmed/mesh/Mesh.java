@@ -529,7 +529,7 @@ public class Mesh {
                             mRunningHeadHandler.getText().trim(),
                             mTreeNumberListHandler.getList(),
                             mRecordOriginatorListHandler.getRecordOriginatorList(),
-                            mConceptListHandler.getConceptList());
+                            mConceptListHandler.getObject());
         }
     }
 
@@ -542,14 +542,10 @@ public class Mesh {
         public StringHandler(DelegatingHandler parent) {
             this(parent,MeshParser.STRING_ELEMENT);
         }
-        @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
         public String getObject() {
             return mTextAccumulator.getText().trim();
         }
+        @Override
         public void reset() {
             mTextAccumulator.reset();
         }

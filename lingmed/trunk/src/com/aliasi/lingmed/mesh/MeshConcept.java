@@ -14,6 +14,15 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * A {@link MeshConcept} is a structured object representing the
+ * meaning of a MeSH concept.  
+ *
+ * <p>There may be more than one concept for
+ * a record, but there is always a preferred concept for a record
+ * (see {@link #isPreferred()}). 
+ *
+ * <p>Both the concept universal identifier and concept name
+ * are unique (see {@link #nameUi()}).
  *
  * @author Bob Carpenter
  * @version 1.3
@@ -22,8 +31,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class MeshConcept {
 
     private final boolean mPreferred;
-    private final String mConceptUi;
-    private final String mConceptName;
+    private final MeshNameUi mConceptNameUi;
     private final String mConceptUmlsUi;
     private final String mCasn1Name;
     private final String mRegistryNumber;
@@ -34,8 +42,7 @@ public class MeshConcept {
     private final List<MeshTerm> mTermList;
 
     MeshConcept(boolean preferred,
-                String conceptUi,
-                String conceptName,
+                MeshNameUi conceptNameUi,
                 String conceptUmlsUi,
                 String casn1Name,
                 String registryNumber,
@@ -45,8 +52,7 @@ public class MeshConcept {
                 List<MeshConceptRelation> conceptRelationList,
                 List<MeshTerm> termList) {
         mPreferred = preferred;
-        mConceptUi = conceptUi;
-        mConceptName = conceptName;
+        mConceptNameUi = conceptNameUi;
         mConceptUmlsUi = conceptUmlsUi.length() == 0 ? null : conceptUmlsUi;
         mCasn1Name = casn1Name.length() == 0 ? null : casn1Name;
         mRegistryNumber = registryNumber.length() == 0 ? null : registryNumber;
@@ -63,22 +69,26 @@ public class MeshConcept {
      *
      * @return Preferential status of this concept.
      */
-    public boolean preferred() {
+    public boolean isPreferred() {
         return mPreferred;
     }
 
-    public String conceptUi() {
-        return mConceptUi;
+    public MeshNameUi conceptNameUi() {
+        return mConceptNameUi;
     }
 
-    public String conceptName() {
-        return mConceptName;
-    }
 
     public String conceptUmlsUi() {
         return mConceptUmlsUi;
     }
 
+    /**
+     * Returns the Chemical Abstracts Service (CAS) Type N1 name for
+     * this concept, or {@code null} if there is none.  The name is
+     * unique and represents the chemical structure of the concept.
+     *
+     * @return The CAS type N1 name for this concept.
+     */
     public String casn1Name() {
         return mCasn1Name;
     }
@@ -110,8 +120,8 @@ public class MeshConcept {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("  Concept UI=" + conceptUi());
-        sb.append("\n  Concept Name=" + conceptName());
+        sb.append("  Concept Name/UI=" + conceptNameUi());
+        sb.append("\n  Preferred=" + isPreferred());
         sb.append("\n  Concept UMLS UI=" + conceptUmlsUi());
         sb.append("\n  CASN1 Name=" + casn1Name());
         sb.append("\n  Registry Number=" + registryNumber());
@@ -135,7 +145,7 @@ public class MeshConcept {
         return sb.toString();
     }
 
-    static class Handler extends DelegateHandler {
+    static class Handler extends BaseHandler<MeshConcept> {
         boolean mPreferred;
         TextAccumulatorHandler mConceptUiHandler;
         Mesh.StringHandler mConceptNameHandler;
@@ -176,17 +186,13 @@ public class MeshConcept {
                         mTermListHandler);
         }
         @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
-        @Override
         public void startElement(String url, String name, String qName,
                                  Attributes atts) throws SAXException {
             super.startElement(url,name,qName,atts);
             if (!MeshParser.CONCEPT_ELEMENT.equals(qName)) return;
             mPreferred = "Y".equals(atts.getValue(MeshParser.PREFERRED_CONCEPT_YN_ATT));
         }
+        @Override
         public void reset() {
             mConceptUiHandler.reset();
             mConceptNameHandler.reset();
@@ -200,10 +206,10 @@ public class MeshConcept {
             mTermListHandler.reset();
             mPreferred = false;
         }
-        public MeshConcept getConcept() {
+        public MeshConcept getObject() {
             return new MeshConcept(mPreferred,
-                                   mConceptUiHandler.getText().trim(),
-                                   mConceptNameHandler.getObject(),
+                                   new MeshNameUi(mConceptNameHandler.getObject(),
+                                                  mConceptUiHandler.getText().trim()),
                                    mConceptUmlsUiHandler.getText().trim(),
                                    mCasn1NameHandler.getText().trim(),
                                    mRegistryNumberHandler.getText().trim(),
@@ -216,29 +222,11 @@ public class MeshConcept {
     }
 
 
-    static class ListHandler extends DelegateHandler {
-        final List<MeshConcept> mConceptList = new ArrayList<MeshConcept>();
-        final Handler mConceptHandler;
+    static class ListHandler extends BaseListHandler<MeshConcept> {
         public ListHandler(DelegatingHandler parent) {
-            super(parent);
-            mConceptHandler = new Handler(parent);
-            setDelegate(MeshParser.CONCEPT_ELEMENT,mConceptHandler);
-        }
-        @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
-        public void reset() {
-            mConceptHandler.reset();
-            mConceptList.clear();
-        }
-        @Override
-        public void finishDelegate(String qName, DefaultHandler h) {
-            mConceptList.add(mConceptHandler.getConcept());
-        }
-        public List<MeshConcept> getConceptList() {
-            return new ArrayList<MeshConcept>(mConceptList);
+            super(parent,
+                  new Handler(parent),
+                  MeshParser.CONCEPT_ELEMENT);
         }
     }
 
