@@ -44,7 +44,7 @@ public class Mesh {
     private final List<MeshNameUi> mPharmacologicalActionList;
     private final String mRunningHead;
     private final List<String> mTreeNumberList;
-    private final MeshRecordOriginatorList mRecordOriginatorList;
+    private final MeshRecordOriginatorsList mRecordOriginatorsList;
     private final List<MeshConcept> mConceptList;
 
     Mesh(MeshDescriptorClass descriptorClass,
@@ -65,7 +65,7 @@ public class Mesh {
          List<MeshNameUi> pharmacologicalActionList,
          String runningHead,
          List<String> treeNumberList,
-         MeshRecordOriginatorList recordOriginatorList,
+         MeshRecordOriginatorsList recordOriginatorsList,
          List<MeshConcept> conceptList) {
 
         mDescriptorClass = descriptorClass;
@@ -86,7 +86,7 @@ public class Mesh {
         mPharmacologicalActionList = pharmacologicalActionList;
         mRunningHead = runningHead.length() == 0 ? null : runningHead;
         mTreeNumberList = treeNumberList;
-        mRecordOriginatorList = recordOriginatorList;
+        mRecordOriginatorsList = recordOriginatorsList;
         mConceptList = conceptList;
     }
 
@@ -301,8 +301,8 @@ public class Mesh {
      * @return Structured record of originators, maintainers and
      * authorizes of this record.
      */
-    public MeshRecordOriginatorList recordOriginatorList() {
-        return mRecordOriginatorList;
+    public MeshRecordOriginatorsList recordOriginatorList() {
+        return mRecordOriginatorsList;
     }
 
     /**
@@ -392,7 +392,7 @@ public class Mesh {
         private final MeshNameUi.ListHandler mPharmacologicalActionListHandler;
         private final TextAccumulatorHandler mRunningHeadHandler;
         private final ListHandler mTreeNumberListHandler;
-        private final MeshRecordOriginatorList.Handler mRecordOriginatorListHandler;
+        private final MeshRecordOriginatorsList.Handler mRecordOriginatorsListHandler;
         private final MeshConcept.ListHandler mConceptListHandler;
         public Handler(DelegatingHandler parent) {
             super(parent);
@@ -456,9 +456,9 @@ public class Mesh {
             mTreeNumberListHandler = new ListHandler(parent,MeshParser.TREE_NUMBER_ELEMENT);
             setDelegate(MeshParser.TREE_NUMBER_LIST_ELEMENT,
                         mTreeNumberListHandler);
-            mRecordOriginatorListHandler = new MeshRecordOriginatorList.Handler(parent);
+            mRecordOriginatorsListHandler = new MeshRecordOriginatorsList.Handler(parent);
             setDelegate(MeshParser.RECORD_ORIGINATORS_LIST_ELEMENT,
-                        mRecordOriginatorListHandler);
+                        mRecordOriginatorsListHandler);
             mConceptListHandler = new MeshConcept.ListHandler(parent);
             setDelegate(MeshParser.CONCEPT_LIST_ELEMENT,
                         mConceptListHandler);
@@ -486,7 +486,7 @@ public class Mesh {
             mPharmacologicalActionListHandler.reset();
             mRunningHeadHandler.reset();
             mTreeNumberListHandler.reset();
-            mRecordOriginatorListHandler.reset();
+            mRecordOriginatorsListHandler.reset();
             mConceptListHandler.reset();
         }
 
@@ -528,7 +528,7 @@ public class Mesh {
                             mPharmacologicalActionListHandler.getList(),
                             mRunningHeadHandler.getText().trim(),
                             mTreeNumberListHandler.getList(),
-                            mRecordOriginatorListHandler.getRecordOriginatorList(),
+                            mRecordOriginatorsListHandler.getObject(),
                             mConceptListHandler.getObject());
         }
     }
