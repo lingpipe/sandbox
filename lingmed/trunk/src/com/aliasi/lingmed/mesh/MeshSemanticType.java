@@ -11,44 +11,9 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.DefaultHandler;
 
-/**
- *
- *
- * @author Bob Carpenter
- * @version 1.3
- * @since LingMed1.3
- */
-public class MeshSemanticType {
+class MeshSemanticType {
 
-
-    // <!ELEMENT SemanticTypeList (SemanticType+)>
-    // <!ELEMENT SemanticType (SemanticTypeUI, SemanticTypeName) >
-    // <!ELEMENT SemanticTypeUI (#PCDATA)>
-    // <!ELEMENT SemanticTypeName (#PCDATA)>
-
-    private final String mUi;
-    private final String mName;
-
-    MeshSemanticType(String ui, 
-                     String name) {
-        mUi = ui;
-        mName = name;
-    }
-
-    public String ui() {
-        return mUi;
-    }
-
-    public String name() {
-        return mName;
-    }
-
-    @Override
-    public String toString() {
-        return "UI=" + ui() + "; Name=" + name();
-    }
-
-    static class Handler extends DelegateHandler {
+    static class Handler extends BaseHandler<MeshNameUi> {
         final TextAccumulatorHandler mUiHandler;
         final TextAccumulatorHandler mNameHandler;
         public Handler(DelegatingHandler parent) {
@@ -58,42 +23,22 @@ public class MeshSemanticType {
             mNameHandler = new TextAccumulatorHandler();
             setDelegate(MeshParser.SEMANTIC_TYPE_NAME_ELEMENT,mNameHandler);
         }
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
+        @Override
         public void reset() {
             mUiHandler.reset();
             mNameHandler.reset();
         }
-        public MeshSemanticType getSemanticType() {
-            return new MeshSemanticType(mUiHandler.getText().trim(),
-                                        mNameHandler.getText().trim());
+        public MeshNameUi getObject() {
+            return new MeshNameUi(mNameHandler.getText().trim(),
+                                  mUiHandler.getText().trim());
         }
     }
 
-    static class ListHandler extends DelegateHandler {
-        final Handler mHandler;
-        final List<MeshSemanticType> mSemanticTypeList
-            = new ArrayList<MeshSemanticType>();
+    static class ListHandler extends BaseListHandler<MeshNameUi> {
         public ListHandler(DelegatingHandler parent) {
-            super(parent);
-            mHandler = new Handler(parent);
-            setDelegate(MeshParser.SEMANTIC_TYPE_ELEMENT,mHandler);
-        }
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
-        public void finishDelegate(String qName, DefaultHandler handler) {
-            mSemanticTypeList.add(mHandler.getSemanticType());
-        }
-        public void reset() {
-            mSemanticTypeList.clear();
-            mHandler.reset();
-        }
-        public List<MeshSemanticType> getList() {
-            return new ArrayList<MeshSemanticType>(mSemanticTypeList);
+            super(parent,
+                  new Handler(parent),
+                  MeshParser.SEMANTIC_TYPE_ELEMENT);
         }
     }
 
