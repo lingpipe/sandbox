@@ -290,7 +290,7 @@ public class MeshConcept {
                                    mScopeNoteHandler.getText().trim(),
                                    mSemanticTypeListHandler.getObject(),
                                    mRelatedRegistryNumberListHandler.getList(),
-                                   mConceptRelationListHandler.getList(),
+                                   mConceptRelationListHandler.getObject(),
                                    mTermListHandler.getTermList());
         }
     }

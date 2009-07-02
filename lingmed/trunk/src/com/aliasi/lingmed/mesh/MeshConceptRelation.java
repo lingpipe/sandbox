@@ -15,7 +15,23 @@ import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
+ * A {@code MeshConceptRelation} represents a relation between
+ * concepts, most commonly, between preferred and subordinate concepts
+ * in a record.
  *
+ * <p>The relation name (see {@link #relationName()}) is one of the
+ * following values:
+ *
+ * <blockquote><table border="1" cellpadding="5">
+ * <tr><th>Relation Name</th><th>Description</th></tr>
+ * <tr><td>BRD</td><td>broader</td></tr>
+ * <tr><td>NRW</td><td>narrower</td></tr>
+ * <tr><td>REL</td><td>related, but not broader or narrow</td></tr>
+ * </table></blockquote>
+ *
+ * <p>The concepts being related are given by the two concept
+ * universal identifiers.  
+ * 
  * @author Bob Carpenter
  * @version 1.3
  * @since LingMed1.3
@@ -39,22 +55,53 @@ public class MeshConceptRelation {
             System.out.println("RA123=" + mRelationAttribute);
     }
 
+    /**
+     * Returns the name of the type of this relation, which
+     * can be NRW (narrower), BRD (broader), or REL (neither).
+     *
+     * @return The name for this relation.
+     */
     public String relationName() {
         return mRelationName;
     }
 
+    /**
+     * Return the unique identifier (UI) for the first
+     * concept in the relation.
+     *
+     * @return First concept in relation.
+     */
     public String concept1Ui() {
         return mConcept1Ui;
     }
 
+    /**
+     * Return the unique identifier (UI) for the second
+     * concept in the relation.
+     *
+     * @return Second concept in relation.
+     */
     public String concept2Ui() {
         return mConcept2Ui;
     }
 
+    /**
+     * Returns free text further describing the relation (<b>warning</b>: that
+     * this field is no longer current in MeSH).
+     *
+     * @return Further information describing the relation.
+     */
     public String relationAttribute() {
         return mRelationAttribute;
     }
 
+    /**
+     * Returns a text representation of this relation.  All of the
+     * information returned by this method is available progamatically
+     * through the other methods in this class.
+     *
+     * @return String-based representation of this relation.
+     */
     @Override
     public String toString() {
         return "Relation Name=" + mRelationName
@@ -63,7 +110,7 @@ public class MeshConceptRelation {
             + "; Relational Attribute=" + mRelationAttribute;
     }
 
-    static class Handler extends DelegateHandler {
+    static class Handler extends BaseHandler<MeshConceptRelation> {
         final TextAccumulatorHandler mConcept1UiHandler;
         final TextAccumulatorHandler mConcept2UiHandler;
         final TextAccumulatorHandler mRelationAttributeHandler;
@@ -81,11 +128,6 @@ public class MeshConceptRelation {
                         mRelationAttributeHandler);
         }
         @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
-        @Override
         public void startElement(String url, String relName, String qName,
                                      Attributes atts) throws SAXException {
             super.startElement(url,relName,qName,atts);
@@ -98,7 +140,7 @@ public class MeshConceptRelation {
             mRelationAttributeHandler.reset();
             mRelationName = null;
         }
-        public MeshConceptRelation getConcept() {
+        public MeshConceptRelation getObject() {
             return new MeshConceptRelation(mRelationName,
                                            mConcept1UiHandler.getText().trim(),
                                            mConcept2UiHandler.getText().trim(),
@@ -107,30 +149,11 @@ public class MeshConceptRelation {
         }
     }
 
-    static class ListHandler extends DelegateHandler {
-        final List<MeshConceptRelation> mConceptRelationList
-            = new ArrayList<MeshConceptRelation>();
-        final Handler mHandler;
+    static class ListHandler extends BaseListHandler<MeshConceptRelation> {
         ListHandler(DelegatingHandler parent) {
-            super(parent);
-            mHandler = new Handler(parent);
-            setDelegate(MeshParser.CONCEPT_RELATION_ELEMENT,mHandler);
-        }
-        @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            reset();
-        }
-        public void reset() {
-            mConceptRelationList.clear();
-            mHandler.reset();
-        }
-        @Override
-        public void finishDelegate(String qName, DefaultHandler h) {
-            mConceptRelationList.add(mHandler.getConcept());
-        }
-        public List<MeshConceptRelation> getList() {
-            return new ArrayList<MeshConceptRelation>(mConceptRelationList);
+            super(parent,
+                  new Handler(parent),
+                  MeshParser.CONCEPT_RELATION_ELEMENT);
         }
     }
 
