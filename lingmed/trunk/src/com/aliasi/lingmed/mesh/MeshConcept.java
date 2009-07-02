@@ -15,14 +15,15 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * A {@link MeshConcept} is a structured object representing the
- * meaning of a MeSH concept.  
+ * meaning of a MeSH concept.  <p>Both the concept name universal
+ * identifier are unique (see {@link #nameUi()}).  The scope note (see
+ * {@link #scopeNote()}) provides the textual description of the
+ * meaning of the concept.  
  *
- * <p>There may be more than one concept for
- * a record, but there is always a preferred concept for a record
- * (see {@link #isPreferred()}). 
+ * <p>There may be more than one concept for a given record, but there is
+ * always a preferred concept for a record (see {@link
+ * #isPreferred()}).
  *
- * <p>Both the concept universal identifier and concept name
- * are unique (see {@link #nameUi()}).
  *
  * @author Bob Carpenter
  * @version 1.3
@@ -36,7 +37,7 @@ public class MeshConcept {
     private final String mCasn1Name;
     private final String mRegistryNumber;
     private final String mScopeNote;
-    private final List<MeshSemanticType> mSemanticTypeList;
+    private final List<MeshNameUi> mSemanticTypeList;
     private final List<String> mRelatedRegistryNumberList;
     private final List<MeshConceptRelation> mConceptRelationList;
     private final List<MeshTerm> mTermList;
@@ -47,7 +48,7 @@ public class MeshConcept {
                 String casn1Name,
                 String registryNumber,
                 String scopeNote,
-                List<MeshSemanticType> semanticTypeList,
+                List<MeshNameUi> semanticTypeList,
                 List<String> relatedRegistryNumberList,
                 List<MeshConceptRelation> conceptRelationList,
                 List<MeshTerm> termList) {
@@ -73,11 +74,25 @@ public class MeshConcept {
         return mPreferred;
     }
 
+    /**
+     * Returns the name and unique identifier (UI) for this
+     * concept.  The name will also be unique across concepts.
+     *
+     * @return The name and unique identifier for this concept.
+     */
     public MeshNameUi conceptNameUi() {
         return mConceptNameUi;
     }
 
-
+    /**
+     * Returns a unique identifier (UI) for this concept in the
+     * Unified Medical Language System (UMLS) Metathesaurus.  For more
+     * information on UMLS, including licensing information, see:
+     *
+     * <ul><li>NLM: <a href="http://www.nlm.nih.gov/research/umls/umlsmain.html">UMLS Home Page</a></li></ul>
+     *
+     * @return The unique identifier for this concept in UMLS.
+     */
     public String conceptUmlsUi() {
         return mConceptUmlsUi;
     }
@@ -93,26 +108,66 @@ public class MeshConcept {
         return mCasn1Name;
     }
 
+    /**
+     * Returns a registry number of this concept from the Enzyme
+     * Commision (EC), Chemical Abstracts Service (CAS), or
+     * NCBI Reference Sequence (RefSeq) project, or 0 if it is not
+     * registered with any of these databases.
+     *
+     * @return The registry number for this concept.
+     */
     public String registryNumber() {
         return mRegistryNumber;
     }
 
+    /**
+     * Returns a free text description of this concept indicating the
+     * scope of applicability of the concept.  Many other elements in
+     * a record also indicate scope in one way or another.
+     *
+     * @return The free text note on the scope of this concept.
+     */
     public String scopeNote() {
         return mScopeNote;
     }
 
-    public List<MeshSemanticType> semanticTypeList() {
+    public List<MeshNameUi> semanticTypeList() {
         return Collections.unmodifiableList(mSemanticTypeList);
     }
 
+    /**
+     * Return an unmodifiable view of the list of registry numbers in
+     * the form of free text for concepts without their own descriptor
+     * or supplemental record.  The registry numbers may contain CAS
+     * information in parentheses (see {@link #casn1Name()} and {@link
+     * #registryNumber()}.
+     *
+     * @return The list of related registry numbers and related
+     * information.
+     */
     public List<String> relatedRegistryNumberList() {
         return Collections.unmodifiableList(mRelatedRegistryNumberList);
     }
 
+    /**
+     * Returns an unmodifiable view of the list of relations between a
+     * given concept and another concept.  Typically, the relations
+     * are between this concept and another concept, so much of the
+     * information here is redundant.
+     *
+     * @return List of relations among concepts.
+     */
     public List<MeshConceptRelation> conceptRelationList() {
         return Collections.unmodifiableList(mConceptRelationList);
     }
 
+    /**
+     * Returns an unmodifiable view of the list of MeSH terms, which
+     * contain strings which make up the atomic pieces of the MeSH
+     * vocabulary, as well as metadata.
+     *
+     * @return List of terms for this concept.
+     */
     public List<MeshTerm> termList() {
         return Collections.unmodifiableList(mTermList);
     }
@@ -126,7 +181,7 @@ public class MeshConcept {
         sb.append("\n  CASN1 Name=" + casn1Name());
         sb.append("\n  Registry Number=" + registryNumber());
         sb.append("\n  Scope Note=" + scopeNote());
-        List<MeshSemanticType> semanticTypeList = semanticTypeList();
+        List<MeshNameUi> semanticTypeList = semanticTypeList();
         for (int i = 0; i < semanticTypeList.size(); ++i)
             sb.append("\n  Semantic Type=[" + i + "]="
                       + semanticTypeList.get(i));
@@ -214,7 +269,7 @@ public class MeshConcept {
                                    mCasn1NameHandler.getText().trim(),
                                    mRegistryNumberHandler.getText().trim(),
                                    mScopeNoteHandler.getText().trim(),
-                                   mSemanticTypeListHandler.getList(),
+                                   mSemanticTypeListHandler.getObject(),
                                    mRelatedRegistryNumberListHandler.getList(),
                                    mConceptRelationListHandler.getList(),
                                    mTermListHandler.getTermList());
