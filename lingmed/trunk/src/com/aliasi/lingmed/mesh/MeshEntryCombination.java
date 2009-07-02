@@ -138,7 +138,7 @@ public class MeshEntryCombination {
         }
     }
 
-    static class ListHandler extends com.aliasi.lingmed.mesh.ListHandler<MeshEntryCombination> {
+    static class ListHandler extends BaseListHandler<MeshEntryCombination> {
         public ListHandler(DelegatingHandler parent) {
             super(parent,new Handler(parent),MeshParser.ENTRY_COMBINATION_ELEMENT);
         }
