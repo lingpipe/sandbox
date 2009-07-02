@@ -30,7 +30,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * </table></blockquote>
  *
  * <p>The concepts being related are given by the two concept
- * universal identifiers.  
+ * universal identifiers (see {@link #concept1Ui()} and {@link
+ * #concept2Ui()}.
  * 
  * @author Bob Carpenter
  * @version 1.3
