@@ -2,6 +2,8 @@ package com.aliasi.anno.cmd;
 
 import com.aliasi.io.FileLineReader;
 
+import com.aliasi.util.Strings;
+
 import com.aliasi.anno.CollapsedMultinomialByAnno;
 
 import java.io.File;
@@ -10,6 +12,7 @@ import java.io.IOException;
 public class ByAnnoCmd {
 
     public static void main(String[] args) throws IOException {
+        long startTime = System.nanoTime();
         File annoTsvFile = new File(args[0]);
         double initialPi = Double.valueOf(args[1]);
         double initialSpecificity = Double.valueOf(args[2]);
@@ -44,8 +47,11 @@ public class ByAnnoCmd {
                                              initialSpecificity,
                                              initialSensitivity);
         int count = 0;
+        startTime = System.currentTimeMillis();
         for (CollapsedMultinomialByAnno.Sample sample : sampler) {
-            System.out.printf("%7d  pi=%4.3f   phi0=%4.3f gamma0=%4.3f   phi1=%4.3f gamma1=%4.3f\n",
+            long elapsedTimeMs = System.currentTimeMillis() - startTime;
+            System.out.printf("%10s %7d  pi=%4.3f   phi0=%4.3f gamma0=%4.3f   phi1=%4.3f gamma1=%4.3f\n",
+                              Strings.msToString(elapsedTimeMs),
                               count++,
                               sample.pi(),
                               sample.specificityPriorMean(),
