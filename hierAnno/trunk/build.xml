@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+
+<project name="Java Annotation Model"
+         default="jar"
+         basedir=".">
+
+<property name="jar"
+          value="annotation.jar"/>
+
+<path id="classpath.standard">
+  <pathelement location="${jar}"/>
+  <pathelement location="lib/lingpipe-3.8.1.jar"/>
+</path>
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete file="${jar}"/>
+</target>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <compilerarg value="-Xlint:all"/>
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="${jar}">
+    <fileset dir="build/classes"
+             includes="**/*.class"/>
+  </jar>
+</target>
+
+<target name="infer-gold"
+        depends="jar">
+  <java classname="com.aliasi.anno.cmd.ByAnnoCmd"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <!-- ii[k] <tab> jj[k] <tab> xx[k] <nl> -->
+    <arg value="R/data/mturk-ne/per.anno.tsv"/>
+    <arg value="0.5"/> <!-- initial pi -->
+    <arg value="0.95"/> <!-- initial specificity -->
+    <arg value = "0.95"/>  <!-- initial sensitivity -->
+    <!-- c[i] -->
+    <!-- <arg value="R/data/mturk-ne/per.gold.tsv"/> -->
+  </java>
+</target>
+
+
+</project>
