@@ -1,0 +1,4 @@
+per.gold.tsv:
+  -1: capitalized,     not entity
+   0: not-capitalized, not entity
+   1: entity

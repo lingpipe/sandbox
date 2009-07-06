@@ -1,5 +1,7 @@
 package com.aliasi.anno;
 
+import com.aliasi.corpus.ObjectHandler;
+
 import com.aliasi.stats.OnlineNormalEstimator;
 
 import com.aliasi.util.Iterators;
@@ -35,6 +37,14 @@ public class CollapsedMultinomialByAnno
         mInitialPi = initialPi;
         mInitialSpecificity = initialSpecificity;
         mInitialSensitivity = initialSensitivity;
+    }
+
+    public int numItems() {
+        return mNumItems;
+    }
+
+    public int numAnnotators() {
+        return mNumAnnotators;
     }
 
     // returns a fresh Markov Chain; thread safe
@@ -84,9 +94,7 @@ public class CollapsedMultinomialByAnno
         public Sample bufferNext() {
             sampleCategories();
             recomputeNonCategories();
-            return new Sample(mNumAnnotators,
-                              mNumItems,
-                              mPi,
+            return new Sample(mPi,
                               mCategories.clone(),
                               mAlphaSpecificity,
                               mBetaSpecificity,
@@ -207,10 +215,117 @@ public class CollapsedMultinomialByAnno
         static final double MIN_VALUE = Double.MIN_VALUE;
     }
 
+    public static class SampleDistribution
+        implements ObjectHandler<Sample> {
+        final OnlineNormalEstimator mPiEstimator;
+        final OnlineNormalEstimator[] mCategoryEstimators;
+        final OnlineNormalEstimator mAlphaSpecificityEstimator;
+        final OnlineNormalEstimator mBetaSpecificityEstimator;
+        final OnlineNormalEstimator mAlphaSensitivityEstimator;
+        final OnlineNormalEstimator mBetaSensitivityEstimator;
+        final OnlineNormalEstimator[] mSpecificityEstimators;
+        final OnlineNormalEstimator[] mSensitivityEstimators;
+        public SampleDistribution(int numItems, int numAnnotators) {
+            mPiEstimator = new OnlineNormalEstimator();
+            mCategoryEstimators = onlineNormalEstimators(numItems);
+            mAlphaSpecificityEstimator = new OnlineNormalEstimator();
+            mBetaSpecificityEstimator = new OnlineNormalEstimator();
+            mAlphaSensitivityEstimator = new OnlineNormalEstimator();
+            mBetaSensitivityEstimator = new OnlineNormalEstimator();
+            mSpecificityEstimators = onlineNormalEstimators(numAnnotators);
+            mSensitivityEstimators = onlineNormalEstimators(numAnnotators);
+        }
+        public void handle(Sample sample) {
+            mPiEstimator.handle(sample.pi());
+            for (int k = 0; k < sample.categories().length; ++k) { // numItems too long
+                double sampleCategory = sample.categories()[k] ? 1.0 : 0.0;
+                mCategoryEstimators[k].handle(sampleCategory);
+            }
+            mAlphaSpecificityEstimator.handle(sample.alphaSpecificity());
+            mBetaSpecificityEstimator.handle(sample.betaSpecificity());
+            mAlphaSensitivityEstimator.handle(sample.alphaSensitivity());
+            mBetaSpecificityEstimator.handle(sample.betaSensitivity());
+            for (int j = 0; j < mSpecificityEstimators.length; ++j)
+                mSpecificityEstimators[j].handle(sample.specificities()[j]);
+            for (int j = 0; j < mSensitivityEstimators.length; ++j)
+                mSensitivityEstimators[j].handle(sample.sensitivities()[j]);
+        }
+        public long numSamples() {
+            return mPiEstimator.numSamples();
+        }
+        public int numAnnotators() {
+            return mSpecificityEstimators.length;
+        }
+        public int numItems() {
+            return mCategoryEstimators.length;
+        }
+        public OnlineNormalEstimator piEstimator() {
+            return mPiEstimator;
+        }
+        public int numCategories() {
+            return mCategoryEstimators.length;
+        }
+        public OnlineNormalEstimator categoryEstimator(int i) {
+            return mCategoryEstimators[i];
+        }
+        public OnlineNormalEstimator alphaSpecificityEstimator() {
+            return mAlphaSpecificityEstimator;
+        }
+        public OnlineNormalEstimator betaSpecificityEstimator() {
+            return mBetaSpecificityEstimator;
+        }
+        public OnlineNormalEstimator alphaSensitivityEstimator() {
+            return mAlphaSensitivityEstimator;
+        }
+        public OnlineNormalEstimator betaSensitivityEstimator() {
+            return mBetaSpecificityEstimator;
+        }
+        public OnlineNormalEstimator specificityEstimator(int j) {
+            return mSpecificityEstimators[j];
+        }
+        public OnlineNormalEstimator sensitivityEstimator(int j) {
+            return mSensitivityEstimators[j];
+        }
+        static OnlineNormalEstimator[] onlineNormalEstimators(int length) {
+            OnlineNormalEstimator[] estimators = new OnlineNormalEstimator[length];
+            for (int i = 0; i < length; ++i)
+                estimators[i] = new OnlineNormalEstimator();
+            return estimators;
+        }
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Sample Estimates");
+            sb.append("\n  num samples N=" + numSamples());
+            sb.append("\n  num annotators J=" + numAnnotators());
+            sb.append("\n  num items I=" + numItems());
+            sb.append("\n  pi=" + piEstimator());
+            sb.append("\n  alpha.0=" + alphaSpecificityEstimator());
+            sb.append("\n  beta.0=" + betaSensitivityEstimator());
+            sb.append("\n  mean.0="
+                      + ( alphaSpecificityEstimator().mean()
+                          / ( alphaSpecificityEstimator().mean()
+                              + betaSpecificityEstimator().mean() ) ));
+            sb.append("\n  alpha.1=" + alphaSensitivityEstimator());
+            sb.append("\n  beta.1=" + betaSensitivityEstimator());
+            sb.append("\n  mean.1="
+                      + ( alphaSensitivityEstimator().mean()
+                          / ( alphaSensitivityEstimator().mean()
+                              + betaSensitivityEstimator().mean() ) ));
+            for (int j = 0; j < numAnnotators(); ++j)
+                sb.append("\n  specificity[" + j + "]="
+                          + specificityEstimator(j));
+            for (int j = 0; j < numAnnotators(); ++j)
+                sb.append("\n  sensitivity[" + j + "]="
+                          + sensitivityEstimator(j));
+            for (int i = 0; i < numItems(); ++i)
+                sb.append("\n  category[" + i + "]="
+                          + categoryEstimator(i));
+            return sb.toString();
+        }
+    }
+
 
     public static class Sample {
-        final int mNumAnnotators;
-        final int mNumItems;
         final double mPi;
         final boolean[] mCategories;
         final double mAlphaSpecificity;
@@ -219,9 +334,7 @@ public class CollapsedMultinomialByAnno
         final double mBetaSensitivity;
         final double[] mSpecificities;
         final double[] mSensitivities;
-        Sample(int numAnnotators,
-               int numItems,
-               double pi,
+        Sample(double pi,
                boolean[] categories,
                double alphaSpecificity,
                double betaSpecificity,
@@ -229,8 +342,6 @@ public class CollapsedMultinomialByAnno
                double betaSensitivity,
                double[] specificities,
                double[] sensitivities) {
-            mNumAnnotators = numAnnotators;
-            mNumItems = numItems;
             mPi = pi;
             mCategories = categories;
             mAlphaSpecificity = alphaSpecificity;
@@ -241,10 +352,10 @@ public class CollapsedMultinomialByAnno
             mSensitivities = sensitivities;
         }
         public int numAnnotators() {
-            return mNumAnnotators;
+            return mSpecificities.length;
         }
         public int numItems() {
-            return mNumItems;
+            return mCategories.length;
         }
         public double pi() {
             return mPi;
