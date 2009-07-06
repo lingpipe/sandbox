@@ -111,6 +111,7 @@ public class CollapsedMultinomialByAnno
                 int j = mAnnotators[k];
 
                 if (mAnnotations[k]) {
+                    // annotator says 1
                     mCategories0[i] *= (1.0 - mSpecificities[j]);
                     mCategories1[i] *= mSensitivities[j];
                 } else {
@@ -135,10 +136,12 @@ public class CollapsedMultinomialByAnno
                     }
                 }
             }
-            for (int i = 0; i < mNumItems; ++i)
+            for (int i = 0; i < mNumItems; ++i) {
+                double p1 = mCategories1[i] / (mCategories1[i] + mCategories0[i]);
                 mCategories[i]
-                    = mRandom.nextDouble()
-                    < (mCategories1[i] / (mCategories1[i] + mCategories0[i]));
+                    = mRandom.nextDouble() < p1;
+                // System.out.printf("p1=%3.2f c[%d]=%b\n",p1,i,mCategories[i]);
+            }
         }
         void recomputeNonCategories() {
             recomputeSensitivitySpecificity();
@@ -147,34 +150,43 @@ public class CollapsedMultinomialByAnno
         }
 
         void recomputeSensitivitySpecificity() {
-            double[] mTP = new double[mNumAnnotators];
-            double[] mTN = new double[mNumAnnotators];
-            double[] mFP = new double[mNumAnnotators];
-            double[] mFN = new double[mNumAnnotators];
+            double[] tp = new double[mNumAnnotators];
+            double[] tn = new double[mNumAnnotators];
+            double[] fp = new double[mNumAnnotators];
+            double[] fn = new double[mNumAnnotators];
+
+            // handled in math below
+            // Arrays.fill(tp,mAlphaSensitivity);
+            // Arrays.fill(fn,mBetaSensitivity);
+            // Arrays.fill(tn,mAlphaSpecificity);
+            // Arrays.fill(fp,mBetaSpecificity);
 
             for (int k = 0; k < mAnnotations.length; ++k) {
                 if (mCategories[mItems[k]]) {
                     if (mAnnotations[k])
-                        ++mTP[mAnnotators[k]];
+                        ++tp[mAnnotators[k]];
                     else
-                        ++mFN[mAnnotators[k]];
+                        ++fn[mAnnotators[k]];
                 } else {
                     if (mAnnotations[k])
-                        ++mFP[mAnnotators[k]];
+                        ++fp[mAnnotators[k]];
                     else
-                        ++mTN[mAnnotators[k]];
+                        ++tn[mAnnotators[k]];
                 }
             }
 
             for (int j = 0; j < mNumAnnotators; ++j) {
+                // System.out.printf("%d. tp=%8.2f fn=%8.2f tn=%8.2f fp=%8.2f spec=%5.3f sens=%5.3f\n",
+                // j,tp[j],fn[j],tn[j],fp[j],
+                // mSpecificities[j],mSensitivities[j]);
                 mSensitivities[j]
-                    = (mAlphaSensitivity + mTP[j])
-                    / (mAlphaSensitivity + mTP[j]
-                       + mBetaSensitivity + mFN[j]);
+                    = (mAlphaSensitivity + tp[j])
+                    / (mAlphaSensitivity + tp[j]
+                       + mBetaSensitivity + fn[j]);
                 mSpecificities[j]
-                    = (mAlphaSpecificity + mTN[j])
-                    / (mAlphaSpecificity + mTN[j]
-                       + mBetaSpecificity + mFP[j]);
+                    = (mAlphaSpecificity + tn[j])
+                    / (mAlphaSpecificity + tn[j]
+                       + mBetaSpecificity + fp[j]);
             }
         }
 
@@ -200,6 +212,12 @@ public class CollapsedMultinomialByAnno
                                                        sensitivityVariance);
             mBetaSensitivity = BetaDistribution.beta(sensitivityMean,
                                                      sensitivityVariance);
+            if (Double.isNaN(mBetaSensitivity)) {
+                System.out.println("mean=" + sensitivityMean + " var=" + sensitivityVariance);
+                for (int j = 0; j < mNumAnnotators; ++j)
+                    System.out.printf("anno[%d].sens=%9.7f\n",j,mSensitivities[j]);
+                System.exit(1);
+            }
 
         }
 

@@ -77,8 +77,8 @@ public class BetaDistribution {
     public static void main(String[] args) {
         Random random = new Random();
         for (int i = 0; i < 100; ++i) {
-            double alpha = random.nextDouble() * 10;
-            double beta = random.nextDouble() * 10;
+            double alpha = random.nextDouble() * 1000000;
+            double beta = random.nextDouble() * 1000000;
             double mean = mean(alpha,beta);
             double variance = variance(alpha,beta);
             double alphaCalc = alpha(mean,variance);

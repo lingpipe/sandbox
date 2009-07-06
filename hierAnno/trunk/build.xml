@@ -37,7 +37,7 @@
   </jar>
 </target>
 
-<target name="infer-gold"
+<target name="gold-ne"
         depends="jar">
   <java classname="com.aliasi.anno.cmd.ByAnnoCmd"
         fork="true">
@@ -45,11 +45,66 @@
     <!-- ii[k] <tab> jj[k] <tab> xx[k] <nl> -->
     <arg value="R/data/mturk-ne/per.anno.tsv"/>
     <arg value="0.5"/> <!-- initial pi -->
-    <arg value="0.95"/> <!-- initial specificity -->
-    <arg value = "0.95"/>  <!-- initial sensitivity -->
+    <arg value="0.90"/> <!-- initial specificity -->
+    <arg value = "0.90"/>  <!-- initial sensitivity -->
+    <arg value = "100"/>  <!-- num samples -->
     <arg value="R/data/mturk-ne/per.gold.tsv"/> <!-- gold std -->
   </java>
 </target>
+
+<target name="gold-rte"
+        depends="jar">
+  <java classname="com.aliasi.anno.cmd.ByAnnoCmd"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <!-- ii[k] <tab> jj[k] <tab> xx[k] <nl> -->
+    <arg value="R/data/dolores/rte.data.tsv"/>
+    <arg value="0.5"/> <!-- initial pi -->
+    <arg value="0.90"/> <!-- initial specificity -->
+    <arg value = "0.90"/>  <!-- initial sensitivity -->
+    <arg value = "500"/>  <!-- num samples -->
+    <arg value="R/data/dolores/rte.gold.tsv"/> 
+  </java>
+</target>
+
+<target name="beta"
+        depends="jar">
+  <java classname="com.aliasi.anno.BetaDistribution"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+  </java>
+</target>
+
+
+<target name="censor-ne"
+        depends="jar">
+  <java classname="com.aliasi.anno.cmd.CensorNeZeros"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="R/data/mturk-ne/per.anno.tsv"/>
+    <arg value="R/data/mturk-ne/per.gold.tsv"/> <!-- gold std -->
+    <arg value="temp-ne-censored-anno.tsv"/>
+    <arg value="temp-ne-censored-gold.tsv"/>
+    <arg value="temp-ne-censored-map.tsv"/>
+  </java>
+</target>
+
+<target name="gold-censor-ne"
+        depends="jar">
+  <java classname="com.aliasi.anno.cmd.ByAnnoCmd"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <!-- ii[k] <tab> jj[k] <tab> xx[k] <nl> -->
+    <arg value="temp-ne-censored-anno.tsv"/>
+    <arg value="0.5"/> <!-- initial pi -->
+    <arg value="0.90"/> <!-- initial specificity -->
+    <arg value = "0.90"/>  <!-- initial sensitivity -->
+    <arg value = "1000"/>  <!-- num samples -->
+    <arg value="temp-ne-censored-gold.tsv"/>
+  </java>
+</target>
+
+
 
 
 </project>
