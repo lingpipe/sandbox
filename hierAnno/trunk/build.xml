@@ -9,7 +9,7 @@
 
 <path id="classpath.standard">
   <pathelement location="${jar}"/>
-  <pathelement location="lib/lingpipe-3.8.1.jar"/>
+  <pathelement location="lib/lingpipe-3.9.a.jar"/>
 </path>
 
 <target name="clean">
@@ -47,8 +47,7 @@
     <arg value="0.5"/> <!-- initial pi -->
     <arg value="0.95"/> <!-- initial specificity -->
     <arg value = "0.95"/>  <!-- initial sensitivity -->
-    <!-- c[i] -->
-    <!-- <arg value="R/data/mturk-ne/per.gold.tsv"/> -->
+    <arg value="R/data/mturk-ne/per.gold.tsv"/> <!-- gold std -->
   </java>
 </target>
 

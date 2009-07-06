@@ -48,6 +48,10 @@ public class ByAnnoCmd {
                                              initialSensitivity);
         int count = 0;
         startTime = System.currentTimeMillis();
+        CollapsedMultinomialByAnno.SampleDistribution sampleDistribution
+            = new CollapsedMultinomialByAnno
+            .SampleDistribution(sampler.numItems(),
+                                sampler.numAnnotators());
         for (CollapsedMultinomialByAnno.Sample sample : sampler) {
             long elapsedTimeMs = System.currentTimeMillis() - startTime;
             System.out.printf("%10s %7d  pi=%4.3f   phi0=%4.3f gamma0=%4.3f   phi1=%4.3f gamma1=%4.3f\n",
@@ -59,14 +63,12 @@ public class ByAnnoCmd {
                               sample.sensitivityPriorMean(),
                               sample.sensitivityPriorScale());
 
-            /*
-            for (int j = 0; j < sample.numAnnotators(); ++j)
-                System.out.printf("  theta0[%d]= %4.3f  theta1[%d]= %4.3f\n",
-                                   j,sample.specificities()[j],
-                                   j,sample.sensitivities()[j]);
-            */
+            sampleDistribution.handle(sample);
+            if (sampleDistribution.numSamples() == 1000)
+                break;
         }
 
+        System.out.println(sampleDistribution);
     }
 
 }
