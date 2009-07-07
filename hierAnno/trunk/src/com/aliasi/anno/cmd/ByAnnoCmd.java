@@ -9,7 +9,7 @@ import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Exceptions;
 import com.aliasi.util.Strings;
 
-import com.aliasi.anno.CollapsedMultinomialByAnno;
+import com.aliasi.anno.BinomialAnnotationCollapsedGibbs;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import java.util.Properties;
  *
  * <p>Full model documentation is available in the class documentation
  * for the class doing the estimation, {@link
- * CollapsedMultinomialByAnno}.
+ * BinomialAnnotationCollapsedGibbs}.
  *
  * <h4>Command-Line Arguments</h4>
  *
@@ -254,9 +254,9 @@ public class ByAnnoCmd extends AbstractCommand {
         }
 
         System.out.println("Constructing sampler");
-        CollapsedMultinomialByAnno sampler
+        BinomialAnnotationCollapsedGibbs sampler
             = mHasFixedBetaPriors
-            ? new CollapsedMultinomialByAnno(annotations,
+            ? new BinomialAnnotationCollapsedGibbs(annotations,
                                              annotators,
                                              items,
                                              mInitialPi,
@@ -266,7 +266,7 @@ public class ByAnnoCmd extends AbstractCommand {
                                              mFixedBeta0,
                                              mFixedAlpha1,
                                              mFixedBeta1)
-            : new CollapsedMultinomialByAnno(annotations,
+            : new BinomialAnnotationCollapsedGibbs(annotations,
                                              annotators,
                                              items,
                                              mInitialPi,
@@ -275,11 +275,11 @@ public class ByAnnoCmd extends AbstractCommand {
             
         int count = 0;
         long startTime = System.currentTimeMillis();
-        CollapsedMultinomialByAnno.SampleDistribution sampleDistribution
-            = new CollapsedMultinomialByAnno
+        BinomialAnnotationCollapsedGibbs.SampleDistribution sampleDistribution
+            = new BinomialAnnotationCollapsedGibbs
             .SampleDistribution(sampler.numItems(),
                                 sampler.numAnnotators());
-        for (CollapsedMultinomialByAnno.Sample sample : sampler) {
+        for (BinomialAnnotationCollapsedGibbs.Sample sample : sampler) {
             long elapsedTimeMs = System.currentTimeMillis() - startTime;
             System.out.printf("%10s %7d  pi=%4.3f   phi0=%4.3f gamma0=%4.3f   phi1=%4.3f gamma1=%4.3f\n",
                               Strings.msToString(elapsedTimeMs),
@@ -328,7 +328,7 @@ public class ByAnnoCmd extends AbstractCommand {
     }
 
 
-    // cut and paste from CollapsedMultinomialByAnno
+    // cut and paste from BinomialAnnotationCollapsedGibbs
     static void assertNonExtremeProbability(String name, double x) {
         if (Double.isNaN(x) || x <= 0.0 || x >= 1.0) {
             String msg = name + " must be between 0 and 1 exclusive."

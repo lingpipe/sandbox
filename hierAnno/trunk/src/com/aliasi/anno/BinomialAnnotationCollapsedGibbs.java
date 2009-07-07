@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 /**
- * The {@code CollapsedMultinomialByAnno} class implements a collapsed
+ * The {@code BinomialAnnotationCollapsedGibbs} class implements a collapsed
  * Gibbs sampler for the Multinomial model of annotation.
 
  * <table border="1" cellpadding="5">
@@ -92,8 +92,8 @@ import java.util.Random;
  * 
  * @author Bob Carpenter
  */
-public class CollapsedMultinomialByAnno
-    implements Iterable<CollapsedMultinomialByAnno.Sample> {
+public class BinomialAnnotationCollapsedGibbs
+    implements Iterable<BinomialAnnotationCollapsedGibbs.Sample> {
 
     final boolean[] mAnnotations;
     final int[] mAnnotators;
@@ -111,7 +111,7 @@ public class CollapsedMultinomialByAnno
     final double mFixedAlpha1;
     final double mFixedBeta1;
 
-    public CollapsedMultinomialByAnno(boolean[] annotations,
+    public BinomialAnnotationCollapsedGibbs(boolean[] annotations,
                                       int[] annotators,
                                       int[] items,
                                       double initialPi,
@@ -124,7 +124,7 @@ public class CollapsedMultinomialByAnno
     }
 
 
-    public CollapsedMultinomialByAnno(boolean[] annotations,
+    public BinomialAnnotationCollapsedGibbs(boolean[] annotations,
                                       int[] annotators,
                                       int[] items,
                                       double initialPi,
@@ -146,7 +146,7 @@ public class CollapsedMultinomialByAnno
 
     }
 
-    private CollapsedMultinomialByAnno(boolean[] annotations,
+    private BinomialAnnotationCollapsedGibbs(boolean[] annotations,
                                       int[] annotators,
                                       int[] items,
                                       double initialPi,
