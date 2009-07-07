@@ -5,8 +5,6 @@ import com.aliasi.io.FileLineReader;
 import com.aliasi.util.Files;
 import com.aliasi.util.Strings;
 
-import com.aliasi.anno.CollapsedMultinomialByAnno;
-
 import java.io.File;
 import java.io.IOException;
 
