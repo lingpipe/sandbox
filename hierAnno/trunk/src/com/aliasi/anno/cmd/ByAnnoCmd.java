@@ -16,9 +16,95 @@ import java.io.IOException;
 
 import java.util.Properties;
 
-
+/**
+ * The {@code ByAnnoCmd} class provides a command-line executable
+ * point estimator for a hierarchical annotation model. 
+ *
+ * <p>Full model documentation is available in the class documentation
+ * for the class doing the estimation, {@link
+ * CollapsedMultinomialByAnno}.
+ *
+ * <h4>Command-Line Arguments</h4>
+ *
+ * <table border="1" cellpadding="5">
+ * <tr><th>Argument</th><th>Default</th><th>Description</th></tr>
+ * <tr><td><code>annoTsv</code></td>
+ *     <td><code>null</code></td>
+ *     <td>annotation input data file</td></tr>
+ * <tr><td><code>initialPi</code></td>
+ *     <td><code>0.5</code></td>
+ *     <td>initial estimate of prevalence</td></tr>
+ * <tr><td><code>initialSpecificity</code></td>
+ *     <td><code>0.8</code></td>
+ *     <td>initial estimate of annotator specificity</td></tr>
+ * <tr><td><code>initialSensitivity</code></td>
+ *     <td><code>0.8</code></td>
+ *     <td>initial estimate of annotator sensitivity</td></tr>
+ * <tr><td><code>numSamples</code></td>
+ *     <td><code>500</code></td>
+ *     <td>number of Gibbs samples to generate</td></tr>
+ * <tr><td><code>goldTsv</code></td>
+ *     <td><code>null</code></td>
+ *     <td>gold-standard input file (optional)</td></tr>
+ * <tr><td><code>fixedAlpha0</code></td>
+ *     <td><code></code></td>
+ *     <td>fixed value for alpha prior parameter for specificity (optional<sup>*</sup>)</td></tr>
+ * <tr><td><code>fixedBeta0</code></td>
+ *     <td><code></code></td>
+ *     <td>fixed value for beta prior parameter for specificity (optional<sup>*</sup>)</td></tr>
+ * <tr><td><code>fixedAlpha1</code></td>
+ *     <td><code></code></td>
+ *     <td>fixed value for alpha prior parameter for sensitivity (optional<sup>*</sup>)</td></tr>
+ * <tr><td><code>fixedBeta1</code></td>
+ *     <td><code></code></td>
+ *     <td>fixed value for beta prior parameter for sensitivity (optional<sup>*</sup>)</td></tr>
+ * <tr><td><code>logLevel</code></td>
+ *     <td><code>DEBUG</code></td>
+ *     <td>log level for program output</td></tr>
+ * <tr><td><code>logFile</code></td>
+ *     <td><code>null</code></td>
+ *     <td>file to which output is written (optional)</td></tr>
+ * </table>
+ * <sup>*</sup>&nbsp;Either none or all of the prior parameters must be fixed.
+ *
+ * <h4>Annotation File Format</h4>
+ *
+ * Input data is line-oriented, with each line representing the
+ * annotation of a single item by a single annotator.  Each line is
+ * of the form:
+ *
+ * <blockquote>
+ * {@code <item>\t<annotator>\t<annotation>}
+ * </blockquote>
+ *
+ * where the items should be numbered from 1:I, the annotators should
+ * be numbered 1:J, and the annotations should be in {0,1}.   There is
+ * no final newline on the last line.
+ *  
+ * <h4>Gold Standard File Format</h4>
+ *
+ * The gold-standard data file consists of one line per item (for
+ * a total of I lines), where the i-th line provides the gold-standard
+ * value of the annotation for the i-th item (in {0,1}).  
+ * 
+ * <h4>Log Levels</h4>
+ *
+ * The log level determines the verbosity of outputs.   Output will
+ * always be written to standard out, though can be suppressed with
+ * log level {@code NONE}, which suppresses all messages.  
+ *
+ * @author Bob Carpenter
+ */
 public class ByAnnoCmd extends AbstractCommand {
 
+    /**
+     * Main method to run the command from the command-line.  The
+     * arguments are detailed in the class documentation above.
+     *
+     * @param args Command-line arguments.
+     * @throws IOException If there is an I/O error reading any of the
+     * input files.
+     */
     public static void main(String[] args) throws IOException {
         new ByAnnoCmd(args).run();
     }
@@ -64,7 +150,7 @@ public class ByAnnoCmd extends AbstractCommand {
         DEFAULT_PROPERTIES.setProperty(LOG_LEVEL_FIELD,"ERROR");
     }
 
-    public ByAnnoCmd(String[] args) throws IOException {
+    ByAnnoCmd(String[] args) throws IOException {
         super(args,DEFAULT_PROPERTIES);
 
         try {
@@ -136,6 +222,11 @@ public class ByAnnoCmd extends AbstractCommand {
         
     }
      
+    /**
+     * Top-level method to run the command; cannot be called by
+     * users as there is no way to construct an instance of this
+     * class other than through the {@link main(String[])} method.
+     */
     public void run() {
         try {
             runWithExceptions();

@@ -11,6 +11,87 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
+/**
+ * The {@code CollapsedMultinomialByAnno} class implements a collapsed
+ * Gibbs sampler for the Multinomial model of annotation.
+
+ * <table border="1" cellpadding="5">
+ * <tr><th>Variable</th>
+ *     <th>Range</th>
+ *     <th>Status</th>
+ *     <th>Distribution</th>
+ *     <th>Description</th></tr>
+ * <tr><td>I</td>
+ *     <td>&gt; 0</td>
+ *     <td>input</td>
+ *     <td>fixed</td>
+ *     <td>number of Items</td></tr>
+ * <tr><td>J</td>
+ *     <td>&gt; 0</td>
+ *     <td>input</td>
+ *     <td>fixed</td>
+ *     <td>number of annotators</td></tr>
+ * <tr><td>&pi;</td>
+ *     <td>[0,1]</td>
+ *     <td>estimated</td>
+ *     <td>Beta(1,1)</td>
+ *     <td>prevalence of category 1</td></tr>
+ * <tr><td>c[i]</td>
+ *     <td>{0,1}</td>
+ *     <td>estimated</td>
+ *     <td>Bern(&pi;)</td>
+ *     <td>category for item i</td></tr>
+ * <tr><td>&theta;0[j]</td>
+ *     <td>[0,1]</td>
+ *     <td>estimated</td>
+ *     <td>Beta(&alpha;0,&beta;0)</td>
+ *     <td>specificity of annotator j</td></tr>
+ * <tr><td>&theta;1[j]</td>
+ *     <td>[0,1]</td>
+ *     <td>estimated</td>
+ *     <td>Beta(&alpha;1,&beta;1)</td>
+ *     <td>sensitivity of annotator j</td></tr>
+ * <tr><td>&alpha;0/(&alpha;0+&beta;0)</td>
+ *     <td>[0,1]</td>
+ *     <td>estimated</td>
+ *     <td>Beta(1,1)</td>
+ *     <td>prior specificity mean</td></tr>
+ * <tr><td>&alpha;0 + &beta;0</td>
+ *     <td>(0,&#x221E;)</td>
+ *     <td>estimated</td>
+ *     <td>Pareto(1.5)<sup>*</sup></td>
+ *     <td>prior specificity scale</td></tr>
+ * <tr><td>&alpha;1/(&alpha;1+&beta;1)</td>
+ *     <td>[0,1]</td>
+ *     <td>estimated</td>
+ *     <td>Beta(1,1)</td>
+ *     <td>prior sensitivity mean</td></tr>
+ * <tr><td>&alpha;1 + &beta;1</td>
+ *     <td>(0,&#x221E;)</td>
+ *     <td>estimated</td>
+ *     <td>Pareto(1.5)<sup>*</sup></td>
+ *     <td>prior sensitivity scale</td></tr>
+ * <tr><td>x[i,j]</td>
+ *     <td>{0,1}</td>
+ *     <td>input</td>
+ *     <td>Bern(c[i,j]==1 
+ * ? &theta;1[j] 
+ * : 1-&theta;0[j])</td>
+ *     <td>annotation of item i by annotator j</td></tr>
+ * </table>
+ *
+ * 
+ * <h4>References</h4>
+ *
+ * <ul>
+ * <li>Dawid, A. P. and A. M. Skene. 1979. Maximum likelihood estimation of observer error-rates using the EM
+ * algorithm. <i>Applied Statistics</i>, <b>28</b>(1):20--28.
+* </li>
+ * <li>Carpenter, Bob. 2008. <a href="http://lingpipe.files.wordpress.com/2008/11/carp-bayesian-multilevel-annotation.pdf">Multilevel Bayesian Models of Categorical Data Annotation</a>. Technical Report. Alias-i.
+ * </ul>
+ * 
+ * @author Bob Carpenter
+ */
 public class CollapsedMultinomialByAnno
     implements Iterable<CollapsedMultinomialByAnno.Sample> {
 
