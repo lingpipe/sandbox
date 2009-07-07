@@ -37,18 +37,27 @@
   </jar>
 </target>
 
+<target name="beta-demo"
+        depends="jar">
+  <java classname="com.aliasi.anno.BetaDistribution"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+  </java>
+</target>
+
+
 <target name="gold-ne"
         depends="jar">
   <java classname="com.aliasi.anno.cmd.ByAnnoCmd"
         fork="true">
     <classpath refid="classpath.standard"/>
     <!-- ii[k] <tab> jj[k] <tab> xx[k] <nl> -->
-    <arg value="R/data/mturk-ne/per.anno.tsv"/>
-    <arg value="0.5"/> <!-- initial pi -->
-    <arg value="0.90"/> <!-- initial specificity -->
-    <arg value = "0.90"/>  <!-- initial sensitivity -->
-    <arg value = "100"/>  <!-- num samples -->
-    <arg value="R/data/mturk-ne/per.gold.tsv"/> <!-- gold std -->
+    <arg value="-annoTsv=R/data/mturk-ne/per.anno.tsv"/>
+    <arg value="-initialPi=0.5"/> <!-- initial pi -->
+    <arg value="-initialSpecificity=0.90"/> <!-- initial specificity -->
+    <arg value = "-initialSensitivity=00.90"/>  <!-- initial sensitivity -->
+    <arg value = "-numSamples=200"/>  <!-- num samples -->
+    <arg value="-goldTsv=R/data/mturk-ne/per.gold.tsv"/> <!-- gold std -->
   </java>
 </target>
 
@@ -57,24 +66,20 @@
   <java classname="com.aliasi.anno.cmd.ByAnnoCmd"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <!-- ii[k] <tab> jj[k] <tab> xx[k] <nl> -->
-    <arg value="R/data/dolores/rte.data.tsv"/>
-    <arg value="0.5"/> <!-- initial pi -->
-    <arg value="0.90"/> <!-- initial specificity -->
-    <arg value = "0.90"/>  <!-- initial sensitivity -->
-    <arg value = "500"/>  <!-- num samples -->
-    <arg value="R/data/dolores/rte.gold.tsv"/> 
+    <arg value="-annoTsv=R/data/dolores/rte.data.tsv"/>
+    <arg value="-goldTsv=R/data/dolores/rte.gold.tsv"/> 
+
+    <arg value="-initialPi=0.5"/>
+    <arg value="-initialSpecificity=0.80"/> 
+    <arg value ="-initialSensitivity=0.80"/>
+    <arg value ="-numSamples=1000"/> 
+
+    <arg value="-fixedAlpha0=1.0"/> <!-- fixed prior alpha0 -->
+    <arg value="-fixedBeta0=1.0"/> <!-- fixed prior beta0 -->
+    <arg value="-fixedAlpha1=1.0"/> <!-- fixed prior alpha1 -->
+    <arg value="-fixedBeta1=1.0"/> <!-- fixed prior beta1 -->
   </java>
 </target>
-
-<target name="beta"
-        depends="jar">
-  <java classname="com.aliasi.anno.BetaDistribution"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-  </java>
-</target>
-
 
 <target name="censor-ne"
         depends="jar">
@@ -94,13 +99,17 @@
   <java classname="com.aliasi.anno.cmd.ByAnnoCmd"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <!-- ii[k] <tab> jj[k] <tab> xx[k] <nl> -->
-    <arg value="temp-ne-censored-anno.tsv"/>
-    <arg value="0.5"/> <!-- initial pi -->
-    <arg value="0.90"/> <!-- initial specificity -->
-    <arg value = "0.90"/>  <!-- initial sensitivity -->
-    <arg value = "1000"/>  <!-- num samples -->
-    <arg value="temp-ne-censored-gold.tsv"/>
+    <arg value="-annoTsv=temp-ne-censored-anno.tsv"/>
+    <arg value="-goldTsv=temp-ne-censored-gold.tsv"/>
+    <arg value="-initialPi=0.5"/>
+    <arg value="-initialSpecificity=0.80"/> 
+    <arg value ="-initialSensitivity=0.80"/>
+    <arg value ="-numSamples=1000"/> 
+
+    <arg value="-fixedAlpha0=1.0"/> <!-- fixed prior alpha0 -->
+    <arg value="-fixedBeta0=1.0"/> <!-- fixed prior beta0 -->
+    <arg value="-fixedAlpha1=1.0"/> <!-- fixed prior alpha1 -->
+    <arg value="-fixedBeta1=1.0"/> <!-- fixed prior beta1 -->
   </java>
 </target>
 
