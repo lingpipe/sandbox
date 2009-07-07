@@ -4,6 +4,7 @@ import com.aliasi.corpus.ObjectHandler;
 
 import com.aliasi.stats.OnlineNormalEstimator;
 
+import com.aliasi.util.Exceptions;
 import com.aliasi.util.Iterators;
 
 import java.util.Arrays;
@@ -23,12 +24,71 @@ public class CollapsedMultinomialByAnno
     final double mInitialSpecificity;
     final double mInitialSensitivity;
 
+    final boolean mHasFixedBetaPriors;
+    final double mFixedAlpha0;
+    final double mFixedBeta0;
+    final double mFixedAlpha1;
+    final double mFixedBeta1;
+
     public CollapsedMultinomialByAnno(boolean[] annotations,
                                       int[] annotators,
                                       int[] items,
                                       double initialPi,
                                       double initialSpecificity,
                                       double initialSensitivity) {
+        this(annotations,annotators,items,
+             initialPi,initialSpecificity,initialSensitivity,
+             false,Double.NaN,Double.NaN,Double.NaN,Double.NaN);
+
+    }
+
+
+    public CollapsedMultinomialByAnno(boolean[] annotations,
+                                      int[] annotators,
+                                      int[] items,
+                                      double initialPi,
+                                      double initialSpecificity,
+                                      double initialSensitivity,
+                                      double alpha0,
+                                      double beta0,
+                                      double alpha1,
+                                      double beta1) {
+
+        this(annotations,annotators,items,
+             initialPi,initialSpecificity,initialSensitivity,
+             true,alpha0,beta0,alpha1,beta1);
+
+        Exceptions.finiteNonNegative("alpha0",alpha0);
+        Exceptions.finiteNonNegative("beta0",beta0);
+        Exceptions.finiteNonNegative("alph1",alpha1);
+        Exceptions.finiteNonNegative("beta1",beta1);
+
+    }
+
+    private CollapsedMultinomialByAnno(boolean[] annotations,
+                                      int[] annotators,
+                                      int[] items,
+                                      double initialPi,
+                                      double initialSpecificity,
+                                      double initialSensitivity,
+                                      boolean hasFixedBetaPriors,
+                                      double alpha0,
+                                      double beta0,
+                                      double alpha1,
+                                      double beta1) {
+
+        assertNonExtremeProbability("initialPi",initialPi);
+        assertNonExtremeProbability("initialSpecificity",initialSpecificity);
+        assertNonExtremeProbability("initialSensitivity",initialSensitivity);
+        if (annotations.length != annotators.length
+            || annotators.length != items.length) {
+            String msg = "Annotations, annotators, and items must be same length."
+                + " Found annotations.length=" + annotations.length
+                + "; annotators.length=" + annotators.length
+                + "; items.length=" + items.length;
+            throw new IllegalArgumentException(msg);
+        }
+
         mAnnotations = annotations;
         mAnnotators = annotators;
         mNumAnnotators = max(annotators)+1;
@@ -37,6 +97,14 @@ public class CollapsedMultinomialByAnno
         mInitialPi = initialPi;
         mInitialSpecificity = initialSpecificity;
         mInitialSensitivity = initialSensitivity;
+
+        mHasFixedBetaPriors = hasFixedBetaPriors;
+        mFixedAlpha0 = alpha0;
+        mFixedBeta0 = beta0;
+        mFixedAlpha1 = alpha1;
+        mFixedBeta1 = beta1;
+
+
     }
 
     public int numItems() {
@@ -67,10 +135,10 @@ public class CollapsedMultinomialByAnno
         final double[] mSensitivities;
 
         // start uniform
-        double mAlphaSpecificity = 1.0;
-        double mBetaSpecificity = 1.0;
-        double mAlphaSensitivity = 1.0;
-        double mBetaSensitivity = 1.0;
+        double mAlphaSpecificity = mHasFixedBetaPriors ? mFixedAlpha0 : 1.0;
+        double mBetaSpecificity = mHasFixedBetaPriors ? mFixedBeta0 : 1.0;
+        double mAlphaSensitivity = mHasFixedBetaPriors ? mFixedAlpha1 : 1.0;
+        double mBetaSensitivity = mHasFixedBetaPriors ? mFixedBeta1 : 1.0;
 
         double mSpecificityPriorScale = BetaDistribution.variance(1.0,1.0);
         double mSensitivityPriorMean;
@@ -191,6 +259,8 @@ public class CollapsedMultinomialByAnno
         }
 
         void recomputePriors() {
+            if (mHasFixedBetaPriors)
+                return;
             OnlineNormalEstimator specificityPriorEstimator
                 = new OnlineNormalEstimator();
             for (int j = 0; j < mNumAnnotators; ++j)
@@ -232,6 +302,16 @@ public class CollapsedMultinomialByAnno
 
         static final double MIN_VALUE = Double.MIN_VALUE;
     }
+
+
+    static void assertNonExtremeProbability(String name, double x) {
+        if (Double.isNaN(x) || x <= 0.0 || x >= 1.0) {
+            String msg = name + " must be between 0 and 1 exclusive."
+                + " Found " + name + "=" + x;
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
 
     public static class SampleDistribution
         implements ObjectHandler<Sample> {
@@ -412,5 +492,10 @@ public class CollapsedMultinomialByAnno
             return mSpecificities;
         }
     }
+
+
+
+
+
 
 }
