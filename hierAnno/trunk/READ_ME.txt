@@ -23,8 +23,8 @@ JAVA
 
 The Java programs may be compiled and run through ant in the usual
 way.  Compiling the javadoc will provide API level advice.  The
-command package has information on running the estimators from
-the command line.
+command package has information on running the estimators from the
+command line.  The sample ant tasks should run out of the box.
 
 
 R/BUGS
