@@ -44,11 +44,14 @@
            use="false"
            version="true"
            linkoffline="http://alias-i.com/lingpipe/docs/api/ file:///c:/carp/devguard/lingpipe/trunk/docs/api">
+    <classpath refid="classpath.standard"/>
     <packageset dir="src">
         <include name="com/aliasi/anno/**"/>
     </packageset>
+    <!--
     <link href="http://alias-i.com/lingpipe/docs/api/" />
     <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+    -->
  </javadoc>
 </target>
 
