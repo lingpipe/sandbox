@@ -13,9 +13,17 @@ import java.util.Random;
 
 /**
  * The {@code BinomialAnnotationCollapsedGibbs} class implements a collapsed
- * Gibbs sampler for the Multinomial model of annotation.
+ * Gibbs sampler for the binomial model of annotation.  
+ *
+ * <h4>Hierarchical Model</h4>
+ *
+ * The full hierarchical model for binomial data annotation is described
+ * in the following table, in which each row describes a variable, with
+ * its allowable value range, the status as to whether it's an input or
+ * it's estimated, the distribution governing it, and a description of
+ * the variable:
 
- * <table border="1" cellpadding="5">
+ * <blockquote><table border="1" cellpadding="5">
  * <tr><th>Variable</th>
  *     <th>Range</th>
  *     <th>Status</th>
@@ -41,32 +49,32 @@ import java.util.Random;
  *     <td>estimated</td>
  *     <td>Bern(&pi;)</td>
  *     <td>category for item i</td></tr>
- * <tr><td>&theta;0[j]</td>
+ * <tr><td>&theta;<sub>0</sub>[j]</td>
  *     <td>[0,1]</td>
  *     <td>estimated</td>
- *     <td>Beta(&alpha;0,&beta;0)</td>
+ *     <td>Beta(&alpha;<sub>0</sub>,&beta;<sub>0</sub>)</td>
  *     <td>specificity of annotator j</td></tr>
- * <tr><td>&theta;1[j]</td>
+ * <tr><td>&theta;<sub>1</sub>[j]</td>
  *     <td>[0,1]</td>
  *     <td>estimated</td>
- *     <td>Beta(&alpha;1,&beta;1)</td>
+ *     <td>Beta(&alpha;<sub>1</sub>,&beta;<sub>1</sub>)</td>
  *     <td>sensitivity of annotator j</td></tr>
- * <tr><td>&alpha;0/(&alpha;0+&beta;0)</td>
+ * <tr><td>&alpha;<sub>0</sub>/(&alpha;<sub>0</sub>+&beta;<sub>0</sub>)</td>
  *     <td>[0,1]</td>
  *     <td>estimated</td>
  *     <td>Beta(1,1)</td>
  *     <td>prior specificity mean</td></tr>
- * <tr><td>&alpha;0 + &beta;0</td>
+ * <tr><td>&alpha;<sub>0</sub> + &beta;<sub>0</sub></td>
  *     <td>(0,&#x221E;)</td>
  *     <td>estimated</td>
  *     <td>Pareto(1.5)<sup>*</sup></td>
  *     <td>prior specificity scale</td></tr>
- * <tr><td>&alpha;1/(&alpha;1+&beta;1)</td>
+ * <tr><td>&alpha;<sub>1</sub>/(&alpha;<sub>1</sub>+&beta;<sub>1</sub>)</td>
  *     <td>[0,1]</td>
  *     <td>estimated</td>
  *     <td>Beta(1,1)</td>
  *     <td>prior sensitivity mean</td></tr>
- * <tr><td>&alpha;1 + &beta;1</td>
+ * <tr><td>&alpha;<sub>1</sub> + &beta;<sub>1</sub></td>
  *     <td>(0,&#x221E;)</td>
  *     <td>estimated</td>
  *     <td>Pareto(1.5)<sup>*</sup></td>
@@ -75,10 +83,76 @@ import java.util.Random;
  *     <td>{0,1}</td>
  *     <td>input</td>
  *     <td>Bern(c[i,j]==1 
- * ? &theta;1[j] 
- * : 1-&theta;0[j])</td>
+ * ? &theta;<sub>1</sub>[j] 
+ * : 1-&theta;<sub>0</sub>[j])</td>
  *     <td>annotation of item i by annotator j</td></tr>
- * </table>
+ * </table></blockquote>
+ *
+ *
+ * <h4>Collapsed Gibbs Sampler</h4>
+ *
+ * This class estimates a Gibbs sampler which collapses all of the
+ * samples other than the true category c[i] of item i.  The sampling
+ * distribution for c[i] is straightforwardly derived with Bayes'
+ * rule:
+ *
+ * <blockquote>p(c[i] | x, &theta;<sub>0</sub>, &theta;<sub>1</sub>) 
+ * &#x221D;
+ * p(c[i]) 
+ * * <big><big>&Pi;</big></big><sub>j in 1:J</sub> p(x[i,j] | c[i], &theta;<sub>0</sub>[j], &theta;<sub>1</sub>[j])</blockquote>
+ *
+ * where
+ *
+ * <blockquote>p(x[i,j] | c[i], &theta;<sub>0</sub>[j], &theta;<sub>1</sub>[j])
+ * = c[i] ? &theta;<sub>1</sub>[j] : (1 - &theta;<sub>0</sub>[j])</blockquote>
+ *
+ * 
+ * <h4>Missing Annotations</h4>
+ *
+ * The actual model is set up so that not every annotator needs to
+ * annotate every item.  The math remains essentially the same, bu
+ * the indexing gets more complex.  Assuming there are k annotations,
+ * we let xx[k] be the annotation, ii[k] be the annotator for the k-th
+ * item, and jj[k] be the annotator for the k-th annotation.  So we
+ * need additional variables jj, ii, and xx, and no longer need x.  
+ *
+ * xx[k] is sampled according to the following Bernoulli:
+ *
+ * <pre>Bern(c[ii[k]]==1 ? &theta;<sub>1</sub>[jj[k]] : (1 - &theta;<sub>0</sub>[jj[k]])</pre>
+ *
+ * and the category sampling distribution is now:
+ * 
+ * <blockquote>p(c[i] | xx, &theta;<sub>0</sub>, &theta;<sub>1</sub>) 
+ * &#x221D;
+ * p(c[i]) 
+ * * <big><big>&Pi;</big></big><sub>k: ii[k]==i</sub> p(xx[k] | c[i], &theta;<sub>0</sub>[jj[k]], &theta;<sub>1</sub>[jj[k]])</blockquote>
+ *
+ * with no change in the inner probability definition.
+ *
+ * <h4>Estimating Everything Else</h4>
+ *
+ * All other variables get point estimates based on the category
+ * estimates.
+ *
+ * <p>The prevalence is estimated based on a uniform beta prior
+ * Beta(1,1), so the point estimate for &pi; is just the proportion of
+ * 1 outcomes.
+ *
+ * <p>The sensitivities and specificities are assigned maximum a
+ * posteriori (MAP) estimates given their beta priors.
+ *
+ * <p>The beta priors may be fixed or may be estimated.  If they
+ * are estimated, moment matching is used to derive beta parameters
+ * whose mean and variance match that of the sensitivities (or
+ * specificities) of the annotators.  
+ *
+ * <p><b>Warning:</b> Estimating the beta priors can cause
+ * non-divergence in the case where annotator sensitivities and
+ * specifities are tightly grouped.  The problem is that once you get
+ * close estimates, the variance is estimated as lower, the next set
+ * of estimates are even closer to each other, and so on until
+ * variance approaches 0 and the likelihood blows up (as do the
+ * &alpha; and &beta; parameters).
  *
  * 
  * <h4>References</h4>
