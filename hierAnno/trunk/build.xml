@@ -47,10 +47,8 @@
     <packageset dir="src">
         <include name="com/aliasi/anno/**"/>
     </packageset>
-    <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
     <link href="http://alias-i.com/lingpipe/docs/api/" />
-        <!-- offline="true" 
-          packagelistLoc="C:\carp\devguard\lingpipe\trunk\docs\api\package-list"/> -->
+    <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
  </javadoc>
 </target>
 

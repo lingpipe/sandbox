@@ -147,6 +147,20 @@ import java.util.TreeSet;
  * 
  * with no change in the inner probability definition.
  *
+ * <h4>Input Data Format</h4>
+ *
+ * The input data matches the missing annotation description, with
+ * three parallel arrays, {@code annotations[]}, {@code annotators[]},
+ * and {@code items[]}, which must all be the same length.  For each
+ * index {@code k}, {code annotations[k]} is the boolean annotation
+ * ({@code true} for 1, {@code false} for 0) for item {@code items[k]}
+ * by annotator {@code annotators[k]}.  
+ *
+ * <p>The items and annotators must both contain only positive
+ * integers.  Furthermore, the set of integers used must be
+ * contiguous.  That is, it's not legal to have {@code items[]} be
+ * {@code {3,1,2,5,2,1}}, because the number 4 is missing.
+ *
  * <h4>Initialization</h4>
  *
  * The first sample is constructed from the initial prevalence &pi;
