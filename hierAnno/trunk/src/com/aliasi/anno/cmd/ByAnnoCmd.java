@@ -229,7 +229,7 @@ public class ByAnnoCmd extends AbstractCommand {
     /**
      * Top-level method to run the command; cannot be called by
      * users as there is no way to construct an instance of this
-     * class other than through the {@link main(String[])} method.
+     * class other than through the {@link #main(String[])} method.
      */
     public void run() {
         try {

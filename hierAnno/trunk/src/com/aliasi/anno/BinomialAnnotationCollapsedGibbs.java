@@ -787,42 +787,95 @@ public class BinomialAnnotationCollapsedGibbs
                 mSensitivityEstimators[j].handle(sample.sensitivities()[j]);
         }
         /**
-         * Return the number of samples added to this distribution.
+         * Return the number of samples added so far.
          *
+         * @return The number of samples added so far.
          */
         public long numSamples() {
             return mPiEstimator.numSamples();
         }
+        /**
+         * Return the number of annotators in the model.
+         *
+         * @return The number of annotators.
+         */
         public int numAnnotators() {
             return mSpecificityEstimators.length;
         }
+        /**
+         * Return the number of items being annotated in the model.
+         *
+         * @return The number of items.
+         */
         public int numItems() {
             return mCategoryEstimators.length;
         }
+        /**
+         * Returns the sufficient statistics for prevalence, &pi;.
+         */
         public OnlineNormalEstimator piEstimator() {
             return mPiEstimator;
         }
-        public int numCategories() {
-            return mCategoryEstimators.length;
-        }
+        /**
+         * Returns the sufficient statistics for the estimate of
+         * the i-the category, c[i].
+         *
+         * @return The i-th category estimate.
+         */
         public OnlineNormalEstimator categoryEstimator(int i) {
             return mCategoryEstimators[i];
         }
+        /**
+         * Returns the sufficient statistics for the estimate of the
+         * specificity beta prior parameter, &alpha;<sub>0</sub>.
+         *
+         * @return Estimator for &alpha;<sub>0</sub>.
+         */
         public OnlineNormalEstimator alphaSpecificityEstimator() {
             return mAlphaSpecificityEstimator;
         }
+        /**
+         * Returns the sufficient statistics for the estimate of the
+         * specificity beta prior parameter &beta;<sub>0</sub>.
+         *
+         * @return Estimator for &beta;<sub>0</sub>.
+         */
         public OnlineNormalEstimator betaSpecificityEstimator() {
             return mBetaSpecificityEstimator;
         }
+        /**
+         * Returns the sufficient statistics for the estimate of the
+         * sensitivities beta prior parameter, &alpha;<sub>1</sub>.
+         *
+         * @return Estimator for &alpha;<sub>1</sub>.
+         */
         public OnlineNormalEstimator alphaSensitivityEstimator() {
             return mAlphaSensitivityEstimator;
         }
+        /**
+         * Returns the sufficient statistics for the estimate of the
+         * sensitivity beta prior parameter &beta;<sub>1</sub>.
+         *
+         * @return Estimator for &beta;<sub>1</sub>.
+         */
         public OnlineNormalEstimator betaSensitivityEstimator() {
             return mBetaSpecificityEstimator;
         }
+        /**
+         * Returns the sufficient statistics for the estimate of the
+         * j-th annotator's specificity, &theta;<sub>0</sub>[j].
+         *
+         * @return The j-th annotator's specifificity estimate.
+         */
         public OnlineNormalEstimator specificityEstimator(int j) {
             return mSpecificityEstimators[j];
         }
+        /**
+         * Returns the sufficient statistics for the estimate of the
+         * j-th annotator's sensitivity, &theta;<sub>1</sub>[j].
+         *
+         * @return The j-th annotator's sensitivity estimate.
+         */
         public OnlineNormalEstimator sensitivityEstimator(int j) {
             return mSensitivityEstimators[j];
         }
@@ -832,6 +885,15 @@ public class BinomialAnnotationCollapsedGibbs
                 estimators[i] = new OnlineNormalEstimator();
             return estimators;
         }
+        /**
+         * Returns a complete dump of the means and variances
+         * of the variables in a chain.  All of the values printed
+         * are available programatically through the other methods
+         * in this class.
+         *
+         * @return A string-based representation of the means and
+         * variances of the sampled variables.
+         */
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("Sample Estimates");
