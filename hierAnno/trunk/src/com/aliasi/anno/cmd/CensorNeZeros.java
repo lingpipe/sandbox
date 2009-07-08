@@ -11,8 +11,36 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * The {@code CensorNeZeros} class creates a new annotation and gold
+ * standard file that removes items for which every annotator provided
+ * a 0 label and which are labeled 0 in the gold standard. 
+ *
+ * <h4>Command-Line Arguments</h4>
+ *
+ * <blockquote>{@code
+ * java CensorNeZeros <anno.tsv> <gold.tsv> <anno.censor.tsv> <gold.censor.tsv>}</blockquote>
+ *
+ * where {@code anno.tsv} is the full set of annotations, {@code gold.tsv}
+ * is the gold-standard annotation, {@code anno.censor.tsv} is the output
+ * annotation file, and {@code gold.censor.tsv} the corresponding output
+ * gold-standard file.
+ *
+ * @author Bob Carpenter
+ */
 public class CensorNeZeros {
 
+    private CensorNeZeros() { }
+
+    /**
+     * Run the censoring program over the specified command-line
+     * arguments.   See the class documentation for details
+     * of arguments.
+     *
+     * @param args Command-line arguments.
+     * @throws IOException If there is an underlying I/O error reading
+     * the inputs or writing the outputs.
+     */
     public static void main(String[] args) throws IOException {
         File annoTsvFile = new File(args[0]);
         File goldTsvFile = new File(args[1]);
