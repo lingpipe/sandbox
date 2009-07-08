@@ -7,6 +7,7 @@ import com.aliasi.io.Reporters;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Exceptions;
+import com.aliasi.util.ObjectToCounterMap;
 import com.aliasi.util.Strings;
 
 import com.aliasi.anno.BinomialAnnotationCollapsedGibbs;
@@ -167,11 +168,14 @@ public class ByAnnoCmd extends AbstractCommand {
             : null;
         System.out.println("Log file=" + mLogFile);
 
+
         mReporter
             = mLogFile == null
             ? Reporters.stdOut()
             : Reporters.tee(Reporters.stdOut(),
                             Reporters.file(mLogFile,Strings.UTF8));
+        mReporter.setLevel(mLogLevel);
+        
 
         mAnnoTsvFile = getArgumentExistingNormalFile(ANNO_TSV_FIELD);
         System.out.println(ANNO_TSV_FIELD + "=" + mAnnoTsvFile);
@@ -275,10 +279,12 @@ public class ByAnnoCmd extends AbstractCommand {
             
         int count = 0;
         long startTime = System.currentTimeMillis();
-        BinomialAnnotationCollapsedGibbs.SampleDistribution sampleDistribution
+        BinomialAnnotationCollapsedGibbs.SampleStatistics sampleStats
             = new BinomialAnnotationCollapsedGibbs
-            .SampleDistribution(sampler.numItems(),
-                                sampler.numAnnotators());
+            .SampleStatistics(sampler.numItems(),
+                              sampler.numAnnotators());
+
+
         for (BinomialAnnotationCollapsedGibbs.Sample sample : sampler) {
             long elapsedTimeMs = System.currentTimeMillis() - startTime;
             System.out.printf("%10s %7d  pi=%4.3f   phi0=%4.3f gamma0=%4.3f   phi1=%4.3f gamma1=%4.3f\n",
@@ -290,13 +296,23 @@ public class ByAnnoCmd extends AbstractCommand {
                               sample.sensitivityPriorMean(),
                               sample.sensitivityPriorScale());
 
-            sampleDistribution.handle(sample);
-            if (sampleDistribution.numSamples() == mNumSamples)
+            sampleStats.handle(sample);
+            if (sampleStats.numSamples() == mNumSamples)
                 break;
         }
 
+        ObjectToCounterMap<Integer> catDistroHistogram
+            = new ObjectToCounterMap<Integer>();
+        for (int i = 0; i < sampleStats.numItems(); ++i)
+            catDistroHistogram.increment(Integer.valueOf((int)(sampleStats.categoryEstimator(i).mean()*20.0)));
+        for (int x = 0; x <= 20; ++x) {
+            System.out.printf("%4.3f  %6d\n",x/20.0,catDistroHistogram.getCount(Integer.valueOf(x)));
+        }
+        System.out.println(catDistroHistogram);
+
         if (mReporter.isDebugEnabled())
-            System.out.println(sampleDistribution);
+            System.out.println(sampleStats);
+
 
         if (mGoldTsvFile == null) return;
 
@@ -310,7 +326,7 @@ public class ByAnnoCmd extends AbstractCommand {
         int p = 0;
         int n = 0;
         for (int i = 0; i < linesGold.length; ++i) {
-            double sampleEstimateP1 = sampleDistribution.categoryEstimator(i).mean();
+            double sampleEstimateP1 = sampleStats.categoryEstimator(i).mean();
             if (goldCategories[i]) {
                 ++p;
                 if (sampleEstimateP1 >= 0.5)

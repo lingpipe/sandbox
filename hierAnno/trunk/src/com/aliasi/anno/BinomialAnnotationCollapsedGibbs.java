@@ -10,6 +10,8 @@ import com.aliasi.util.Iterators;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * The {@code BinomialAnnotationCollapsedGibbs} class implements a collapsed
@@ -42,7 +44,7 @@ import java.util.Random;
  * <tr><td>&pi;</td>
  *     <td>[0,1]</td>
  *     <td>estimated</td>
- *     <td>Beta(1,1)</td>
+ *     <td>Beta(1,1)<sup>&Dagger;</sup></td>
  *     <td>prevalence of category 1</td></tr>
  * <tr><td>c[i]</td>
  *     <td>{0,1}</td>
@@ -62,22 +64,22 @@ import java.util.Random;
  * <tr><td>&alpha;<sub>0</sub>/(&alpha;<sub>0</sub>+&beta;<sub>0</sub>)</td>
  *     <td>[0,1]</td>
  *     <td>estimated</td>
- *     <td>Beta(1,1)</td>
+ *     <td>Beta(1,1)<sup>&dagger;</sup><sup>&Dagger;</sup></td>
  *     <td>prior specificity mean</td></tr>
  * <tr><td>&alpha;<sub>0</sub> + &beta;<sub>0</sub></td>
  *     <td>(0,&#x221E;)</td>
  *     <td>estimated</td>
- *     <td>Pareto(1.5)<sup>*</sup></td>
+ *     <td>Uniform(0,&#x221E;)<sup>*</sup><sup>&dagger;</sup></td>
  *     <td>prior specificity scale</td></tr>
  * <tr><td>&alpha;<sub>1</sub>/(&alpha;<sub>1</sub>+&beta;<sub>1</sub>)</td>
  *     <td>[0,1]</td>
  *     <td>estimated</td>
- *     <td>Beta(1,1)</td>
+ *     <td>Beta(1,1)<sup>&dagger;<sup>&Dagger;</sup></sup></td>
  *     <td>prior sensitivity mean</td></tr>
  * <tr><td>&alpha;<sub>1</sub> + &beta;<sub>1</sub></td>
  *     <td>(0,&#x221E;)</td>
  *     <td>estimated</td>
- *     <td>Pareto(1.5)<sup>*</sup></td>
+ *     <td>Uniform(0,&#x221E;)<sup>*</sup><sup>&dagger;</sup></td>
  *     <td>prior sensitivity scale</td></tr>
  * <tr><td>x[i,j]</td>
  *     <td>{0,1}</td>
@@ -88,6 +90,22 @@ import java.util.Random;
  *     <td>annotation of item i by annotator j</td></tr>
  * </table></blockquote>
  *
+ * <p>
+ * <sup>*</sup>&nbsp;This is an improper prior for the concentration or
+ * scale parameter of the beta distribution, leading to a maximum likelihood
+ * estimate in principle.  In practice, the implementation uses moment
+ * matching.  
+ *
+ * <p>
+ * <sup>&dagger;</sup>&nbsp;Alternatively, fixed values for the parameters
+ * of the beta priors for sensitivity and specificity may be
+ * given.  The parameters are &alpha;<sub>0</sub>,
+ * and &beta;<sub>0</sub>, &alpha;<sub>1</sub>, and
+ * and &beta;<sub>1</sub>.
+ *
+ * <p>
+ * <sup>&Dagger;</sup>&nbsp;A Beta(1,1) distribution is the
+ * same as Uniform(0,1).
  *
  * <h4>Collapsed Gibbs Sampler</h4>
  *
@@ -126,8 +144,17 @@ import java.util.Random;
  * &#x221D;
  * p(c[i]) 
  * * <big><big>&Pi;</big></big><sub>k: ii[k]==i</sub> p(xx[k] | c[i], &theta;<sub>0</sub>[jj[k]], &theta;<sub>1</sub>[jj[k]])</blockquote>
- *
+ * 
  * with no change in the inner probability definition.
+ *
+ * <h4>Initialization</h4>
+ *
+ * The first sample is constructed from the initial prevalence &pi;
+ * and initial values for annotator sensitivity and specificity
+ * (&theta;<sub>0</sub> and &theta;<sub>1</sub>).  First, the
+ * categories for the items are sampled given the initial values.
+ * Then everything else is estimated as described in the next section.
+
  *
  * <h4>Estimating Everything Else</h4>
  *
@@ -154,7 +181,47 @@ import java.util.Random;
  * variance approaches 0 and the likelihood blows up (as do the
  * &alpha; and &beta; parameters).
  *
- * 
+ *
+ * <h4>Retrieving Samples</h4>
+ *
+ * This class implements the {@code Iterable<BinomialAnnotationCollapsedGibbs.Sample>}
+ * interface.   Thus calling {@link #iterator()} returns an iterator over
+ * samples.   
+ *
+ * <h4>Collecting Whole Chain Statistics</h4>
+ *
+ * The static class {@link SampleStatistics} may be used to collect
+ * up distributional statistics for the samples.  For each variable
+ * in the model, the sample distribution computes means and variances
+ * online.  
+ *
+ * The following code can be used for collecting chain statistics:
+ *
+ * <blockquote><pre>
+ * BinomialAnnotationCollapsedGibbs sampler = ...;
+ * BinomialAnnotationCollapsedGibbs.SampleStatistics sampleStats
+ *     = new BinomialAnnotationCollapsedGibbs
+ *           .SampleStatistics(sampler.numItems(),
+ *                               sampler.numAnnotators());
+ * for (BinomialAnnotationCollapsedGibbs.Sample sample : sampler)
+ *     sampleDistribution.handle(sample);
+ *
+ * System.out.println(sampleStats);</pre></blockquote>
+ *
+ * Instead of printing, the means and variances for the sample
+ * variables may be retrieved programatically from the sample
+ * distribution.
+ *
+ *
+ * <h4>Thread Safety and Reuse</h4>
+ *
+ * An instance of {@code BinomialAnnotationCollapsedGibbs} may
+ * be used in multiple threads, each of which may call 
+ * the {@link #iterator()} method.  The samplers across threads
+ * will share the fixed data, but will preserve their own
+ * sequence of samples.
+ *
+ *
  * <h4>References</h4>
  *
  * <ul>
@@ -185,6 +252,29 @@ public class BinomialAnnotationCollapsedGibbs
     final double mFixedAlpha1;
     final double mFixedBeta1;
 
+    /**
+     * Construct a collapsed Gibbs sampler for the specified
+     * annotations, annotators, items, and initial parameter values,
+     * estimating the beta priors for sensitivity and specificity.
+     *
+     * @param annotations Array of annotations, with {@code true} for 1
+     * and {@code false} for 0.
+     * @param annotators Parallel array of annotators, numbered from
+     * 1 to the number of annotators.
+     * @param items Parallel array of items, numbered from 1 to the
+     * number of items.
+     * @param initialPi Initial value for prevalence (proportion of 1
+     * outcomes).
+     * @param initialSpecificity Initial value for each annotator's
+     * specificity.
+     * @param initialSensitivity Initial value for each annotator's
+     * sensitivity.
+     * @throws IllegalArgumentException If the three arrays are not
+     * the same length, if any of the items or annotators are less
+     * than or equal to zero or if the item and annotator lists do not
+     * form a contiguous sequence, or if the initial values for pi,
+     * sensitivity and specificity are not between 0 and 1 exclusive.
+     */
     public BinomialAnnotationCollapsedGibbs(boolean[] annotations,
                                       int[] annotators,
                                       int[] items,
@@ -198,6 +288,39 @@ public class BinomialAnnotationCollapsedGibbs
     }
 
 
+    /**
+     * Construct a collapsed Gibbs sampler for the specified
+     * annotations, annotators, items, and initial parameter values,
+     * estimating the beta priors for sensitivity and specificity.
+     *
+     * @param annotations Array of annotations, with {@code true} for 1
+     * and {@code false} for 0.
+     * @param annotators Parallel array of annotators, numbered from
+     * 1 to the number of annotators.
+     * @param items Parallel array of items, numbered from 1 to the
+     * number of items.
+     * @param initialPi Initial value for prevalence (proportion of 1
+     * outcomes).
+     * @param initialSpecificity Initial value for each annotator's
+     * specificity.
+     * @param initialSensitivity Initial value for each annotator's
+     * sensitivity.
+     * @param alpha0 Fixed value for parameter &alpha;<sub>0</sub>, the
+     * prior true negative count.
+     * @param beta0 Fixed value for parameter &alpha;<sub>0</sub>,
+     * the prior false positive count.
+     * @param alpha1 Fixed value for parameter &alpha;<sub>0</sub>,
+     * the prior true positive count.
+     * @param beta1 Fixed value for parameter &alpha;<sub>0</sub>,
+     * the prior false positive count.
+     * @throws IllegalArgumentException If the three arrays are not
+     * the same length, if any of the items or annotators are less
+     * than or equal to zero or if the item and annotator lists do not
+     * form a contiguous sequence, or if the initial values for pi,
+     * sensitivity and specificity are not between 0 and 1 exclusive,
+     * or if the fixed alpha and beta values are not finite and
+     * non-negative.
+     */
     public BinomialAnnotationCollapsedGibbs(boolean[] annotations,
                                       int[] annotators,
                                       int[] items,
@@ -235,6 +358,8 @@ public class BinomialAnnotationCollapsedGibbs
         assertNonExtremeProbability("initialPi",initialPi);
         assertNonExtremeProbability("initialSpecificity",initialSpecificity);
         assertNonExtremeProbability("initialSensitivity",initialSensitivity);
+        assertPositiveSequence("annotators",annotators);
+        assertPositiveSequence("items",items);
         if (annotations.length != annotators.length
             || annotators.length != items.length) {
             String msg = "Annotations, annotators, and items must be same length."
@@ -262,25 +387,135 @@ public class BinomialAnnotationCollapsedGibbs
 
     }
 
+    /**
+     * Returns the number of items in this sampler.
+     *
+     * @return Number of items.
+     */
     public int numItems() {
         return mNumItems;
     }
 
+    /**
+     * The number of annotators for this sampler.
+     *
+     * @return Number of annotators.
+     */
     public int numAnnotators() {
         return mNumAnnotators;
     }
 
-    // returns a fresh Markov Chain; thread safe
-    public synchronized Iterator<Sample> iterator() {
-        return new SampleIterator();
+    /**
+     * Returns a shallow copy of the annotations in this sampler.
+     *
+     * @return Annotations for this sampler.
+     */ 
+    public boolean[] annotations() {
+        return mAnnotations.clone();
     }
 
-    static int max(int[] xs) {
-        int max = xs[0];
-        for (int i = 1; i < xs.length; ++i)
-            if (xs[i] > max)
-                max = xs[i];
-        return max;
+    /**
+     * Returns a shallow copy of the annotators in this sampler.
+     *
+     * @return Annotators for this sampler.
+     */
+    public int[] annotators() {
+        return mAnnotators.clone();
+    }
+
+    /**
+     * Returns a shallow copy of the items in this sampler.
+     *
+     * @return Items for this sampler.
+     */
+    public int[] items() {
+        return mItems.clone();
+    }
+
+    /**
+     * Returns the initial prevalence for chains produced
+     * by this sampler.
+     *
+     * @return Initial prevalence.
+     */
+    public double initialPi() {
+        return mInitialPi;
+    }
+
+    /**
+     * Returns the initial specificity for chains produced
+     * by this sampler.
+     *
+     * @return Initial specificity.
+     */
+    public double initialSpecificity() {
+        return mInitialSpecificity;
+    }
+
+    /**
+     * Returns the initial sensitivity for chains produced
+     * by this sampler.
+     *
+     * @return Initial sensitivity.
+     */
+    public double initialSensitivity() {
+        return mInitialSensitivity;
+    }
+
+    /**
+     * Returns the fixed value of the &alpha;<sub>0</sub> parameter,
+     * the prior count of true negatives, or {@code -1} if it is
+     * estimated.
+     *
+     * @return Initial value of &alpha;<sub>0</sub>.
+     */
+    public double fixedAlpha0() {
+        return mFixedAlpha0;
+    }
+
+    /**
+     * Returns the fixed value of the &beta;<sub>0</sub> parameter,
+     * the prior count of false positives, or {@code -1} if it is
+     * estimated.
+     *
+     * @return Initial value of &beta;<sub>0</sub>.
+     */
+    public double fixedBeta0() {
+        return mFixedBeta0;
+    }
+
+    /**
+     * Returns the fixed value of the &alpha;<sub>1</sub> parameter,
+     * the prior count of true negatives, or {@code -1} if it is
+     * estimated.
+     *
+     * @return Initial value of &alpha;<sub>1</sub>.
+     */
+    public double fixedAlpha1() {
+        return mFixedAlpha1;
+    }
+
+    /**
+     * Returns the fixed value of the &beta;<sub>1</sub> parameter,
+     * the prior count of false positives, or {@code -1} if it is
+     * estimated.
+     *
+     * @return Initial value of &beta;<sub>1</sub>.
+     */
+    public double fixedBeta1() {
+        return mFixedBeta1;
+    }
+
+    /**
+     * Returns a fresh Markov chain from the data in this class
+     * in the form of an iterator over samples.   This method is
+     * thread safe and different threads may call it to produce
+     * different Markov chains which may be sampled in parallel.
+     *
+     * @return An iterator over Gibbs samples.
+     */
+    public Iterator<Sample> iterator() {
+        return new SampleIterator();
     }
 
     class SampleIterator extends Iterators.Buffered<Sample> {
@@ -459,6 +694,34 @@ public class BinomialAnnotationCollapsedGibbs
     }
 
 
+    static int max(int[] xs) {
+        int max = xs[0];
+        for (int i = 1; i < xs.length; ++i)
+            if (xs[i] > max)
+                max = xs[i];
+        return max;
+    }
+
+    static void assertPositiveSequence(String arrayName, int[] values) {
+        Set<Integer> valSet = new TreeSet<Integer>();
+        int max = 0;
+        for (int i = 0; i < values.length; ++i) {
+            if (values[i] < 1) {
+                String msg = "Values in array " + arrayName + " must be positive."
+                    + " Found " + arrayName + "[" + i + "]=" + values[i];
+                throw new IllegalArgumentException(msg);
+            }
+            if (values[i] > max)
+                max = values[i];
+            valSet.add(values[i]);
+        }
+        if (valSet.size() != max) {
+            String msg = "Values in array " + arrayName + " must form a contiguous list."
+                + " Found values=" + valSet;
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
     static void assertNonExtremeProbability(String name, double x) {
         if (Double.isNaN(x) || x <= 0.0 || x >= 1.0) {
             String msg = name + " must be between 0 and 1 exclusive."
@@ -468,7 +731,14 @@ public class BinomialAnnotationCollapsedGibbs
     }
 
 
-    public static class SampleDistribution
+    /**
+     * A {@code SampleStatistics} collects sufficient statistics
+     * online for calculating the sample mean and variance of the
+     * variables being sampled.  
+     *
+     * @author Bob Carpenter
+     */
+    public static class SampleStatistics
         implements ObjectHandler<Sample> {
         final OnlineNormalEstimator mPiEstimator;
         final OnlineNormalEstimator[] mCategoryEstimators;
@@ -478,7 +748,14 @@ public class BinomialAnnotationCollapsedGibbs
         final OnlineNormalEstimator mBetaSensitivityEstimator;
         final OnlineNormalEstimator[] mSpecificityEstimators;
         final OnlineNormalEstimator[] mSensitivityEstimators;
-        public SampleDistribution(int numItems, int numAnnotators) {
+        /**
+         * Construct a sample distribution for the specified number
+         * of items and number of annotators.
+         *
+         * @param numItems Number of items.
+         * @param numAnnotators Number of annotators.
+         */
+        public SampleStatistics(int numItems, int numAnnotators) {
             mPiEstimator = new OnlineNormalEstimator();
             mCategoryEstimators = onlineNormalEstimators(numItems);
             mAlphaSpecificityEstimator = new OnlineNormalEstimator();
@@ -488,6 +765,12 @@ public class BinomialAnnotationCollapsedGibbs
             mSpecificityEstimators = onlineNormalEstimators(numAnnotators);
             mSensitivityEstimators = onlineNormalEstimators(numAnnotators);
         }
+        /**
+         * Add the specified sample's values to the sufficient
+         * statistics.
+         *
+         * @param sample Sample to count.
+         */
         public void handle(Sample sample) {
             mPiEstimator.handle(sample.pi());
             for (int k = 0; k < sample.categories().length; ++k) { // numItems too long
@@ -503,6 +786,10 @@ public class BinomialAnnotationCollapsedGibbs
             for (int j = 0; j < mSensitivityEstimators.length; ++j)
                 mSensitivityEstimators[j].handle(sample.sensitivities()[j]);
         }
+        /**
+         * Return the number of samples added to this distribution.
+         *
+         */
         public long numSamples() {
             return mPiEstimator.numSamples();
         }
@@ -578,6 +865,17 @@ public class BinomialAnnotationCollapsedGibbs
     }
 
 
+    /**
+     * A {@code Sample} instance represents a single Gibbs sample from
+     * the collapsed sampler.  A sample determines values for all
+     * model parameters, though only the ones that are not fixed as
+     * data are included in the sample class.  
+     *
+     * <p>Samples are constructed by the sampler; there is no public
+     * constructor.
+     *
+     * @author Bob Carpenter
+     */
     public static class Sample {
         final double mPi;
         final boolean[] mCategories;
@@ -604,47 +902,128 @@ public class BinomialAnnotationCollapsedGibbs
             mSpecificities = specificities;
             mSensitivities = sensitivities;
         }
+        /**
+         * Return the number of annotators in the model.
+         *
+         * @return The number of annotators.
+         */
         public int numAnnotators() {
             return mSpecificities.length;
         }
+        /**
+         * Return the number of items being annotated.
+         *
+         * @return The number of items.
+         */
         public int numItems() {
             return mCategories.length;
         }
+        /**
+         * Returns the value of the prevalence, &pi;.
+         *
+         * @return The prevalence value.
+         */
         public double pi() {
             return mPi;
         }
+        /**
+         * Returns the category assignments in this sample, with
+         * indexes corresponding to the item numbers.
+         *
+         * @return The categories in this sample.
+         */
         public boolean[] categories() {
             return mCategories;
         }
+        /**
+         * Returns the value of the specificity parameter
+         * &alpha;<sub>0</sub>.
+         *
+         * @return The prior specificity &alpha;<sub>0</sub>.
+         */
         public double alphaSpecificity() {
             return mAlphaSpecificity;
         }
+        /**
+         * Returns the value of the specificity parameter
+         * &beta;<sub>0</sub>.
+         *
+         * @return The prior specificity &beta;<sub>0</sub>.
+         */
         public double betaSpecificity() {
             return mBetaSpecificity;
         }
+        /**
+         * Returns the value of the sensitivity parameter
+         * &alpha;<sub>1</sub>.
+         *
+         * @return The prior sensitivity &alpha;<sub>1</sub>.
+         */
         public double alphaSensitivity() {
             return mAlphaSensitivity;
         }
+        /**
+         * Returns the value of the sensitivity parameter
+         * &beta;<sub>1</sub>.
+         *
+         * @return The prior sensitivity &beta;<sub>1</sub>.
+         */
         public double betaSensitivity() {
             return mBetaSensitivity;
         }
+        /**
+         * Returns the specificity prior mean,
+         * &alpha;<sub>0</sub>/(&alpha;<sub>0</sub>+&beta;<sub>0</sub>).
+         *
+         * @return The specificity prior mean.
+         */
         public double specificityPriorMean() {
             return mAlphaSpecificity / (mAlphaSpecificity + mBetaSpecificity);
         }
+        /**
+         * Returns the specificity prior scale,
+         * &alpha;<sub>0+&beta;<sub>0</sub>.
+         *
+         * @return The specificity prior scale.
+         */
         public double specificityPriorScale() {
             return mAlphaSpecificity + mBetaSpecificity;
         }
+        /**
+         * Returns the sensitivity prior mean,
+         * &alpha;<sub>1</sub>/(&alpha;<sub>1</sub>+&beta;<sub>0</sub>).
+         *
+         * @return The sensitivity prior mean.
+         */
         public double sensitivityPriorMean() {
             return mAlphaSensitivity / (mAlphaSensitivity + mBetaSensitivity);
         }
+        /**
+         * Returns the sensitivity prior scale,
+         * &alpha;<sub>1+&beta;<sub>1</sub>.
+         *
+         * @return The sensitivity prior scale.
+         */
         public double sensitivityPriorScale() {
             return mAlphaSensitivity + mBetaSensitivity;
         }
-        public double[] sensitivities() {
-            return mSensitivities;
-        }
+        /**
+         * Returns the array of specificities, &theta;<sub>0</sub>,
+         * indexed by annotator.
+         *
+         * @return Annotator specificities.
+         */
         public double[] specificities() {
             return mSpecificities;
+        }
+        /**
+         * Returns the array of sensitivities, &theta;<sub>1</sub>,
+         * indexed by annotator.
+         *
+         * @return Annotator sensitivities.
+         */
+        public double[] sensitivities() {
+            return mSensitivities;
         }
     }
 
