@@ -45,9 +45,9 @@
            version="true">
     <packageset dir="src">
         <include name="com/aliasi/**"/>
-    </packageset> 
+    </packageset>
     <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
-    <link href="http://alias-i.com/lingpipe/docs/api"/>
+    <link href="http://alias-i.com/lingpipe/docs/api/index.html"/>
  </javadoc>
 </target>
 
@@ -82,12 +82,12 @@
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="-annoTsv=R/data/dolores/rte.data.tsv"/>
-    <arg value="-goldTsv=R/data/dolores/rte.gold.tsv"/> 
+    <arg value="-goldTsv=R/data/dolores/rte.gold.tsv"/>
 
     <arg value="-initialPi=0.5"/>
-    <arg value="-initialSpecificity=0.80"/> 
+    <arg value="-initialSpecificity=0.80"/>
     <arg value ="-initialSensitivity=0.80"/>
-    <arg value ="-numSamples=1000"/> 
+    <arg value ="-numSamples=1000"/>
 
     <arg value="-fixedAlpha0=1.0"/> <!-- fixed prior alpha0 -->
     <arg value="-fixedBeta0=1.0"/> <!-- fixed prior beta0 -->
@@ -117,9 +117,9 @@
     <arg value="-annoTsv=temp-ne-censored-anno.tsv"/>
     <arg value="-goldTsv=temp-ne-censored-gold.tsv"/>
     <arg value="-initialPi=0.5"/>
-    <arg value="-initialSpecificity=0.80"/> 
+    <arg value="-initialSpecificity=0.80"/>
     <arg value ="-initialSensitivity=0.80"/>
-    <arg value ="-numSamples=1000"/> 
+    <arg value ="-numSamples=1000"/>
 
     <arg value="-fixedAlpha0=1.0"/> <!-- fixed prior alpha0 -->
     <arg value="-fixedBeta0=1.0"/> <!-- fixed prior beta0 -->
