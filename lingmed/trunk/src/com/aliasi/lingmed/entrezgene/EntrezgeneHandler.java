@@ -61,21 +61,6 @@ class EntrezgeneHandler extends DelegatingHandler {
     AttributeValueHandler mEntrezgeneTypeHandler 
         = new AttributeValueHandler();
 
-    // <Gene-ref_locus>A1BG</Gene-ref_locus>
-    TextAccumulatorHandler mGeneRefLocusHandler 
-        = new TextAccumulatorHandler();
-
-    // <Gene-ref_desc>alpha-1-B glycoprotein</Gene-ref_desc>
-    TextAccumulatorHandler mGeneRefDescHandler 
-        = new TextAccumulatorHandler();
-
-    // <Gene-ref_maploc>19q13.4</Gene-ref_maploc>
-    TextAccumulatorHandler mGeneRefMaplocHandler 
-        = new TextAccumulatorHandler();
-
-    // <Gene-ref_syn>
-    //   <Gene-ref_syn_E>A1B</Gene-ref_syn_E>
-    TextSetAccumulatorHandler mGeneRefSynsHandler;
 
     // <Prot-ref_desc>alpha 1B-glycoprotein</Prot-ref_desc>
     TextAccumulatorHandler mProtRefDescHandler
@@ -88,6 +73,9 @@ class EntrezgeneHandler extends DelegatingHandler {
     // <Entrezgene_summary>The protein encoded by this gene ...</Entrezgene_summary>    
     TextAccumulatorHandler mEntrezgeneSummaryHandler
         = new TextAccumulatorHandler();
+
+    // <Entrezgene_gene>
+    EntrezgeneGeneHandler mEntrezgeneGeneHandler;
 
     // <Entrezgene_source>
     EntrezgeneSourceHandler mEntrezgeneSourceHandler;
@@ -103,7 +91,6 @@ class EntrezgeneHandler extends DelegatingHandler {
 
     // <Entrezgene_comments>
     EntrezgeneCommentsHandler mEntrezgeneCommentsHandler;
-
 
     private String curGeneTrackStatus;
     private String curGeneId;
@@ -126,14 +113,10 @@ class EntrezgeneHandler extends DelegatingHandler {
 
     private Pair<String,String>[] curPubMedRefs;
     private Pair<String,String[]>[] curDbLinks;
-    //	private HashMap<String,String> curPubMedRefs;
-    //	private HashMap<String,HashSet<String>> curDbLinks;
+
 
     EntrezgeneHandler() {
         setDelegate(EntrezTags.GENE_TRACK_GENEID_ELT,mGeneTrackGeneIdHandler);
-        setDelegate(EntrezTags.GENE_REF_LOCUS_ELT,mGeneRefLocusHandler);
-        setDelegate(EntrezTags.GENE_REF_DESC_ELT,mGeneRefDescHandler);
-        setDelegate(EntrezTags.GENE_REF_MAPLOC_ELT,mGeneRefMaplocHandler);
 
         mGeneTrackStatusHandler = new AttributeValueHandler();
         setDelegate(EntrezTags.GENE_TRACK_STATUS_ELT,mGeneTrackStatusHandler);
@@ -141,11 +124,12 @@ class EntrezgeneHandler extends DelegatingHandler {
         mEntrezgeneTypeHandler = new AttributeValueHandler();
         setDelegate(EntrezTags.ENTREZGENE_TYPE_ELT,mEntrezgeneTypeHandler);
 
-        mGeneRefSynsHandler = 
-            new TextSetAccumulatorHandler(this,EntrezTags.GENE_REF_SYN_E_ELT);
-        setDelegate(EntrezTags.GENE_REF_SYN_ELT,mGeneRefSynsHandler);
+        mEntrezgeneGeneHandler = 
+            new EntrezgeneGeneHandler(this);
+        setDelegate(EntrezTags.ENTREZGENE_GENE_ELT,mEntrezgeneGeneHandler);
 
         setDelegate(EntrezTags.PROT_REF_DESC_ELT,mProtRefDescHandler);
+
         mProtRefNamesHandler = 
             new TextSetAccumulatorHandler(this,EntrezTags.PROT_REF_NAME_E_ELT);
         setDelegate(EntrezTags.PROT_REF_NAME_ELT,mProtRefNamesHandler);
@@ -172,16 +156,13 @@ class EntrezgeneHandler extends DelegatingHandler {
             curGeneId = mGeneTrackGeneIdHandler.getText();
         } else if (qName.equals(EntrezTags.ENTREZGENE_TYPE_ELT)) {
             curEntrezgeneType = mEntrezgeneTypeHandler.value();
+        } else if (qName.equals(EntrezTags.ENTREZGENE_GENE_ELT)) {
+            curGeneRefName = mEntrezgeneGeneHandler.getLocus();
+            curGeneRefMaploc = mEntrezgeneGeneHandler.getMaploc();
+            curGeneRefDesc = mEntrezgeneGeneHandler.getDesc();
+            curGeneRefSyns = mEntrezgeneGeneHandler.getSyns();
         } else if (qName.equals(EntrezTags.ENTREZGENE_SOURCE_ELT)) {
 			curSpecies = mEntrezgeneSourceHandler.getSpecies();
-        } else if (qName.equals(EntrezTags.GENE_REF_DESC_ELT)) {
-            curGeneRefDesc = mGeneRefDescHandler.getText();
-        } else if (qName.equals(EntrezTags.GENE_REF_LOCUS_ELT)) {
-            curGeneRefName = mGeneRefLocusHandler.getText();
-        } else if (qName.equals(EntrezTags.GENE_REF_MAPLOC_ELT)) {
-            curGeneRefMaploc = mGeneRefMaplocHandler.getText();
-        } else if (qName.equals(EntrezTags.GENE_REF_SYN_ELT)) {
-            curGeneRefSyns = mGeneRefSynsHandler.getTextSet();
         } else if (qName.equals(EntrezTags.ENTREZGENE_SUMMARY_ELT)) {
             curGeneSummary = mEntrezgeneSummaryHandler.getText();
         } else if (qName.equals(EntrezTags.ENTREZGENE_PROPERTIES_ELT)) {
@@ -221,11 +202,8 @@ class EntrezgeneHandler extends DelegatingHandler {
     public void startDocument() throws SAXException {
         //reset accum structures on new gene
         mGeneTrackGeneIdHandler.reset();
-        mGeneRefLocusHandler.reset();
-        mGeneRefDescHandler.reset();
         mProtRefDescHandler.reset();
         mEntrezgeneSummaryHandler.reset();
-
         mGeneTrackStatusHandler.reset();
 
         curGeneTrackStatus = null;
@@ -248,6 +226,86 @@ class EntrezgeneHandler extends DelegatingHandler {
         super.startDocument();
     }
 
+
+	/* get genome information from ENTREZGENE_GENE element */
+    class EntrezgeneGeneHandler extends DelegateHandler {
+        String mDesc;
+        String mLocus;
+        String mMaploc;
+        String[] mSyns;
+
+        HashSet<String> mMoreSyns;
+
+        // <Gene-ref_locus>A1BG</Gene-ref_locus>
+        TextAccumulatorHandler mGeneRefLocusHandler 
+            = new TextAccumulatorHandler();
+        // <Gene-ref_locus-tag>Y34D9B.1</Gene-ref_locus-tag>  (in C. elegans)
+        TextAccumulatorHandler mGeneRefLocusTagHandler 
+            = new TextAccumulatorHandler();
+        // <Gene-ref_desc>alpha-1-B glycoprotein</Gene-ref_desc>
+        TextAccumulatorHandler mGeneRefDescHandler 
+            = new TextAccumulatorHandler();
+        // <Gene-ref_maploc>19q13.4</Gene-ref_maploc>
+        TextAccumulatorHandler mGeneRefMaplocHandler 
+            = new TextAccumulatorHandler();
+        // <Gene-ref_syn><Gene-ref_syn_E>A1B</Gene-ref_syn_E>...
+        TextSetAccumulatorHandler mGeneRefSynsHandler;
+        // <Gene-ref_db><Dbtag_db>WormBase</Dbtag_db>...WBGene0003238...</Gene-ref_db>  (in C. elegans)
+        DbTagHandler mGeneRefDbHandler; 
+
+        EntrezgeneGeneHandler(DelegatingHandler parent) {
+            super(parent);
+            setDelegate(EntrezTags.GENE_REF_LOCUS_ELT,mGeneRefLocusHandler);
+            setDelegate(EntrezTags.GENE_REF_LOCUS_TAG_ELT,mGeneRefLocusTagHandler);
+            setDelegate(EntrezTags.GENE_REF_DESC_ELT,mGeneRefDescHandler);
+            setDelegate(EntrezTags.GENE_REF_MAPLOC_ELT,mGeneRefMaplocHandler);
+            mGeneRefSynsHandler = 
+                new TextSetAccumulatorHandler(parent,EntrezTags.GENE_REF_SYN_E_ELT);
+            setDelegate(EntrezTags.GENE_REF_SYN_ELT,mGeneRefSynsHandler);
+            mGeneRefDbHandler = new DbTagHandler(parent);
+            setDelegate(EntrezTags.GENE_REF_DB_ELT,mGeneRefDbHandler);
+        }
+
+        public void startDocument() {
+            mGeneRefLocusHandler.reset();
+            mGeneRefLocusTagHandler.reset();
+            mGeneRefDescHandler.reset();
+            mDesc = null;
+            mLocus = null;
+            mMaploc = null;
+            mSyns = new String[0];
+            mMoreSyns = new HashSet<String>();
+        }
+
+        public void finishDelegate(String qName, DefaultHandler handler) {
+            if (qName.equals(EntrezTags.GENE_REF_DESC_ELT)) {
+                mDesc = mGeneRefDescHandler.getText();
+            } else if (qName.equals(EntrezTags.GENE_REF_LOCUS_ELT)) {
+                mLocus = mGeneRefLocusHandler.getText();
+            } else if (qName.equals(EntrezTags.GENE_REF_LOCUS_TAG_ELT)) {
+                mMoreSyns.add(mGeneRefLocusTagHandler.getText());
+                mSyns = mergeGeneRefSyns(mSyns,mMoreSyns);
+            } else if (qName.equals(EntrezTags.GENE_REF_DB_ELT)) {
+                mMoreSyns.add(mGeneRefDbHandler.getDbId());
+                mSyns = mergeGeneRefSyns(mSyns,mMoreSyns);
+            } else if (qName.equals(EntrezTags.GENE_REF_MAPLOC_ELT)) {
+                mMaploc = mGeneRefMaplocHandler.getText();
+            } else if (qName.equals(EntrezTags.GENE_REF_SYN_ELT)) {
+                mSyns = mergeGeneRefSyns(mGeneRefSynsHandler.getTextSet(),mMoreSyns);
+            }
+        }
+
+        String getDesc() { return mDesc; }
+        String getLocus() { return mLocus; }
+        String getMaploc() { return mMaploc; }
+        String[] getSyns() { return mSyns; }
+
+        String[] mergeGeneRefSyns(String[] synArray, HashSet<String> synHash) {
+            for (String s : synArray) synHash.add(s);
+            String[] syns = new String[synHash.size()];
+            return synHash.toArray(syns);
+        }
+    }
 
 	/* get genome information from ENTREZGENE_SOURCE element */
     class EntrezgeneSourceHandler extends DelegateHandler {
@@ -668,8 +726,6 @@ class EntrezgeneHandler extends DelegatingHandler {
 			return mSynESet.toArray(syns);
 		}
 	}
-
-
 
     /**
      * A <code>TextSetAccumulatorHandler</code> accumulates a set of 
