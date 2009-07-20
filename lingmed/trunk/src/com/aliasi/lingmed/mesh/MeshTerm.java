@@ -197,7 +197,7 @@ public class MeshTerm {
      * for the record in which it appears.
      */
     public boolean isRecordPreferred() {
-        return mRecordPreferred;
+        return mIsRecordPreferred;
     }
 
     /**
