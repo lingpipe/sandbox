@@ -36,7 +36,10 @@ class EntrezTags {
     static final String ORG_REF_DB_ELT = "Org-ref_db";
 
     static final String ENTREZGENE_GENE_ELT = "Entrezgene_gene";
+    static final String GENE_REF_ELT = "Gene-ref";
     static final String GENE_REF_LOCUS_ELT = "Gene-ref_locus";
+    static final String GENE_REF_LOCUS_TAG_ELT = "Gene-ref_locus-tag";
+    static final String GENE_REF_DB_ELT = "Gene-ref_db";
     static final String GENE_REF_MAPLOC_ELT = "Gene-ref_maploc";
     static final String GENE_REF_DESC_ELT = "Gene-ref_desc";
     static final String GENE_REF_SYN_ELT = "Gene-ref_syn";
