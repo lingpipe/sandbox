@@ -48,87 +48,87 @@ public class OmimParser extends InputSourceParser<ObjectHandler<OmimRecord>> {
     private boolean mSaveRaw;
 
     public OmimParser() {
-	mSaveRaw = false;
+        mSaveRaw = false;
     }
 
     public OmimParser(boolean saveRaw) {
-	mSaveRaw = saveRaw;
+        mSaveRaw = saveRaw;
     }
 
     public ObjectHandler<OmimRecord> omimHandler() {
-	return (ObjectHandler<OmimRecord>) getHandler();
+        return (ObjectHandler<OmimRecord>) getHandler();
     }
 
     public void parse(InputSource is) throws IOException { 
-	OmimRecord curRec = null;
-	ArrayList<String> lines = new ArrayList<String>();
-	StringBuffer rawText = new StringBuffer();
-	String line = null;
-	LineNumberReader in = new LineNumberReader(is.getCharacterStream());
-	while ((line = in.readLine()) != null) {
-	    if (isRecordStart(line)) {
-		if (curRec != null) {
-		    if (lines.size() > 0) {
-			OmimField field = parseField(lines);
-			curRec.processField(field);
-		    }
-		    if (mSaveRaw) curRec.setRawText(rawText.toString());
-		    omimHandler().handle(curRec);
-		    lines.clear();
-		    if (mSaveRaw) rawText.setLength(0);
-		}
-		curRec = new OmimRecord();
-		if (mSaveRaw) rawText.append(line+"\n");
-	    }
-	    else if (isFieldStart(line)) {
-		if (curRec == null) {
-		    throw new IllegalStateException("parse error at line: "+in.getLineNumber());
-		} 
-		if (lines.size() > 0) {
-		    OmimField field = parseField(lines);
-		    curRec.processField(field);
-		}
-		lines.clear();
-		lines.add(line);
-		if (mSaveRaw) rawText.append(line+"\n");
-	    }
-	    else {
-		lines.add(line);
-		if (mSaveRaw) rawText.append(line+"\n");
-	    }
-	}
-	in.close();
-	// finish processing last record in file
-	if (curRec != null) {
-	    if (lines.size() > 0) {
-		OmimField field = parseField(lines);
-		curRec.processField(field);
-	    }
-	    if (mSaveRaw) curRec.setRawText(rawText.toString());
-	    omimHandler().handle(curRec);
-	}
+        OmimRecord curRec = null;
+        ArrayList<String> lines = new ArrayList<String>();
+        StringBuffer rawText = new StringBuffer();
+        String line = null;
+        LineNumberReader in = new LineNumberReader(is.getCharacterStream());
+        while ((line = in.readLine()) != null) {
+            if (isRecordStart(line)) {
+                if (curRec != null) {
+                    if (lines.size() > 0) {
+                        OmimField field = parseField(lines);
+                        curRec.processField(field);
+                    }
+                    if (mSaveRaw) curRec.setRawText(rawText.toString());
+                    omimHandler().handle(curRec);
+                    lines.clear();
+                    if (mSaveRaw) rawText.setLength(0);
+                }
+                curRec = new OmimRecord();
+                if (mSaveRaw) rawText.append(line+"\n");
+            }
+            else if (isFieldStart(line)) {
+                if (curRec == null) {
+                    throw new IllegalStateException("parse error at line: "+in.getLineNumber());
+                } 
+                if (lines.size() > 0) {
+                    OmimField field = parseField(lines);
+                    curRec.processField(field);
+                }
+                lines.clear();
+                lines.add(line);
+                if (mSaveRaw) rawText.append(line+"\n");
+            }
+            else {
+                lines.add(line);
+                if (mSaveRaw) rawText.append(line+"\n");
+            }
+        }
+        in.close();
+        // finish processing last record in file
+        if (curRec != null) {
+            if (lines.size() > 0) {
+                OmimField field = parseField(lines);
+                curRec.processField(field);
+            }
+            if (mSaveRaw) curRec.setRawText(rawText.toString());
+            omimHandler().handle(curRec);
+        }
     }
 
     boolean isFieldStart(String line) {
-	if (line.startsWith("*FIELD*")) return true;
-	return false;
+        if (line.startsWith("*FIELD*")) return true;
+        return false;
     }
 
     boolean isRecordStart(String line) {
-	if (line.startsWith("*RECORD*")) return true;
-	return false;
+        if (line.startsWith("*RECORD*")) return true;
+        return false;
     }
 
     OmimField parseField(ArrayList<String> lines) {
-	// get label following token "*FIELD* "
-	String label = lines.get(0);
-	int i = label.indexOf(' ');
-	if (i > 0) label = label.substring(i+1);
-	lines.remove(0);
-	// remaining lines are text
-	String[] text = new String[lines.size()];
-	text = lines.toArray(text);
-	return new OmimField(label, text);
+        // get label following token "*FIELD* "
+        String label = lines.get(0);
+        int i = label.indexOf(' ');
+        if (i > 0) label = label.substring(i+1);
+        lines.remove(0);
+        // remaining lines are text
+        String[] text = new String[lines.size()];
+        text = lines.toArray(text);
+        return new OmimField(label, text);
     }
 
 }
