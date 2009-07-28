@@ -510,8 +510,8 @@ public class Mesh {
         }
         public Mesh getMesh() {
             return new Mesh(mDescriptorClass,
-                            new MeshNameUi(mDescriptorUIHandler.getText().trim(),
-                                           mDescriptorNameHandler.getObject()),
+                            new MeshNameUi(mDescriptorNameHandler.getObject(),
+                                           mDescriptorUIHandler.getText().trim()),
                             mDateCreatedHandler.getObject(),
                             mDateRevisedHandler.getObject(),
                             mDateEstablishedHandler.getObject(),
