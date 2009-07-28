@@ -70,20 +70,13 @@ public class MeshDictionaryCommand {
     static class DictionaryHandler implements ObjectHandler<Mesh> {
         final MapDictionary<String> mDictionary 
             = new MapDictionary<String>();
-        final Map<String,String[]> mTermToTreeNumbers 
-            = new HashMap<String,String[]>();
         public void handle(Mesh mesh) {
             MeshNameUi descriptor = mesh.descriptor();
             String headingName = descriptor.name(); 
-            // String headingUi = descriptor.ui();
-            // String[] treeNumbers 
-            // = mesh.treeNumberList().toArray(Strings.EMPTY_STRING);
-            // mTermToTreeNumbers.put(headingName,treeNumbers);
             for (MeshConcept concept : mesh.conceptList()) {
                 for (MeshTerm term : concept.termList()) {
                     MeshNameUi termNameUi = term.nameUi();
                     String termName = termNameUi.name();
-                    // String termUi = termNameUi.ui();
                     DictionaryEntry<String> entry 
                         = new DictionaryEntry<String>(termName,headingName);
                     mDictionary.addEntry(entry);
@@ -98,6 +91,7 @@ public class MeshDictionaryCommand {
     }
 
     static class ChunkerSerializer extends AbstractExternalizable {
+        static final long serialVersionUID = 1879892051066513198L;
         private final MapDictionary<String> mDictionary;
         public ChunkerSerializer() { 
             this(null); 
@@ -105,6 +99,7 @@ public class MeshDictionaryCommand {
         public ChunkerSerializer(MapDictionary<String> dictionary) {
             mDictionary = dictionary;
         }
+        @Override
         public Object read(ObjectInput in) throws IOException, ClassNotFoundException {
             @SuppressWarnings("unchecked")
             MapDictionary<String> dictionary = 
@@ -114,6 +109,7 @@ public class MeshDictionaryCommand {
             return new ExactDictionaryChunker(dictionary,TOKENIZER_FACTORY,
                                               returnAllMatches,caseSensitive);
         }
+        @Override
         public void writeExternal(ObjectOutput out) throws IOException {
             out.writeObject(mDictionary);
         }
