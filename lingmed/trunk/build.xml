@@ -666,6 +666,8 @@
     </replace>
 </target>
 
+<property name="mesh.Chunker"
+          value="models/mesh.Chunker"/>
 
 <target name="mesh"
         depends="jar">
@@ -679,20 +681,23 @@
 <target name="mesh-dict"
         depends="jar">
   <java classname="com.aliasi.lingmed.mesh.MeshDictionaryCommand"
+        maxmemory="2G"
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="${mesh.desc.gz}"/>
-    <arg value="${mesh.dict}"/>
+    <arg value="${mesh.Chunker}"/>
   </java>
 </target>
 
-<target name="mesh-anno"
+<target name="mesh-chunk"
         depends="jar">
-  <java classname="com.aliasi.lingmed.mesh.MeshDictCommand"
+  <java classname="com.aliasi.lingmed.mesh.MeshChunkCommand"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="${mesh.dict}"/>
-    <arg value="${demo.data}"/>
+    <arg value="${mesh.Chunker}"/>
+    <arg value="Motrin is a nonsteroidal anti-inflammatory agent with analgesic properties used in the therapy of rheumatism and arthritis."/>
+    <arg value="Rheumatism involves disorders of connective tissue, especially the joints and related structures, characterized by inflammation, degeneration, or metabolic derangement."/>
+    <arg value="he first generations of total ankle replacements (TARs) showed a high rate of early failure. In the last decades, much progress has been made in the development of TARs, with the newer generation showing better results. We evaluated TARs implanted with rheumatoid arthritis (RA) or juvenile inflammatory arthritis (JIA) as indication. Patients and methods 58 total ankle prostheses (Buechel-Pappas and STAR type) were implanted in patients with RA (n = 53) or JIA (n = 5) in 54 patients (4 bilateral). After a mean follow-up of 2.7 (1-9) years, all patients were reviewed by two orthopedic surgeons who were not the surgeons who performed the operation. Standard AP and lateral radiographs were taken and a Kofoed ankle score was obtained; this is a clinical score ranging from 0-100 and consists of sub-scores for pain, disability, and range of motion. Results 2 patients died of unrelated causes. Of the 52 patients who were alive (56 prostheses), 51 implants were still in place and showed no signs of loosening on the most recent radiographs. The mean Kofoed score at follow-up was 73 points (SD 16, range 21-92). 4 patients showed a poor result (score &lt; 50) with persistent pain for which no obvious reason could be found. 5 implants were removed, 4 because of infection and 1 because of aseptic loosening. Interpretation Medium-term results of the STAR and BP types of TAR in RA were satisfactory. The main reason for failure of the implant was infection."/>
   </java>
 </target>
 
