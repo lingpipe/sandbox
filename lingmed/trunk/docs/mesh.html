@@ -4,7 +4,7 @@
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-<title>LingMed: LingPipe for Entrez-Pubmed</title>
+<title>LingMed: MeSH Parsing and Annotation</title>
 <meta http-equiv="Content-type"
       content="application/xhtml+xml; charset=utf-8"/>
 <meta http-equiv="Content-Language"
@@ -57,6 +57,592 @@
 <div id="content" class="content">
 
 <a name="overview"><h2>Overview</h2></a>
+
+<p>The Medical Subject Headings (MeSH) is a controlled vocabulary for
+tagging biomedical research articles that has been evolving since the
+1940s and in roughly its present form since 1960.</p>
+
+<h3>MeSH in LingMed</h3>
+
+<p>LingMed supplies a document object model for MeSH headings and
+a parser for the XML distribution of MeSH that produces these
+objects and sends them to a handler.  LingMed also contains a dictionary-based
+chunker that associates all MeSH terms found in a document with their
+identifiers.
+</p>
+
+<h3>Overview of MeSH</h3>
+
+<p>The current MeSH is made up of a set of so-called "headings", which are
+organized into a multiple inheritance hierarchy.</p>
+
+<p>There's a top-level page for MeSH at NLM:</p>
+
+<ul>
+<li>NLM <a href="http://www.nlm.nih.gov/mesh/">MeSH Home Page</a></li>
+</ul>
+
+<p>where you can also find a short overview of MeSH:</p>
+
+<ul>
+<li>NLM: <a href="http://www.nlm.nih.gov/pubs/factsheets/mesh.html">MeSH Fact Sheet</a></li>
+</ul>
+
+<p>and also a longer one:</p>
+
+<ul>
+<li>NLM: <a href="http://www.nlm.nih.gov/mesh/introduction.html">MeSH Introduction</a></li>
+</ul>
+
+
+<h3>Size</h3>
+
+<p>There are roughly 25,000 descriptors in MeSH, with a total of
+160,000 terms in the thesaurus-like vocabulary.  For instance, MeSH
+provides synonyms like &quot;Motrin&quot; and
+&quot;alpha-Methyl-4-(2-methylpropyl)benzeneacetic Acid&quot; for the heading
+&quot;Ibruprofen&quot;.
+
+
+<h3>NLM's MeSH Browser</h3>
+
+<p>NLM provides a convenient browser for MeSH headings.</p>
+
+<ul>
+<li>NLM's <a href="http://www.nlm.nih.gov/mesh/MBrowser.html">MeSH Browser</a></li>
+</ul>
+
+<p>Headings my be found by search.  For instance, if I enter the query
+[cirrhosis], the browser takes me to the page for the heading, <a
+href="http://www.nlm.nih.gov/cgi/mesh/2009/MB_cgi?mode=&index=5136&view=expanded">MeSH:
+fibrosis</a>.
+
+<p>The browser provides an HTML rendering of the information
+associated with a heading, such as its identifiers, its location(s)
+in the hierarchy of terms, qualifiers that are allowed, descriptions
+of how to apply the heading (scope), and notes about previous indexing.
+It also contains a list of entry terms, which are alternative terms
+that can refer to the same concept.</p>
+
+<h3>Hierarchical Structure</h3>
+
+<p>If you look at the page for <a
+href="http://www.nlm.nih.gov/cgi/mesh/2009/MB_cgi?mode=&index=8776&view=expanded">MeSH:
+Myasthenia Gravis</a>, you will see that MG is listed as a daughter of
+the heading <a
+href="http://www.nlm.nih.gov/cgi/mesh/2009/MB_cgi?mode=&term=Autoimmune+Diseases+of+the+Nervous+System&field=entry#TreeC10.114">MeSH:
+Autoimmune Diseases of the Nervous System</a>, which is itself a
+daughter of two other headings, <a
+href="http://www.nlm.nih.gov/cgi/mesh/2009/MB_cgi?mode=&term=Nervous+System+Diseases&field=entry#TreeC10">MeSH:
+Nervous System Diseases</a>, and <a
+href="http://www.nlm.nih.gov/cgi/mesh/2009/MB_cgi?mode=&term=Neuromuscular+Junction+Diseases&field=entry#TreeC10.668.758">MeSH:
+Neuromuscular Junction Diseases</a>, because myasthenia gravis is an
+autoimmune disease attacking muscle nerve receptors.</p>
+
+<p>There are also two daughters of Myasthenia Gravis in the hierarchy, 
+corresponding to experimental and neonatal forms of the disease.</p>
+
+<h3>XML Format</h3>
+
+<p>MeSH is distributed in XML, and NLM provides a convenient guide
+to the document structure, which enumerates the form of every
+piece of information in MeSH:</p>
+
+<ul>
+<li>NLM: <a href="http://www.nlm.nih.gov/mesh/xml_data_elements.html">MeSH XML Element Documentation</a></li>
+</ul>
+
+<p>&nbsp;</p>
+
+
+
+<h2>Downloading MeSH</h2>
+
+<p>You will need a copy of MeSH in order to run the LingMed MeSH package.</p>
+
+<h3>MeSH License</h3>
+
+<p>The MeSH memorandum of understanding (aka &quot;license&quot) can
+be viewed here:</p>
+
+<ul>
+<li>NLM: <a href="http://www.nlm.nih.gov/mesh/termscon.html">MeSH Memorandum of Understanding</a></li>
+</ul>
+
+<h3>Downloading</h3>
+
+<p>You can download the XML version of MeSH directly from NLM:</p>
+
+<ul>
+<li>NLM: <a href="http://www.nlm.nih.gov/mesh/filelist.html">Download MeSH</a></li>
+</ul>
+
+<p>You need to click through on the <code>MeSH in XML format</code> link,
+accept the license terms, fill in a registration form, and then you
+can download it instantly.</p>
+
+<p>The only file we use for this demo is <code>desc2009.gz</code>, which
+is the gzipped form of the XML descriptions of the MeSH headings.  The
+DTDs are included in the LingMed jar for local use.</p>
+
+
+<h3>Updates</h3>
+
+<p>The contents of MeSH are updated regularly and distributed by NLM.
+The document structure, in the form of a XML DTDs, is updated annually
+along with the MEDLINE DTDs.</p>
+
+
+<h2>Parsing MeSH</h2>
+
+<p>LingMed supplies a parser for MeSH that produces object-oriented
+representations of MeSH headings.  All of the information in a MeSH
+heading is included in the LingMed MeSH object.</p>
+
+<p>For the rest of this section, we will assume that MeSH has
+been downloaded, and that <code>$DESC_GZ</code> is the path to
+the file <code>desc2009.gz</code>, which contains the MeSH
+headings.</p>
+
+<h3>Running the Parser Demo</h3>
+
+<p>You can run the parser demo from ant using the command:</p>
+
+<pre class="code">
+ant -Dmesh.desc.gz=$DESC_GZ mesh
+</pre>
+
+<p>For instance, plugging in my local path, I get:</p>
+
+<pre class="code">
+&gt; ant -Dmesh.desc.gz=e:\data\mesh\dist\2009\30June2009\xml\desc2009.gz mesh
+
+Buildfile: build.xml
+
+compile:
+
+jar:
+
+mesh:
+     [java] FILE URL=file:///E:\data\mesh\dist\2009\30June2009\xml\desc2009.gz
+     [java] ============================================================
+     [java] Descriptor Class=1(Topical Descriptor)
+     [java] Descriptor=Calcimycin:D000001
+     [java] Date Created=1974/11/19
+     [java] Date Revised=2006/07/05
+     [java] Date Established=1984/01/01
+     [java] Active Year List=[2007, 2008, 2009]
+     [java] Allowable Qualifiers[0]=administration & dosage:Q000008 (AD)
+     [java] Allowable Qualifiers[1]=adverse effects:Q000009 (AE)
+     [java] Allowable Qualifiers[2]=analogs & derivatives:Q000031 (AA)
+     [java] Allowable Qualifiers[3]=analysis:Q000032 (AN)
+...
+     [java] Allowable Qualifiers[26]=contraindications:Q000744 (CT)
+     [java] Allowable Qualifiers[27]=agonists:Q000819 (AG)
+     [java] Annotation=null
+     [java] History Note=91(75); was A 23187 1975-90 (see under ANTIBIOTICS 1975-83)
+     [java] Online Note=use CALCIMYCIN to search A 23187 1975-90
+     [java] Public Mesh Note=91; was A 23187 1975-90 (see under ANTIBIOTICS 1975-83)
+     [java] Previous Indexing List=[Antibiotics (1973-1974), Carboxylic Acids (1973-1974)]
+     [java] Consider Also=null
+     [java] Pharmacological Action[0]=Anti-Bacterial Agents:D000900
+     [java] Pharmacological Action[1]=Ionophores:D007476
+     [java] Running Head=null
+     [java] Tree Number[0]=D03.438.221.173
+     [java] Record Originator List=Originator=NLM; Maintainer=ags; Authorizer=sjn
+     [java] Concept[0]=
+     [java]   Concept Name/UI=Calcimycin:M0000001
+     [java]   Preferred=true
+     [java]   Concept UMLS UI=C0000699
+     [java]   CASN1 Name=4-Benzoxazolecarboxylic acid, 5-(methylamino)-2-((3,9,11-trimethyl-8-(1-methyl-2-oxo-2-(1H-pyrrol-2-yl)ethyl)-1,7-
+5.5)undec-2-yl)methyl)-, (6S-(6alpha(2S*,3S*),8beta(R*),9beta,11alpha))-
+     [java]   Registry Number=52665-69-7
+     [java]   Scope Note=An ionophorous, polyether antibiotic from Streptomyces chartreusensis. It binds and transports cations across memb
+ncouples oxidative phosphorylation while inhibiting ATPase of rat liver mitochondria. The substance is used mostly as a biochemical tool to
+role of divalent cations in various biological systems.
+     [java]   Semantic Type=[0]=Organic Chemical:T109
+     [java]   Semantic Type=[1]=Antibiotic:T195
+     [java]   Concept Relation[0]=Relation Name=NRW; Concept 1 UI=M0000001; Concept 2 UI=M0353609; Relational Attribute=null
+     [java]   Term[0]=
+     [java] Name/UI=Calcimycin:T000002
+     [java]     Concept Preferred=true
+     [java]     Is Permuted=false
+     [java]     Lexical Tag=NON
+     [java]     Print Flag=true
+     [java]     Record Preferred=true
+     [java]     Date Created=1999/01/01
+     [java]     Abbreviation=null
+     [java]     Sort Version=null
+     [java]     Entry Version=null
+     [java]     Thesaurus ID[0]=NLM (1975)
+     [java] Concept[1]=
+     [java]   Concept Name/UI=A-23187:M0353609
+     [java]   Preferred=false
+     [java]   Concept UMLS UI=C0878412
+     [java]   CASN1 Name=null
+     [java]   Registry Number=0
+     [java]   Scope Note=null
+     [java]   Semantic Type=[0]=Organic Chemical:T109
+     [java]   Semantic Type=[1]=Antibiotic:T195
+     [java]   Concept Relation[0]=Relation Name=NRW; Concept 1 UI=M0000001; Concept 2 UI=M0353609; Relational Attribute=null
+     [java]   Term[0]=
+     [java] Name/UI=A-23187:T000001
+     [java]     Concept Preferred=true
+     [java]     Is Permuted=false
+     [java]     Lexical Tag=LAB
+     [java]     Print Flag=false
+     [java]     Record Preferred=false
+     [java]     Date Created=1990/03/08
+     [java]     Abbreviation=null
+     [java]     Sort Version=null
+     [java]     Entry Version=null
+     [java]     Thesaurus ID[0]=NLM (1991)
+     [java]   Term[1]=
+     [java] Name/UI=A 23187:T000001
+     [java]     Concept Preferred=false
+     [java]     Is Permuted=true
+     [java]     Lexical Tag=LAB
+...
+     [java]     Entry Version=null
+     [java]     Thesaurus ID[0]=UNK (19XX)
+     [java] ============================================================
+     [java] Descriptor Class=1(Topical Descriptor)
+     [java] Descriptor=Temefos:D000002
+     [java] Date Created=1999/01/01
+     [java] Date Revised=2005/06/30
+     [java] Date Established=1991/01/01
+     [java] Active Year List=[2006, 2007, 2008, 2009]
+     [java] Allowable Qualifiers[0]=administration & dosage:Q000008 (AD)
+     [java] Allowable Qualifiers[1]=adverse effects:Q000009 (AE)
+     [java] Allowable Qualifiers[2]=analogs & derivatives:Q000031 (AA)
+...
+</pre>
+
+<p>This is basically just running the parser with a handler that
+uses the MeSH object's <code>toString()</code> method to print out
+results.</p>
+
+<h2>Code Walkthrough</h2>
+
+<h3>Simple Parser/Handler Demo</h3>
+
+<p>The code to produce this demo may be found in
+<a href="src/com/aliasi/lingmed/mesh/MeshDemoCommand.java"><code>src/com/aliasi/lingmed/mesh/MeshDemoCommand.java</code></a>.
+</p>
+
+
+<h4>Parsing</h4>
+
+<p>The main method sets up the parser and parses the input:</p>
+
+<pre class="code">
+    public static void main(String[] args) throws IOException, SAXException {
+        File meshGzipFile = new File(args[0]);
+        String fileURL = Files.fileToURLName(meshGzipFile);
+
+        MeshParser parser = new MeshParser();
+        DemoHandler handler = new DemoHandler();
+        parser.setHandler(handler);
+
+        InputStream fileIn = new FileInputStream(meshGzipFile);
+        InputStream gzipIn = new GZIPInputStream(fileIn);
+        InputSource inSource = new InputSource(gzipIn);
+        inSource.setEncoding(Strings.UTF8);
+        
+        parser.parse(inSource);
+
+        System.out.println("Final record count=" + handler.mRecordCount);
+    }
+</pre>
+
+<p>It reads the name of the file form the command line, and converts
+it to an URL.  Then it creates a <code>MeshParser</code> instance, and a
+handler instance, and sets the parser to use the specified handler.
+Next, we create an input stream from the gzipped file, wrap it in
+a GZIP stream, then in an input source (being careful to set the
+char encoding).  Finally, there's a call to the parser's parse
+method. That's it.  The rest of the work's in the handler.</p>
+
+
+<h4>Handlers</h4> 
+
+<p>In general, handlers can carry out arbitrary processing.  They receive
+method calls through callbacks, exactly as is done with the SAX
+parsing framework for XML.</p>
+
+The handler code just prints out the term and increments the
+count:</p>
+
+<pre class="code">
+    static class DemoHandler implements ObjectHandler&lt;Mesh&gt; {
+        int mRecordCount = 0;
+        public void handle(Mesh mesh) {
+            System.out.println(mesh);
+            ++mRecordCount;
+        }
+    }
+</pre>
+
+
+
+<h3>Dictionary Chunker Construction Demo</h3>
+
+<p>The second thing to try is constructing a dictionary-based
+chunker.  Basically, this only requires a new handler, and then
+some code to compile the dictionary chunker to a file.  
+The code to produce this demo may be found in
+<a href="src/com/aliasi/lingmed/mesh/MeshDictionaryCommand.java"><code>src/com/aliasi/lingmed/mesh/MeshDictionaryCommand.java</code></a>.
+</p>
+</p>
+
+<h4>Running the Chunker Constructor</h4>
+
+<p>The chunker constructor may also be run through ant, using
+the same property on the command line:</p>
+
+<pre class="code">
+ant -Dmesh.desc.gz=e:\data\mesh\dist\2009\30June2009\xml\desc2009.gz mesh-dict
+
+mesh-dict:
+     [java] FILE URL=file:///E:\data\mesh\dist\2009\30June2009\xml\desc2009.gz
+
+BUILD SUCCESSFUL
+Total time: 21 seconds
+</pre>
+
+<p>By default, it constructs the chunker at
+the path <code>models/mesh.Chunker</code>.</p>
+
+
+
+<h4>Dictionary-Building Handler</h4>
+
+<p>The main difference between this class and the demo is
+in the handler.  We again use a static nested class:</p>
+
+<pre class="code">
+    static class DictionaryHandler implements ObjectHandler&lt;Mesh&gt; {
+        final MapDictionary&lt;String&gt; mDictionary 
+            = new MapDictionary&lt;String&gt;();
+        public void handle(Mesh mesh) {
+            MeshNameUi descriptor = mesh.descriptor();
+            String headingName = descriptor.name(); 
+            for (MeshConcept concept : mesh.conceptList()) {
+                for (MeshTerm term : concept.termList()) {
+                    MeshNameUi termNameUi = term.nameUi();
+                    String termName = termNameUi.name();
+                    DictionaryEntry&lt;String&gt; entry 
+                        = new DictionaryEntry&lt;String&gt;(termName,headingName);
+                    mDictionary.addEntry(entry);
+                }
+            }
+        }
+        ...
+</pre>
+
+<p>When this handler gets a MeSH object (instance of class <code>Mesh</code>),
+it pulls out the descriptor, then the official heading name from the
+descriptor.  Then, for each concept in the list of concepts, it pulls out
+all the terms.  For each term, it pulls out the term name, then adds it
+to the dictionary, with value equal to the heading name.</p>
+
+<p>The other method in the class compiles the dictionary to a chunker
+in a specified file:</p>
+
+<pre class="code">
+        void compileDictionary(File file) throws IOException {
+            ChunkerSerializer serializer = new ChunkerSerializer(mDictionary);
+            AbstractExternalizable.serializeTo(serializer,file);
+        }
+</pre>
+
+<p>The <code>ChunkerSerializer</code> class uses LingPipe's 
+<code>AbstractExternalizable</code> base class to take control
+of the serialization.  The basic idea is that it serializes the
+dictionary, then when reading back in, uses the serialized
+dictionary to create a dictionary-based chunker:</p>
+
+<pre class="code">
+    static final TokenizerFactory TOKENIZER_FACTORY
+        = IndoEuropeanTokenizerFactory.INSTANCE;
+
+    static class ChunkerSerializer extends AbstractExternalizable {
+        static final long serialVersionUID = 1879892051066513198L;
+        private final MapDictionary<String> mDictionary;
+        public ChunkerSerializer() { 
+            this(null); 
+        }
+        public ChunkerSerializer(MapDictionary<String> dictionary) {
+            mDictionary = dictionary;
+        }
+        @Override
+        public Object read(ObjectInput in) throws IOException, ClassNotFoundException {
+            @SuppressWarnings("unchecked")
+            MapDictionary<String> dictionary = 
+                (MapDictionary<String>) in.readObject();
+            boolean returnAllMatches = true;
+            boolean caseSensitive = false;
+            return new ExactDictionaryChunker(dictionary,TOKENIZER_FACTORY,
+                                              returnAllMatches,caseSensitive);
+        }
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeObject(mDictionary);
+        }
+        
+    }
+</pre>
+
+<p>The write jsut writes the dictionary, which is serializable.  The
+read just reads the dictionary, then returns a dictionary chunker.
+For more information on this serialization/deserialization pattern,
+see the LingPipe documentation for <code>com.aliasi.util.AbstractExternalizable</code>.
+Note that we've included a tokenizer factory instance for use in
+the dictionary chunker.
+</p>
+
+<p>The final piece of the puzzle is the calling main function, but that's
+just like the previous one, with a final call to write out the model, using
+the <code>compileDictionary</code> method listed above.
+</p>
+
+
+<h3>Dictionary Chunker Application</h3>
+
+<p>The final demo applies the dictionary chunker created in the last
+demo to new text.</p>
+
+<h4>Running the Chunker</h4>
+
+<p>The chunker may also be run from ant:</p>
+
+<pre class="code">
+&gt; ant mesh-chunk
+...
+mesh-chunk:
+     [java] Reading model from file=models\mesh.Chunker
+
+     [java] Motrin is a nonsteroidal anti-inflammatory agent with analgesic properties used in the therapy of rheumatism and arthritis.
+     [java] (    0,    6) Motrin [heading=Ibuprofen]
+     [java] (   98,  108) rheumatism [heading=Rheumatic Diseases]
+     [java] (  113,  122) arthritis [heading=Arthritis]
+
+     [java] Rheumatism involves disorders of connective tissue, especially the joints and related structures, characterized by inflammation, degenerat
+ion, or metabolic derangement.
+     [java] (    0,   10) Rheumatism [heading=Rheumatic Diseases]
+     [java] (   33,   50) connective tissue [heading=Connective Tissue]
+     [java] (   44,   50) tissue [heading=Tissues]
+     [java] (   67,   73) joints [heading=Joints]
+     [java] (  115,  127) inflammation [heading=Inflammation]
+
+     [java] The first generations of total ankle replacements (TARs) showed a high rate of early failure. In the last decades, much progress has been
+made in the development of TARs, with the newer generation showing better results. We evaluated TARs implanted with rheumatoid arthritis (RA) or juven
+ile inflammatory arthritis (JIA) as indication. Patients and methods 58 total ankle prostheses (Buechel-Pappas and STAR type) were implanted in patien
+ts with RA (n = 53) or JIA (n = 5) in 54 patients (4 bilateral). After a mean follow-up of 2.7 (1-9) years, all patients were reviewed by two orthoped
+ic surgeons who were not the surgeons who performed the operation. Standard AP and lateral radiographs were taken and a Kofoed ankle score was obtaine
+d; this is a clinical score ranging from 0-100 and consists of sub-scores for pain, disability, and range of motion. Results 2 patients died of unrela
+ted causes. Of the 52 patients who were alive (56 prostheses), 51 implants were still in place and showed no signs of loosening on the most recent rad
+iographs. The mean Kofoed score at follow-up was 73 points (SD 16, range 21-92). 4 patients showed a poor result (score &lt; 50) with persistent pain for
+ which no obvious reason could be found. 5 implants were removed, 4 because of infection and 1 because of aseptic loosening. Interpretation Medium-ter
+m results of the STAR and BP types of TAR in RA were satisfactory. The main reason for failure of the implant was infection.
+     [java] (   10,   21) generations [heading=Family Characteristics]
+     [java] (   31,   36) ankle [heading=Ankle]
+     [java] (   51,   55) TARs [heading=Tars]
+     [java] (  165,  169) TARs [heading=Tars]
+     [java] (  234,  238) TARs [heading=Tars]
+     [java] (  254,  274) rheumatoid arthritis [heading=Arthritis, Rheumatoid]
+     [java] (  265,  274) arthritis [heading=Arthritis]
+     [java] (  305,  314) arthritis [heading=Arthritis]
+     [java] (  336,  344) Patients [heading=Patients]
+     [java] (  349,  356) methods [heading=Methods]
+     [java] (  366,  371) ankle [heading=Ankle]
+     [java] (  372,  382) prostheses [heading=Prostheses and Implants]
+     [java] (  432,  440) patients [heading=Patients]
+     [java] (  479,  487) patients [heading=Patients]
+     [java] (  550,  558) patients [heading=Patients]
+     [java] (  580,  590) orthopedic [heading=Orthopedics]
+     [java] (  600,  603) who [heading=World Health Organization]
+     [java] (  626,  629) who [heading=World Health Organization]
+     [java] (  715,  720) ankle [heading=Ankle]
+     [java] (  816,  820) pain [heading=Pain]
+     [java] (  838,  853) range of motion [heading=Range of Motion, Articular]
+     [java] (  847,  853) motion [heading=Motion]
+     [java] (  865,  873) patients [heading=Patients]
+     [java] (  910,  918) patients [heading=Patients]
+     [java] (  919,  922) who [heading=World Health Organization]
+     [java] (  938,  948) prostheses [heading=Prostheses and Implants]
+     [java] ( 1121, 1129) patients [heading=Patients]
+     [java] ( 1180, 1184) pain [heading=Pain]
+     [java] ( 1267, 1276) infection [heading=Infection]
+     [java] ( 1452, 1461) infection [heading=Infection]
+
+BUILD SUCCESSFUL
+Total time: 4 seconds
+</pre>
+
+<p>What this class does is read the model (in the default location unless
+otherwise overridden) and then applies it to the remaining arguments.  
+What you see is the text being analyzed, followed by chunking output.
+Each line represents a term found in the text.  The numerical ranges
+are the usual start/end notation (numbering from 0, with start, and
+one past the end character).  Next is the actual text span that was
+matched.  Finally, there is the official MeSH heading that matched.
+</p>
+
+<p>The word &quot;Motrin&quot; matches the heading
+for Ibuprofen because of synonyms.</p>
+
+<p>Because we've set this up to be case insensitive, the
+word &quot;who&quot; matches the World Health Organization heading.
+This could be cleaned up by making case sensitivity more fine tuned
+(e.g. by not allowing it for short words), or by removing stop lists,
+or by including part-of-speech taggers (in this context, &quot;who&quot;
+is a relative pronouns).</p>
+
+<p>You can try it with your own input by adding things to the
+<code>build.xml</code> file or running the command outside of Ant.</p>
+
+<h4>Code Walkthrough</h4>
+
+<p>The dictionary chunker code is very simple.  It may be found in <a
+href="src/com/aliasi/lingmed/mesh/MeshChunkCommand.java"><code>src/com/alaisi/lingmed/mesh/MeshChunkCommand.java</a>.
+</p>
+
+
+
+<pre class="code">
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        File chunkerModelFile = new File(args[0]);
+        @SuppressWarnings("unchecked")
+        Chunker chunker = (Chunker) AbstractExternalizable.readObject(chunkerModelFile);
+        for (int i = 1; i < args.length; ++i) {
+            String text = args[i];
+            Chunking chunking = chunker.chunk(text);
+            String chunkedText = chunking.charSequence().toString();
+            System.out.println(chunkedText);
+            for (Chunk chunk : chunking.chunkSet()) {
+                int start = chunk.start();
+                int end = chunk.end();
+                String heading = chunk.type();
+                String textSpan = chunkedText.substring(start,end);
+                System.out.printf("(%5d,%5d) %s [heading=%s]\n",
+                                  start,end,textSpan,heading);
+            }
+        }
+    }
+</pre>
+
+<p>First, it reads the model file name from the command line, 
+then reads the chunker in.  This uses the utility method
+<code>readObject()</code>, which reads a serialized oject from
+a file; it is then cast to LingPipe's <code>Chunker</code> interface.
+</p>
+
+<p>Next, we run through the remaining arguments, then use
+the chunker to chunk them. The rest just prints out the results,
+going through the chunks and extracting their start, end,
+heading and text and then printing them.</p>
+
 
 </div><!-- content -->
 

@@ -19,6 +19,7 @@ public class MeshChunkCommand {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         File chunkerModelFile = new File(args[0]);
         System.out.println("Reading model from file=" + chunkerModelFile);
+        @SuppressWarnings("unchecked")
         Chunker chunker = (Chunker) AbstractExternalizable.readObject(chunkerModelFile);
         for (int i = 1; i < args.length; ++i) {
             String text = args[i];
