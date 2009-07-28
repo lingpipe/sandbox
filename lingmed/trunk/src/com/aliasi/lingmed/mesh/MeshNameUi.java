@@ -26,7 +26,7 @@ public class MeshNameUi {
     private final String mUi;
 
     MeshNameUi(String name,
-                      String ui) {
+               String ui) {
         mName = name;
         mUi = ui;
     }

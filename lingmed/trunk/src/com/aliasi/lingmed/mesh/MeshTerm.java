@@ -70,7 +70,7 @@ public class MeshTerm {
              String lexicalTag,
              boolean printFlag,
              boolean isRecordPreferred) {
-        mNameUi = new MeshNameUi(referenceUi,referenceString);
+        mNameUi = new MeshNameUi(referenceString,referenceUi);
         mDateCreated = dateCreated;
         mAbbreviation = abbreviation.length() == 0 ? null : abbreviation;
         mSortVersion = sortVersion.length() == 0 ? null : sortVersion;

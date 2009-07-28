@@ -36,6 +36,10 @@ import org.xml.sax.SAXException;
  */
 public class MeshDemoCommand {
 
+    private MeshDemoCommand() { 
+        /* don't construct */ 
+    }
+
     /**
      * Main method from which to run the demo.  See the class documentation
      * for usage notes.

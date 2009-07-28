@@ -670,10 +670,29 @@
 <target name="mesh"
         depends="jar">
   <java classname="com.aliasi.lingmed.mesh.MeshDemoCommand"
-        maxMemory="2G"
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="${mesh.desc.gz}"/>
+  </java>
+</target>
+
+<target name="mesh-dict"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.mesh.MeshDictionaryCommand"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${mesh.desc.gz}"/>
+    <arg value="${mesh.dict}"/>
+  </java>
+</target>
+
+<target name="mesh-anno"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.mesh.MeshDictCommand"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${mesh.dict}"/>
+    <arg value="${demo.data}"/>
   </java>
 </target>
 
