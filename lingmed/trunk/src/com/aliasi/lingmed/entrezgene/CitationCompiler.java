@@ -207,11 +207,15 @@ public class CitationCompiler extends AbstractCommand {
     private void outputCitation(MedlineCitation citation) throws FileNotFoundException {
         String pmid = citation.pmid();
         PrintStream citationOut = new PrintStream(new FileOutputStream(new File(mCitationDir,pmid+".html")));
-        citationOut.println("<H4>PubMed ID: "+citation.pmid()+" title</H4>");
-        citationOut.println(citation.article().articleTitleText());
+	citationOut.println("<HTML><BODY>");
+        citationOut.println("<H4>PubMed ID: " + citation.pmid() + "</H4>");
+        citationOut.println("<H4>" + citation.article().articleTitleText() + "</H4>");
         if (citation.article().abstrct() != null) {
+	    citationOut.println("<P>");
             citationOut.println(citation.article().abstrct().textWithoutTruncationMarker());
+	    citationOut.println("</P>");
         }
+	citationOut.println("</BODY></HTML>");
         citationOut.close();
     }
 
