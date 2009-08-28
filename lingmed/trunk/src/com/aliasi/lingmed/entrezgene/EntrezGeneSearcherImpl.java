@@ -1,4 +1,4 @@
- /*
+/*
  * LingPipe v. 2.0
  * Copyright (C) 2003-5 Alias-i
  *
@@ -54,7 +54,7 @@ public class EntrezGeneSearcherImpl extends DaoSearcherImpl<EntrezGene> implemen
      */
     public EntrezGeneSearcherImpl(Codec<EntrezGene> codec, 
                                   Searcher searcher) throws IOException {
-	super(codec, searcher);
+        super(codec, searcher);
     }
  
     /**      
@@ -62,7 +62,7 @@ public class EntrezGeneSearcherImpl extends DaoSearcherImpl<EntrezGene> implemen
      */
     public SearchResults<EntrezGene> getGenesForPubmedId(String pubmedId) throws DaoException {
         Term term = new Term(Fields.ENTREZGENE_PMID_FIELD,pubmedId);
-	Query query = new TermQuery(term);
-	return search(query);
+        Query query = new TermQuery(term);
+        return search(query);
     }
 }
