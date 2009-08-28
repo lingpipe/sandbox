@@ -37,8 +37,10 @@
 <property name="medline.simple.codec.class"
           value="com.aliasi.lingmed.medline.MedlineCodec"/>
 
+<!-- <property name="entrezgene.dist.file"
+          value="${nlm.data}/entrezgene/All_Data.xml.gz"/> -->
 <property name="entrezgene.dist.file"
-          value="${nlm.data}/entrezgene/All_Data.xml.gz"/>
+          value="${nlm.data}/entrezgene/xml/fly.xml"/>
 
 <property name="entrezgene.lucene.index.dir"
           value="${lucene.dir}/entrezgeneIndex"/>
@@ -643,6 +645,7 @@
     </classpath>
   </java>
 </target>
+
 
 <target name="count-entrez-refs"
         description="gen histogram of number of unique pubmed refs per gene"
