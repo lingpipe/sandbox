@@ -5,7 +5,7 @@
 <property file="build.properties"/>
 
 <property name="lucene.dir"
-          value="/data/lingmed/lucene" />
+          value="/data/users/mem26/data/lucene" />
 
 <property name="rmi.jars"
           value="file:${rmi.absolute.base.dir}/${lucene-jar}"/>
@@ -37,13 +37,11 @@
 <property name="medline.simple.codec.class"
           value="com.aliasi.lingmed.medline.MedlineCodec"/>
 
-<!-- <property name="entrezgene.dist.file"
-          value="${nlm.data}/entrezgene/All_Data.xml.gz"/> -->
 <property name="entrezgene.dist.file"
-          value="${nlm.data}/entrezgene/xml/fly.xml"/>
+          value="${nlm.data}/entrezgene/xml/yeast.xml"/>
 
 <property name="entrezgene.lucene.index.dir"
-          value="${lucene.dir}/entrezgeneIndex"/>
+          value="${lucene.dir}/entrezgeneYeast"/>
 
 <property name="homologene.dist.file"
           value="${nlm.data}/homologene/homologene.xml"/>
@@ -58,7 +56,7 @@
           value="${lucene.dir}/omimIndex"/>
 
 <property name="mxMem" 
-          value="1250M" />
+          value="6G" />
 
 <property name="version" 
           value="1.3"/>
@@ -334,7 +332,7 @@
 <!-- **** LingBlast, GeneLinkage **** -->
 
 <property name="lingblast.dir"
-          value="/data/lingblast"/>
+          value="/data/mem26/data/lingblast"/>
 
 <property name="dictionary"
           value="${lingblast.dir}/exactDictEntrezGene"/>
@@ -351,11 +349,11 @@
     <classpath refid="classpath.standard"/>
     <arg value="-host=localhost"/>
     <arg value="-dictFile=${dictionary}"/>
-    <arg value="-medline=${medline.lucene.index}"/>
-    <arg value="-entrezgene=${entrezgene.lucene.index}"/>
+    <arg value="-medline=${medline.lucene.index.dir}"/>
+    <arg value="-entrezgene=${entrezgene.lucene.index.dir}"/>
     <arg value="-maxPubmedHitsPerAlias=50000"/>
-    <arg value="-genHtml=false"/>
-    <arg value="-allowedNames=/data/lingblast/hifreq_names.txt"/>
+    <arg value="-genHtml=true"/>
+    <arg value="-allowedNames=${lingblast.dir}/hifreq_names.txt"/>
   </java>
 </target>
 
@@ -367,8 +365,8 @@
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="-host=localhost"/>
-    <arg value="-medline=${medline.lucene.index}"/>
-    <arg value="-entrezgene=${entrezgene.lucene.index}"/>
+    <arg value="-medline=${medline.lucene.index.dir}"/>
+    <arg value="-entrezgene=${entrezgene.lucene.index.dir}"/>
     <arg value="-modelDir=${model.dir}"/>
     <arg value="-genHtml=true"/>
   </java>
@@ -701,6 +699,20 @@
     <arg value="Motrin is a nonsteroidal anti-inflammatory agent with analgesic properties used in the therapy of rheumatism and arthritis."/>
     <arg value="Rheumatism involves disorders of connective tissue, especially the joints and related structures, characterized by inflammation, degeneration, or metabolic derangement."/>
     <arg value="The first generations of total ankle replacements (TARs) showed a high rate of early failure. In the last decades, much progress has been made in the development of TARs, with the newer generation showing better results. We evaluated TARs implanted with rheumatoid arthritis (RA) or juvenile inflammatory arthritis (JIA) as indication. Patients and methods 58 total ankle prostheses (Buechel-Pappas and STAR type) were implanted in patients with RA (n = 53) or JIA (n = 5) in 54 patients (4 bilateral). After a mean follow-up of 2.7 (1-9) years, all patients were reviewed by two orthopedic surgeons who were not the surgeons who performed the operation. Standard AP and lateral radiographs were taken and a Kofoed ankle score was obtained; this is a clinical score ranging from 0-100 and consists of sub-scores for pain, disability, and range of motion. Results 2 patients died of unrelated causes. Of the 52 patients who were alive (56 prostheses), 51 implants were still in place and showed no signs of loosening on the most recent radiographs. The mean Kofoed score at follow-up was 73 points (SD 16, range 21-92). 4 patients showed a poor result (score &lt; 50) with persistent pain for which no obvious reason could be found. 5 implants were removed, 4 because of infection and 1 because of aseptic loosening. Interpretation Medium-term results of the STAR and BP types of TAR in RA were satisfactory. The main reason for failure of the implant was infection."/>
+  </java>
+</target>
+
+<target name="compileCuratedCitations"
+        description="compile corpus of all pubmed citations mentioned in entrez"
+        depends="jar">
+  <java classname="com.aliasi.lingmed.entrezgene.CitationCompiler"
+        maxMemory="${mxMem}"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="-medline=/data/users/mem26/data/lucene/medline2009"/>
+    <arg value="-entrezgene=/data/users/mem26/data/lucene/entrezgeneYeast"/>
+    <arg value="-citationDir=/data/users/mem26/data/corpus/yeast"/>
+    <arg value="-citationIndex=/data/users/mem26/data/lucene/medlineCuratedYeast"/>
   </java>
 </target>
 

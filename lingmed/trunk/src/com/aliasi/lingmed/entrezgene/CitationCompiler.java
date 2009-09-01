@@ -17,6 +17,7 @@
 package com.aliasi.lingmed.entrezgene;
 
 import com.aliasi.lingmed.dao.*;
+import com.aliasi.lingmed.lucene.Fields;
 import com.aliasi.lingmed.medline.*;
 import com.aliasi.lingmed.server.*;
 import com.aliasi.lingmed.utils.FileUtils;
@@ -39,9 +40,14 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.FSDirectory;
 
 import org.apache.log4j.Logger;
@@ -58,23 +64,13 @@ import org.apache.log4j.Logger;
  * <dd>Name of directory in which to store the corpus.
  * </dd>
  *
- * <dt><code>-host</code></dt>
- * <dd>Name of Lucene search server.
- * If value is &quot;localhost&quot; then search 
- * the local Lucene indexes,
- * else search remote Lucene indexes (via RMI).
- * </dd>
- * </dl>
- *
  * <dl>
  * <dt><code>-entrezgene</code></dt>
- * <dd>Name of remote entrezgene search service, or path to
- * local Lucene entrezgene index dir.
+ * <dd>Path to Lucene entrezgene index dir.
  * </dd>
  *
  * <dt><code>-medline</code></dt>
- * <dd>Name of remote medline search service, or path to
- * local Lucene medline index dir.
+ * <dd>Path to Lucene medline index dir.
  * </dd>
  *
  * <dt><code>-citationdir</code></dt>
@@ -84,11 +80,6 @@ import org.apache.log4j.Logger;
  * <P>The following arguments are optional:
  *
  * <dl>
- * <dt><code>-entrezgene</code></dt>
- * <dd>Name of remote entrezgene search service, or path to
- * local Lucene entrezgene index dir.
- * </dd>
- *
  * <dt><code>-citationIndex</code></dt>
  * <dd>Name of dedicated Lucene index for curated abstracts.
  * </dd>
@@ -110,17 +101,17 @@ public class CitationCompiler extends AbstractCommand {
     private final Logger mLogger
         = Logger.getLogger(CitationCompiler.class);
 
-    private String mSearchHost;
     private String mEntrezService;
     private String mMedlineService;
+    private Searcher mMedlineIndexSearcher;
 
     private File mCitationDir;
     private String mCitationDirPath;
 
     private File mCitationIndex;
     private String mCitationIndexName;
-    private MedlineIndexer mCitationIndexer;
     private MedlineCodec mCodec = new SearchableMedlineCodec();
+    private MedlineIndexer mCitationIndexer;
     private IndexWriter mIndexWriter;
 
 
@@ -132,7 +123,6 @@ public class CitationCompiler extends AbstractCommand {
     private EntrezGeneSearcher mEntrezGeneSearcher;
     private MedlineSearcher mMedlineSearcher;
 
-    private final static String SEARCH_HOST = "host";
     private final static String MEDLINE_SERVICE = "medline";
     private final static String ENTREZGENE_SERVICE = "entrezgene";
     private final static String CITATION_DIR = "citationDir";
@@ -148,7 +138,6 @@ public class CitationCompiler extends AbstractCommand {
 
     private CitationCompiler(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
-        mSearchHost = getExistingArgument(SEARCH_HOST);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mEntrezService = getExistingArgument(ENTREZGENE_SERVICE);
         mCitationDirPath = getExistingArgument(CITATION_DIR);
@@ -156,6 +145,15 @@ public class CitationCompiler extends AbstractCommand {
         mMaxGeneHits = getArgumentInt(MAX_GENE_HITS);
 
         reportParameters();
+
+	FileUtils.checkIndex(mMedlineService,false);
+	mMedlineIndexSearcher = new IndexSearcher(mMedlineService);
+	mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),mMedlineIndexSearcher);
+
+	FileUtils.checkIndex(mEntrezService,false);
+	Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
+	mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
+
 
         mCitationDir = new File(mCitationDirPath);
         FileUtils.ensureDirExists(mCitationDir);
@@ -168,31 +166,10 @@ public class CitationCompiler extends AbstractCommand {
                                            new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
             mIndexWriter.setRAMBufferSizeMB(RAM_BUF_SIZE);
             mIndexWriter.setMergeFactor(MERGE_FACTOR_HI);
-            mCitationIndexer = new MedlineIndexer(mIndexWriter,mCodec);
+            mCitationIndexer = new MedlineIndexer(mIndexWriter,mMedlineIndexSearcher);
             mLogger.info("instantiated citation indexer");
         }
 
-        if (mSearchHost.equals("localhost")) {
-            FileUtils.checkIndex(mMedlineService,false);
-            Searcher medlineLocalSearcher = new IndexSearcher(mMedlineService);
-            mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
-
-            FileUtils.checkIndex(mEntrezService,false);
-            Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
-            mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
-
-        } else {
-            SearchClient medlineClient = new SearchClient(mMedlineService,mSearchHost,1099);
-            Searcher medlineRemoteSearcher = medlineClient.getSearcher();
-            mMedlineSearcher = 
-                new MedlineSearcherImpl(new MedlineCodec(),medlineRemoteSearcher);
-
-            SearchClient egClient = new SearchClient(mEntrezService,mSearchHost,1099);
-            Searcher egRemoteSearcher = egClient.getSearcher();
-            mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egRemoteSearcher);
-
-
-        }
         mLogger.info("instantiated lucene searchers");
     }
 
@@ -200,7 +177,6 @@ public class CitationCompiler extends AbstractCommand {
         mLogger.info("CitationCompiler "
                      + "\n\tCitation Directory (output dir)=" + mCitationDirPath
                      + "\n\tmax gene hits per pubmed article=" + mMaxGeneHits
-                     + "\n\tsearch host=" + mSearchHost
                      + "\n\tcurated citation index=" + mCitationIndexName
                      );
     }
@@ -210,7 +186,7 @@ public class CitationCompiler extends AbstractCommand {
         Set<String> allPmids = new HashSet<String>();
         try {
             for (EntrezGene entrezGene : mEntrezGeneSearcher) {
-                mLogger.info("processing EntrezGene Id: "+entrezGene.getGeneId());
+		//                mLogger.info("processing EntrezGene Id: "+entrezGene.getGeneId());
                 String[] pubMedIds = entrezGene.getUniquePubMedRefs();
                 for (String pmid : pubMedIds) {
                     SearchResults<EntrezGene> hits = mEntrezGeneSearcher.getGenesForPubmedId(pmid);
@@ -226,11 +202,11 @@ public class CitationCompiler extends AbstractCommand {
                     if (mLogger.isDebugEnabled())
                         mLogger.debug("pubmed id: "+pmid+" not found in index");
                     continue;
-                }
-                outputCitation(citation);
-                if (mCitationIndexName != null) {
-                    mCitationIndexer.handle(citation);
-                }
+		}
+		outputCitation(citation);
+		if (mCitationIndexName != null) {
+		    mCitationIndexer.handle(citation);
+		}
             }
             if (mCitationIndexName != null) {
                 mLogger.info("commit Lucene index");
@@ -274,21 +250,28 @@ public class CitationCompiler extends AbstractCommand {
     static class MedlineIndexer implements MedlineHandler {
         private final Logger mLogger
             = Logger.getLogger(MedlineIndexer.class);
-        final IndexWriter mIndexWriter;
-        final MedlineCodec mMedlineCodec;
+        private final IndexWriter mIndexWriter;
+        private final Searcher mSearcher;
 
-        public MedlineIndexer(IndexWriter indexWriter, MedlineCodec codec) 
-            throws IOException {
+        public MedlineIndexer(IndexWriter indexWriter, Searcher searcher) throws IOException {
             mIndexWriter = indexWriter;
-            mMedlineCodec = codec;
+            mSearcher = searcher;
         }
 
         public void handle(MedlineCitation citation) {
-            Document doc = mMedlineCodec.toDocument(citation);
-            try {
-                mIndexWriter.addDocument(doc);  
+	    String pmid = citation.pmid();
+	    try {
+		Term term = new Term(Fields.ID_FIELD,pmid);
+		Query query = new TermQuery(term);
+		TopDocs results = mSearcher.search(query,1);
+		if (results.totalHits > 0) {
+		    Document doc = mSearcher.doc(results.scoreDocs[0].doc);
+		    mIndexWriter.addDocument(doc);  
+		} else {
+		    mLogger.info("cannot find citation for pmid: " + pmid);
+		}
             } catch (IOException e) {
-                mLogger.warn("handle citation: index access error, term: "+citation.pmid());
+                mLogger.warn("handle citation: index access error for pmid: " + pmid);
             }
         }
 
