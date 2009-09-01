@@ -146,13 +146,13 @@ public class CitationCompiler extends AbstractCommand {
 
         reportParameters();
 
-	FileUtils.checkIndex(mMedlineService,false);
-	mMedlineIndexSearcher = new IndexSearcher(mMedlineService);
-	mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),mMedlineIndexSearcher);
+        FileUtils.checkIndex(mMedlineService,false);
+        mMedlineIndexSearcher = new IndexSearcher(mMedlineService);
+        mMedlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),mMedlineIndexSearcher);
 
-	FileUtils.checkIndex(mEntrezService,false);
-	Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
-	mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
+        FileUtils.checkIndex(mEntrezService,false);
+        Searcher egLocalSearcher = new IndexSearcher(mEntrezService);
+        mEntrezGeneSearcher = new EntrezGeneSearcherImpl(new EntrezGeneCodec(),egLocalSearcher);
 
 
         mCitationDir = new File(mCitationDirPath);
@@ -166,7 +166,7 @@ public class CitationCompiler extends AbstractCommand {
                                            new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
             mIndexWriter.setRAMBufferSizeMB(RAM_BUF_SIZE);
             mIndexWriter.setMergeFactor(MERGE_FACTOR_HI);
-            mCitationIndexer = new MedlineIndexer(mIndexWriter,mMedlineIndexSearcher);
+            mCitationIndexer = new MedlineIndexer(mIndexWriter);
             mLogger.info("instantiated citation indexer");
         }
 
@@ -186,7 +186,7 @@ public class CitationCompiler extends AbstractCommand {
         Set<String> allPmids = new HashSet<String>();
         try {
             for (EntrezGene entrezGene : mEntrezGeneSearcher) {
-		//                mLogger.info("processing EntrezGene Id: "+entrezGene.getGeneId());
+                //                mLogger.info("processing EntrezGene Id: "+entrezGene.getGeneId());
                 String[] pubMedIds = entrezGene.getUniquePubMedRefs();
                 for (String pmid : pubMedIds) {
                     SearchResults<EntrezGene> hits = mEntrezGeneSearcher.getGenesForPubmedId(pmid);
@@ -202,11 +202,11 @@ public class CitationCompiler extends AbstractCommand {
                     if (mLogger.isDebugEnabled())
                         mLogger.debug("pubmed id: "+pmid+" not found in index");
                     continue;
-		}
-		outputCitation(citation);
-		if (mCitationIndexName != null) {
-		    mCitationIndexer.handle(citation);
-		}
+                }
+                outputCitation(citation);
+                if (mCitationIndexName != null) {
+                    mCitationIndexer.handle(citation);
+                }
             }
             if (mCitationIndexName != null) {
                 mLogger.info("commit Lucene index");
@@ -251,25 +251,17 @@ public class CitationCompiler extends AbstractCommand {
         private final Logger mLogger
             = Logger.getLogger(MedlineIndexer.class);
         private final IndexWriter mIndexWriter;
-        private final Searcher mSearcher;
+        private final SearchableMedlineCodec codec = new SearchableMedlineCodec();
 
-        public MedlineIndexer(IndexWriter indexWriter, Searcher searcher) throws IOException {
+        public MedlineIndexer(IndexWriter indexWriter) throws IOException {
             mIndexWriter = indexWriter;
-            mSearcher = searcher;
         }
 
         public void handle(MedlineCitation citation) {
-	    String pmid = citation.pmid();
-	    try {
-		Term term = new Term(Fields.ID_FIELD,pmid);
-		Query query = new TermQuery(term);
-		TopDocs results = mSearcher.search(query,1);
-		if (results.totalHits > 0) {
-		    Document doc = mSearcher.doc(results.scoreDocs[0].doc);
-		    mIndexWriter.addDocument(doc);  
-		} else {
-		    mLogger.info("cannot find citation for pmid: " + pmid);
-		}
+            String pmid = citation.pmid();
+            try {
+                Document doc = codec.toDocument(citation);
+                mIndexWriter.addDocument(doc);  
             } catch (IOException e) {
                 mLogger.warn("handle citation: index access error for pmid: " + pmid);
             }
