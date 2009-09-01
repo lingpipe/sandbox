@@ -61,19 +61,31 @@ import org.apache.log4j.Logger;
  * </dd>
  * </dl>
  *
+ * <dl>
+ * <dt><code>-entrezgene</code></dt>
+ * <dd>Name of remote entrezgene search service, or path to
+ * local Lucene entrezgene index dir.
+ * </dd>
+ *
+ * <dt><code>-medline</code></dt>
+ * <dd>Name of remote medline search service, or path to
+ * local Lucene medline index dir.
+ * </dd>
+ *
+ * <dt><code>-citationdir</code></dt>
+ * <dd>Name of directory for html versions of Pubmed Citations.
+ * </dd>
+ *
  * <P>The following arguments are optional:
  *
  * <dl>
  * <dt><code>-entrezgene</code></dt>
  * <dd>Name of remote entrezgene search service, or path to
  * local Lucene entrezgene index dir.
- * Defaults to &quot;entrezgene&quot;.
  * </dd>
  *
- * <dt><code>-medline</code></dt>
- * <dd>Name of remote medline search service, or path to
- * local Lucene medline index dir.
- * Defaults to &quot;medline&quot;.
+ * <dt><code>-citationIndex</code></dt>
+ * <dd>Name of dedicated Lucene index for curated abstracts.
  * </dd>
  *
  * <dt><code>-maxGeneHits</code></dt>
@@ -100,7 +112,11 @@ public class CitationCompiler extends AbstractCommand {
     private File mCitationDir;
     private String mCitationDirPath;
 
-    private int mNGram;
+    private File mCitationIndex;
+    private String mCitationIndexName;
+    private ObjectHandler<MedlineCitation> mCitationIndexer;
+    private MedlineCodec mCodec = new SearchableMedlineCodec();
+
     private int mMaxGeneHits;
 
     private EntrezGeneSearcher mEntrezGeneSearcher;
@@ -110,6 +126,7 @@ public class CitationCompiler extends AbstractCommand {
     private final static String MEDLINE_SERVICE = "medline";
     private final static String ENTREZGENE_SERVICE = "entrezgene";
     private final static String CITATION_DIR = "citationDir";
+    private final static String CITATION_INDEX = "citationIndex";
     private final static String MAX_GENE_HITS = "maxGeneHits";
 
     private final static Properties DEFAULT_PARAMS = new Properties();
@@ -125,12 +142,18 @@ public class CitationCompiler extends AbstractCommand {
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mEntrezService = getExistingArgument(ENTREZGENE_SERVICE);
         mCitationDirPath = getExistingArgument(CITATION_DIR);
+        mCitationIndexName = getArgument(CITATION_INDEX);
         mMaxGeneHits = getArgumentInt(MAX_GENE_HITS);
 
         reportParameters();
 
         mCitationDir = new File(mCitationDirPath);
         FileUtils.ensureDirExists(mCitationDir);
+
+	if (mCitationIndexName != null) {
+	    mCitationIndex = new File(mCitationIndexName);
+	    FileUtiles.ensureDirExists(mCitationIndex);
+	}
 
         if (mSearchHost.equals("localhost")) {
             FileUtils.checkIndex(mMedlineService,false);
@@ -161,6 +184,7 @@ public class CitationCompiler extends AbstractCommand {
                      + "\n\tCitation Directory (output dir)=" + mCitationDirPath
                      + "\n\tmax gene hits per pubmed article=" + mMaxGeneHits
                      + "\n\tsearch host=" + mSearchHost
+                     + "\n\tcurated citation index=" + mCitationIndexName
                      );
     }
 
@@ -173,7 +197,6 @@ public class CitationCompiler extends AbstractCommand {
                 processCitations(entrezGene,allPmids);
             }
             mLogger.info("total unique pubmed references: " + allPmids.size());
-            // use allPmids to compile special Lucene index?
         } catch (Exception e) {
             mLogger.warn("Unexpected Exception: "+e.getMessage());
             mLogger.warn("stack trace: "+Logging.logStackTrace(e));
@@ -182,6 +205,9 @@ public class CitationCompiler extends AbstractCommand {
             e2.setStackTrace(e.getStackTrace());
             throw e2;
         }
+	// index citations:  for each pmid in set allPmids
+	// MedlineCitation citation = mMedlineSearcher.getById(pmid);
+	// see indexMedline for handler...
     }
 
     private void processCitations(EntrezGene entrezGene,
