@@ -25,6 +25,7 @@ import com.aliasi.lingmed.utils.Logging;
 import com.aliasi.medline.Abstract;
 import com.aliasi.medline.Article;
 import com.aliasi.medline.MedlineCitation;
+import com.aliasi.medline.MedlineHandler;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Arrays;
@@ -36,8 +37,12 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.store.FSDirectory;
 
 import org.apache.log4j.Logger;
 
@@ -114,8 +119,13 @@ public class CitationCompiler extends AbstractCommand {
 
     private File mCitationIndex;
     private String mCitationIndexName;
-    private ObjectHandler<MedlineCitation> mCitationIndexer;
+    private MedlineIndexer mCitationIndexer;
     private MedlineCodec mCodec = new SearchableMedlineCodec();
+    private IndexWriter mIndexWriter;
+
+
+    private final static double RAM_BUF_SIZE = 1000d;  // size of in-memory index buffer, in MB
+    private final static int MERGE_FACTOR_HI = 100;  // higher number = fewer merges
 
     private int mMaxGeneHits;
 
@@ -150,10 +160,17 @@ public class CitationCompiler extends AbstractCommand {
         mCitationDir = new File(mCitationDirPath);
         FileUtils.ensureDirExists(mCitationDir);
 
-	if (mCitationIndexName != null) {
-	    mCitationIndex = new File(mCitationIndexName);
-	    FileUtiles.ensureDirExists(mCitationIndex);
-	}
+        if (mCitationIndexName != null) {
+            mCitationIndex = new File(mCitationIndexName);
+            FileUtils.ensureDirExists(mCitationIndex);
+            mIndexWriter = new IndexWriter(FSDirectory.getDirectory(mCitationIndex),
+                                           mCodec.getAnalyzer(),
+                                           new IndexWriter.MaxFieldLength(IndexWriter.DEFAULT_MAX_FIELD_LENGTH));
+            mIndexWriter.setRAMBufferSizeMB(RAM_BUF_SIZE);
+            mIndexWriter.setMergeFactor(MERGE_FACTOR_HI);
+            mCitationIndexer = new MedlineIndexer(mIndexWriter,mCodec);
+            mLogger.info("instantiated citation indexer");
+        }
 
         if (mSearchHost.equals("localhost")) {
             FileUtils.checkIndex(mMedlineService,false);
@@ -194,9 +211,35 @@ public class CitationCompiler extends AbstractCommand {
         try {
             for (EntrezGene entrezGene : mEntrezGeneSearcher) {
                 mLogger.info("processing EntrezGene Id: "+entrezGene.getGeneId());
-                processCitations(entrezGene,allPmids);
+                String[] pubMedIds = entrezGene.getUniquePubMedRefs();
+                for (String pmid : pubMedIds) {
+                    SearchResults<EntrezGene> hits = mEntrezGeneSearcher.getGenesForPubmedId(pmid);
+                    if (mLogger.isDebugEnabled())
+                        mLogger.debug("pubmed id: "+pmid+"\t hits: "+hits.size());
+                    if (hits.size() <= mMaxGeneHits) { allPmids.add(pmid); }
+                }
             }
             mLogger.info("total unique pubmed references: " + allPmids.size());
+            for (String pmid : allPmids) {
+                MedlineCitation citation = mMedlineSearcher.getById(pmid);
+                if (citation == null) {
+                    if (mLogger.isDebugEnabled())
+                        mLogger.debug("pubmed id: "+pmid+" not found in index");
+                    continue;
+                }
+                outputCitation(citation);
+                if (mCitationIndexName != null) {
+                    mCitationIndexer.handle(citation);
+                }
+            }
+            if (mCitationIndexName != null) {
+                mLogger.info("commit Lucene index");
+                mCitationIndexer.close();
+                mIndexWriter.optimize();
+                mIndexWriter.close();
+            }
+            mLogger.info("Processing complete.");
+
         } catch (Exception e) {
             mLogger.warn("Unexpected Exception: "+e.getMessage());
             mLogger.warn("stack trace: "+Logging.logStackTrace(e));
@@ -205,49 +248,57 @@ public class CitationCompiler extends AbstractCommand {
             e2.setStackTrace(e.getStackTrace());
             throw e2;
         }
-	// index citations:  for each pmid in set allPmids
-	// MedlineCitation citation = mMedlineSearcher.getById(pmid);
-	// see indexMedline for handler...
     }
 
-    private void processCitations(EntrezGene entrezGene,
-                                  Set<String> allPmids) throws DaoException, FileNotFoundException {
-        String[] pubMedIds = entrezGene.getUniquePubMedRefs();
-        for (String pmid : pubMedIds) {
-            SearchResults<EntrezGene> hits = mEntrezGeneSearcher.getGenesForPubmedId(pmid);
-            if (mLogger.isDebugEnabled())
-                mLogger.debug("pubmed id: "+pmid+"\t hits: "+hits.size());
-            if (hits.size() > mMaxGeneHits) continue;
-            if (allPmids.contains(pmid)) continue;
-            allPmids.add(pmid);
-            MedlineCitation citation = mMedlineSearcher.getById(pmid);
-            if (citation == null) {
-                if (mLogger.isDebugEnabled())
-                    mLogger.debug("pubmed id: "+pmid+" not found in index");
-                continue;
-            }
-            outputCitation(citation);
-        }
-    }
 
     private void outputCitation(MedlineCitation citation) throws FileNotFoundException {
         String pmid = citation.pmid();
         PrintStream citationOut = new PrintStream(new FileOutputStream(new File(mCitationDir,pmid+".html")));
-	citationOut.println("<HTML><BODY>");
+        citationOut.println("<HTML><BODY>");
         citationOut.println("<H4>PubMed ID: " + citation.pmid() + "</H4>");
         citationOut.println("<H4>" + citation.article().articleTitleText() + "</H4>");
         if (citation.article().abstrct() != null) {
-	    citationOut.println("<P>");
+            citationOut.println("<P>");
             citationOut.println(citation.article().abstrct().textWithoutTruncationMarker());
-	    citationOut.println("</P>");
+            citationOut.println("</P>");
         }
-	citationOut.println("</BODY></HTML>");
+        citationOut.println("</BODY></HTML>");
         citationOut.close();
     }
 
     public static void main(String[] args) throws Exception {
         CitationCompiler compiler = new CitationCompiler(args);
         compiler.run();
+    }
+
+    static class MedlineIndexer implements MedlineHandler {
+        private final Logger mLogger
+            = Logger.getLogger(MedlineIndexer.class);
+        final IndexWriter mIndexWriter;
+        final MedlineCodec mMedlineCodec;
+
+        public MedlineIndexer(IndexWriter indexWriter, MedlineCodec codec) 
+            throws IOException {
+            mIndexWriter = indexWriter;
+            mMedlineCodec = codec;
+        }
+
+        public void handle(MedlineCitation citation) {
+            Document doc = mMedlineCodec.toDocument(citation);
+            try {
+                mIndexWriter.addDocument(doc);  
+            } catch (IOException e) {
+                mLogger.warn("handle citation: index access error, term: "+citation.pmid());
+            }
+        }
+
+        public void delete(String pmid) { 
+            // do nothing 
+        }
+
+        public void close() throws IOException { 
+            mIndexWriter.commit();
+        }
     }
 
 
