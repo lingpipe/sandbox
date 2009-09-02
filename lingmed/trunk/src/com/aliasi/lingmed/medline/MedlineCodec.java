@@ -101,6 +101,30 @@ public class MedlineCodec implements Codec<MedlineCitation> {
         return null;
     }
 
+    /* toRecodableObject
+	creates MedlineCitation object that contains rawXML field,
+	so we can codec can convert it back to a Document
+	(document always stores XML_FIELD) 
+    */
+    public MedlineCitation toRecodableObject(Document d) { 
+        String xml = d.get(Fields.XML_FIELD);
+        if (xml == null) return null; // trying to convert filename doc ??
+        InputSource is = new InputSource(new StringReader(xml)); 
+        MedlineParser parser = new MedlineParser(true);
+        ExtractionHandler handler = new ExtractionHandler();
+        try {
+            parser.parse(is,handler);
+            return handler.mCitation;
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace(System.err);
+        } catch (SAXException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace(System.err);
+        }
+        return null;
+    }
+
     public LuceneAnalyzer getAnalyzer() {
         return MedlineAnalyzer.INSTANCE;
     }
