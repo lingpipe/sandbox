@@ -194,7 +194,7 @@ public class IndexEntrezGene extends AbstractCommand {
     static class EntrezGeneIndexer implements ObjectHandler<EntrezGene> {
         final IndexWriter mIndexWriter;
         final EntrezGeneCodec mGeneCodec;
-		final String mType;
+	final String mType;
 
         public EntrezGeneIndexer(IndexWriter indexWriter, EntrezGeneCodec codec, String type) {
             mIndexWriter = indexWriter;
