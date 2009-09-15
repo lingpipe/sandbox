@@ -21,9 +21,14 @@
 </target>
 
 
-<path id="classpath.standard">
+<path id="classpath.original">
   <pathelement location="build/classes"/>
   <pathelement location="lib/lingpipe-2.3.0.jar"/> 
+</path>
+
+<path id="classpath.standard">
+  <pathelement location="build/classes"/>
+  <pathelement location="lib/lingpipe-3.8.2.jar"/>
 </path>
 
 <target name="compile">
@@ -75,7 +80,6 @@
   <java classname="NamedEntityRecognitionConf"
         maxmemory="1300M"
         fork="true">
-    <jvmarg value="-server"/>
     <classpath refid="classpath.standard"/>
     <arg value="unpacked\train\bc2geneMention\train\train.in"/> 
     <arg value="unpacked\train\bc2geneMention\train\GENE.eval"/> 
@@ -87,6 +91,28 @@
 
 <target name="bake"
         depends="unpack,run1,run2,run3">
+</target>
+
+
+<target name="rels"
+        depends="compile">
+  <java classname="RelationTaggingCsv"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="E:\data\biocreative2\unpacked\BC2GM\train\GENE.eval"/>
+    <arg value="E:\data\biocreative2\unpacked\BC2GM\train\train.in"/>
+    <arg value="rels-to-anno.csv"/>
+  </java>
+</target>
+
+<target name="recall"
+        depends="compile">
+  <java classname="RecallEval"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="E:\data\biocreative2\unpacked\BC2GM\train\GENE.eval"/>
+    <arg value="E:\data\biocreative2\unpacked\BC2GM\train\train.in"/>
+  </java>
 </target>
 
 </project>
