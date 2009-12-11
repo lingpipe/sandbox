@@ -124,6 +124,16 @@ public class BetaDistribution {
     }
 
     /**
+     * Returns a string-based representation of this distribution
+     * and its parameters.
+     *
+     * @return A string-based representation of this distribution.
+     */
+    public String toString() {
+        return "Beta(" + alpha() + "," + beta() + ")";
+    }
+
+    /**
      * Returns the beta distribution with the specified mean and
      * variance.
      *
