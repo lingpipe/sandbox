@@ -40,15 +40,18 @@ public class Train {
                                    hmmEstimator);
 
 
-        System.out.println("Training");
+        System.out.println("\nTraining");
         InputStream fileIn = new FileInputStream(trainFileGz);
         GZIPInputStream zipIn = new GZIPInputStream(fileIn);
         InputSource in = new InputSource(zipIn);
         CalbcChunkParser chunkParser = new CalbcChunkParser();
         chunkParser.setHandler(chunkerEstimator);
         chunkParser.parse(in);
- 
-        System.out.println("Compiling");
+
+        System.out.println("\nReporting");
+        chunkParser.report();
+
+        System.out.println("\nCompiling");
         AbstractExternalizable.compileTo(chunkerEstimator,modelFile);
    }
 
