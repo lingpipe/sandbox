@@ -6,6 +6,8 @@ import com.aliasi.chunk.ChunkingImpl;
 import com.aliasi.corpus.ChunkHandler;
 import com.aliasi.corpus.XMLParser;
 
+import com.aliasi.util.ObjectToCounterMap;
+
 import com.aliasi.xml.DelegatingHandler;
 
 import java.util.ArrayList;
@@ -22,9 +24,20 @@ public class CalbcChunkParser extends XMLParser<ChunkHandler> {
     static final String ENTITY_TAG = "e";
     static final String ENTITY_TYPE_ATT ="id";
 
+    long mCharCount = 0L;
+    long mSentCount = 0L;
+    final ObjectToCounterMap<String> mEntityTypeCounter
+        = new ObjectToCounterMap<String>();
+
     @Override
     protected DefaultHandler getXMLHandler() {
         return new CalbcHandler();
+    }
+
+    public void report() {
+        System.out.println("#Chars=" + mCharCount);
+        System.out.println("#Sents=" + mSentCount);
+        System.out.println("Entity Type Counts=\n" + mEntityTypeCounter);
     }
 
     class CalbcHandler extends DelegatingHandler {
@@ -35,13 +48,14 @@ public class CalbcChunkParser extends XMLParser<ChunkHandler> {
         }
         @Override
         public void finishDelegate(String qName, DefaultHandler handler) {
+            ++mSentCount;
             Chunking chunking = mSentHandler.getChunking();
             ChunkHandler chunkHandler = getHandler();
             chunkHandler.handle(chunking);
         }
     }
 
-    static class SentenceHandler extends DefaultHandler {
+    class SentenceHandler extends DefaultHandler {
         StringBuilder mBuf;
         String mType;
         int mStart;
@@ -57,6 +71,7 @@ public class CalbcChunkParser extends XMLParser<ChunkHandler> {
                                  String qName, Attributes attributes) {
             if (!ENTITY_TAG.equals(qName)) return;
             mType = attributes.getValue(ENTITY_TYPE_ATT);
+            mEntityTypeCounter.increment(mType);
             mStart = mBuf.length();
         }
         @Override
@@ -68,6 +83,7 @@ public class CalbcChunkParser extends XMLParser<ChunkHandler> {
         }
         @Override
         public void characters(char[] cs, int start, int length) {
+            mCharCount += length;
             mBuf.append(cs,start,length);
         }
         public Chunking getChunking() {
