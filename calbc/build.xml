@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+
+<project name="CALBC Sentences and Named Entities"
+         default="compile" 
+         basedir=".">
+
+<property name="jar"
+          value="calbc.jar"/>
+
+<path id="classpath.standard">
+  <pathelement location="lib/lingpipe-3.8.2.jar"/>
+  <pathelement location="${jar}"/>
+</path>
+      
+          
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete file="${jar}"/>
+</target>
+
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <compilerarg value="-Xlint:all"/>
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="${jar}">
+    <fileset dir="build/classes"
+             includes="**/*.class"/>
+  </jar>
+</target>
+
+
+<property name="train.data.gz"
+          value="e:\data\calbc\dist\CALBC.train.annotated.gz"/>
+<property name="model"
+          value="calbc.HmmChunker"/>
+
+<target name="train"
+        depends="jar">
+  <java classname="Train"
+        maxmemory="8G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${train.data.gz}"/>
+    <arg value="${model}"/>
+  </java>
+</target>
+
+
+<target name="run"
+        depends="jar">
+  <java classname="Run"
+        maxmemory="8G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${model}"/>
+    <arg value="Mitigation of graft-versus-host disease in rats treated with allogenic and xenogeneic antilymphocytic sera.  Secondary elimination accounts for rigid erythrocytes suffering from additional degradation."/>
+  </java>
+</target>
+
+
+</project>
