@@ -9,14 +9,13 @@ parameters <- c("c",
 
 inits <- function() {
   list(pi=runif(1,0.7,0.8),
-#       c=rbinom(I,1,0.5),
+       c=rbinom(I,1,0.5),
        acc.0 <- runif(1,0.9,0.9),
        scale.0 <- runif(1,5,5),
        acc.1 <- runif(1,0.9,0.9),
        scale.1 <- runif(1,5,5),
        theta.0=runif(J,0.9,0.9),
-       theta.1=runif(J,0.9,0.9)
-       )
+       theta.1=runif(J,0.9,0.9))
 }
 
 anno <- bugs(data, inits, parameters,
