@@ -497,7 +497,7 @@ over parameters given the data.  The Gibbs sampler simulates draws of
 the complete parameter vector $(\pi,c,\theta_0,\theta_1)$ from the
 posterior distribution.
 
-\subsection{Identifiability} 
+\subsection{Identifiability}
 
 As stated, the model has a symmetric bimodal likelihood space.  For
 every parameter assignment $(c,\pi,\theta_0,\theta_1)$, there is an
@@ -523,7 +523,7 @@ is less desirable in general in that some values fitted in real data
 sets have sensitivities less than 0.5.  Third, the Markov chains in
 the Gibbs sampler could be allowed to find either result, then it can
 be converted to a canonical representation using the transform
-presented above.  
+presented above.
 
 We chose the second approach for expediency in the simple binomial
 model.  As is often the case, in our more complex models, the
@@ -546,7 +546,7 @@ $N$ samples,
 \[
 (c^{(1)}, \pi^{(1)}, \theta_0^{(1)}, \theta_1^{(1)}),
 \ldots, (c^{(N)}, \pi^{(N)}, \theta_0^{(N)}, \theta_1^{(N)})
-\] 
+\]
 we approximate posterior inference to
 an arbitrary level of precision with
 \[
@@ -572,21 +572,21 @@ with success parameters $\theta_1$ and $\theta_0$ respectively.  To
 make this precise, define the number of true and false items by:
 \[
 T = \sum_k c_{ii_k}
-\ \ \ \ \ \ \ \ 
+\ \ \ \ \ \ \ \
 F = \sum_k (1 - c_{ii_k})
 \]
 The number of true-positive and true negative annotations are
 given by:
 \[
 \mbox{\it TP} = \sum_k c_{ii_k} a_k
-\ \ \ \ \ \ \ 
+\ \ \ \ \ \ \
 \mbox{\it TN} = \sum_k (1 - c_{ii_k}) (1 - a_k)
 \]
 With the simple binomial model, the true positives and true
 negatives are distributed as binomials:
 \[
 \mbox{\it TP} \sim \mathsf{Binomial}(\theta_1,T)
-\ \ \ \ \ \ \ 
+\ \ \ \ \ \ \
 \mbox{\it TN} \sim \mathsf{Binomial}(\theta_0,F)
 \]
 
@@ -618,14 +618,14 @@ The number of true and false items also varies by annotator and by
 item, with
 \[
 \mbox{\it T}_{j} = \sum_k \mathrm{I}(jj_k = j) c_{ii_k}
-\ \ \ \ \ \ \ 
+\ \ \ \ \ \ \
 \mbox{\it F}_{j} = \sum_k \mathrm{I}(jj_k = j) (1 - c_{ii_k})
 \]
 The simple binomial model assumes an identical chance of success for
 each annotator, so that
 \[
 \mbox{\it TP}_{j} \sim \mathsf{Binomial}(\theta_1,\mbox{\it T}_{j})
-\ \ \ \ \ \ \ 
+\ \ \ \ \ \ \
 \mbox{\it TN}_{j} \sim \mathsf{Binomial}(\theta_0,\mbox{\it F}_{j})
 \]
 
@@ -820,7 +820,7 @@ with respect to their beta likelihood:
 The beta-binomial has a mean of $n \alpha_0/(\alpha_0+\beta_0)$, but
 can be more dispersed than a binomial with the same mean.  The
 scale parameters $\alpha+\beta$ are roughly proportional to the
-inverse variance of the beta-binomial.  
+inverse variance of the beta-binomial.
 
 In our models, we fit the latent parameter $\theta$ of the
 beta-binomial directly in the graphical model. This leads to direct
@@ -1066,7 +1066,7 @@ helpful to avoid overfitting in low count situations.
 The prior variances $\rho_0^2$ and $\rho_1^2$ on the item difficulties
 act the same way.  Fitting an informative prior for the difficulties
 is especially important when there are very few annotators per item.
-With relatively few annotators per item in any case, the 
+With relatively few annotators per item in any case, the
 
 
 
@@ -1454,7 +1454,7 @@ for category 0 and category 1 items.}%
 %
 The range of $\theta$ values drawn fro true category 0 and category 1
 items are shown in Figure~\ref{beta-binomial-item-sim-thetas.fig}.
-                         
+
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.4\textwidth]{pdf/beta-binomial-item-post-theta_1.pdf}%
@@ -1691,7 +1691,7 @@ for the beta-binomial by annotator model.
 \begin{center}
 \includegraphics[width=\textwidth]{pdf/dentistry-beta-binomial-anno-post-cats.pdf}
 \end{center}
-\mycaption{Dentistry data under beta-binomial by annotator: 
+\mycaption{Dentistry data under beta-binomial by annotator:
 posterior category histograms drawn to the same horizontal and
 vertical scale.}%
 \label{dentistry-beta-binomial-anno-post-cats.fig}
@@ -1936,7 +1936,7 @@ judged at [sic] {\it True}.
 %
 They further indicate that they guided annotators to ``avoid vague
 examples'' in selecting pairs of sentences to include in the data
-set.  
+set.
 
 
 \subsection{RTE-1 Challenge Data}
@@ -2639,7 +2639,7 @@ models, and the logistic epidemiology models.  For simplification, we
 want to explore Uebersax and Grove's (1993) mixture modeling approach,
 which estimates annotator bias and accuracy directly against an
 underlying latent trait level, rather than estimating sensitivity and
-specificty.  
+specificty.
 
 If someone could send us conference review data of a large enough
 size, it would be nice to apply these models to paper selection.  The
