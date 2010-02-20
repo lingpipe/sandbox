@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+<project name="Rzhetsky Lab Projects"
+         default="compile" 
+         basedir=".">
+
+  <property name="project"
+            value="rzhetsky-lab"/>
+  <property name="version"
+            value="1.0a"/>
+  <property name="jar"
+            value="${project}-${version}.jar"/>
+
+  <path id="classpath.standard">
+    <pathelement location="build/classes"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete file="${jar}"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="build/classes"/>
+    <javac optimize="on"
+           debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="no">
+      <compilerarg value="-Xlint:all"/>
+      <classpath refid="classpath.standard"/>
+      <src path="src/"/>
+    </javac>
+  </target>
+
+  <target name="jar"
+          depends="compile">
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+
+  <target name="parse"
+          depends="compile">
+    <java classname="edu.uchicago.rzhetsky.cfg.Demo"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+    </java>
+  </target>
+
+
+</project>
