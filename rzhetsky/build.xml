@@ -42,7 +42,7 @@
   </target>
 
 
-  <target name="parse"
+  <target name="demo"
           depends="compile">
     <java classname="edu.uchicago.rzhetsky.cfg.Demo"
           fork="true">
