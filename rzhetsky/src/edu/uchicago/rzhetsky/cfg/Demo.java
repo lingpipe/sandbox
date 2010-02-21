@@ -35,7 +35,7 @@ public class Demo {
             { "DV", "gave" },
             { "DV", "showed" },
         };
-        Cfg cfg = new Cfg(rules,lexEntries);
+        Cfg2 cfg = new Cfg2(rules,lexEntries);
         System.out.println(cfg);
     }
 
