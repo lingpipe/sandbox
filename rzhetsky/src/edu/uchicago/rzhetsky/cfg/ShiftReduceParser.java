@@ -44,6 +44,10 @@ public class ShiftReduceParser {
         return new ShiftReduceIterator(words);
     }
 
+    public Iterator<Tree> parse(List<String> words) {
+        return new ShiftReduceIterator(words.toArray(new String[words.size()]));
+    }
+
     void applyLex(SearchState state,
                   LinkedList<SearchState> stack) {
         if (state.wordsFinished())
@@ -94,7 +98,8 @@ public class ShiftReduceParser {
                 return true;
             while (!mStack.isEmpty()) {
                 SearchState state = mStack.removeLast();
-                System.out.println("\nSTATE=" + state);
+                // uncomment to track search states
+                // System.out.println("     state=" + state);
                 applyLex(state,mStack);
                 applyRules(state,mStack);
                 if (state.isComplete()) {
