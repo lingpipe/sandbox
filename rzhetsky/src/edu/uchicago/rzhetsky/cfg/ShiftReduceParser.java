@@ -46,28 +46,36 @@ public class ShiftReduceParser {
 
     void applyLex(SearchState state,
                   LinkedList<SearchState> stack) {
+        System.out.println("applyLex()");
         if (state.wordsFinished())
             return;
         String word = state.mWords[state.mPosition];
         String[] lexCats = mLexIndex.get(word);
         if (lexCats == null) 
             return; // no parses because no lex
-        for (String cat : lexCats)
+        for (String cat : lexCats) {
+            System.out.println("     cat=" + cat);
             stack.addLast(new SearchState(state.mWords,
                                           state.mPosition+1,
                                           new TreeListEntry(new Tree.Lexical(cat,word),
                                                             state.mEntry)));
+        }
     }
 
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
+        System.out.println("applyRules()");
         RuleIndexNode node = mRuleIndexRoot;
         List<Tree> dtrs = new ArrayList<Tree>();
         for (TreeListEntry entry = state.mEntry;
              entry != null && node != null && node.mExtensionMap != null;
              entry = entry.mNext) {
 
+            System.out.println("     entry=" + entry);
+            
+
             for (String mother : node.mMotherCats) {
+                System.out.println("          mother=" + mother);
                 stack.add(new SearchState(state.mWords,
                                           state.mPosition,
                                           new TreeListEntry(new Tree.NonTerminal(mother,dtrs),
@@ -95,7 +103,9 @@ public class ShiftReduceParser {
                 System.out.println(state);
                 applyLex(state,mStack);
                 applyRules(state,mStack);
+                System.out.println("test state completion");
                 if (state.isComplete()) {
+                    System.out.println("complete. getting tree");
                     mNext = state.getTree();
                     return true;
                 }
