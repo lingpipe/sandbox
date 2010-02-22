@@ -34,6 +34,9 @@ public class ShiftReduceParser {
         sb.append("LEXICON REVERSE INDEX\n");
         for (Map.Entry<String,String[]> entry : mLexIndex.entrySet())
             sb.append("|" + entry.getKey() + "|=" + Arrays.asList(entry.getValue()) + "\n");
+        sb.append('\n');
+        sb.append("RULE INDEX\n");
+        mRuleIndexRoot.toStringBuilder(0,sb);
         return sb.toString();
     }
 
@@ -141,6 +144,20 @@ public class ShiftReduceParser {
         return root;
     }
 
+    static void indent(int indentation, StringBuilder sb) {
+        for (int i = 0; i < indentation; ++i)
+            sb.append(' ');
+    }
+
+    static void nl(StringBuilder sb) {
+        if (sb.length() == 0) 
+            return;
+        if (sb.charAt(sb.length() - 1) == '\n') 
+            return;
+        sb.append('\n');
+    }
+
+
     static class RuleIndexNode {
         private final List<String> mMotherCats
             = new ArrayList<String>(1);
@@ -154,12 +171,24 @@ public class ShiftReduceParser {
                 RuleIndexNode next = node.mExtensionMap.get(cat);
                 if (next == null) {
                     next = new RuleIndexNode();
-                    mExtensionMap.put(cat,next);
+                    node.mExtensionMap.put(cat,next);
                 }
                 node = next;
             }
             String mother = production.mother();
             node.mMotherCats.add(mother);
+        }
+        public void toStringBuilder(int indentation, StringBuilder sb) {
+            if (mMotherCats.size() > 0)
+                sb.append(" <- " + mMotherCats);
+            for (Map.Entry<String,RuleIndexNode> entry : mExtensionMap.entrySet()) {
+                nl(sb);
+                indent(indentation,sb);
+                String contCat = entry.getKey();
+                RuleIndexNode contNode = entry.getValue();
+                sb.append(contCat);
+                contNode.toStringBuilder(indentation+4,sb);
+            }
         }
     }
 
