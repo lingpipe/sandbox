@@ -20,9 +20,12 @@ public class Demo {
         
         Cfg cfg = new Cfg(productions,lexEntries);
 
+        System.out.println("1. Grammar\n");
         System.out.println(cfg);
 
         ShiftReduceParser parser = new ShiftReduceParser(cfg);
+        System.out.println("\n2. Parser\n");
+        System.out.println(parser);
 
         /*
         String[][] rules = {
