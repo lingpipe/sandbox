@@ -51,40 +51,40 @@ public class ShiftReduceParser {
             return;
         String word = state.mWords[state.mPosition];
         String[] lexCats = mLexIndex.get(word);
+        System.out.println("lexCats.length=" + lexCats.length + " lexCats=" + Arrays.asList(lexCats));
         if (lexCats == null) 
             return; // no parses because no lex
         for (String cat : lexCats) {
             System.out.println("     cat=" + cat);
-            stack.addLast(new SearchState(state.mWords,
-                                          state.mPosition+1,
-                                          new TreeListEntry(new Tree.Lexical(cat,word),
-                                                            state.mEntry)));
+            SearchState state2 
+                = new SearchState(state.mWords,
+                                  state.mPosition+1,
+                                  new TreeListEntry(new Tree.Lexical(cat,word),
+                                                    state.mEntry));
+            System.out.println("     next state=" + state);
+            stack.addLast(state2);
+            System.out.println("stack added");
         }
     }
 
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
         System.out.println("applyRules()");
-        RuleIndexNode node = mRuleIndexRoot;
         List<Tree> dtrs = new ArrayList<Tree>();
-        for (TreeListEntry entry = state.mEntry;
-             entry != null && node != null && node.mExtensionMap != null;
-             entry = entry.mNext) {
-
-            System.out.println("     entry=" + entry);
-            
-
+        TreeListEntry entry = state.mEntry;
+        RuleIndexNode node = mRuleIndexRoot;
+        while (node != null) {
             for (String mother : node.mMotherCats) {
-                System.out.println("          mother=" + mother);
                 stack.add(new SearchState(state.mWords,
                                           state.mPosition,
                                           new TreeListEntry(new Tree.NonTerminal(mother,dtrs),
                                                             entry)));
             }
+            if (entry == null) return;
             String cat = entry.mTree.mother();
             node = node.mExtensionMap.get(cat);
-            if (node == null) return;
             dtrs.add(entry.mTree);
+            entry = entry.mNext;
         }
     }
 
@@ -100,10 +100,9 @@ public class ShiftReduceParser {
                 return true;
             while (!mStack.isEmpty()) {
                 SearchState state = mStack.removeLast();
-                System.out.println(state);
+                System.out.println("\nSTATE=" + state);
                 applyLex(state,mStack);
                 applyRules(state,mStack);
-                System.out.println("test state completion");
                 if (state.isComplete()) {
                     System.out.println("complete. getting tree");
                     mNext = state.getTree();
@@ -252,7 +251,7 @@ public class ShiftReduceParser {
             if (mPosition < mWords.length)
                 sb.append('|');
             sb.append(" Ts=");
-            for (TreeListEntry entry = mEntry; entry != null; entry = mEntry.mNext) {
+            for (TreeListEntry entry = mEntry; entry != null; entry = entry.mNext) {
                 if (entry != mEntry) sb.append(", ");
                 sb.append(entry.mTree);
             }
