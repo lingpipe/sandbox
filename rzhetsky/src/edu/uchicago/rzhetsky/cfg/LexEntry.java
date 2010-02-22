@@ -5,7 +5,7 @@ public class LexEntry {
     private final String mMother;
     private final String mWord;
 
-    public LexEntry(String mother, 
+    LexEntry(String mother, 
                     String word) {
         mMother = mother;
         mWord = word;
@@ -33,6 +33,11 @@ public class LexEntry {
     @Override
     public String toString() {
         return mother() + " -> |" + word() + "|";
+    }
+
+    public static LexEntry entry(String mother,
+                                 String word) {
+        return new LexEntry(mother,word);
     }
 
 }
