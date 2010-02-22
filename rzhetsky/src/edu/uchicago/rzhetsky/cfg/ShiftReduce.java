@@ -35,11 +35,36 @@ public class ShiftReduce {
                   LinkedList<SearchState> stack) {
         if (state.wordsFinished())
             return;
+        String word = state.mWords[state.mPosition];
+        String[] lexCats = mLexIndex.get(word);
+        if (lexCats == null) 
+            return; // no parses because no lex
+        for (String cat : lexCats)
+            stack.addLast(new SearchState(state.mWords,
+                                          state.mPosition+1,
+                                          new TreeListEntry(new Tree.Lexical(cat,word),
+                                                            state.mEntry)));
     }
 
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
-        
+        RuleIndexNode node = mRuleIndexRoot;
+        List<Tree> dtrs = new ArrayList<Tree>();
+        for (TreeListEntry entry = state.mEntry;
+             entry != null && node != null && node.mExtensionMap != null;
+             entry = entry.mNext) {
+
+            for (String mother : node.mMotherCats) {
+                stack.add(new SearchState(state.mWords,
+                                          state.mPosition,
+                                          new TreeListEntry(new Tree.NonTerminal(mother,dtrs),
+                                                            entry)));
+            }
+            String cat = entry.mTree.mother();
+            node = node.mExtensionMap.get(cat);
+            if (node == null) return;
+            dtrs.add(entry.mTree);
+        }
     }
 
     class ShiftReduceIterator implements Iterator<Tree> {
@@ -49,7 +74,6 @@ public class ShiftReduce {
             mStack = new LinkedList<SearchState>();
             mStack.addLast(new SearchState(words));
         }
-
         public boolean hasNext() {
             if (mNext != null)
                 return true;

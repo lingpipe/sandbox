@@ -1,5 +1,6 @@
 package edu.uchicago.rzhetsky.cfg;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,9 +36,9 @@ public abstract class Tree {
     public static class NonTerminal extends Tree {
         private final List<Tree> mDaughters;
         public NonTerminal(String mother,
-                           Tree... daughters) {
+                           List<Tree> daughters) {
             super(mother);
-            mDaughters = Arrays.asList(daughters);
+            mDaughters = new ArrayList<Tree>(daughters);
         }
         public List<Tree> daughters() {
             return Collections.unmodifiableList(mDaughters);
