@@ -6,7 +6,7 @@ public class LexEntry {
     private final String mWord;
 
     LexEntry(String mother, 
-                    String word) {
+             String word) {
         mMother = mother;
         mWord = word;
     }

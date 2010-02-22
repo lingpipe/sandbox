@@ -1,6 +1,7 @@
 package edu.uchicago.rzhetsky.cfg;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +26,15 @@ public class ShiftReduceParser {
 
     public Cfg cfg() {
         return mCfg;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LEXICON REVERSE INDEX\n");
+        for (Map.Entry<String,String[]> entry : mLexIndex.entrySet())
+            sb.append("|" + entry.getKey() + "|=" + Arrays.asList(entry.getValue()) + "\n");
+        return sb.toString();
     }
 
     public Iterator<Tree> shiftReduce(String[] words) {
@@ -111,7 +121,7 @@ public class ShiftReduceParser {
                 cats = new HashSet<String>(2);
                 lexMap.put(word,cats);
             }
-            cats.add(word);
+            cats.add(cat);
         }
         Map<String,String[]> lexIndex
             = new HashMap<String,String[]>(lexMap.size()*2);
