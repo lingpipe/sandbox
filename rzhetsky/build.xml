@@ -41,6 +41,21 @@
     </jar>
   </target>
 
+  <target name="javadoc">
+    <mkdir dir="docs/api"/>
+    <javadoc destdir="docs/api"
+             author="true"
+             use="false"
+             version="true"
+             doctitle="${project} ${version} API"
+             windowtitle="${project} ${version} API">
+      <packageset dir="src">
+        <include name="edu/**"/>
+      </packageset>
+      <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+    </javadoc>
+  </target>
+
 
   <target name="demo"
           depends="compile">

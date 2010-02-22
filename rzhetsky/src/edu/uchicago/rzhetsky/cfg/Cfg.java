@@ -66,6 +66,22 @@ public class Cfg {
         return Collections.unmodifiableSet(mLexEntrySet);
     }
     
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("RULES\n");
+        for (Production production : productions()) {
+            sb.append(production);
+            sb.append('\n');
+        }
+        sb.append("\nLEXICON\n");
+        for (LexEntry entry : lexEntries()) {
+            sb.append(entry);
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
     
     static List<String> lines(File file, String encoding) 
         throws IOException {
