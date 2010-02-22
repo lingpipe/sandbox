@@ -70,7 +70,7 @@ public class ShiftReduceParser {
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
         System.out.println("applyRules()");
-        List<Tree> dtrs = new ArrayList<Tree>();
+        LinkedList<Tree> dtrs = new LinkedList<Tree>();
         TreeListEntry entry = state.mEntry;
         RuleIndexNode node = mRuleIndexRoot;
         while (node != null) {
@@ -83,7 +83,7 @@ public class ShiftReduceParser {
             if (entry == null) return;
             String cat = entry.mTree.mother();
             node = node.mExtensionMap.get(cat);
-            dtrs.add(entry.mTree);
+            dtrs.addFirst(entry.mTree);
             entry = entry.mNext;
         }
     }
