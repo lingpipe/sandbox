@@ -4,6 +4,8 @@ import static edu.uchicago.rzhetsky.cfg.Production.binary;
 import static edu.uchicago.rzhetsky.cfg.LexEntry.entry;
 
 import static java.util.Arrays.asList;
+
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -26,6 +28,14 @@ public class Demo {
         ShiftReduceParser parser = new ShiftReduceParser(cfg);
         System.out.println("\n2. Parser\n");
         System.out.println(parser);
+
+        System.out.println("\n3. Search\n");
+        Iterator<Tree> parseIt
+            = parser.parse("John","ran");
+        while (parseIt.hasNext()) {
+            Tree parse = parseIt.next();
+            System.out.println("parse=" + parse);
+        }
 
         /*
         String[][] rules = {
