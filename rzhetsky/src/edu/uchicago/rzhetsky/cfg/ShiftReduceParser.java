@@ -46,30 +46,24 @@ public class ShiftReduceParser {
 
     void applyLex(SearchState state,
                   LinkedList<SearchState> stack) {
-        System.out.println("applyLex()");
         if (state.wordsFinished())
             return;
         String word = state.mWords[state.mPosition];
         String[] lexCats = mLexIndex.get(word);
-        System.out.println("lexCats.length=" + lexCats.length + " lexCats=" + Arrays.asList(lexCats));
         if (lexCats == null) 
             return; // no parses because no lex
         for (String cat : lexCats) {
-            System.out.println("     cat=" + cat);
             SearchState state2 
                 = new SearchState(state.mWords,
                                   state.mPosition+1,
                                   new TreeListEntry(new Tree.Lexical(cat,word),
                                                     state.mEntry));
-            System.out.println("     next state=" + state);
             stack.addLast(state2);
-            System.out.println("stack added");
         }
     }
 
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
-        System.out.println("applyRules()");
         LinkedList<Tree> dtrs = new LinkedList<Tree>();
         TreeListEntry entry = state.mEntry;
         RuleIndexNode node = mRuleIndexRoot;
@@ -104,7 +98,6 @@ public class ShiftReduceParser {
                 applyLex(state,mStack);
                 applyRules(state,mStack);
                 if (state.isComplete()) {
-                    System.out.println("complete. getting tree");
                     mNext = state.getTree();
                     return true;
                 }
