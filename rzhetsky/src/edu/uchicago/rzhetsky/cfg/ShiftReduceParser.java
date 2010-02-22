@@ -40,7 +40,7 @@ public class ShiftReduceParser {
         return sb.toString();
     }
 
-    public Iterator<Tree> shiftReduce(String[] words) {
+    public Iterator<Tree> parse(String... words) {
         return new ShiftReduceIterator(words);
     }
 
@@ -92,6 +92,7 @@ public class ShiftReduceParser {
                 return true;
             while (!mStack.isEmpty()) {
                 SearchState state = mStack.removeLast();
+                System.out.println(state);
                 applyLex(state,mStack);
                 applyRules(state,mStack);
                 if (state.isComplete()) {
@@ -231,6 +232,22 @@ public class ShiftReduceParser {
         public Tree getTree() {
             // requires isComplete();
             return mEntry.mTree;
+        }
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Ws=");
+            for (int i = mPosition; i < mWords.length; ++i)
+                sb.append("|" + mWords[i]);
+            if (mPosition < mWords.length)
+                sb.append('|');
+            sb.append(" Ts=");
+            for (TreeListEntry entry = mEntry; entry != null; entry = mEntry.mNext) {
+                if (entry != mEntry) sb.append(", ");
+                sb.append(entry.mTree);
+            }
+            sb.append('\n');
+            return sb.toString();
         }
     }
 

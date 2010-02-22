@@ -29,7 +29,7 @@ public abstract class Tree {
         }
         @Override
         public String toString() {
-            return mother() + "|" + word() + "|";
+            return mother() + "[" + word() + "]";
         }
     }
 
