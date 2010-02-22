@@ -1,5 +1,6 @@
 package edu.uchicago.rzhetsky.cfg;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,10 +15,12 @@ public class ShiftReduce {
 
     private final Cfg mCfg;
     private final Map<String,String[]> mLexIndex;
+    private final RuleIndexNode mRuleIndexRoot;
 
     public ShiftReduce(Cfg cfg) {
         mCfg = cfg;
         mLexIndex = lexIndex(cfg);
+        mRuleIndexRoot = ruleIndex(cfg);
     }
 
     public Cfg cfg() {
@@ -95,6 +98,35 @@ public class ShiftReduce {
             lexIndex.put(word,cats);
         }
         return lexIndex;
+    }
+
+    static RuleIndexNode ruleIndex(Cfg cfg) {
+        RuleIndexNode root = new RuleIndexNode();
+        for (Production production : cfg.productions())
+            root.index(production);
+        return root;
+    }
+
+    static class RuleIndexNode {
+        private final List<String> mMotherCats
+            = new ArrayList<String>(1);
+        private final Map<String,RuleIndexNode> mExtensionMap
+            = new HashMap<String,RuleIndexNode>(1);
+        public void index(Production production) {
+            List<String> dtrs = production.daughters();
+            RuleIndexNode node = this;
+            for (int i = dtrs.size(); --i >= 0; ) {
+                String cat = dtrs.get(i);
+                RuleIndexNode next = node.mExtensionMap.get(cat);
+                if (next == null) {
+                    next = new RuleIndexNode();
+                    mExtensionMap.put(cat,next);
+                }
+                node = next;
+            }
+            String mother = production.mother();
+            node.mMotherCats.add(mother);
+        }
     }
 
     static class TreeListEntry {
