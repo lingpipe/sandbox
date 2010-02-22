@@ -5,6 +5,7 @@ import static edu.uchicago.rzhetsky.cfg.LexEntry.entry;
 
 import static java.util.Arrays.asList;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,11 +15,26 @@ public class Demo {
     public static void main(String[] args) {
 
         List<Production> productions
-            = asList(binary("S","NP","VP"));
+            = asList(binary("N","N","PP"),
+                     binary("NP","DET","N"),
+                     binary("PP","P","NP"),
+                     binary("S","NP","VP"),
+                     binary("VP","TV","NP"),
+                     binary("VP","VP","PP") );
+            
 
         List<LexEntry> lexEntries
-            = asList(entry("NP","John"),
-                     entry("VP","ran"));
+            = asList(entry("DET","the"),
+                     entry("N","block"),
+                     entry("N","box"),
+                     entry("N","cat"),
+                     entry("N","dog"),
+                     entry("N","table"),
+                     entry("NP","John"),
+                     entry("P","on"),
+                     entry("P","near"),
+                     entry("TV","saw"),
+                     entry("VP","ran") );
         
         Cfg cfg = new Cfg(productions,lexEntries);
 
@@ -29,48 +45,27 @@ public class Demo {
         System.out.println("\n2. Parser\n");
         System.out.println(parser);
 
-        System.out.println("\n3. Search\n");
-        Iterator<Tree> parseIt
-            = parser.parse("John","ran");
-        while (parseIt.hasNext()) {
-            Tree parse = parseIt.next();
-            System.out.println("parse=" + parse);
-        }
+        System.out.println("\n3. Search");
 
-        /*
-        String[][] rules = {
-            { "S", "NP", "VP" },
-            { "NP", "DET", "N" },
-            { "NP", "PN" },
-            { "N", "ADJ", "N" },
-            { "N", "N", "PP" },
-            { "PP", "P", "NP" },
-            { "VP", "IV" },
-            { "VP", "TV", "NP" },
-            { "VP", "DV", "NP", "NP" },
-            { "VP", "VP", "PP" },
-            { "VP", "VP", "ADV" }
-        };
-        String[][] lexEntries = {
-            { "PN", "John" },
-            { "PN", "Mary" },
-            { "DET", "the" },
-            { "DET", "a" },
-            { "N", "book" },
-            { "N", "box" },
-            { "N", "pencil" },
-            { "ADJ", "red" },
-            { "ADJ", "old" },
-            { "P", "in" },
-            { "P", "near" },
-            { "IV", "ran" },
-            { "IV", "jumped" },
-            { "TV", "saw" },
-            { "TV", "wrote" },
-            { "DV", "gave" },
-            { "DV", "showed" },
-        };
-        */
+        parse(parser,"John","ran");
+        parse(parser,"the","dog","ran");
+        parse(parser,"John","saw","Mary");
+        parse(parser,"John","saw","the","dog");
+        parse(parser,"the","dog","saw","John");
+        parse(parser,"the","dog","saw","the","cat");
+        parse(parser,"the","dog","near","John","ran");
+        parse(parser,"the","dog","near","the","cat","ran");
+        parse(parser,"John","saw","the","dog","near","the","cat");
+    }
+
+    static void parse(ShiftReduceParser parser,
+                      String... words) {
+        System.out.println("\nInput=" + Arrays.asList(words));
+        Iterator<Tree> parseIt = parser.parse(words);
+        for (int i = 0; parseIt.hasNext(); ++i) {
+            Tree parse = parseIt.next();
+            System.out.println("     " + i + ".  " + parse);
+        }
     }
 
 }
