@@ -11,13 +11,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ShiftReduce {
+public class ShiftReduceParser {
 
     private final Cfg mCfg;
     private final Map<String,String[]> mLexIndex;
     private final RuleIndexNode mRuleIndexRoot;
 
-    public ShiftReduce(Cfg cfg) {
+    public ShiftReduceParser(Cfg cfg) {
         mCfg = cfg;
         mLexIndex = lexIndex(cfg);
         mRuleIndexRoot = ruleIndex(cfg);

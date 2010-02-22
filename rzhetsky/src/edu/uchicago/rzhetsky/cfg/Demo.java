@@ -19,6 +19,7 @@ public class Demo {
                      entry("VP","ran"));
         
         Cfg cfg = new Cfg(productions,lexEntries);
+
         System.out.println(cfg);
 
         ShiftReduceParser parser = new ShiftReduceParser(cfg);
