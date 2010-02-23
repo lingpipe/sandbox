@@ -144,18 +144,26 @@ public abstract class Production implements Comparable<Production> {
      * that further modifications to the array do not affect the
      * production.
      *
+     * <p>The input daughter array may be modified by replacing member
+     * strings with the result of calling {@link String#intern()} on
+     * them (i.e. for some {@code i}, we call {@code daughters[i] =
+     * daughters[i].intern()}).
+     *
      * @param mother Mother categories.
      * @param daughters Sequence of daughter categories.
      */
     public static Production create(String mother,
                                     String... daughters) {
         if (daughters.length == 0)
-            return new NullaryProduction(mother);
+            return new NullaryProduction(mother.intern());
         if (daughters.length == 1)
-            return new UnaryProduction(mother,daughters[0]);
+            return new UnaryProduction(mother.intern(),
+                                       daughters[0].intern());
         if (daughters.length == 2)
-            return new BinaryProduction(mother,daughters[0],daughters[1]);
-        return new GeneralProduction(mother,daughters);
+            return new BinaryProduction(mother.intern(),
+                                        daughters[0].intern(),
+                                        daughters[1].intern());
+        return new GeneralProduction(mother,intern(daughters));
     }
 
     static int hashCode(String mother, List<String> daughters) {
@@ -212,7 +220,8 @@ public abstract class Production implements Comparable<Production> {
         BinaryProduction(String mother, String leftDaughter, String rightDaughter) {
             super(mother,
                   hashCode(mother,
-                           Arrays.asList(leftDaughter,rightDaughter)));
+                           Arrays.asList(leftDaughter,
+                                         rightDaughter)));
             mLeftDaughter = leftDaughter;
             mRightDaughter = rightDaughter;
         }
@@ -233,6 +242,12 @@ public abstract class Production implements Comparable<Production> {
         public List<String> daughters() {
             return Collections.unmodifiableList(mDaughters);
         }
+    }
+
+    static String[] intern(String[] xs) {
+        for (int i = 0; i < xs.length; ++i)
+            xs[i] = xs[i].intern();
+        return xs;
     }
 
 }
