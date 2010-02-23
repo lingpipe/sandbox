@@ -187,22 +187,27 @@ public class ShiftReduceParser extends Parser {
         }
     }
 
+    static Tree createPhrasal(String mother, int numDtrs, TreeListEntry entry) {
+        Tree[] dtrs = new Tree[numDtrs];
+        for (int i = numDtrs; --i >= 0; entry = entry.mNext)
+            dtrs[i] = entry.mTree;
+        return Tree.createPhrasal(mother,dtrs);
+    }
+
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
-        LinkedList<Tree> dtrs = new LinkedList<Tree>();
         TreeListEntry entry = state.mEntry;
         RuleIndexNode node = mRuleIndexRoot;
-        while (node != null) {
+        for (int numDtrs = 0; node != null; ++numDtrs) {
             for (String mother : node.mMotherCats) {
                 stack.add(new SearchState(state.mWords,
                                           state.mPosition,
-                                          new TreeListEntry(Tree.createPhrasal(mother,dtrs),
+                                          new TreeListEntry(createPhrasal(mother,numDtrs,state.mEntry), 
                                                             entry)));
             }
             if (entry == null) return;
             String cat = entry.mTree.rootCategory();
             node = node.mExtensionMap.get(cat);
-            dtrs.addFirst(entry.mTree);
             entry = entry.mNext;
         }
     }
