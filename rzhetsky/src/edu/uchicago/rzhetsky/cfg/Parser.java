@@ -5,13 +5,36 @@ import java.util.List;
 
 /**
  * The {@code Parser} abstract base class specifies an interface for
- * parsing sequences of words into iterators over parse trees.
- * 
+ * parsing sequences of words into iterators over parse trees using
+ * a context-free grammar.  This base class manages the grammar.
+ * The base class implements the word list parser by delegation to
+ * the word array parser.
+ *
  * @author Bob Carpenter
  * @version 1.0
  * @since 1.0
  */
 public abstract class Parser {
+
+    private final ContextFreeGrammar mGrammar;
+
+    /**
+     * Construct a parser for the specified grammar.
+     *
+     * @param grammar Grammar for parsing.
+     */
+    public Parser(ContextFreeGrammar grammar) {
+        mGrammar = grammar;
+    }
+
+    /**
+     * Returns the context-free grammar for this parser.
+     *
+     * @return The grammar for this parser.
+     */
+    public ContextFreeGrammar grammar() {
+        return mGrammar;
+    }
 
     /**
      * Returns an iterator over parse trees for the
