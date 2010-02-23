@@ -182,28 +182,28 @@ public class ShiftReduceParser extends Parser {
             SearchState state2 
                 = new SearchState(state.mWords,
                                   state.mPosition+1,
-                                  new TreeListEntry(Tree.createLexical(cat,word),
-                                                    state.mEntry));
+                                  new TreeList(Tree.createLexical(cat,word),
+                                                    state.mTreeList));
             stack.addLast(state2);
         }
     }
 
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
-        TreeListEntry entry = state.mEntry;
+        TreeList treeList = state.mTreeList;
         RuleIndexNode node = mRuleIndexRoot;
         for (int numDtrs = 0; node != null; ++numDtrs) {
             for (String mother : node.mMotherCats) {
                 // convert the stack to three parallel arrays
                 stack.add(new SearchState(state.mWords,
                                           state.mPosition,
-                                          new TreeListEntry(createPhrasal(mother,numDtrs,state.mEntry), 
-                                                            entry)));
+                                          new TreeList(createPhrasal(mother,numDtrs,state.mTreeList), 
+                                                       treeList)));
             }
-            if (entry == null) return;
-            String cat = entry.mTree.rootCategory();
+            if (treeList == null) return;
+            String cat = treeList.mTree.rootCategory();
             node = node.mExtensionMap.get(cat);
-            entry = entry.mNext;
+            treeList = treeList.mNext;
         }
     }
 
@@ -252,10 +252,10 @@ public class ShiftReduceParser extends Parser {
         }
     }
 
-    static Tree createPhrasal(String mother, int numDtrs, TreeListEntry entry) {
+    static Tree createPhrasal(String mother, int numDtrs, TreeList treeList) {
         Tree[] dtrs = new Tree[numDtrs];
-        for (int i = numDtrs; --i >= 0; entry = entry.mNext)
-            dtrs[i] = entry.mTree;
+        for (int i = numDtrs; --i >= 0; treeList = treeList.mNext)
+            dtrs[i] = treeList.mTree;
         return Tree.createPhrasal(mother,dtrs);
     }
 
@@ -338,14 +338,14 @@ public class ShiftReduceParser extends Parser {
         }
     }
 
-    static class TreeListEntry {
-        private TreeListEntry mNext;
+    static class TreeList {
+        private TreeList mNext;
         private final Tree mTree;
-        public TreeListEntry(Tree tree) {
+        public TreeList(Tree tree) {
             this(tree,null);
         }
-        public TreeListEntry(Tree tree,
-                             TreeListEntry next) {
+        public TreeList(Tree tree,
+                             TreeList next) {
             mTree = tree;
             mNext = next;
         }
@@ -355,28 +355,28 @@ public class ShiftReduceParser extends Parser {
     static class SearchState {
         final int mPosition;
         final String[] mWords;
-        final TreeListEntry mEntry;
+        final TreeList mTreeList;
         public SearchState(String[] words) {
             this(words,0,null);
         }
         public SearchState(String[] words,
                            int position,
-                           TreeListEntry entry) {
+                           TreeList treeList) {
             mWords = words;
             mPosition = position;
-            mEntry = entry;
+            mTreeList = treeList;
         }
         public boolean wordsFinished() {
             return mPosition == mWords.length;
         }
         public boolean isComplete() {
             return wordsFinished()
-                && mEntry != null
-                && mEntry.mNext == null;
+                && mTreeList != null
+                && mTreeList.mNext == null;
         }
         public Tree getTree() {
             // requires isComplete();
-            return mEntry.mTree;
+            return mTreeList.mTree;
         }
         @Override
         public String toString() {
@@ -387,9 +387,9 @@ public class ShiftReduceParser extends Parser {
             if (mPosition < mWords.length)
                 sb.append('|');
             sb.append(" Ts=");
-            for (TreeListEntry entry = mEntry; entry != null; entry = entry.mNext) {
-                if (entry != mEntry) sb.append(", ");
-                sb.append(entry.mTree);
+            for (TreeList treeList = mTreeList; treeList != null; treeList = treeList.mNext) {
+                if (treeList != mTreeList) sb.append(", ");
+                sb.append(treeList.mTree);
             }
             sb.append('\n');
             return sb.toString();
