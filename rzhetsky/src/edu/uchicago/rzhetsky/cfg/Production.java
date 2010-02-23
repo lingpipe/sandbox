@@ -56,8 +56,8 @@ public abstract class Production implements Comparable<Production> {
     }
 
     /**
-     * Returns the {@code n}-the daughter category,
-     * numbering from zero (0).
+     * Returns the {@code n}-the daughter category, numbering from
+     * zero (0).
      *
      * @param n Order of daughter category.
      * @return The {@code n}-th daughter.
@@ -70,9 +70,8 @@ public abstract class Production implements Comparable<Production> {
     }
 
     /**
-     * Return {@code true} if the specified object is
-     * a production with the same mother and daughter categories
-     * as this one.
+     * Return {@code true} if the specified object is a production
+     * with the same mother and daughter categories as this one.
      *
      * @param that Object to compare to this production.
      * @return {@code true} if they are equal.
@@ -83,12 +82,13 @@ public abstract class Production implements Comparable<Production> {
             return false;
         @SuppressWarnings("unchecked")
         Production thatProduction = (Production) that;
-        if (!mother().equals(thatProduction.mother()))
+        // relies on intern of daughters
+        if (mother() != thatProduction.mother())
             return false;
         if (numDaughters() != thatProduction.numDaughters())
             return false;
         for (int n = 0; n < numDaughters(); ++n)
-            if (!daughter(n).equals(thatProduction.daughter(n)))
+            if (daughter(n) != thatProduction.daughter(n))
                 return false;
         return true;
     }
@@ -102,8 +102,8 @@ public abstract class Production implements Comparable<Production> {
     abstract public int hashCode();
 
     /**
-     * Return the result of comparing this production to
-     * the specified production.
+     * Return the result of comparing this production to the specified
+     * production.
      *
      * <p>Productions are sorted in lexicographic order of their
      * categories, starting with the mother and working left to right
@@ -144,9 +144,9 @@ public abstract class Production implements Comparable<Production> {
      * that further modifications to the array do not affect the
      * production.
      *
-     * <p>The input daughter array may be modified by replacing member
+     * <p>The input daughter array is modified by replacing member
      * strings with the result of calling {@link String#intern()} on
-     * them (i.e. for some {@code i}, we call {@code daughters[i] =
+     * them (i.e. for all {@code i}, setting {@code daughters[i] =
      * daughters[i].intern()}).
      *
      * @param mother Mother categories.
@@ -154,22 +154,24 @@ public abstract class Production implements Comparable<Production> {
      */
     public static Production create(String mother,
                                     String... daughters) {
+        mother = mother.intern();
+        for (int i = 0; i < daughters.length; ++i)
+            daughters[i] = daughters[i].intern();
         if (daughters.length == 0)
-            return new NullaryProduction(mother.intern());
+            return new NullaryProduction(mother);
         if (daughters.length == 1)
-            return new UnaryProduction(mother.intern(),
-                                       daughters[0].intern());
+            return new UnaryProduction(mother,
+                                       daughters[0]);
         if (daughters.length == 2)
-            return new BinaryProduction(mother.intern(),
-                                        daughters[0].intern(),
-                                        daughters[1].intern());
-        return new GeneralProduction(mother,intern(daughters));
+            return new BinaryProduction(mother,
+                                        daughters[0],
+                                        daughters[1]);
+        return new GeneralProduction(mother,daughters);
     }
 
-    static int hashCode(String mother, List<String> daughters) {
+    static int hashCode(String mother, String... daughters) {
         return mother.hashCode() 
-            + 31 * daughters.hashCode();
-        
+            + 31 * Arrays.asList(daughters).hashCode();
     }
 
     static abstract class BaseProduction extends Production {
@@ -192,8 +194,7 @@ public abstract class Production implements Comparable<Production> {
     static class NullaryProduction extends BaseProduction {
         NullaryProduction(String mother) {
             super(mother,
-                  hashCode(mother,
-                           Collections.<String>emptyList()));
+                  hashCode(mother));
         }
         public List<String> daughters() {
             return Collections.emptyList();
@@ -204,8 +205,7 @@ public abstract class Production implements Comparable<Production> {
         private final String mDaughter;
         UnaryProduction(String mother, String daughter) {
             super(mother,
-                  hashCode(mother,
-                           Collections.singletonList(daughter)));
+                  hashCode(mother,daughter));
             mDaughter = daughter;
         }
         @Override
@@ -219,9 +219,7 @@ public abstract class Production implements Comparable<Production> {
         private final String mRightDaughter;
         BinaryProduction(String mother, String leftDaughter, String rightDaughter) {
             super(mother,
-                  hashCode(mother,
-                           Arrays.asList(leftDaughter,
-                                         rightDaughter)));
+                  hashCode(mother,leftDaughter,rightDaughter));
             mLeftDaughter = leftDaughter;
             mRightDaughter = rightDaughter;
         }
@@ -235,7 +233,7 @@ public abstract class Production implements Comparable<Production> {
         private final List<String> mDaughters;
         GeneralProduction(String mother, String... daughters) {
             super(mother,
-                  hashCode(mother,Arrays.asList(daughters)));
+                  hashCode(mother,daughters));
             mDaughters = Arrays.asList(daughters);
         }
         @Override
@@ -244,10 +242,6 @@ public abstract class Production implements Comparable<Production> {
         }
     }
 
-    static String[] intern(String[] xs) {
-        for (int i = 0; i < xs.length; ++i)
-            xs[i] = xs[i].intern();
-        return xs;
-    }
+
 
 }
