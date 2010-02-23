@@ -44,6 +44,7 @@ public class DemoCfg {
                     LexEntry.create("N","table"),
                     LexEntry.create("PN","John"),
                     LexEntry.create("P","on"),
+                    LexEntry.create("P","in"),
                     LexEntry.create("P","near"),
                     LexEntry.create("TV","saw") );
         
@@ -68,6 +69,8 @@ public class DemoCfg {
         parse(parser,"the","dog","near","John","ran");
         parse(parser,"the","dog","near","the","cat","ran");
         parse(parser,"John","saw","the","dog","near","the","cat");
+        parse(parser,"John","saw","the","dog","near","the","cat","on","the","table");
+        parse(parser,"John","saw","the","dog","near","the","cat","in","the","box","on","the","table");
     }
 
     static void parse(Parser parser,
