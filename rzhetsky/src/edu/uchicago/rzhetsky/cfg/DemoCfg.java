@@ -53,7 +53,7 @@ public class DemoCfg {
         System.out.println("1. Grammar\n");
         System.out.println(cfg);
 
-        ShiftReduceParser parser = new ShiftReduceParser(cfg);
+        Parser parser = new ShiftReduceParser(cfg);
         System.out.println("\n2. Parser\n");
         System.out.println(parser);
 
@@ -70,7 +70,7 @@ public class DemoCfg {
         parse(parser,"John","saw","the","dog","near","the","cat");
     }
 
-    static void parse(ShiftReduceParser parser,
+    static void parse(Parser parser,
                       String... words) {
         System.out.println("\nInput=" + Arrays.asList(words));
         Iterator<Tree> parseIt = parser.parse(words);

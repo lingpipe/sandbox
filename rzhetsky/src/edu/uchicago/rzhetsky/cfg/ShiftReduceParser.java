@@ -22,20 +22,34 @@ import java.util.Set;
  */
 public class ShiftReduceParser extends Parser {
 
-    private final ContextFreeGrammar mCfg;
     private final Map<String,String[]> mLexIndex;
     private final RuleIndexNode mRuleIndexRoot;
 
+    /**
+     * Construct a shift-reduce parser for the specified
+     * context-free grammar.
+     *
+     * @param cfg Grammar for the parser.
+     */
     public ShiftReduceParser(ContextFreeGrammar cfg) {
-        mCfg = cfg;
+        super(cfg);
         mLexIndex = lexIndex(cfg);
         mRuleIndexRoot = ruleIndex(cfg);
     }
 
-    public ContextFreeGrammar cfg() {
-        return mCfg;
+    /**
+     * @inheritDoc
+     */
+    public Iterator<Tree> parse(String... words) {
+        return new ShiftReduceIterator(words);
     }
 
+    /**
+     * Return a string-based representation of the
+     * underlying data structures for this parser.
+     *
+     * @return String-based representation of this parser.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -47,11 +61,7 @@ public class ShiftReduceParser extends Parser {
         mRuleIndexRoot.toStringBuilder(0,sb);
         return sb.toString();
     }
-
-    public Iterator<Tree> parse(String... words) {
-        return new ShiftReduceIterator(words);
-    }
-
+    
     void applyLex(SearchState state,
                   LinkedList<SearchState> stack) {
         if (state.wordsFinished())
