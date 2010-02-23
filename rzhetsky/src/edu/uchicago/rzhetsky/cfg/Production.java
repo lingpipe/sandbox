@@ -4,23 +4,79 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class Production {
+/**
+ * A {@code Production} consists of a mother category
+ * and sequence of daughter categories.
+ *
+ * <h3>Construction</h3>
+ *
+ * <p>Productions are constructed from a mother category and list of
+ * daughter categories using the variale-length static factory method
+ * {@link #create(String,String[])}.
+ *
+ * <h3>Equality, Comparability and Hash Codes</h3>
+ *
+ * <p>A production is equal to another production if they have the
+ * same mother and daughter categories.  Comparison is lexicographic
+ * starting with the mother category and working left to right through
+ * the daughter categories.  Comparison is consistent with equality.
+ * Hash coding is consistent with both equality and comparison.
+ *
+ * @author Bob Carpenter
+ * @version 1.0
+ * @since 1.0
+ */
+public abstract class Production implements Comparable<Production> {
 
-    public Production() {
+    Production() {
     }
 
+    /**
+     * Return the mother category for this production.
+     *
+     * @return Mother category.
+     */
     public abstract String mother();
     
+    /**
+     * Return an unmodifiable view of the daughter categories for this
+     * production.
+     * 
+     * @return The daughter categories for this production.
+     */
     public abstract List<String> daughters();
 
+    /**
+     * Returns the number of daughters.
+     *
+     * @return The number of daughters.
+     */
     public int numDaughters() {
         return daughters().size();
     }
 
+    /**
+     * Returns the {@code n}-the daughter category,
+     * numbering from zero (0).
+     *
+     * @param n Order of daughter category.
+     * @return The {@code n}-th daughter.
+     * @throws IndexOutOfBoundsException If the order is
+     * less than 0 or greater than or equal to the number
+     * of daughters.
+     */
     public String daughter(int n) {
         return daughters().get(n);
     }
 
+    /**
+     * Return {@code true} if the specified object is
+     * a production with the same mother and daughter categories
+     * as this one.
+     *
+     * @param that Object to compare to this production.
+     * @return {@code true} if they are equal.
+     */
     @Override
     public boolean equals(Object that) {
         if (!(that instanceof Production))
@@ -37,44 +93,75 @@ public abstract class Production {
         return true;
     }
 
+    /**
+     * Return the hash code for this production. 
+     *
+     * @return The hash code for this production.
+     */
     @Override
     abstract public int hashCode();
 
+    /**
+     * Return the result of comparing this production to
+     * the specified production.
+     *
+     * <p>Productions are sorted in lexicographic order of their
+     * categories, starting with the mother and working left to right
+     * through the daughters.
+     *
+     * @param that The production to which this production is compared.
+     * @return Less than zero if this production is smaller, greater
+     * than zero if it is bigger and zero if they are the same.
+     */
+    @Override
+    public int compareTo(Production that) {
+        int c = mother().compareTo(that.mother());
+        if (c != 0) return c;
+        int end = Math.min(numDaughters(),that.numDaughters());
+        for (int i = 0; i < end; ++i) {
+            c = daughter(i).compareTo(that.daughter(i));
+            if (c != 0) return c;
+        }
+        return numDaughters() - that.numDaughters();
+    }
+
+    /**
+     * Return a string-based representation of this production.
+     *
+     * @return String representation of this production.
+     */
     @Override
     public String toString() {
         return mother() + " -> " + daughters();
+    }
+
+    /**
+     * Return the production with the specified mother category and
+     * sequence of daugther categories.
+     *
+     * <p>If the daughters are specified with an array rather than a
+     * variable-length arguments call, the array will be copied so
+     * that further modifications to the array do not affect the
+     * production.
+     *
+     * @param mother Mother categories.
+     * @param daughters Sequence of daughter categories.
+     */
+    public static Production create(String mother,
+                                    String... daughters) {
+        if (daughters.length == 0)
+            return new NullaryProduction(mother);
+        if (daughters.length == 1)
+            return new UnaryProduction(mother,daughters[0]);
+        if (daughters.length == 2)
+            return new BinaryProduction(mother,daughters[0],daughters[1]);
+        return new GeneralProduction(mother,daughters);
     }
 
     static int hashCode(String mother, List<String> daughters) {
         return mother.hashCode() 
             + 31 * daughters.hashCode();
         
-    }
-
-    public static Production nullary(String mother) {
-        return new EmptyProduction(mother);
-    }
-
-    public static Production unary(String mother,
-                                   String daughter) {
-        return new UnaryProduction(mother,daughter);
-    }
-
-    public static Production binary(String mother,
-                                    String leftDaughter,
-                                    String rightDaughter) {
-        return new BinaryProduction(mother,leftDaughter,rightDaughter);
-    }
-
-    public static Production general(String mother,
-                                     String... daughters) {
-        if (daughters.length == 0)
-            return nullary(mother);
-        if (daughters.length == 1)
-            return unary(mother,daughters[0]);
-        if (daughters.length == 2)
-            return binary(mother,daughters[0],daughters[1]);
-        return new GeneralProduction(mother,daughters);
     }
 
     static abstract class BaseProduction extends Production {
@@ -94,8 +181,8 @@ public abstract class Production {
         }
     }
 
-    static class EmptyProduction extends BaseProduction {
-        EmptyProduction(String mother) {
+    static class NullaryProduction extends BaseProduction {
+        NullaryProduction(String mother) {
             super(mother,
                   hashCode(mother,
                            Collections.<String>emptyList()));

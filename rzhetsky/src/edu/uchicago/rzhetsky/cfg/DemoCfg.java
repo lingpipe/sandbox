@@ -1,8 +1,7 @@
 package edu.uchicago.rzhetsky.cfg;
 
-import static edu.uchicago.rzhetsky.cfg.Production.binary;
-import static edu.uchicago.rzhetsky.cfg.Production.unary;
-import static edu.uchicago.rzhetsky.cfg.LexEntry.entry;
+import edu.uchicago.rzhetsky.cfg.Production;
+import edu.uchicago.rzhetsky.cfg.LexEntry;
 
 import static java.util.Arrays.asList;
 
@@ -13,31 +12,40 @@ import java.util.List;
 
 public class DemoCfg {
 
+    private DemoCfg() { /* no instances */ }
+
+    /**
+     * Run the demo on the specified command-line arguments.
+     *
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
 
         List<Production> productions
-            = asList(binary("N","N","PP"),
-                     binary("NP","DET","N"),
-                     unary("NP","PN"),
-                     binary("PP","P","NP"),
-                     binary("S","NP","VP"),
-                     unary("VP","IV"),
-                     binary("VP","TV","NP"),
-                     binary("VP","VP","PP") );
+            = Arrays
+            .asList(Production.create("N","N","PP"),
+                   Production.create("NP","DET","N"),
+                   Production.create("NP","PN"),
+                   Production.create("PP","P","NP"),
+                   Production.create("S","NP","VP"),
+                   Production.create("VP","IV"),
+                   Production.create("VP","TV","NP"),
+                   Production.create("VP","VP","PP") );
             
 
         List<LexEntry> lexEntries
-            = asList(entry("DET","the"),
-                     entry("IV","ran"),
-                     entry("N","block"),
-                     entry("N","box"),
-                     entry("N","cat"),
-                     entry("N","dog"),
-                     entry("N","table"),
-                     entry("PN","John"),
-                     entry("P","on"),
-                     entry("P","near"),
-                     entry("TV","saw") );
+            = Arrays
+            .asList(LexEntry.create("DET","the"),
+                    LexEntry.create("IV","ran"),
+                    LexEntry.create("N","block"),
+                    LexEntry.create("N","box"),
+                    LexEntry.create("N","cat"),
+                    LexEntry.create("N","dog"),
+                    LexEntry.create("N","table"),
+                    LexEntry.create("PN","John"),
+                    LexEntry.create("P","on"),
+                    LexEntry.create("P","near"),
+                    LexEntry.create("TV","saw") );
         
         ContextFreeGrammar cfg 
             = new ContextFreeGrammar(productions,lexEntries);

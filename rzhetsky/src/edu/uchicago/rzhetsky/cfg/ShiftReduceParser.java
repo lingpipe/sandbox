@@ -12,7 +12,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ShiftReduceParser {
+/**
+ * A {@code ShiftReduceParser} implements the parsing interface
+ * using shift-reduce parsig over a specified context-free grammar.
+ * 
+ * @author Bob Carpenter
+ * @version 1.0
+ * @since 1.0
+ */
+public class ShiftReduceParser extends Parser {
 
     private final ContextFreeGrammar mCfg;
     private final Map<String,String[]> mLexIndex;
@@ -42,10 +50,6 @@ public class ShiftReduceParser {
 
     public Iterator<Tree> parse(String... words) {
         return new ShiftReduceIterator(words);
-    }
-
-    public Iterator<Tree> parse(List<String> words) {
-        return new ShiftReduceIterator(words.toArray(new String[words.size()]));
     }
 
     void applyLex(SearchState state,

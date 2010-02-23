@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A {@code ContextFreeGrammar} represents the productions and lexical
@@ -38,7 +39,7 @@ import java.util.Set;
  * by one or more spaces, followed by a sequence of daughter categories
  * separated by spaces.  For example:
  *
- * <blockquote style="border:1px solid gray"><pre>
+ * <blockquote style="border:1px solid gray" width="50%"><pre>
  * # Production Rules
  *
  * N N PP
@@ -55,6 +56,9 @@ import java.util.Set;
  * VP TV VP
  * VP DV VP VP
  * VP VP PP</pre></blockquote>
+ *
+ * <p>The format for a lexical entry is the word followed by
+ * a space, followed by a category name.
  *
  * <blockquote style="border:1px solid gray"><pre>
  * # Lexical Entries
@@ -74,20 +78,12 @@ import java.util.Set;
  * ran IV
  * saw TV
  * table N
- * the DET
- * 
- * 
+ * the DET</pre></blockquote>
  *
- * NP DET N
- *
- * PP P NP
- *
- * S NP VP
- *
- * VP IV
- * VP TV VP
- * VP DV VP VP
- * VP VP PP</pre></blockquote>
+ * Although the productions are organized by mother categories and the
+ * lexicon sorted alphabetically, there is no requirement on the order
+ * of the entries in either file.  Even if a rule shows up more than
+ * once in the file, it is only added to the grammar once.
  * 
  * @author Bob Carpenter
  * @version 1.0
@@ -140,7 +136,7 @@ public class ContextFreeGrammar {
             String[] dtrs = new String[cats.length-1];
             for (int i = 0; i < dtrs.length; ++i)
                 dtrs[i] = cats[i+1];
-            Production production = Production.general(mother,dtrs);
+            Production production = Production.create(mother,dtrs);
             mProductionSet.add(production);
         }
         
@@ -156,15 +152,33 @@ public class ContextFreeGrammar {
     }
 
 
+    /**
+     * Returns an unmodifiable view of the production rules in this
+     * grammar.
+     *
+     * @return Production rules for this grammar.
+     */
     public Set<Production> productions() {
         return Collections.unmodifiableSet(mProductionSet);
     }
 
+    /**
+     * Reurns an unmodifiable view of the lexical entries in
+     * this grammar.
+     *
+     * @return Lexical entries for this grammar.
+     */
     public Set<LexEntry> lexEntries() {
         return Collections.unmodifiableSet(mLexEntrySet);
     }
     
-
+    /**
+     * Return a string-based representation of this grammar with rules
+     * followed by lexicon.  The information returned by this method
+     * is available programatically.
+     *
+     * @return String-based display of this grammar.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
