@@ -110,6 +110,11 @@ public abstract class Tree {
         return new Phrasal(rootCategory,subtrees);
     }
 
+    static Tree createPhrasal(String rootCategory,
+                              Tree[] subtrees) {
+        return new Phrasal(rootCategory,subtrees);
+    }
+
     static class Lexical  extends Tree {
         private final String mWord;
         public Lexical(String rootCategory,
@@ -127,17 +132,21 @@ public abstract class Tree {
     }
 
     static class Phrasal extends Tree {
-        private final List<Tree> mSubtrees;
+        private final Tree[] mSubtrees;
         public Phrasal(String rootCategory,
                        List<Tree> subtrees) {
+            this(rootCategory,subtrees.toArray(new Tree[subtrees.size()]));
+        }
+        public Phrasal(String rootCategory,
+                      Tree[] subtrees) {
             super(rootCategory);
-            mSubtrees = new ArrayList<Tree>(subtrees);
+            mSubtrees = subtrees;
         }
         public List<Tree> subtrees() {
-            return Collections.unmodifiableList(mSubtrees);
+            return Collections.unmodifiableList(Arrays.asList(mSubtrees));
         }
         public String toString() {
-            return rootCategory() + "(" + mSubtrees + ")";
+            return rootCategory() + "(" + Arrays.asList(mSubtrees) + ")";
         }
     }
 
