@@ -20,6 +20,11 @@
     <delete file="${jar}"/>
   </target>
 
+  <target name="realClean" 
+          depends="clean">
+    <delete dir="docs"/>
+  </target>
+
   <target name="compile">
     <mkdir dir="build/classes"/>
     <javac optimize="on"
