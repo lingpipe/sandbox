@@ -144,16 +144,6 @@ public class ShiftReduceParser extends Parser {
         mRuleIndexRoot = ruleIndex(cfg);
     }
 
-    static void verifyNoEmptyProductions(ContextFreeGrammar cfg) {
-        for (Production production : cfg.productions()) {
-            if (production.numDaughters() == 0) {
-                String msg = "Shift reduce does not allow empty productions."
-                    + " Found production=" + production;
-                throw new IllegalArgumentException(msg);
-            }
-        }
-    }
-
     /**
      * @inheritDoc
      */
@@ -249,6 +239,16 @@ public class ShiftReduceParser extends Parser {
         }
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    static void verifyNoEmptyProductions(ContextFreeGrammar cfg) {
+        for (Production production : cfg.productions()) {
+            if (production.numDaughters() == 0) {
+                String msg = "Shift reduce does not allow empty productions."
+                    + " Found production=" + production;
+                throw new IllegalArgumentException(msg);
+            }
         }
     }
 
