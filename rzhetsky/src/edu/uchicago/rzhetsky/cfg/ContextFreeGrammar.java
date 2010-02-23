@@ -17,21 +17,119 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Cfg {
+/**
+ * A {@code ContextFreeGrammar} represents the productions and lexical
+ * entries of a context-free grammar.
+ *
+ * <h3>File Format</h3>
+ *
+ * A context-free grammar may be read in from a file specifying a set
+ * of production rules (i.e. a grammar), a file specifying a set of
+ * lexical entries (i.e. a dictionary), and a string specifying the
+ * character encoding of the files.  The grammars may include arbitrary
+ * unicode characters as either words or category names.
+ *
+ * <p>The two files contain the production rules and lexical entries
+ * for the grammar.  Each of the files contains a single rule per
+ * line.  Empty lines in files are ignored.  Lines beginning with the
+ * symbol "#" are ignored and assumed to be comments.
+ *
+ * <p>The format for a production rule is the mother category followed
+ * by one or more spaces, followed by a sequence of daughter categories
+ * separated by spaces.  For example:
+ *
+ * <blockquote style="border:1px solid gray"><pre>
+ * # Production Rules
+ *
+ * N N PP
+ * N ADJ N
+ *
+ * NP DET N
+ * NP PN
+ *
+ * PP P NP
+ *
+ * S NP VP
+ *
+ * VP IV
+ * VP TV VP
+ * VP DV VP VP
+ * VP VP PP</pre></blockquote>
+ *
+ * <blockquote style="border:1px solid gray"><pre>
+ * # Lexical Entries
+ *
+ * John PN
+ * Mary PN
+ * a DET
+ * block N
+ * box N
+ * dog N
+ * gave DV
+ * lectue N
+ * on P
+ * near P
+ * present N
+ * present TV
+ * ran IV
+ * saw TV
+ * table N
+ * the DET
+ * 
+ * 
+ *
+ * NP DET N
+ *
+ * PP P NP
+ *
+ * S NP VP
+ *
+ * VP IV
+ * VP TV VP
+ * VP DV VP VP
+ * VP VP PP</pre></blockquote>
+ * 
+ * @author Bob Carpenter
+ * @version 1.0
+ * @since 1.0
+ */
+public class ContextFreeGrammar {
 
     private final Set<Production> mProductionSet;
     private final Set<LexEntry> mLexEntrySet;
 
-    public Cfg(Collection<Production> productions,
-               Collection<LexEntry> lexEntries) {
+    /**
+     * Construct a context-free grammar with the specified collections
+     * of productions and lexical entries.  The collections are deeply
+     * copied into sets, so that further changes to the collections do
+     * not affect the constructed grammar.
+     *
+     * @param productions Grammar production rules.
+     * @param lexEntries Grammar lexical entries.
+     */
+    public ContextFreeGrammar(Collection<Production> productions,
+                              Collection<LexEntry> lexEntries) {
         mProductionSet = new HashSet<Production>(productions);
         mLexEntrySet = new HashSet<LexEntry>(lexEntries);
     }
 
     
-    public Cfg(File productionFile,
-               File lexEntryFile,
-               String encoding) throws IOException {
+    /**
+     * Construct a context-free grammar by reading productions
+     * and lexical entries from the specified files.  The files
+     * are closed and their associated resources released after
+     * they are read and before the grammar is constructed.
+     *
+     * @param productionFile File containing grammar productions.
+     * @param lexEntryFile File containing lexical entries.
+     * @param encoding Character encoding for the specified grammar
+     * files.
+     * @throws IOException If there is an exception reading from
+     * the files.
+     */
+    public ContextFreeGrammar(File productionFile,
+                              File lexEntryFile,
+                              String encoding) throws IOException {
         mProductionSet = new HashSet<Production>();
         mLexEntrySet = new HashSet<LexEntry>();
         for (String line : lines(productionFile,encoding)) {

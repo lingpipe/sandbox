@@ -14,17 +14,17 @@ import java.util.Set;
 
 public class ShiftReduceParser {
 
-    private final Cfg mCfg;
+    private final ContextFreeGrammar mCfg;
     private final Map<String,String[]> mLexIndex;
     private final RuleIndexNode mRuleIndexRoot;
 
-    public ShiftReduceParser(Cfg cfg) {
+    public ShiftReduceParser(ContextFreeGrammar cfg) {
         mCfg = cfg;
         mLexIndex = lexIndex(cfg);
         mRuleIndexRoot = ruleIndex(cfg);
     }
 
-    public Cfg cfg() {
+    public ContextFreeGrammar cfg() {
         return mCfg;
     }
 
@@ -121,7 +121,7 @@ public class ShiftReduceParser {
         }
     }
 
-    static Map<String,String[]> lexIndex(Cfg cfg) {
+    static Map<String,String[]> lexIndex(ContextFreeGrammar cfg) {
         Map<String,Set<String>> lexMap
             = new HashMap<String,Set<String>>();
         for (LexEntry entry : cfg.lexEntries()) {
@@ -145,7 +145,7 @@ public class ShiftReduceParser {
         return lexIndex;
     }
 
-    static RuleIndexNode ruleIndex(Cfg cfg) {
+    static RuleIndexNode ruleIndex(ContextFreeGrammar cfg) {
         RuleIndexNode root = new RuleIndexNode();
         for (Production production : cfg.productions())
             root.index(production);

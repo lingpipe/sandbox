@@ -61,10 +61,9 @@
     </javadoc>
   </target>
 
-
   <target name="demo"
           depends="compile">
-    <java classname="edu.uchicago.rzhetsky.cfg.Demo"
+    <java classname="edu.uchicago.rzhetsky.cfg.DemoCfg"
           fork="true">
       <classpath refid="classpath.standard"/>
     </java>

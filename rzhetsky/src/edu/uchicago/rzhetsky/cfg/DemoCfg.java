@@ -1,6 +1,7 @@
 package edu.uchicago.rzhetsky.cfg;
 
 import static edu.uchicago.rzhetsky.cfg.Production.binary;
+import static edu.uchicago.rzhetsky.cfg.Production.unary;
 import static edu.uchicago.rzhetsky.cfg.LexEntry.entry;
 
 import static java.util.Arrays.asList;
@@ -10,33 +11,36 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class Demo {
+public class DemoCfg {
 
     public static void main(String[] args) {
 
         List<Production> productions
             = asList(binary("N","N","PP"),
                      binary("NP","DET","N"),
+                     unary("NP","PN"),
                      binary("PP","P","NP"),
                      binary("S","NP","VP"),
+                     unary("VP","IV"),
                      binary("VP","TV","NP"),
                      binary("VP","VP","PP") );
             
 
         List<LexEntry> lexEntries
             = asList(entry("DET","the"),
+                     entry("IV","ran"),
                      entry("N","block"),
                      entry("N","box"),
                      entry("N","cat"),
                      entry("N","dog"),
                      entry("N","table"),
-                     entry("NP","John"),
+                     entry("PN","John"),
                      entry("P","on"),
                      entry("P","near"),
-                     entry("TV","saw"),
-                     entry("VP","ran") );
+                     entry("TV","saw") );
         
-        Cfg cfg = new Cfg(productions,lexEntries);
+        ContextFreeGrammar cfg 
+            = new ContextFreeGrammar(productions,lexEntries);
 
         System.out.println("1. Grammar\n");
         System.out.println(cfg);
