@@ -74,7 +74,7 @@ public class ShiftReduceParser extends Parser {
             SearchState state2 
                 = new SearchState(state.mWords,
                                   state.mPosition+1,
-                                  new TreeListEntry(new Tree.Lexical(cat,word),
+                                  new TreeListEntry(Tree.createLexical(cat,word),
                                                     state.mEntry));
             stack.addLast(state2);
         }
@@ -89,11 +89,11 @@ public class ShiftReduceParser extends Parser {
             for (String mother : node.mMotherCats) {
                 stack.add(new SearchState(state.mWords,
                                           state.mPosition,
-                                          new TreeListEntry(new Tree.NonTerminal(mother,dtrs),
+                                          new TreeListEntry(Tree.createPhrasal(mother,dtrs),
                                                             entry)));
             }
             if (entry == null) return;
-            String cat = entry.mTree.mother();
+            String cat = entry.mTree.rootCategory();
             node = node.mExtensionMap.get(cat);
             dtrs.addFirst(entry.mTree);
             entry = entry.mNext;
