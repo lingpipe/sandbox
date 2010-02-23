@@ -115,8 +115,9 @@ public class LexEntry implements Comparable<LexEntry> {
     }
 
     /**
-     * Create a lexcial entry with the specified mother
-     * category and word.
+     * Create a lexcial entry with the specified mother category and
+     * word.
+     *
      * @param mother Mother category.
      * @param word Word.
      * @return Lexical entry with the specified mother and
@@ -124,7 +125,8 @@ public class LexEntry implements Comparable<LexEntry> {
      */
     public static LexEntry create(String mother,
                                   String word) {
-        return new LexEntry(mother,word);
+        return new LexEntry(mother.intern(),
+                            word);
     }
 
 

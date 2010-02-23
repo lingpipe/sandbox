@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.IdentityHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -302,12 +303,12 @@ public class ShiftReduceParser extends Parser {
         sb.append('\n');
     }
 
-
+    // node in trie representing RHS of productions; mother cats are output
     static class RuleIndexNode {
         private final List<String> mMotherCats
             = new ArrayList<String>(1);
         private final Map<String,RuleIndexNode> mExtensionMap
-            = new HashMap<String,RuleIndexNode>(1);
+            = new IdentityHashMap<String,RuleIndexNode>(1);
         public void index(Production production) {
             List<String> dtrs = production.daughters();
             RuleIndexNode node = this;
