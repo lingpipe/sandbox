@@ -187,13 +187,6 @@ public class ShiftReduceParser extends Parser {
         }
     }
 
-    static Tree createPhrasal(String mother, int numDtrs, TreeListEntry entry) {
-        Tree[] dtrs = new Tree[numDtrs];
-        for (int i = numDtrs; --i >= 0; entry = entry.mNext)
-            dtrs[i] = entry.mTree;
-        return Tree.createPhrasal(mother,dtrs);
-    }
-
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
         TreeListEntry entry = state.mEntry;
@@ -255,6 +248,13 @@ public class ShiftReduceParser extends Parser {
                 throw new IllegalArgumentException(msg);
             }
         }
+    }
+
+    static Tree createPhrasal(String mother, int numDtrs, TreeListEntry entry) {
+        Tree[] dtrs = new Tree[numDtrs];
+        for (int i = numDtrs; --i >= 0; entry = entry.mNext)
+            dtrs[i] = entry.mTree;
+        return Tree.createPhrasal(mother,dtrs);
     }
 
     static Map<String,String[]> lexIndex(ContextFreeGrammar cfg) {
