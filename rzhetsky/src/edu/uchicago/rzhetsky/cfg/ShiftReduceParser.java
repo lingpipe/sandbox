@@ -193,6 +193,7 @@ public class ShiftReduceParser extends Parser {
         RuleIndexNode node = mRuleIndexRoot;
         for (int numDtrs = 0; node != null; ++numDtrs) {
             for (String mother : node.mMotherCats) {
+                // convert the stack to three parallel arrays
                 stack.add(new SearchState(state.mWords,
                                           state.mPosition,
                                           new TreeListEntry(createPhrasal(mother,numDtrs,state.mEntry), 
