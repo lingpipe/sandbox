@@ -230,15 +230,15 @@ public abstract class Production implements Comparable<Production> {
     }
 
     static class GeneralProduction extends BaseProduction {
-        private final List<String> mDaughters;
+        private final String[] mDaughters;
         GeneralProduction(String mother, String... daughters) {
             super(mother,
                   hashCode(mother,daughters));
-            mDaughters = Arrays.asList(daughters);
+            mDaughters = daughters;
         }
         @Override
         public List<String> daughters() {
-            return Collections.unmodifiableList(mDaughters);
+            return Collections.unmodifiableList(Arrays.asList(mDaughters));
         }
     }
 
