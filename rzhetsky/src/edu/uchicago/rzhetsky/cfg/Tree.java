@@ -127,7 +127,8 @@ public abstract class Tree {
         }
         @Override
         public String toString() {
-            return rootCategory() + "[" + word() + "]";
+            // return rootCategory() + "(" + word() + ")";
+            return "(" + rootCategory() + " " + word() + ")";
         }
     }
 
@@ -146,7 +147,17 @@ public abstract class Tree {
             return Collections.unmodifiableList(Arrays.asList(mSubtrees));
         }
         public String toString() {
-            return rootCategory() + "(" + Arrays.asList(mSubtrees) + ")";
+            StringBuilder sb = new StringBuilder();
+            sb.append('(');
+            sb.append(rootCategory());
+            sb.append(' ');
+            for (int i = 0; i < mSubtrees.length; ++i) {
+                if (i > 0) sb.append(' ');
+                sb.append(mSubtrees[i]);
+            }
+            sb.append(')');
+            return sb.toString();
+            // return rootCategory() + Arrays.asList(mSubtrees);
         }
     }
 
