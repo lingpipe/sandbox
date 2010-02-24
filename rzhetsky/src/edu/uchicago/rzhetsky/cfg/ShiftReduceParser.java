@@ -254,13 +254,6 @@ public class ShiftReduceParser extends Parser {
         }
     }
 
-    // static Tree createPhrasal(String mother, int numDtrs, TreeList treeList) {
-    //   Tree[] dtrs = new Tree[numDtrs];
-    //   for (int i = numDtrs; --i >= 0; treeList = treeList.mTail)
-    //   dtrs[i] = treeList.mTree;
-    //   return Tree.createPhrasal(mother,dtrs);
-    // }
-
     static Map<String,String[]> lexIndex(ContextFreeGrammar cfg) {
         Map<String,Set<String>> lexMap
             = new HashMap<String,Set<String>>();
@@ -398,17 +391,23 @@ public class ShiftReduceParser extends Parser {
             return Tree.createPhrasal(mTreeList.mTree,
                                       dtrTrees);
         }
-        public static SearchState getTree(SearchState state, Tree[] trees, int position) {
+        public static SearchState getTree(SearchState state, 
+                                          Tree[] trees, 
+                                          int position) {
             while (--position >= 0) {
                 if (state.mNumDtrs == -1) {
-                    trees[position] = Tree.createLexical(state.mTreeList.mTree,
-                                                         state.mWords[state.mPosition-1]);
+                    trees[position] 
+                        = Tree.createLexical(state.mTreeList.mTree,
+                                             state.mWords[state.mPosition-1]);
                     state = state.mPrevious;
                 } else {
                     Tree[] dtrTrees = new Tree[state.mNumDtrs];
                     String cat = state.mTreeList.mTree;
-                    state = getTree(state.mPrevious,dtrTrees,state.mNumDtrs);
-                    trees[position] = Tree.createPhrasal(cat,dtrTrees);
+                    state = getTree(state.mPrevious,
+                                    dtrTrees,
+                                    state.mNumDtrs);
+                    trees[position] 
+                        = Tree.createPhrasal(cat,dtrTrees);
                 }
             }
             return state;
@@ -418,24 +417,6 @@ public class ShiftReduceParser extends Parser {
             return 
                 "state(" + mPosition + "," + mTreeList + "," +mNumDtrs + ")"
                 + ( mPrevious == null ? "" : "; " + mPrevious);
-
-                
-        
-            /*
-            StringBuilder sb = new StringBuilder();
-            sb.append("Ws=");
-            for (int i = mPosition; i < mWords.length; ++i)
-                sb.append("|" + mWords[i]);
-            if (mPosition < mWords.length)
-                sb.append('|');
-            sb.append(" Cs=");
-            for (TreeList treeList = mTreeList; treeList != null; treeList = treeList.mTail) {
-                if (treeList != mTreeList) sb.append(", ");
-                sb.append(treeList.mTree);
-            }
-            sb.append('\n');
-            return sb.toString();
-            */
         }
     }
 
