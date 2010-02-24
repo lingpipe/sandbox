@@ -376,7 +376,6 @@ public class ShiftReduceParser extends Parser {
         }
         public boolean isComplete(String[] words) {
             return wordsFinished(words)
-                && mCatList != null
                 && mCatList.mTail == null;
         }
         public Tree getTree(String[] words) {
