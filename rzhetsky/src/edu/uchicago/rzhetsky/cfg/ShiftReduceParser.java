@@ -203,7 +203,7 @@ public class ShiftReduceParser extends Parser {
             if (treeList == null) return;
             String cat = treeList.mTree.rootCategory();
             node = node.mExtensionMap.get(cat);
-            treeList = treeList.mNext;
+            treeList = treeList.mTail;
         }
     }
 
@@ -254,7 +254,7 @@ public class ShiftReduceParser extends Parser {
 
     static Tree createPhrasal(String mother, int numDtrs, TreeList treeList) {
         Tree[] dtrs = new Tree[numDtrs];
-        for (int i = numDtrs; --i >= 0; treeList = treeList.mNext)
+        for (int i = numDtrs; --i >= 0; treeList = treeList.mTail)
             dtrs[i] = treeList.mTree;
         return Tree.createPhrasal(mother,dtrs);
     }
@@ -339,15 +339,15 @@ public class ShiftReduceParser extends Parser {
     }
 
     static class TreeList {
-        private TreeList mNext;
+        private TreeList mTail;
         private final Tree mTree;
         public TreeList(Tree tree) {
             this(tree,null);
         }
         public TreeList(Tree tree,
-                             TreeList next) {
+                        TreeList tail) {
             mTree = tree;
-            mNext = next;
+            mTail = tail;
         }
     }
 
@@ -372,7 +372,7 @@ public class ShiftReduceParser extends Parser {
         public boolean isComplete() {
             return wordsFinished()
                 && mTreeList != null
-                && mTreeList.mNext == null;
+                && mTreeList.mTail == null;
         }
         public Tree getTree() {
             // requires isComplete();
@@ -387,7 +387,7 @@ public class ShiftReduceParser extends Parser {
             if (mPosition < mWords.length)
                 sb.append('|');
             sb.append(" Ts=");
-            for (TreeList treeList = mTreeList; treeList != null; treeList = treeList.mNext) {
+            for (TreeList treeList = mTreeList; treeList != null; treeList = treeList.mTail) {
                 if (treeList != mTreeList) sb.append(", ");
                 sb.append(treeList.mTree);
             }
