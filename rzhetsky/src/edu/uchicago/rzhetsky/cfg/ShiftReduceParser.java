@@ -183,8 +183,8 @@ public class ShiftReduceParser extends Parser {
             SearchState state2 
                 = new SearchState(state.mPosition+1,
                                   -1,
-                                  state,
-                                  new TreeList(cat,state.mTreeList));
+                                  new TreeList(cat,state.mTreeList),
+                                  state);
             stack.addLast(state2);
         }
     }
@@ -198,8 +198,8 @@ public class ShiftReduceParser extends Parser {
                 // convert the stack to three parallel arrays
                 stack.add(new SearchState(state.mPosition,
                                           numDtrs,
-                                          state,
-                                          new TreeList(mother,treeList)));
+                                          new TreeList(mother,treeList),
+                                          state));
             }
             if (treeList == null) return;
             String cat = treeList.mTree;
@@ -356,16 +356,16 @@ public class ShiftReduceParser extends Parser {
     
     static class SearchState {
         final int mPosition;
-        final TreeList mTreeList;
         final int mNumDtrs;
+        final TreeList mTreeList;
         final SearchState mPrevious;
         public SearchState() {
             this(0,-2,null,null); // -2 for initial state not needed
         }
         public SearchState(int position,
                            int numDtrs,
-                           SearchState previous,
-                           TreeList treeList) {
+                           TreeList treeList,
+                           SearchState previous) {
             mPosition = position;
             mNumDtrs = numDtrs;
             mTreeList = treeList;
