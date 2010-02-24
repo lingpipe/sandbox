@@ -21,6 +21,15 @@ public class DemoCfg {
      */
     public static void main(String[] args) {
 
+        try {
+            main2(args);
+        } catch (Throwable t) {
+            System.out.println("Threw t=" + t);
+            t.printStackTrace(System.out);
+        }
+    }
+
+    static void main2(String[] args) {
         List<Production> productions
             = Arrays
             .asList(Production.create("N","N","PP"),
@@ -43,6 +52,7 @@ public class DemoCfg {
                     LexEntry.create("N","dog"),
                     LexEntry.create("N","table"),
                     LexEntry.create("PN","John"),
+                    LexEntry.create("PN","Mary"),
                     LexEntry.create("P","on"),
                     LexEntry.create("P","in"),
                     LexEntry.create("P","near"),
@@ -60,6 +70,7 @@ public class DemoCfg {
 
         System.out.println("\n3. Search");
 
+        parse(parser,"John");
         parse(parser,"John","ran");
         parse(parser,"the","dog","ran");
         parse(parser,"John","saw","Mary");

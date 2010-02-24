@@ -182,8 +182,9 @@ public class ShiftReduceParser extends Parser {
             SearchState state2 
                 = new SearchState(state.mWords,
                                   state.mPosition+1,
-                                  new TreeList(Tree.createLexical(cat,word),
-                                                    state.mTreeList));
+                                  -1,
+                                  state,
+                                  new TreeList(cat,state.mTreeList));
             stack.addLast(state2);
         }
     }
@@ -197,11 +198,12 @@ public class ShiftReduceParser extends Parser {
                 // convert the stack to three parallel arrays
                 stack.add(new SearchState(state.mWords,
                                           state.mPosition,
-                                          new TreeList(createPhrasal(mother,numDtrs,state.mTreeList), 
-                                                       treeList)));
+                                          numDtrs,
+                                          state,
+                                          new TreeList(mother,treeList)));
             }
             if (treeList == null) return;
-            String cat = treeList.mTree.rootCategory();
+            String cat = treeList.mTree;
             node = node.mExtensionMap.get(cat);
             treeList = treeList.mTail;
         }
@@ -252,12 +254,12 @@ public class ShiftReduceParser extends Parser {
         }
     }
 
-    static Tree createPhrasal(String mother, int numDtrs, TreeList treeList) {
-        Tree[] dtrs = new Tree[numDtrs];
-        for (int i = numDtrs; --i >= 0; treeList = treeList.mTail)
-            dtrs[i] = treeList.mTree;
-        return Tree.createPhrasal(mother,dtrs);
-    }
+    // static Tree createPhrasal(String mother, int numDtrs, TreeList treeList) {
+    //   Tree[] dtrs = new Tree[numDtrs];
+    //   for (int i = numDtrs; --i >= 0; treeList = treeList.mTail)
+    //   dtrs[i] = treeList.mTree;
+    //   return Tree.createPhrasal(mother,dtrs);
+    // }
 
     static Map<String,String[]> lexIndex(ContextFreeGrammar cfg) {
         Map<String,Set<String>> lexMap
@@ -340,14 +342,20 @@ public class ShiftReduceParser extends Parser {
 
     static class TreeList {
         private TreeList mTail;
-        private final Tree mTree;
-        public TreeList(Tree tree) {
+        private final String mTree;
+        public TreeList(String tree) {
             this(tree,null);
         }
-        public TreeList(Tree tree,
+        public TreeList(String tree,
                         TreeList tail) {
             mTree = tree;
             mTail = tail;
+        }
+        @Override
+        public String toString() {
+            return mTail == null
+                ? mTree
+                : (mTree + "+" + mTail);
         }
     }
 
@@ -356,15 +364,21 @@ public class ShiftReduceParser extends Parser {
         final int mPosition;
         final String[] mWords;
         final TreeList mTreeList;
+        final int mNumDtrs;
+        final SearchState mPrevious;
         public SearchState(String[] words) {
-            this(words,0,null);
+            this(words,0,-2,null,null); // -2 for initial state not needed
         }
         public SearchState(String[] words,
                            int position,
+                           int numDtrs,
+                           SearchState previous,
                            TreeList treeList) {
             mWords = words;
             mPosition = position;
+            mNumDtrs = numDtrs;
             mTreeList = treeList;
+            mPrevious = previous;
         }
         public boolean wordsFinished() {
             return mPosition == mWords.length;
@@ -375,24 +389,53 @@ public class ShiftReduceParser extends Parser {
                 && mTreeList.mTail == null;
         }
         public Tree getTree() {
-            // requires isComplete();
-            return mTreeList.mTree;
+            // precondition: isComplete() == true
+            if (mNumDtrs == -1)
+                return Tree.createLexical(mTreeList.mTree,
+                                          mWords[mPosition-1]);
+            Tree[] dtrTrees = new Tree[mNumDtrs];
+            getTree(mPrevious,dtrTrees,mNumDtrs);
+            return Tree.createPhrasal(mTreeList.mTree,
+                                      dtrTrees);
+        }
+        public static SearchState getTree(SearchState state, Tree[] trees, int position) {
+            while (--position >= 0) {
+                if (state.mNumDtrs == -1) {
+                    trees[position] = Tree.createLexical(state.mTreeList.mTree,
+                                                         state.mWords[state.mPosition-1]);
+                    state = state.mPrevious;
+                } else {
+                    Tree[] dtrTrees = new Tree[state.mNumDtrs];
+                    String cat = state.mTreeList.mTree;
+                    state = getTree(state.mPrevious,dtrTrees,state.mNumDtrs);
+                    trees[position] = Tree.createPhrasal(cat,dtrTrees);
+                }
+            }
+            return state;
         }
         @Override
         public String toString() {
+            return 
+                "state(" + mPosition + "," + mTreeList + "," +mNumDtrs + ")"
+                + ( mPrevious == null ? "" : "; " + mPrevious);
+
+                
+        
+            /*
             StringBuilder sb = new StringBuilder();
             sb.append("Ws=");
             for (int i = mPosition; i < mWords.length; ++i)
                 sb.append("|" + mWords[i]);
             if (mPosition < mWords.length)
                 sb.append('|');
-            sb.append(" Ts=");
+            sb.append(" Cs=");
             for (TreeList treeList = mTreeList; treeList != null; treeList = treeList.mTail) {
                 if (treeList != mTreeList) sb.append(", ");
                 sb.append(treeList.mTree);
             }
             sb.append('\n');
             return sb.toString();
+            */
         }
     }
 
