@@ -183,7 +183,7 @@ public class ShiftReduceParser extends Parser {
             SearchState state2 
                 = new SearchState(state.mPosition+1,
                                   -1,
-                                  new TreeList(cat,state.mTreeList),
+                                  new CatList(cat,state.mCatList),
                                   state);
             stack.addLast(state2);
         }
@@ -191,20 +191,20 @@ public class ShiftReduceParser extends Parser {
 
     void applyRules(SearchState state,
                     LinkedList<SearchState> stack) {
-        TreeList treeList = state.mTreeList;
+        CatList catList = state.mCatList;
         RuleIndexNode node = mRuleIndexRoot;
         for (int numDtrs = 0; node != null; ++numDtrs) {
             for (String mother : node.mMotherCats) {
                 // convert the stack to three parallel arrays
                 stack.add(new SearchState(state.mPosition,
                                           numDtrs,
-                                          new TreeList(mother,treeList),
+                                          new CatList(mother,catList),
                                           state));
             }
-            if (treeList == null) return;
-            String cat = treeList.mTree;
+            if (catList == null) return;
+            String cat = catList.mCat;
             node = node.mExtensionMap.get(cat);
-            treeList = treeList.mTail;
+            catList = catList.mTail;
         }
     }
 
@@ -334,22 +334,22 @@ public class ShiftReduceParser extends Parser {
         }
     }
 
-    static class TreeList {
-        private TreeList mTail;
-        private final String mTree;
-        public TreeList(String tree) {
-            this(tree,null);
+    static class CatList {
+        private final String mCat;
+        private CatList mTail;
+        public CatList(String cat) {
+            this(cat,null);
         }
-        public TreeList(String tree,
-                        TreeList tail) {
-            mTree = tree;
+        public CatList(String cat,
+                       CatList tail) {
+            mCat = cat;
             mTail = tail;
         }
         @Override
         public String toString() {
             return mTail == null
-                ? mTree
-                : (mTree + "+" + mTail);
+                ? mCat
+                : (mCat + "+" + mTail);
         }
     }
 
@@ -357,18 +357,18 @@ public class ShiftReduceParser extends Parser {
     static class SearchState {
         final int mPosition;
         final int mNumDtrs;
-        final TreeList mTreeList;
+        final CatList mCatList;
         final SearchState mPrevious;
         public SearchState() {
             this(0,-2,null,null); // -2 for initial state not needed
         }
         public SearchState(int position,
                            int numDtrs,
-                           TreeList treeList,
+                           CatList catList,
                            SearchState previous) {
             mPosition = position;
             mNumDtrs = numDtrs;
-            mTreeList = treeList;
+            mCatList = catList;
             mPrevious = previous;
         }
         public boolean wordsFinished(String[] words) {
@@ -376,17 +376,17 @@ public class ShiftReduceParser extends Parser {
         }
         public boolean isComplete(String[] words) {
             return wordsFinished(words)
-                && mTreeList != null
-                && mTreeList.mTail == null;
+                && mCatList != null
+                && mCatList.mTail == null;
         }
         public Tree getTree(String[] words) {
             // precondition: isComplete() == true
             if (mNumDtrs == -1)
-                return Tree.createLexical(mTreeList.mTree,
+                return Tree.createLexical(mCatList.mCat,
                                           words[mPosition-1]);
             Tree[] dtrTrees = new Tree[mNumDtrs];
             getTree(mPrevious,dtrTrees,mNumDtrs,words);
-            return Tree.createPhrasal(mTreeList.mTree,
+            return Tree.createPhrasal(mCatList.mCat,
                                       dtrTrees);
         }
         public static SearchState getTree(SearchState state, 
@@ -396,12 +396,12 @@ public class ShiftReduceParser extends Parser {
             while (--position >= 0) {
                 if (state.mNumDtrs == -1) {
                     trees[position] 
-                        = Tree.createLexical(state.mTreeList.mTree,
+                        = Tree.createLexical(state.mCatList.mCat,
                                              words[state.mPosition-1]);
                     state = state.mPrevious;
                 } else {
                     Tree[] dtrTrees = new Tree[state.mNumDtrs];
-                    String cat = state.mTreeList.mTree;
+                    String cat = state.mCatList.mCat;
                     state = getTree(state.mPrevious,
                                     dtrTrees,
                                     state.mNumDtrs,
@@ -415,7 +415,7 @@ public class ShiftReduceParser extends Parser {
         @Override
         public String toString() {
             return 
-                "state(" + mPosition + "," + mTreeList + "," +mNumDtrs + ")"
+                "state(" + mPosition + "," + mCatList + "," +mNumDtrs + ")"
                 + ( mPrevious == null ? "" : "; " + mPrevious);
         }
     }
