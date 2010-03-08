@@ -1,0 +1,235 @@
+// tutorials
+  <target name="models">
+    <ant dir="chineseTokens" target="models"/>
+    <ant dir="posTags" target="models"/>
+    <ant dir="ne" target="models"/>
+  </target>
+
+
+// tutorials/chineseTokens
+
+<target name="models"
+        depends="train-as05,train-pku05,train-cityu05,train-msr05">
+  <copy todir="../../models">
+    <fileset dir=".">
+      <include name="*.spell"/>
+    </fileset>
+  </copy>
+</target>
+
+
+<target name="train-as05"
+        depends="compile">
+  <java classname="Train05"
+        maxmemory="1G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.sighan05}"/>
+    <arg value="as"/>                <!-- corpus name -->
+    <arg value="5"/>                 <!-- max n-gram -->
+    <arg value="5.0"/>               <!-- LM interpolation -->
+    <arg value="7000"/>              <!-- LM num chars -->
+    <arg value="${model.dir}"/>      <!-- directory for model -->
+  </java>
+</target>
+
+<target name="train-pku05"
+        depends="compile">
+  <java classname="Train05"
+        maxmemory="1G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.sighan05}"/>
+    <arg value="pku"/>                <!-- corpus name -->
+    <arg value="5"/>                 <!-- max n-gram -->
+    <arg value="5.0"/>               <!-- LM interpolation -->
+    <arg value="7000"/>              <!-- LM num chars -->
+  </java>
+</target>
+
+<target name="train-cityu05"
+        depends="compile">
+  <java classname="Train05"
+        maxmemory="1G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.sighan05}"/>
+    <arg value="cityu"/>                <!-- corpus name -->
+    <arg value="5"/>                 <!-- max n-gram -->
+    <arg value="5.0"/>               <!-- LM interpolation -->
+    <arg value="7000"/>              <!-- LM num chars -->
+  </java>
+</target>
+
+<target name="train-msr05"
+        depends="compile">
+  <java classname="Train05"
+        maxmemory="1G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.sighan05}"/>
+    <arg value="msr"/>                <!-- corpus name -->
+    <arg value="5"/>                 <!-- max n-gram -->
+    <arg value="5.0"/>               <!-- LM interpolation -->
+    <arg value="7000"/>              <!-- LM num chars -->
+  </java>
+</target>
+
+
+
+// tutorials/crf
+
+
+
+<property name="muc6.data.munged"
+          value="E:\data\muc6\munged"/>
+
+<target name="muc6-corpus"
+        depends="jar">
+  <java classname="Muc6XvalCorpus"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${muc6.data.munged}"/>
+    <arg value="John Smith lives in New York."/>
+  </java>
+</target>
+
+<property name="muc6.xv.minFeatureCount"
+          value="1"/>
+<property name="muc6.xv.addIntercept"
+          value="true"/>
+<property name="muc6.xv.cacheFeatures"
+          value="true"/>
+<property name="muc6.xv.priorVariance"
+          value="10000.0"/>
+<property name="muc6.xv.priorBlockSize"
+          value="100"/>
+<property name="muc6.xv.initialLearningRate"
+          value="0.01"/>
+<property name="muc6.xv.learningRateDecay"
+          value="0.9"/>
+<property name="muc6.xv.minImprovement"
+          value="0.00001"/>
+<property name="muc6.xv.maxEpochs"
+          value="3"/>
+<property name="muc6.xv.numFolds"
+          value="10"/>
+
+<target name="muc6-xv"
+        depends="jar">
+  <java classname="Muc6Xval"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${muc6.data.munged}"/>
+    <arg value="${muc6.xv.minFeatureCount}"/>
+    <arg value="${muc6.xv.addIntercept}"/>
+    <arg value="${muc6.xv.cacheFeatures}"/>
+    <arg value="${muc6.xv.priorVariance}"/>
+    <arg value="${muc6.xv.priorBlockSize}"/>
+    <arg value="${muc6.xv.initialLearningRate}"/>
+    <arg value="${muc6.xv.learningRateDecay}"/>
+    <arg value="${muc6.xv.minImprovement}"/>
+    <arg value="${muc6.xv.maxEpochs}"/>
+    <arg value="${muc6.xv.numFolds}"/>
+  </java>
+</target>
+
+<target name="muc6-hmm-xv"
+        depends="jar">
+  <java classname="Muc6HmmXval"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${muc6.data.munged}"/>
+  </java>
+</target>
+
+<property name="muc6.xv.thread.jobs.file"
+          value="data/muc6-thread-jobs.csv"/>
+<property name="muc6.xv.thread.threads"
+          value="4"/>
+
+<target name="muc6-thread-xv"
+        depends="jar">
+  <java classname="ThreadedXval"
+        maxmemory="2500M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${muc6.data.munged}"/>
+    <arg value="${muc6.xv.thread.jobs.file}"/>
+    <arg value="${muc6.xv.thread.threads}"/>
+  </java>
+</target>
+
+
+// tutorials/em
+
+<target name="lr"
+        depends="jar">
+  <java classname="LrTest"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="c:\data\20news\unpacked"/>
+  </java>
+</target>
+
+
+// tutorials/interestingPhrases
+
+
+  <target name="words"
+          depends="jar">
+    <java classname="GigawordWords"
+          maxmemory="10G"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="${gigaword3.en.dir}"/>
+    </java>
+  </target>
+
+
+  <target name="freq"
+          depends="jar">
+    <java classname="GigawordNGrams"
+          maxmemory="10G"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="2"/>
+      <arg value="1000000"/>
+      <arg value="E:\data\gigawordEnglish\dist\nyt"/>
+    </java>
+  </target>
+
+  <property name="gigaword.dir"
+            value="E:\data\EnglishGigaword\dist\"/>
+
+  <target name="roll"
+          depends="jar">
+    <java classname="RollingPhrases"
+          maxmemory="1400M"
+          fork="true">
+      <jvmarg value="-server"/>
+      <classpath refid="classpath.standard"/>
+      <arg value="-dataDir=${gigaword.dir}/nyt"/>
+
+      <arg value="-bgNGramOrder=3"/>
+      <arg value="-bgCharNGramOrder=3"/>
+      <arg value="-bgInterpolation=4.0"/>
+      <arg value="-bgSamplePeriod=10"/>
+      <arg value="-bgScaleThreshold=1000000"/>
+
+      <arg value="-fgNGramOrder=5"/>
+      <arg value="-fgSamplePeriod=1"/>
+      <arg value="-fgScaleThreshold=1000000"/>
+
+      <arg value="-reportMaxTerms=100"/>
+      <arg value="-reportMinTermCount=5"/>
+      <arg value="-reportMinNGram=1"/>
+      <arg value="-reportMaxNGram=5"/>
+    </java>
+  </target>
+
+
