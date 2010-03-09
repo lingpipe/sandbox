@@ -233,3 +233,134 @@
   </target>
 
 
+// tutorials/ne
+
+<property name="data.muc6"
+          value="${data.root}/muc6/munged"/>
+<property name="model.muc6"
+          value="${model.root}/ne-en-news-muc6"/>
+
+<property name="data.genia"
+          value="${data.root}/genia-3.02/unpacked/GENIAcorpus3.02.merged.xml"/>
+<property name="model.genia"
+          value="${model.root}/ne-en-bio-genia.TokenShapeChunker"/>
+
+<!-- make sure to remove genia's buggy dtd before running -->
+<target name="train-genia"
+        depends="jar">
+  <java classname="TrainGenia"
+        maxmemory="512M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${model.genia}"/>
+    <arg value="${data.genia}"/>
+  </java>
+</target>
+
+<property name="model.biotag"
+          value="${model.root}/biotag_"/>
+<property name="model.biotag.variation"
+          value="${model.biotag}variation.HmmChunker"/>
+<property name="model.biotag.gene"
+          value="${model.biotag}gene.HmmChunker"/>
+<property name="model.biotag.malignancy"
+          value="${model.biotag}malignancy.HmmChunker"/>
+
+<property name="data.biotag"
+          value="${data.root}/pennBioTagger/unpacked/BioTagger/data/training"/>
+<property name="data.biotag.variation"
+          value="${data.biotag}/variation/variation_train_data"/>
+<property name="data.biotag.malignancy"
+          value="${data.biotag}/malignancy/malignancy_train_data"/>
+<property name="data.biotag.gene"
+          value="${data.biotag}/gene/data/gene_train_data"/>
+
+<target name="train-biotag-variation"
+        depends="jar">
+  <java classname="TrainBioTag"
+        maxmemory="256M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.biotag.variation}"/>
+    <arg value="${model.biotag.variation}"/>
+  </java>
+</target>
+
+<target name="train-biotag-malignancy"
+        depends="jar">
+  <java classname="TrainBioTag"
+        maxmemory="256M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.biotag.malignancy}"/>
+    <arg value="${model.biotag.malignancy}"/>
+  </java>
+</target>
+
+<target name="train-muc6"
+        depends="jar">
+  <java classname="TrainMuc6"
+        maxmemory="1G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="${model.muc6}"/>
+    <arg value="${data.muc6}"/>
+  </java>
+</target>
+
+<target name="speed-muc6"
+        depends="jar">
+  <java classname="ChunkerSpeedTest"
+        maxmemory="2G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="f:\tempModels\ne-en-news-muc6"/>
+    <arg value="f:\leipzig-en.txt"/>
+    <arg value="ISO-8859-1"/>
+  </java>
+</target>
+
+<target name="test-muc6"
+        depends="jar">
+  <java classname="TestMuc6"
+        maxmemory="2G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.muc6}"/>
+  </java>
+</target>
+
+<target name="test-muc7"
+        depends="jar">
+  <java classname="TestMuc7"
+        maxmemory="2G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="f:\data\muc7\munged"/>
+  </java>
+</target>
+
+<target name="muc6-test-data"
+        depends="jar">
+  <java classname="CreateTestData"
+        maxmemory="1G"
+        fork="true">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+  </java>
+</target>
+
+<target name="chem"
+        depends="jar">
+  <java classname="IupacChunkParser"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="e:\data\chem-kolarik\unpacked\train.iob"/>
+    <arg value="e:\data\chem-kolarik\unpacked\medlinetest.iob"/>
+    <arg value="e:\data\chem-kolarik\unpacked\chemicals-test-corpus-23-05-2008.iob"/>
+  </java>
+</target>
