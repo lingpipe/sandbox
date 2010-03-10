@@ -1,0 +1,44 @@
+// tutorials/querySpellChecking
+
+<!--
+<h2>Case Restoration as Spelling Correction</h2>
+
+<p>The general noisy channel model underlying our spell checker has
+been applied to several tasks other than spelling.  Most notably for
+text processing is perhaps case restoration, which we consider in this
+section.  A related capability is space insertion, which we cover in
+the <a href="../chineseTokens/read-me.html">chinese word segmentation
+tutorial</a> tutorial in detail; also, our general spell checker
+described above will insert or delete spaces as a matter of spell
+checking.</p>
+
+<h3>Custom Weighted Edit Distance</h3>
+
+<p>The only difference between case restoration and general spelling
+correction is the choice of weighted edit distance function.  For case
+restoration, we simply allow any character to be replaced with an
+upper or lower case version of itself.  In the general case of case
+editing, we may assign a cost to this edit.  In the full case
+inference problem from single case text, we will typically make this
+edit cost free.
+</p>
+
+<h3>Training on a Large Corpus</h3>
+
+<p> For convenience, we train a spelling corrector here on the <a
+href="http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC2003T05">LDC
+English Gigaword corpus</a>.  In general, one should train on a corpus
+that is both high quality in terms of editing and close to the desired
+run-time data.
+</p>
+
+<p>The training code, <a
+href="src/GigawordTrainer.java"><code>src/GigawordTrainer.java</code></a>
+is boilerplate.  It simply uses LingPipe's Gigaword text parser to
+feed text to the spelling trainer.  The command takes several parameters,
+as can be seen by looking at the Ant target <code>trainGigaword</code>
+in <a href="build.xml"><code>build.xml</code></a>.
+
+-->
+
+
