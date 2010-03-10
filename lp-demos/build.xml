@@ -387,6 +387,15 @@
   </java>
 </target>
 
+<target name="saxfilter"
+        depends="compile">
+  <java classname="SAXSentenceFilterDemo"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="../../data/medline/medsamp2009.xml"/>
+  </java>
+</target>
+
 
 // tutorials/sentiment
 
