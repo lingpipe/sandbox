@@ -364,3 +364,218 @@
     <arg value="e:\data\chem-kolarik\unpacked\chemicals-test-corpus-23-05-2008.iob"/>
   </java>
 </target>
+
+// tutorial/sentences
+
+<target name="french"
+        depends="compile">
+  <java classname="${run.class}"
+        maxmemory="800M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="C:/aliasi/frenchTreebank/unpacked/FrenchTreebank/corpus-fonctions"/>
+  </java>
+</target>
+
+<target name="runme"
+        depends="compile">
+  <java classname="${run.class}"
+        maxmemory="512M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg line="${args}"/>
+  </java>
+</target>
+
+
+// tutorials/sentiment
+
+<property name="subjectivity.data.dir"
+          value="${PolarityDir}"/>
+<property name="subjectivity.model.file"
+          value="subjectivity.LMClassifier"/>
+<property name="polarity.data.dir"
+          value="${PolarityDir}\txt_sentoken"/>
+<property name="polarity.model.file"
+          value="polarity.LMClassifier"/>
+
+<target name="models"
+        depends="compile">
+  <java classname="Models"
+        maxMemory="1G"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${subjectivity.data.dir}"/>
+    <arg value="${polarity.data.dir}"/>
+    <arg value="${subjectivity.model.file}"/>
+    <arg value="${polarity.model.file}"/>
+  </java>
+</target>
+
+
+// tutorials/querySpellCheck
+
+  <target name="trainGigaword"
+          depends="jar">
+    <java classname="GigawordSimpleTrainer"
+          fork="true"
+          maxmemory="10G">
+      <classpath refid="classpath.standard"/>
+      <arg value="all-gigaword.CompiledSimpleCaser"/>
+      <!-- <arg value="8"/> -->
+
+      <arg value="1000000000000"/>
+      <arg value="${data.dir}\gigawordEnglish\dist\nyt"/>
+      <arg value="${data.dir}\gigawordEnglish\dist\apw"/>
+      <!-- too much non-English getting in -->
+      <!-- <arg value="${data.dir}\gigawordEnglish\dist\afe"/> -->
+      <!-- <arg value="${data.dir}\gigawordEnglish\dist\xie"/> -->
+    </java>
+  </target>
+
+  <target name="trainGigawordN"
+          depends="jar">
+    <java classname="GigawordNgramTrainer"
+          fork="true"
+          maxmemory="13G">
+      <classpath refid="classpath.standard"/>
+      <arg value="all-gigaword.CompiledNgramCaser"/>
+      <arg value="500000000"/>
+      <arg value="3"/>
+      <arg value="${data.dir}\gigawordEnglish\dist\nyt"/>
+      <arg value="${data.dir}\gigawordEnglish\dist\apw"/>
+    </java>
+  </target>
+
+  <target name="test"
+          depends="jar">
+    <java classname="NgramCaser"
+          fork="true"
+          maxmemory="1G">
+      <classpath refid="classpath.standard"/>
+    </java>
+  </target>
+
+
+  <target name="testBestCase"
+          depends="jar">
+    <java classname="TestSimpleCase"
+          fork="true"
+          maxmemory="2G">
+      <classpath refid="classpath.standard"/>
+      <arg value="all-gigaword.CompiledNgramCaser"/>
+      <arg value="The Supreme Court called President Pervez Musharraf's suspension of the chief justice illegal; in an unexpected ruling that posed a serious challenge to the Pakistani president."/>
+      <arg value="Central New Jersey is swarming with community theaters, and summer stocks offer lively showcases for the region's amateur actors."/>
+      <arg value="Authorities are investigating whether Tim Donaghy influenced the outcome of games he or associates bet on."/>
+      <arg value="The European and American sponsors of a resolution that would put Kosovo on the path to independence withdrew the measure from the Security Council today in the face of a promised Russian veto and said a six-nation European group would now seek a way to settle the contentious statehood question."/>
+      <arg value="Chinese regulators said today that the companies had exported mislabeled drug and tainted pet food ingredients."/>
+      <arg value="Israel released 255 Palestinian prisoners today in a gesture meant to support Palestinian President Mahmoud Abbas, who said that more prisoners would soon be released."/>
+      <arg value="Google has been asking Washington to make sure that the UHF TV frequencies that are scheduled to be auctioned off in 2009 are sold to wireless carriers who promise to make their networks open to rival services and devices."/>
+      <arg value="It sent a letter to Kevin Martin, the chairman of the Federal Communications Commission, today promising to bid at least $4.6 billion in the coming auction, if its standard for openness is met."/>
+      <arg value="The letter, from Eric Schmidt, its chief executive, praised Mr. Martin for proposing some steps toward openness, but he said they were not enough."/>
+      <arg value="Michael Moritz, the venture capitalist who built a personal $1.5 billion fortune discovering the likes of Google, YouTube, Yahoo and PayPal, and taking them public, may seem preternaturally in tune with new media."/>
+    </java>
+  </target>
+
+
+// tutorials/posTags
+
+<property name="data.pos.frenchTreebank"
+          value="${data.dir}/frenchTreebank/unpacked/FrenchTreebank/corpus-constit"/>
+
+<property name="data.pos.pennTreebank3"
+          value="${data.dir}/treebank3/unpacked/package/treebank_3/parsed/mrg"/>
+
+<target name="train-tb"
+        depends="compile">
+  <java classname="TrainTreebankPos"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.pos.pennTreebank3}"/>
+    <arg value="../../models/pos-en-news-ptb3.HiddenMarkovModel"/>
+  </java>
+</target>
+
+<target name="models"
+        depends="model-brown, model-genia, model-medpost"/>
+
+<target name="model-genia"
+        depends="compile">
+  <java classname="Train"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="8"/>                 <!-- n-gram size -->
+    <arg value="256"/>               <!-- num characters -->
+    <arg value="8.0"/>               <!-- interpolation ratio -->
+    <arg value="GeniaPosCorpus"/>    <!-- corpus implementation class -->
+    <arg value="${data.pos.genia}"/>       <!-- baseline for data -->
+    <arg value="../../models/pos-en-bio-genia.HiddenMarkovModel"/>
+  </java>
+</target>
+
+<target name="model-medpost"
+        depends="compile">
+  <java classname="Train"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="8"/>                 <!-- n-gram size -->
+    <arg value="256"/>               <!-- num characters -->
+    <arg value="8.0"/>               <!-- interpolation ratio -->
+    <arg value="MedPostPosCorpus"/>    <!-- corpus implementation class -->
+    <arg value="${data.pos.medpost}"/>       <!-- baseline for data -->
+    <arg value="../../models/pos-en-bio-medpost.HiddenMarkovModel"/>
+  </java>
+</target>
+
+<target name="model-brown"
+        depends="compile">
+  <java classname="Train"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="8"/>                 <!-- n-gram size -->
+    <arg value="256"/>               <!-- num characters -->
+    <arg value="8.0"/>               <!-- interpolation ratio -->
+    <arg value="BrownPosCorpus"/>    <!-- corpus implementation class -->
+    <arg value="${data.pos.brown}"/>       <!-- baseline for data -->
+    <arg value="../../models/pos-en-general-brown.HiddenMarkovModel"/>
+    <arg value="true"/>              <!-- smoothe tags -->
+  </java>
+</target>
+
+
+<target name="train-french-tb"
+        depends="compile">
+  <java classname="TrainFrenchTreebank"
+        fork="true"
+        maxmemory="512M">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data.pos.frenchTreebank}"/>
+    <arg value="../../models/pos-fr-general-frenchTreebank.HiddenMarkovModel"/>
+  </java>
+</target>
+
+
+<target name="eval-brown-beam"
+        depends="compile">
+  <java classname="CrossValidateBeam"
+        fork="true"
+        maxMemory="512M">
+    <jvmarg value="-server"/>
+    <classpath refid="classpath.standard"/>
+    <arg value="5"/>                 <!-- sent eval rate -->
+    <arg value="1000000"/>            <!-- toks before eval -->
+    <arg value="32"/>                <!-- max n-best -->
+    <arg value="8"/>                 <!-- n-gram size -->
+    <arg value="128"/>               <!-- num characters -->
+    <arg value="8.0"/>               <!-- interpolation ratio -->
+    <arg value="BrownPosCorpus"/>  <!-- corpus implementation class -->
+    <arg value="${data.pos.brown}"/>    <!-- baseline for data -->
+    <arg value="true"/>            <!-- smoothe tags -->
+    <arg value="11.0"/>             <!-- beam -->
+    <arg value="10.0"/>             <!-- emission beam -->
+  </java>
+</target>
+
+
+
+
