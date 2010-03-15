@@ -662,8 +662,8 @@
         description="Replace class name">
     <replace dir="src"
              includes ="**/*.java">
-      <replacetoken><![CDATA[FileSys]]></replacetoken>
-      <replacevalue><![CDATA[FileUtils]]></replacevalue>
+      <replacetoken><![CDATA[com.aliasi.medline]]></replacetoken>
+      <replacevalue><![CDATA[com.aliasi.lingmed.parser]]></replacevalue>
     </replace>
 </target>
 
