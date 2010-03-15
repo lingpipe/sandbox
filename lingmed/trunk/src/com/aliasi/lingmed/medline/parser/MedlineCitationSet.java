@@ -14,7 +14,7 @@
  * +1 (718) 290-9170.
  */
 
-package com.aliasi.medline;
+package com.aliasi.lingmed.parser;
 
 import java.util.HashSet;
 import java.util.Set;

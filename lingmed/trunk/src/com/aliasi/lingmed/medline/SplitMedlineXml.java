@@ -18,7 +18,7 @@ package com.aliasi.lingmed.medline;
 
 import com.aliasi.lingmed.utils.FileUtils;
 
-import com.aliasi.medline.*;
+import com.aliasi.lingmed.parser.*;
 
 import com.aliasi.corpus.ObjectHandler;
 import com.aliasi.corpus.Parser;

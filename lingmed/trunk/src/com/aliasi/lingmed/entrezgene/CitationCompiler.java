@@ -23,10 +23,10 @@ import com.aliasi.lingmed.server.*;
 import com.aliasi.lingmed.utils.FileUtils;
 import com.aliasi.lingmed.utils.Logging;
 
-import com.aliasi.medline.Abstract;
-import com.aliasi.medline.Article;
-import com.aliasi.medline.MedlineCitation;
-import com.aliasi.medline.MedlineHandler;
+import com.aliasi.lingmed.parser.Abstract;
+import com.aliasi.lingmed.parser.Article;
+import com.aliasi.lingmed.parser.MedlineCitation;
+import com.aliasi.lingmed.parser.MedlineHandler;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Arrays;

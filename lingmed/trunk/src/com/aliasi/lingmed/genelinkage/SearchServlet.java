@@ -15,9 +15,9 @@ import com.aliasi.lingmed.server.SearchClient;
 import com.aliasi.lingmed.utils.FileUtils;
 import com.aliasi.lingmed.utils.Logging;
 
-import com.aliasi.medline.Abstract;
-import com.aliasi.medline.Article;
-import com.aliasi.medline.MedlineCitation;
+import com.aliasi.lingmed.parser.Abstract;
+import com.aliasi.lingmed.parser.Article;
+import com.aliasi.lingmed.parser.MedlineCitation;
 
 import com.aliasi.util.NBestSet;
 import com.aliasi.util.Pair;
