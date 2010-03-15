@@ -16,9 +16,9 @@ import com.aliasi.lingmed.server.SearchClient;
 import com.aliasi.lm.NGramProcessLM;
 import com.aliasi.lm.LanguageModel;
 
-import com.aliasi.medline.Abstract;
-import com.aliasi.medline.Article;
-import com.aliasi.medline.MedlineCitation;
+import com.aliasi.lingmed.parser.Abstract;
+import com.aliasi.lingmed.parser.Article;
+import com.aliasi.lingmed.parser.MedlineCitation;
 
 import com.aliasi.util.Arrays;
 import com.aliasi.util.AbstractExternalizable;

@@ -20,9 +20,9 @@ import com.aliasi.lingmed.dao.Codec;
 import com.aliasi.lingmed.lucene.Fields;
 import com.aliasi.lingmed.lucene.LuceneAnalyzer;
 
-import com.aliasi.medline.MedlineCitation;
-import com.aliasi.medline.MedlineHandler;
-import com.aliasi.medline.MedlineParser;
+import com.aliasi.lingmed.parser.MedlineCitation;
+import com.aliasi.lingmed.parser.MedlineHandler;
+import com.aliasi.lingmed.parser.MedlineParser;
 
 import com.aliasi.tokenizer.EnglishStopListFilterTokenizer;
 import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;

@@ -25,9 +25,9 @@ import com.aliasi.lingmed.lucene.Fields;
 import com.aliasi.lingmed.utils.FileUtils;
 import com.aliasi.lingmed.utils.Logging;
 
-import com.aliasi.medline.MedlineCitation;
-import com.aliasi.medline.MedlineHandler;
-import com.aliasi.medline.MedlineParser;
+import com.aliasi.lingmed.parser.MedlineCitation;
+import com.aliasi.lingmed.parser.MedlineHandler;
+import com.aliasi.lingmed.parser.MedlineParser;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Files;

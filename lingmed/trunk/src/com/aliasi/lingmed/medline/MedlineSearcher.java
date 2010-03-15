@@ -19,7 +19,7 @@ package com.aliasi.lingmed.medline;
 import com.aliasi.lingmed.dao.DaoException;
 import com.aliasi.lingmed.dao.DaoSearcher;
 import com.aliasi.lingmed.dao.SearchResults;
-import com.aliasi.medline.MedlineCitation;
+import com.aliasi.lingmed.parser.MedlineCitation;
 
 
 /**

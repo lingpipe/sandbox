@@ -21,7 +21,7 @@ import com.aliasi.lingmed.entrezgene.*;
 import com.aliasi.lingmed.medline.*;
 import com.aliasi.lingmed.server.*;
 
-import com.aliasi.medline.*;
+import com.aliasi.lingmed.parser.*;
 
 import java.io.*;
 
