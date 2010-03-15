@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<project name="Alias-i LingPipe Tutorials Build" default="jars" basedir=".">
+
+  <target name="clean">
+    <ant dir="db" target="clean"/>
+    <ant dir="medline" target="clean"/>
+  </target>
+
+  <target name="jars">
+    <ant dir="db" target="jar"/>
+    <ant dir="medline" target="jar"/>
+  </target>
+
+<target name="update-classname"
+        depends=""
+        description="Replace class name">
+    <replace dir="."
+             includes ="**/*.java">
+      <replacetoken><![CDATA[com.aliasi.medline]]></replacetoken>
+      <replacevalue><![CDATA[com.aliasi.lingmed.parser]]></replacevalue>
+    </replace>
+</target>
+
+</project>

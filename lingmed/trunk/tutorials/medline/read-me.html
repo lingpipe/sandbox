@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>LingPipe: MEDLINE Parsing Tutorial</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+<meta http-equiv="Content-Language"
+      content="en"/>
+<link href="../../../web/css/lp-site.css"
+      type="text/css"
+      rel="stylesheet"
+      title="lp-site"
+      media="screen,projection,tv"/>
+
+<link href="../../../web/css/lp-site-print.css"
+      title="lp-site"
+      type="text/css"
+      rel="stylesheet"
+      media="print,handheld,tty,aural,braille,embossed"/>
+</head>
+
+<body>
+
+<div id="header">
+<h1 id="product">LingPipe</h1><h1 id="pagetitle">MEDLINE Parsing Tutorial</h1>
+<a id="logo"
+   href="http://alias-i.com/"
+  ><img src="../../../web/img/logo-small.gif" alt="alias-i logo"/>
+</a>
+</div><!-- head -->
+
+
+<div id="navig">
+
+<!-- set class="current" for current link -->
+<ul>
+<li><a href="../../../index.html">home</a></li>
+
+<li><a href="../../../web/demos.html">demos</a></li>
+
+<li><a href="../../../web/licensing.html">license</a></li>
+
+<li>download
+<ul>
+<li><a href="../../../web/download.html">lingpipe core</a></li>
+<li><a href="../../../web/models.html">models</a></li>
+</ul>
+</li>
+
+<li>docs
+<ul>
+<li><a href="../../../web/install.html">install</a></li>
+<li><a href="../read-me.html">tutorials</a>
+<ul>
+<li><a href="../classify/read-me.html">classification</a></li>
+<li><a href="../ne/read-me.html">named entity recognition</a></li>
+<li><a href="../cluster/read-me.html">clustering</a></li>
+<li><a href="../posTags/read-me.html">part of speech</a></li>
+<li><a href="../sentences/read-me.html">sentences</a></li>
+<li><a href="../querySpellChecker/read-me.html">spelling correction</a></li>
+<li><a href="../stringCompare/read-me.html">string comparison</a></li>
+<li><a href="../interestingPhrases/read-me.html">significant phrases</a></li>
+<li><a href="../lm/read-me.html">character language models</a></li>
+<li><a class="current" href="../medline/read-me.html">medline parsing</a></li>
+<li><a href="../db/read-me.html">database text mining</a></li>
+<li><a href="../chineseTokens/read-me.html">chinese word segmentation</a></li>
+<li><a href="../hyphenation/read-me.html">hyphenation and syllabification</a></li>
+<li><a href="../sentiment/read-me.html">sentiment analysis</a></li>
+<li><a href="../langid/read-me.html">language identification</a></li>
+<li><a href="../wordSense/read-me.html">word sense disambiguation</a></li>
+<li><a href="../svd/read-me.html">singular value decomposition</a></li>
+<li><a href="../logistic-regression/read-me.html">logistic regression</a></li>
+<li><a href="../crf/read-me.html">conditional random fields</a></li>
+<li><a href="../em/read-me.html">expectation maximization</a></li>
+<li><a href="../eclipse/read-me.html">eclipse</a></li>
+</ul>
+</li>
+<li><a href="../../../docs/api/index.html">javadoc</a></li>
+</ul>
+</li>
+
+<li>community
+<ul>
+<li><a href="../../../web/customers.html">customers</a></li>
+<li><a href="http://groups.yahoo.com/group/LingPipe/">newsgroup</a></li>
+<li><a href="http://lingpipe-blog.com/">blog</a></li>
+<li><a href="../../../web/bugs.html">bugs</a></li>
+<li><a href="../../../web/sandbox.html">sandbox</a></li>
+<li><a href="../../../web/competition.html">competition</a></li>
+<li><a href="../../../web/citations.html">citations</a></li>
+</ul>
+</li>
+
+<li><a href="../../../web/contact.html">contact</a></li>
+
+<li><a href="../../../web/about.html">about alias-i</a></li>
+</ul>
+
+<div class="search">
+<form action="http://www.google.com/search">
+<p>
+<input type="hidden" name="hl" value="en" />
+<input type="hidden" name="ie" value="UTF-8" />
+<input type="hidden" name="oe" value="UTF-8" />
+<input type="hidden" name="sitesearch" value="alias-i.com" />
+<input class="query" size="10%" name="q" value="" />
+<br />
+<input class="submit" type="submit" value="search" name="submit" />
+<span style="font-size:.6em; color:#888">by&nbsp;Google</span>
+</p>
+</form>
+</div>
+
+</div><!-- navig -->
+
+
+<div id="content" class="content">
+
+<h2>What is MEDLINE?</h2>
+
+<div class="sidebar">
+<h2>Data Mining MEDLINE</h2>
+<p>
+In another tutorial, we use the MEDLINE parsers described here
+with an application that
+extracts mentions of entities and
+relations and stores them in a database:
+</p>
+<ul>
+<li>
+<a href="../db/read-me.html">Database Text Mining Tutorial</a>
+</li>
+</ul>
+</div>
+
+<div class="sidebar">
+<h2>LingMed: MEDLINE Downloader/Indexer</h2>
+<p>
+The LingMed project in the <a href="../../../web/sandbox.html">LingPipe Sandbox</a>
+contains tools to download, verify checksums, and index for search, a
+daily updated version of MEDLINE.
+</p>
+</div>
+
+<p> MEDLINE is a collection of 18 million plus citations into the
+bio-medical literature maintained by the United States National
+Library of Medicine (NLM).  New data is being released at the
+rate of a million citations per year, which works out to about
+5000 per working day.</p>
+
+<p>MEDLINE encodes richly structured data
+about publications including authors, affiliations, titles, abstracts,
+grants, medical subject headings (MeSH), etc.  LingPipe provides tools
+to parse the data from its native XML format into a structured Java
+object.</p>
+
+<h3>2010 MEDLINE Version</h3>
+<p>
+This tutorial is for the current (2010) MEDLINE/PubMed production year.
+Every year, NLM releases a new version of MEDLINE, with a revised
+DTD with a timestamp in its name.
+</p>
+
+
+
+<h2>What's in this Tutorial?</h2>
+
+<h3>Parser, Handler and Word Count Demo</h3>
+
+<p>This tutorial consists of examples of how to use the MEDLINE
+parser, how to write a handler to process the citation objects
+produced by the parser, and as a simple example, a simple word
+counter that produces histograms of word counts in MEDLINE
+citations.
+</p>
+
+<h3>Where's the Downloading and Indexing Tutorial?</h3>
+
+<p>As of LingPipe 3.7, we removed the Lucene indexing and FTP download
+portion of this tutorial, as it was overly complex for explaining the
+basic MEDLINE handler.  </p>
+
+<p>If you're interested in seeing how to programatically download
+MEDLINE from NLM, verify checksums, and keep an up-to-the-minute index
+of MEDLINE, check out our new sandbox project:
+</p>
+
+<ul>
+<li><a href="../../../web/sandbox.html">LingPipe Sandbox: LingMed</a></li>
+</ul>
+
+<h2>Running the Demo</h2>
+
+<p>
+To run the demo, change directories to <code>demos/tutorial/medline</code>
+and then run:
+</p>
+
+<pre class="code">
+cd $LINGPIPE/demos/tutorial/medline
+ant word-count
+</pre>
+
+<p>The tutorial will print the PubMed IDs of the documents that
+it processes.</p>
+
+<p>
+This will print the PubMed IDs of the citations as they are indexed:
+</p>
+
+<pre class="code">
+c:\carp\devguard\lingpipe\trunk\demos\tutorial\medline>ant word-count
+Buildfile: build.xml
+
+compile:
+
+jar:
+
+word-count:
+     [java] processing pmid=10540283
+     [java] processing pmid=10502787
+     [java] processing pmid=10737756
+...
+     [java] processing pmid=18964660
+     [java] processing pmid=19771122
+     [java]      1067 ,
+     [java]       963 .
+     [java]       929 of
+     [java]       888 the
+     [java]       852 -
+     [java]       604 and
+     [java]       487 in
+     [java]       421 (
+     [java]       419 )
+     [java]       348 to
+     [java]       335 a
+     [java]       195 for
+     [java]       188 with
+     [java]       160 The
+     [java]       155 that
+     [java]       141 :
+     [java]       138 was
+     [java]       133 were
+     [java]       131 is
+     [java]       129 by
+     [java]       113 as
+     [java]       109 /
+     [java]        96 from
+     [java]        87 %
+     [java]        86 on
+     [java]        85 or
+     [java]        83 1
+     [java]        83 Humans
+     [java]        78 therapy
+     [java]        76 metabolism
+     [java]        75 2
+     [java]        74 are
+     [java]        73 patients
+     [java]        72 group
+     [java]        70 +
+     [java]        69 genetics
+     [java]        68 an
+     [java]        68 be
+...
+     [java]        10 kg
+     [java]        10 like
+     [java]        10 lines
+     [java]        10 membrane
+     [java]        10 most
+     [java]        10 normal
+     [java]        10 out
+     [java]        10 outcomes
+     [java]        10 parameters
+     [java]        10 rat
+     [java]        10 review
+     [java]        10 severe
+     [java]        10 some
+     [java]        10 surface
+     [java]        10 surgery
+
+BUILD SUCCESSFUL
+Total time: 2 seconds
+</pre>
+
+<p>What you see is the identifiers of the MEDLINE citations being
+listed as they're processed, then a set of tokens in order of the
+number of times they showed up in the documents.
+</p>
+
+<h3>Note On LingPipe Tokenizers</h3>
+<p>
+The standard
+LingPipe tokenizer is case sensitive, includes punctuation and carries out a fine-grained
+tokenization by splitting hyphenated words, contractions, etc.
+Other tokenizers normalize case, remove stopwords, reduce
+words to stems, filter out punctuation, etc.
+</p>
+
+
+
+
+
+
+
+<h2>MEDLINE XML Sample Files</h2>
+
+<p>
+NLM distributes one small sample file in plain XML, which we have
+included in the LingPipe distribution:
+</p>
+
+<div class="sidebar">
+<h2>Larger Sample Files</h2>
+<p>
+NLM also distributes half a dozen larger samples in gzipped format.
+They can be downloaded by ftp without a license through:
+</p>
+<ul>
+<li><a href="http://www.nlm.nih.gov/bsd/sample_records_avail.html">Sample Records Available</a></li>
+<li>
+<a href="ftp://ftp.nlm.nih.gov/nlmdata/sample/medline/">ftp://ftp.nlm.nih.gov/nlmdata/sample/medline</a>
+</li>
+</ul>
+<p>
+You will need the 2010 versions of the files to run with this demo.
+</p>
+</div>
+
+<ul>
+<li> From NLM: <a
+href="http://www.nlm.nih.gov/databases/dtd/medsamp2010.xml">medsamp2010.xml</a> (1MB); &nbsp; &nbsp;
+</li>
+<li>
+Local copy: <a href="../../data/medline/medsamp2010.xml">demos/data/medline/medsamp2010.xml</a>
+</li>
+</ul>
+
+
+<p>
+Each medline sample XML file contains a set of citations under a single element
+<code>MedlineCitationSet</code>, with individual citations being the
+content of elements <code>MedlineCitation</code>.  The gzipped files
+unpack into a single XML file adhering to the same DTD as the small
+sample.
+</p>
+
+<p> The demo may be run directly from the gzipped MEDLINE files.  You
+can save the gzipped files wherever you want and include a path to
+them as an argument to the Ant targets <code>index-sample</code> or
+<code>index-baseline</code>.  </p>
+
+
+<h2>Code Walkthrough</h2>
+
+<p> The source code for the word count demo is in the single file:
+</p>
+
+<ul>
+<li> <a
+href="src/WordCountMedline.java"><code>src/WordCountMedline.java</code></a>.
+</li>
+</ul>
+
+<div class="sidebar">
+<h2>Patterns for Parsers</h2>
+<p>
+The use of a
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineHandler.html">MedlineHandler</a>
+with a
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineParser.html">
+<code>MedlineParser</code></a>
+is a classic instance of the
+<a href="http://en.wikipedia.org/wiki/Visitor_pattern">visitor pattern</a>.
+</p>
+
+<p>
+The basic setup should be familiar from XML parsing using SAX.
+A SAX parser must implement the
+<a href="http://java.sun.com/j2se/1.5.0/docs/api/org/xml/sax/XMLReader.html">
+<code>XMLReader</code></a>
+interface, whereas a SAX (content) handler
+implements the
+<a href="http://java.sun.com/j2se/1.5.0/docs/api/org/xml/sax/ContentHandler.html">
+<code>ContentHandler</code></a>
+interface.
+This is sometimes called an event-based model,
+with the callbacks from the reader to the handler being called "events".
+</p>
+</div>
+
+<p>
+The basic process is as follows; we explain the details in the rest of the code walkthrough.
+The <a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/package-summary.html"><code>com.aliasi.medline</code></a>
+package contains the classes used to parse the MEDLINE distribution files.
+Parsing is done by a
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineParser.html">
+<code>MedlineParser</code></a>.
+The parser is configured for a handler in the form of a
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineHandler.html">MedlineHandler</a>.
+Given data to parse, the parser generates a
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineCitation.html"><code>MedlineCitation</code></a> object
+for each citation entry in the distribution file
+and passes it to the handler's
+<a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/medline/MedlineHandler.html#handle(com.aliasi.medline.MedlineCitation)">
+<code>handle(MedlineCitation)</code></a> method.
+</p>
+
+
+
+<p>
+A <code>MedlineHandler</code> can perform arbitrary
+operations on the citation, accumulating results in a database,
+calculating occurrence statistics for particular MeSH terms, etc.
+</p>
+
+
+<h3>Parsing</h3>
+
+<p>
+The parser is constructed with a single boolean argument, which
+indicates whether or not to save the raw XML:
+</p>
+
+<pre class="code">
+public static void main(String[] args) throws IOException, SAXException {
+    boolean saveXML = false;
+    MedlineParser parser = new MedlineParser(saveXML);
+    WordCountHandler handler = new WordCountHandler();
+    parser.setHandler(handler);
+    ...
+</pre>
+
+<p> In this case, we're not saving the XML; in the indexer in the
+sandbox project we save the raw XML to make it easy to reconstruct
+citation objects.  The parser gets constructed with the boolean
+argument.  We then construct the handler, which will actually process
+the document; the <code>WordCountHandler</code> is a static class
+defined in the single source file.  After constructing the handler, we
+configure the parser to use the handler we just constructed.
+</p>
+
+<p>Next, we will walk through the arguments, which are file names, and
+parse them using our parser:
+</p>
+
+<pre class="code">
+    ...
+    for (String arg : args) {
+        if (arg.endsWith(".xml")) {
+            InputSource inputSource = new InputSource(arg);
+            parser.parse(inputSource);
+        } else if (arg.endsWith(".gz")) {
+            ...
+        } else {
+            throw new IllegalArgumentException("arguments must end with .xml or .gz");
+        }
+    }
+    handler.report();
+}
+</pre>
+
+<p>We simply loop over the arguments to the main function, and if it's
+a plain XML file (indicated by the suffix <code>.xml</code>) do one
+thing, and if it's a gzipped XML file (indicated by <code>.gz</code>),
+do another.  For plain files, we included the action, which is to
+create a new input source from the argument, then parse the input
+source with the parser.  Input sources are the generic wrapper
+for files, input streams, readers, and URLs, as
+defined in the <code>org.xml.sax</code> package.
+</p>
+
+<p>Once we're done processing the files, we call the handler's
+<code>report()</code> method to print out results.
+</p>
+
+<p> For compressed files, check out the source code in <a
+href="src/WordCountMedline.java"><code>src/WordCountMedline.java</code></a>
+to see how to handle them directly with Java; it's just another set of
+calls to create an input source.  </p>
+
+<h3>Handling</h3>
+
+<p>So far, we've only shown how to do the parsing.  The actual work is
+all done by the <code>MedlineHandler</code> implementation, which
+receives calls to its <code>handle(MedlineCitation)</code> method.
+</p>
+
+<pre class="code">
+static class WordCountHandler implements MedlineHandler {
+    ObjectToCounterMap&lt;String&gt; mCounter = new ObjectToCounterMap&lt;String&gt;();
+    ...
+</pre>
+
+<p>We're defining the handler so that is specified to implement
+<code>com.aliasi.medline.MedlineHandler</code>, which is the type of
+handler required by the MEDLINE parser.  The class has a single member
+variable, <code>mCounter</code>, which is an object to counter map
+(instance of
+<code>com.aliasi.util.ObjectToCounterMap</code>).  The type of
+object being counted is defined as <code>String</code> through the
+generic argument.  </p>
+
+<p>The handler receives MEDLINE citations as callbacks from the
+parser to its  <code>handle(MedlineCitation)</code> method.  This
+is defined as follows:
+</p>
+
+<pre class="code">
+public void handle(MedlineCitation citation) {
+    String id = citation.pmid();
+    System.out.println("processing pmid=" + id);
+
+    Article article = citation.article();
+    String titleText = article.articleTitleText();
+    addText(titleText);
+
+    Abstract abstrct = article.abstrct();
+    if (abstrct != null) {
+        String abstractText = abstrct.textWithoutTruncationMarker();
+        addText(abstractText);
+     }
+
+     MeshHeading[] headings = citation.meshHeadings();
+     for (MeshHeading heading : headings) {
+         for (Topic topic : heading.topics()) {
+             String topicText = topic.topic();
+             addText(topicText);
+         }
+    }
+}
+</pre>
+
+<p>The <code>MedlineCitation</code> object embodies an object
+model in Java for a MEDLINE citation.  The handler method first extracts
+the citation, using the method <code>MedlineCitation.pmid()</code>,
+and prints out the citation;  this is where the prints of the identifiers
+happens in the output.</p>
+
+<p>The next block of code extracts the
+<code>com.aliasi.medline.Article</code> object from the citation, then
+the text of the article title from the article object.  It then
+extracts the text of the title from the article, and calls the
+<code>addText(String)</code> method in the handler (which we show below).
+</p>
+
+<p>The third block extracts the abstract (that's not a typo; the
+word <code>abstract</code> is reserved).  It then checks of the
+abstract is null (not every citation has an abstract), then pulls
+out the text and calls the <code>addText(String)</code> method.
+</p>
+
+<div class="sidebar">
+<h2>MeSH Headings</h2>
+<p>
+The U.S. National Library of Medicine (NLM) distributes MeSH:
+</p>
+<ul>
+<li><a href="http://www.nlm.nih.gov/mesh/">MeSH Home Page</a></li>
+</ul>
+<p>
+It's an extensive library-style topic hierarchy for articles.
+It's not intended to be a biomedical ontology.
+</p>
+</div>
+
+<p>The final block runs through the Medical Subject Headings (MeSH).
+NLM annotates each citation using the controlled vocabulary of MeSH.
+The MeSH headings are supplied as an array, and that array always
+exists.  We then iterate over the headings in the array, then
+for each heading, pulls out the topics for that heading.  Then
+we pull out the text of the topic and add it using the same
+method.
+</p>
+
+<h3>Counting Words</h3>
+
+<p>The counting is all done through the <code>addText(String)</code>
+method in the handler:
+</p>
+
+<pre class="code">
+public void addText(String text) {
+    char[] cs = text.toCharArray();
+    TokenizerFactory factory = IndoEuropeanTokenizerFactory.INSTANCE;
+    Tokenizer tokenizer = factory.tokenizer(cs,0,cs.length);
+    for (String token : tokenizer) {
+        mCounter.increment(token);
+    }
+}
+</pre>
+
+<p>This method simple takes the text and breaks it down into a
+character array, then supplies the character array to a tokenizer (in
+this case, an Indo-European tokenizer defined in
+<code>com.aliasi.tokenizer</code>), tokenizes, then iterates over
+the tokens adding them to the counter through the counter's
+<code>increment(String)</code> method (specified as <code>String</code>)
+through the generic.
+</p>
+
+<p>The counter stores counts for objects that have been incremented,
+and allows them to be traversed by count.  The code that does that
+and prints them out is the <code>report()</code> method in the
+handler:
+</p>
+
+<pre class="code">
+public void report() {
+    List&lt;String&gt; keysByCount = mCounter.keysOrderedByCountList();
+    for (String key : keysByCount) {
+        int count = mCounter.getCount(key);
+        if (count &lt; 10) break;
+        System.out.printf(&quot;%9d %s\n&quot;,count,key);
+    }
+}
+</pre>
+
+<p>This method calls the <code>keysOrderedByCountList()</code>
+method on the object to counter map, then iterates over the keys.
+It gets the count for a key using the <code>getCount(String)</code>
+method, and breaks if the count is less than 10 or prints out the
+key and count otherwise.
+</p>
+
+
+
+<h2>Licensing MEDLINE</h2>
+
+
+<p> MEDLINE is distributed in 2 parts: the baseline distribution, and
+a set of updates files.  A new updates file is released once a day (on
+most weekdays).  Updates files contain new citation entries as well as
+revisions of existing entries.  Updates files may also contain
+instructions to delete existing entries.  In order to maintain a
+single, coherent Lucene index over MEDLINE, each update must be
+processed in the order in which it is released.  </p>
+
+<h3>Licensing MEDLINE</h3>
+
+<p>MEDLINE data is licensed by the United States National Library of
+Medicine (NLM), but most of the publishers retain copyright over
+their contributions.  MEDLINE data is free
+for research to anyone (with registration), but
+commercial use is restricted to U.S.-based organizations (see the
+section <a
+href="http://www.nlm.nih.gov/databases/journal.html#how">How to
+Lease</a> in the above document).  </p>
+
+<p>
+See the following
+link for more information:
+</p>
+
+<ul>
+<li> <a
+href="http://www.nlm.nih.gov/databases/leased.html">Licensing MEDLINE Data</a>
+</li>
+</ul>
+
+<p>
+NLM is very responsive and will help you out if you have
+problems.
+</p>
+
+<p>
+An overview of the distribution is avialble at:
+</p>
+<ul>
+<li><a href="http://www.nlm.nih.gov/bsd/licensee/2010_stats/baseline_med_filecount.html">2010 Baseline Files Overview</a></li>
+</ul>
+
+<p>
+Before downloading, you need to register your IP address with NLM.  So
+you'll need a fixed IP address to keep up with MEDLINE.
+</p>
+
+
+
+<h2>References</h2>
+
+<ul>
+<li> <a
+href="http://www.nlm.nih.gov/databases/leased.html">Licensing MEDLINE Data</a>
+</li>
+<li> <a href="http://www.nlm.nih.gov/bsd/licensee/data_elements_doc.html">MEDLINE XML Format Details</a>
+</li>
+</ul>
+</div><!-- content -->
+
+<div id="foot">
+<p>
+&#169; 2003&ndash;2010 &nbsp;
+<a href="mailto:lingpipe@alias-i.com">alias-i</a>
+</p>
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-15123726-1");
+pageTracker._trackPageview();
+} catch(err) {}</script></body>
+</html>
+
+
+
+
+

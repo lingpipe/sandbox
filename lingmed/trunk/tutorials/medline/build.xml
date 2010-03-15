@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+<project name="LingPipe Tutorial - MEDLINE Parsing and Handling"
+         default="compile"
+         basedir=".">
+
+<path id="classpath.standard">
+  <pathelement location="build/classes"/>
+  <pathelement location="../../lingmed-1.3.jar"/>
+  <pathelement location="../../lib/lingpipe-3.8.1.jar"/>
+  <pathelement location="../../lib/mysql-connector-java-5.1.15-bin.jar"/>
+</path>
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete file="medline-demo.jar"/>
+</target>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac includeAntRuntime="false"   optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <compilerarg value="-Xlint:all"/>
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="medline-demo.jar">
+    <fileset dir="build/classes"
+             includes="**/*.class"/>
+  </jar>
+</target>
+
+
+<target name="word-count"
+        depends="jar">
+  <java classname="WordCountMedline"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="../../data/medline/medsamp2010.xml"/>
+  </java>
+</target>
+
+<target name="word-count-all"
+        depends="jar">
+  <java classname="WordCountMedline"
+        maxmemory="1400M"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010.xml"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010a.xml.gz"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010b.xml.gz"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010c.xml.gz"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010d.xml.gz"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010e.xml.gz"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010f.xml.gz"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010g.xml.gz"/>
+    <arg value="e:\data\medline\dist\2010\medsamp\medsamp2010h.xml.gz"/>
+  </java>
+</target>
+
+
+</project>
