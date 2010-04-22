@@ -18,18 +18,18 @@ package com.aliasi.lingmed.medline;
 
 import com.aliasi.lingmed.lucene.LuceneAnalyzer;
 
-import com.aliasi.lingmed.parser.Abstract;
-import com.aliasi.lingmed.parser.Article;
-import com.aliasi.lingmed.parser.Author;
-import com.aliasi.lingmed.parser.AuthorList;
-import com.aliasi.lingmed.parser.Journal;
-import com.aliasi.lingmed.parser.JournalInfo;
-import com.aliasi.lingmed.parser.JournalIssue;
-import com.aliasi.lingmed.parser.MedlineCitation;
-import com.aliasi.lingmed.parser.MeshHeading;
-import com.aliasi.lingmed.parser.Name;
-import com.aliasi.lingmed.parser.PubDate;
-import com.aliasi.lingmed.parser.Topic;
+import com.aliasi.lingmed.medline.parser.Abstract;
+import com.aliasi.lingmed.medline.parser.Article;
+import com.aliasi.lingmed.medline.parser.Author;
+import com.aliasi.lingmed.medline.parser.AuthorList;
+import com.aliasi.lingmed.medline.parser.Journal;
+import com.aliasi.lingmed.medline.parser.JournalInfo;
+import com.aliasi.lingmed.medline.parser.JournalIssue;
+import com.aliasi.lingmed.medline.parser.MedlineCitation;
+import com.aliasi.lingmed.medline.parser.MeshHeading;
+import com.aliasi.lingmed.medline.parser.Name;
+import com.aliasi.lingmed.medline.parser.PubDate;
+import com.aliasi.lingmed.medline.parser.Topic;
 
 import java.util.Arrays;
 import java.util.HashSet;

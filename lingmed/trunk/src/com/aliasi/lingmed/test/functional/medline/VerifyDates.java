@@ -14,14 +14,14 @@
  * +1 (718) 290-9170.
  */
 
-package com.aliasi.lingmed.medline;
+package com.aliasi.lingmed.test.functional.medline;
 
 import com.aliasi.lingmed.dao.*;
 import com.aliasi.lingmed.entrezgene.*;
 import com.aliasi.lingmed.medline.*;
 import com.aliasi.lingmed.server.*;
 
-import com.aliasi.lingmed.parser.*;
+import com.aliasi.lingmed.medline.parser.*;
 
 import java.io.*;
 
@@ -34,29 +34,29 @@ import org.apache.log4j.Logger;
 public class VerifyDates {
 
     public static void main(String[] args) throws Exception {
-	File luceneDir = new File( args[0] );
-	Searcher medlineLocalSearcher = new IndexSearcher(FSDirectory.getDirectory(luceneDir));
-	MedlineSearcher medlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
+        File luceneDir = new File( args[0] );
+        Searcher medlineLocalSearcher = new IndexSearcher(FSDirectory.getDirectory(luceneDir));
+        MedlineSearcher medlineSearcher = new MedlineSearcherImpl(new MedlineCodec(),medlineLocalSearcher);
 
-	int ct=0;
-	for (MedlineCitation citation : medlineSearcher) {
-	    if (citation.article() == null 
-		|| citation.article().journal() == null
-		|| citation.article().journal().journalIssue() == null
-		|| citation.article().journal().journalIssue().pubDate() == null) {
-		continue;
-	    }
-	    PubDate pubDate = citation.article().journal().journalIssue().pubDate();
-	    if (pubDate.isStructured()) {
-		System.out.println("citation: "+citation.pmid()
-				   +"\tpubdate "+pubDate.toString());
-	    } else {
-		System.out.println("citation: "+citation.pmid()
-				   +"\tUNSTRUCTURED "+pubDate.medlineDate());
-	    }		
+        int ct=0;
+        for (MedlineCitation citation : medlineSearcher) {
+            if (citation.article() == null 
+                || citation.article().journal() == null
+                || citation.article().journal().journalIssue() == null
+                || citation.article().journal().journalIssue().pubDate() == null) {
+                continue;
+            }
+            PubDate pubDate = citation.article().journal().journalIssue().pubDate();
+            if (pubDate.isStructured()) {
+                System.out.println("citation: "+citation.pmid()
+                                   +"\tpubdate "+pubDate.toString());
+            } else {
+                System.out.println("citation: "+citation.pmid()
+                                   +"\tUNSTRUCTURED "+pubDate.medlineDate());
+            }           
 
-	}
-	System.exit(0);
+        }
+        System.exit(0);
     }
 
 }

@@ -7,7 +7,7 @@
  * <P> The basic method for handling the complete set of MEDLINE
  * citations with Java is based on the visitor pattern, as described
  * in the class documentation for {@link
- * com.aliasi.lingmed.parser.MedlineCitationSet}.
+ * com.aliasi.lingmed.medline.parser.MedlineCitationSet}.
  *
  * <P> MEDLINE contains citations to roughly 15 million articles drawn
  * from books and journals on the broad topic of biomedicine dating
@@ -50,4 +50,4 @@
  *
  * </UL>
  */
-package com.aliasi.lingmed.parser;
+package com.aliasi.lingmed.medline.parser;

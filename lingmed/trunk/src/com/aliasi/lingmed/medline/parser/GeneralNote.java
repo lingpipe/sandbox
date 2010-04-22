@@ -14,7 +14,7 @@
  * +1 (718) 290-9170.
  */
 
-package com.aliasi.lingmed.parser;
+package com.aliasi.lingmed.medline.parser;
 
 import com.aliasi.xml.TextAccumulatorHandler;
 

@@ -27,9 +27,9 @@ import com.aliasi.lingmed.utils.Logging;
 import com.aliasi.lm.NGramProcessLM;
 import com.aliasi.lm.TrieCharSeqCounter;
 
-import com.aliasi.lingmed.parser.Abstract;
-import com.aliasi.lingmed.parser.Article;
-import com.aliasi.lingmed.parser.MedlineCitation;
+import com.aliasi.lingmed.medline.parser.Abstract;
+import com.aliasi.lingmed.medline.parser.Article;
+import com.aliasi.lingmed.medline.parser.MedlineCitation;
 
 import com.aliasi.stats.Statistics;
 

@@ -24,9 +24,9 @@ import com.aliasi.lingmed.entrezgene.EntrezGeneSearcher;
 import com.aliasi.lingmed.medline.MedlineCodec;
 import com.aliasi.lingmed.medline.MedlineSearcher;
 
-import com.aliasi.lingmed.parser.Abstract;
-import com.aliasi.lingmed.parser.Article;
-import com.aliasi.lingmed.parser.MedlineCitation;
+import com.aliasi.lingmed.medline.parser.Abstract;
+import com.aliasi.lingmed.medline.parser.Article;
+import com.aliasi.lingmed.medline.parser.MedlineCitation;
 
 import com.aliasi.util.NBestSet;
 import com.aliasi.util.Pair;
