@@ -3,7 +3,7 @@ package com.aliasi.lingmed.server;
 import com.aliasi.lingmed.entrezgene.*;
 import com.aliasi.lingmed.medline.*;
 import com.aliasi.lingmed.dao.SearchResults;
-import com.aliasi.lingmed.parser.MedlineCitation;
+import com.aliasi.lingmed.medline.parser.MedlineCitation;
 
 
 import java.io.BufferedReader;

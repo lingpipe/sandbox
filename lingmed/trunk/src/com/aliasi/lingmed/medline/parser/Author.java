@@ -13,7 +13,7 @@
  * Alias-i, Inc. at 181 North 11th Street, Suite 401, Brooklyn, NY 11211,
  * +1 (718) 290-9170.
  */
-package com.aliasi.lingmed.parser;
+package com.aliasi.lingmed.medline.parser;
 
 import com.aliasi.xml.DelegatingHandler;
 import com.aliasi.xml.TextAccumulatorHandler;

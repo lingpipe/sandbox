@@ -22,7 +22,7 @@ import com.aliasi.lingmed.dao.DaoSearcher;
 import com.aliasi.lingmed.dao.DaoSearcherImpl;
 import com.aliasi.lingmed.dao.SearchResults;
 
-import com.aliasi.lingmed.parser.MedlineCitation;
+import com.aliasi.lingmed.medline.parser.MedlineCitation;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.ConstantScoreRangeQuery;
