@@ -1,8 +1,9 @@
 /**
  *
- * Classes for manipulating MEDLINE data.  The classes in this package
- * are able to read the MEDLINE database from its gzipped distribution
- * format and render them completely as structured Java objects.
+ * Classes for manipulating the 2010 version of MEDLINE data.  The
+ * classes in this package are able to read the MEDLINE database from
+ * its gzipped distribution format and render them completely as
+ * structured Java objects.
  *
  * <P> The basic method for handling the complete set of MEDLINE
  * citations with Java is based on the visitor pattern, as described
@@ -35,8 +36,7 @@
  * trying to version this package by year of release, it will be kept
  * current with the latest version of MEDLINE.  This means that there
  * is no guarantee of backward compatibility for these classes as the
- * MEDLINE yearly cycle changes.  This document is based on the
- * version of MEDLINE distributed during 2008.
+ * MEDLINE yearly cycle changes.  
  *
  * <P>Our own benchmarks indicate that it will take roughly 4 hours to
  * visit each MEDLINE citation on a modern desktop PC running Java in
