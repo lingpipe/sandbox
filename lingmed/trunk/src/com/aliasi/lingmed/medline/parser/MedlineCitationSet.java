@@ -704,6 +704,6 @@ public class MedlineCitationSet {
      * /com/aliasi/medline/nlmmedlinecitationset_100101.dtd</pre></blockquote>
      */
     public static final String MEDLINE_DTD_RESOURCE_PATH
-        = "/com/aliasi/medline/nlmmedlinecitationset_100101.dtd";
+        = "/com/aliasi/lingmed/medline/nlmmedlinecitationset_100101.dtd";
 
 }
