@@ -625,8 +625,8 @@ anno <- bugs(data, inits, parameters,
 \item 20 annotators, 1000 items
 \item 50\% missing annotations at random
 \item prevalence $\pi = 0.2$
-\item specificity prior $(\alpha_0,\beta_0) = (40,8)$ (83\% accurate)
-\item sensitivity prior $(\alpha_1,\beta_1) = (20,8)$ (72\% accurate)
+\item specificity prior $(\alpha_0,\beta_0) = (40,8)$ (83\% accurate, medium var)
+\item sensitivity prior $(\alpha_1,\beta_1) = (20,8)$ (72\% accurate, high var)
 \end{itemize}
 \end{itemize}
 
@@ -642,7 +642,11 @@ anno <- bugs(data, inits, parameters,
 \sld{Prevalence Estimate}
 
 \begin{itemize}
-\item Simulated with $\pi = 0.2$; sample mean $c_i$ was 0.21
+\item Simulated with $\pi = 0.2$
+\begin{itemize}
+\footnotesize
+\item sample mean $c_i$ was 0.21
+\end{itemize}
 \item Estimand of interest in epidemiology (or sentiment)
 \end{itemize}
 
@@ -820,7 +824,7 @@ Accounts for bias, so very different from simple vote!
 \begin{itemize}
 \item Place normal (or other) priors on coefficients,
 \\[4pt]
-e.g. \ $\beta_i \sim \mathsf{Norm}(0,\sigma^2)$, \ \ \ $\sigma^2 \sim \mathsf{Unif}(0,100)$
+e.g. \ $\beta_i \sim \mathsf{Norm}(0,\Sigma)$, \ \ \ $\sigma^2 \sim \mathsf{Unif}(0,100)$
 \item
 Priors may be estimated as before; leads to pooling of item difficulties.
 \item Need more than 5-10 coders/item for tight posterior on difficulties
