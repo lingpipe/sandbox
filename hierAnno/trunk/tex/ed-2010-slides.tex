@@ -43,15 +43,29 @@
 \vspace*{18pt}
 \noindent
 {\huge
-Hierarchical Models\\[8pt]
-of Data Coding
+Whence Linguistic Data?\\[8pt]
 }
 \\[24pt]
 {\Large Bob Carpenter}
-\\[4pt]
-(w.\ Emily Jamison and Breck Baldwin)
 \\[8pt]
 {\large\emph{Alias-i, Inc.}}
+
+
+\sld{From the Armchair ...}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{pngs/monty_python_artwork2.jpg}
+\\[8pt]
+A (computational) linguist in 1984
+\end{center}
+
+\sld{... to the Observatory}
+
+\begin{center}
+\includegraphics[width=0.5\textwidth]{pngs/ObservatorySkipMorrow_690.jpg}
+\\[8pt]
+A (computational) linguist in 2010
+\end{center}
 
 
 \sld{Supervised Machine Learning}
@@ -92,6 +106,17 @@ self, grad students, temps, interns, \ldots
 \vspace*{24pt}
 {}\noindent
 (Mechanical Turked, but same for ``experts''.)
+
+\sld{Amazon's Mechanical Turk (and its Like)}
+\begin{itemize}
+\item ``Crowdsourcing'' Data Collection
+\item Provide web forms (or applets) to users
+\item Users choose tasks to complete
+\item We can give them a qualifying/training test
+\item They fill out a form per task and submit
+\item We pay them through Amazon
+\item We get the results in a CSV spreadsheet
+\end{itemize}
 
 \sld{Case 1: Named Entities}
 
@@ -238,12 +263,18 @@ $\kappa(A,E) = {\displaystyle\frac{A - E}{1 - E}}$
 \item $\kappa$ assumes annotators are unbiased 
 \begin{itemize}
 \footnotesize
-\item if biased in same way, $\kappa$ artificially high
+\item if biased in same way, $\kappa$ too high
 \end{itemize}
 \item $\kappa$ assumes 0/1 items same value
 \begin{itemize}
 \footnotesize
-\item consider low prevalence, high negative agreement (common)
+\item common: low prevalence, high negative agreement
+\end{itemize}
+\item $\kappa$ typically estimated without variance component
+\item $\kappa$ assumes annotations for an item are uncorrelated
+\begin{itemize}
+\footnotesize
+\item items have correlated errors, $\kappa$ too high
 \end{itemize}
 \end{itemize}
 
@@ -852,6 +883,57 @@ Priors may be estimated as before; leads to pooling of item difficulties.
 \item Penalizes overconfidence of estimators (in log loss)
 \item Demonstrated theoretical effectiveness (Smyth et al.)
 \item Need to test in practice
+\end{itemize}
+
+\sld{Semi-Supervised Models}
+
+\begin{itemize}
+\item Easy to add in supervised cases with Bayesian models
+\begin{itemize}
+\footnotesize
+\item Gibbs sampling skips sampling for supervised cases
+\end{itemize}
+\item May go half way by mixing in ``gold standard'' annotators
+\begin{itemize}
+\footnotesize
+\item Fixed high, but non-100\% accuracies
+\item Stronger high accuracy prior
+\end{itemize}
+\end{itemize}
+
+\sld{Multimodal Priors and Annotator Random Effects}
+
+\begin{itemize}
+\item Model Mechanical Turk as mixture of spammers and hammers
+\item This is what the Mechanical Turk data suggests
+\item May add random effects for annotators
+\begin{itemize}
+\footnotesize
+\item E.g. annotator training, annotator native language, etc.
+\end{itemize}
+\end{itemize}
+
+
+\sld{Jointly Estimate Model and Annotations}
+
+\begin{itemize}
+\item Can train a model with inferred (probabilistic) gold standard
+\item Can use trained model like another annotator
+\item Raykar, Vikas C., Shipeng Yu, Linda H. Zhao, Anna Jerebko, Charles
+Florin, Gerardo Hermosillo Valadez, Luca Bogoni, and Linda Moy. 2009.
+Supervised Learning from Multiple Experts: Whom to trust when
+everyone lies a bit. In {\it ICML}.
+\end{itemize}
+
+\sld{Bayesian {\Large $\kappa$} Estimates}
+\begin{itemize}
+\item Calculate expected $\kappa$ for two annotators
+\item Calculate expected $\kappa$ for two new annotators from pool
+\item Calcluate confidence/posterior uncertainty of $\kappa$
+\begin{itemize}
+\footnotesize
+\item Could estimate confidence intervals for $\kappa$ w/o model
+\end{itemize}
 \end{itemize}
 
 \sld{The End}
