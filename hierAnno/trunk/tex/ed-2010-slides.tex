@@ -137,7 +137,7 @@ self, grad students, temps, interns, \ldots
 \item User Interface Problem
 \begin{itemize}
 \footnotesize
-\item highlighting with mouse too fiddly (see Fitt's Law)
+\item highlighting with mouse too fiddly (see Fitts' Law)
 \item one entity type at a time (vs. pulldown menus)
 \item checkboxes (vs. highlighting spans)
 \end{itemize}
@@ -148,6 +148,8 @@ self, grad students, temps, interns, \ldots
 \vspace*{-6pt}
 \begin{itemize}
 \item 190K tokens, 64K capitalized, 4K names
+\item 10 annotators per token
+\item 100+ annotators, varying numbers of annotations
 \item Less than a week at 2 cents/400 tokens (US\$95)
 \item Turkers overall better than LDC data
 \begin{itemize}
@@ -159,8 +161,7 @@ Buick-Cadillac, Moon, erstwhile Phineas Foggs}
 \item Incorrectly Accepted: {\tt\footnotesize Tass}
 \item Missed Punctuation: {\tt\footnotesize J~E.~``Buster'' Brown}
 \end{itemize}
-\item Many Turkers no better than chance \\
-(c.f.\ social psych by Yochai Benkler, Harvard)
+\item Many Turkers no better than chance
 \end{itemize}
 
 
@@ -363,8 +364,7 @@ $\kappa(A,E) = {\displaystyle\frac{A - E}{1 - E}}$
 \footnotesize
 \item probabilistic ``gold standard''
 \item compatible with probabilistic learning, esp.\ Bayesian
-\item works well for low counts
-\item preservers uncertainty for ovedispersed downstream inference
+\item use uncertainty for (overdispersed) downstream inference
 \end{itemize}
 \end{itemize}
 
@@ -375,7 +375,7 @@ $\kappa(A,E) = {\displaystyle\frac{A - E}{1 - E}}$
 \item What's your estimate for:
 \begin{itemize}
 \footnotesize
-\item a baseball player who goes 50 for 200?
+\item a baseball player who goes 5 for 20?  or 50 for 200?
 \item a market that goes down 9 out of 10 days?
 \item a coin that lands heads 3 out of 10 times?
 \item ...
@@ -387,6 +387,7 @@ $\kappa(A,E) = {\displaystyle\frac{A - E}{1 - E}}$
 \begin{itemize}
 \footnotesize
 \item Smooths estimates for coders with few items
+\item Supports (multiple) comparisons of accuracies
 \end{itemize}
 \end{itemize}
 
@@ -428,41 +429,6 @@ $\kappa(A,E) = {\displaystyle\frac{A - E}{1 - E}}$
 
 
 
-\sld{Active Learning}
-
-\begin{itemize}
-\item Choose most useful items to code next
-\item Typically balancing two criteria
-\begin{itemize}
-\footnotesize
-\item high uncertainty
-\item high typicality (how to measure?)
-\end{itemize}
-\item Can get away with fewer coders/item
-\item May introduce sampling bias
-\item Compare supervision for high certainty items
-\begin{itemize}
-\footnotesize
-\item High precision (for most customers)
-\item High recall (defense analysts and biologists)
-\end{itemize}
-\end{itemize}
-
-
-\sld{Code-a-Little, Learn-a-Little}
-
-\begin{itemize}
-\item Semi-automated coding
-\item System suggests labels
-\item Coders correct labels
-\item Much faster coding
-\item But may introduce bias
-\vspace*{12pt}
-\item Hugely helpful in practice
-\end{itemize}
-
-
-
 \newpage
 \vspace*{36pt}
 \noindent
@@ -473,15 +439,15 @@ $\kappa(A,E) = {\displaystyle\frac{A - E}{1 - E}}$
 
 \begin{itemize}
 \item Prevalence $\pi$ : chance of ``positive'' outcome
-\item $\theta_{1,j}$ : annotator $j$'s sensitivity
-\item $\theta_{0,j}$ : annotator $j$'s specificity
+\item $\theta_{1,j}$ : annotator $j$'s sensitivity = TP/(TP+FN)
+\item $\theta_{0,j}$ : annotator $j$'s specificity = TN/(TN+FP)
 \item Sensitivities, specifities same ($\theta_{1,j} = \theta_{0,j'}$)
 \item Maximum likelihood estimation (or hierarchical prior)
 \vspace*{4pt}
 \item Hypothesis easily rejected by by $\chi^2$
 \begin{itemize}
 \footnotesize
-\item look at marginals (e.g. number of all-1 annotations)
+\item look at marginals (e.g. number of all-1 or all-0 annotations)
 \item overdispersed relative to simple model
 \end{itemize}
 \end{itemize}
@@ -542,7 +508,7 @@ $\alpha_0 = \alpha_1 = \beta_0 = \beta_1 = 1$
 \sld{Hierarchical Component}
 
 \begin{itemize}
-\item Estimate priors $\alpha$ and $\beta$
+\item Estimate accuracy priors $(\alpha,\beta)$
 \item With diffuse hyperpriors:
 {\footnotesize
 \begin{eqnarray*}
@@ -570,7 +536,7 @@ $\alpha_0 = \alpha_1 = \beta_0 = \beta_1 = 1$
 \end{itemize}
 \item Samples $\theta^{(n)}$ support plug-in predictive inference
 \[
-p(y|y') = \int p(y'|\theta) \ p(\theta|y) \ d\theta
+p(y'|y) = \int p(y'|\theta) \ p(\theta|y) \ d\theta
 \approx
 \frac{1}{N} \sum_{n < N} p(y'|\theta^{(n)})
 \]
@@ -817,11 +783,34 @@ Accounts for bias, so very different from simple vote!
 \sld{Estimated vs.\ ``Gold'' Accuracies}
 
 \includegraphics[width=0.4\textwidth]{pdf/dolores-rte-resids2D.pdf}%
+\includegraphics[width=0.4\textwidth]{pdf/dolores-rte-resids2D-pruned.pdf}%
 
-\begin{itemize}\footnotesize
-\item Diagonal green at chance (below is adversarial); blue lines at estimated prior means
+\begin{itemize}
+\footnotesize
+\item Diagonal green at chance (below is adversarial)
+\item  blue lines at estimated prior means
 \item Circle area is items annotated, center at ``gold standard'' accuracy, lines to estimated accuracy (note pull to prior)
 \end{itemize}
+
+\sld{Annotator Pool Estimates}
+
+\begin{itemize}
+\item Gold-standard balanced (50\% prevalence) 
+\item Posterior 95% intervals
+\begin{itemize}
+\footnotesize
+\item Prevalence (.45,.52)
+\item Specificity (.81,.87)
+\item Sensitivity (.82,.87)
+\end{itemize}
+\item Posterior sensitivity 95\%
+\begin{itemize}
+\item 39\% of annotators no better than chance
+\item more than 50\% of annotations from spammers
+\item has little effect on inference
+\end{itemize}
+\end{itemize}
+
 
 \sld{Residual Category Errors}
 
@@ -837,6 +826,23 @@ Accounts for bias, so very different from simple vote!
 \item Many residual errors in gold standard, not Turkers
 \end{itemize}
 
+
+\newpage
+\vspace*{36pt}
+\noindent
+{\huge Modeling Item Difficulty}
+
+\sld{Item Difficulty}
+
+\begin{itemize}
+\item Clear that some items easy and some hard
+\item Assuming all same leads to bad marginal fit
+\item Hard to estimate even with 10 annotators/item
+\begin{itemize}
+\footnotesize
+\item Posterior intervals too wide
+\end{itemize}
+\end{itemize}
 
 \sld{Modeling Item Difficulty}
 
@@ -855,7 +861,7 @@ Accounts for bias, so very different from simple vote!
 \begin{itemize}
 \item Place normal (or other) priors on coefficients,
 \\[4pt]
-e.g. \ $\beta_i \sim \mathsf{Norm}(0,\Sigma)$, \ \ \ $\sigma^2 \sim \mathsf{Unif}(0,100)$
+e.g. \ $\beta_i \sim \mathsf{Norm}(0,\sigma^2)$, \ \ \ $\sigma^2 \sim \mathsf{Unif}(0,100)$
 \item
 Priors may be estimated as before; leads to pooling of item difficulties.
 \item Need more than 5-10 coders/item for tight posterior on difficulties
@@ -865,6 +871,12 @@ Priors may be estimated as before; leads to pooling of item difficulties.
 \end{itemize}
 
 
+\newpage
+\vspace*{36pt}
+\noindent
+{\huge Extensions}
+
+
 \sld{Extending Coding Types}
 
 \begin{itemize}
@@ -872,6 +884,40 @@ Priors may be estimated as before; leads to pooling of item difficulties.
 \item Ordinal responses (ordinal logistic model)
 \item Scalar responses (continuos responses)
 \end{itemize}
+
+\sld{Active Learning}
+
+\begin{itemize}
+\item Choose most useful items to code next
+\item Typically balancing two criteria
+\begin{itemize}
+\footnotesize
+\item high uncertainty
+\item high typicality (how to measure?)
+\end{itemize}
+\item Can get away with fewer coders/item
+\item May introduce sampling bias
+\item Compare supervision for high certainty items
+\begin{itemize}
+\footnotesize
+\item High precision (for most customers)
+\item High recall (defense analysts and biologists)
+\end{itemize}
+\end{itemize}
+
+
+\sld{Code-a-Little, Learn-a-Little}
+
+\begin{itemize}
+\item Semi-automated coding
+\item System suggests labels
+\item Coders correct labels
+\item Much faster coding
+\item But may introduce bias
+\vspace*{12pt}
+\item Hugely helpful in practice
+\end{itemize}
+
 
 \sld{Probabilistic Training and Testing}
 
@@ -901,15 +947,30 @@ Priors may be estimated as before; leads to pooling of item difficulties.
 \end{itemize}
 \end{itemize}
 
-\sld{Multimodal Priors and Annotator Random Effects}
+\sld{Multimodal (Mixture) Priors}
 
 \begin{itemize}
 \item Model Mechanical Turk as mixture of spammers and hammers
 \item This is what the Mechanical Turk data suggests
+\item May also model covariance of sensitivity/specificity
+\end{itemize}
+
+\sld{Annotator and Item Random Effects}
+\begin{itemize}
 \item May add random effects for annotators
 \begin{itemize}
 \footnotesize
-\item E.g. annotator training, annotator native language, etc.
+\item amount of annotator training
+\item number of items annotated
+\item annotator native language
+\item annotator field of expertise
+\end{itemize}
+\item Also for Items
+\begin{itemize}
+\footnotesize
+\item difficulty (already discussed)
+\item type of item being annotated
+\item frequency of item in a large corpus
 \end{itemize}
 \end{itemize}
 
