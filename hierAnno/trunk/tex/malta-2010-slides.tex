@@ -1,0 +1,317 @@
+\documentclass[10pt]{report}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{helvet}
+
+\setlength{\paperheight}{3in}
+\setlength{\paperwidth}{4in}
+\pdfpagewidth=\paperwidth
+\pdfpageheight=\paperheight
+
+\setlength{\textwidth}{3.75in}
+\setlength{\textheight}{2.5in}
+
+\setlength{\oddsidemargin}{-1.0in}
+\setlength{\evensidemargin}{-1.0in}
+\setlength{\topmargin}{-1.25in}
+
+\newcommand{\sld}[1]{\newpage{\noindent\Large \ \ \ \underline{#1}}\vspace*{8pt}}
+\newcommand{\itm}[1]{\vspace*{8pt}\noindent#1}
+\newcommand{\itmb}{\itm{$\bullet$}\ }
+\newcommand{\spc}{\hspace*{0.25in}}
+
+\newcounter{gmlrx}
+\newcounter{gmlry}
+\newcommand{\gmnode}[3]{\put(#1,#2){\circle{20}}\put(#1,#2){\makebox(0,0){$#3$}}}
+\newcommand{\gmplate}[5]{
+\setcounter{gmlrx}{#1}\addtocounter{gmlrx}{#3}
+\setcounter{gmlry}{#2}\addtocounter{gmlry}{-#4}
+\put(#1,#2){\line(1,0){#3}}
+\put(#1,#2){\line(0,-1){#4}}
+\put(\value{gmlrx},\value{gmlry}){\line(-1,0){#3}}
+\put(\value{gmlrx},\value{gmlry}){\line(0,1){#4}}
+\setcounter{gmlrx}{#1}\addtocounter{gmlrx}{5}
+\setcounter{gmlry}{#2}\addtocounter{gmlry}{-6}
+\put(\value{gmlrx},\value{gmlry}){\makebox(0,0){$#5$}}
+}
+
+
+
+\begin{document}
+\sf%
+\vspace*{18pt}
+\noindent
+\spc{\huge Models of Annotation} {\Large (II)}
+\\[24pt]
+\spc{\large Bob Carpenter,} \ \ {\it LingPipe, Inc.}
+\\[8pt]
+\spc{\large Massimo Poesio,} \ \ {\it Uni.\ Trento}
+\\[48pt]
+\spc LREC 2010 (Malta)
+
+\sld{Amazon's Mechanical Turk}
+\begin{itemize}
+\item ``Crowdsourcing'' Data Collection (Artificial AI)
+\item We provide web forms to Turkers (through REST API)
+\item We may give Turkers a qualifying/training test
+\item Turkers choose tasks to complete
+\begin{itemize}
+\footnotesize
+\item We have no control on assignment of tasks
+\item Different numbers of annotations per annotator
+\end{itemize}
+\item Turkers fill out a form per task and submit
+\item We pay Turkers through Amazon
+\item We get resuls from Amazon in a CSV spreadsheet
+\end{itemize}
+
+
+\sld{Case 1: Named Entities}
+
+\includegraphics[width=0.95\textwidth]{pngs/big-ne-form.png}
+
+
+\sld{Named Entities Worked}
+
+\begin{itemize}
+\item Conveying the coding standard
+\begin{itemize}
+\footnotesize
+\item official MUC-6 standard dozens of pages
+\item examples are key
+\end{itemize}
+
+\item Fitts' Law
+\begin{itemize}
+\footnotesize
+\item time to position cursor inversely proportional to target size
+\item highlighting text: fine position + drag + position
+\item pulldown menus for type: position + pulldown + select
+\item checkboxes for entity at a time: fat target click
+\end{itemize}
+\end{itemize}
+
+\sld{Discussion: Named Entities}
+
+\vspace*{-6pt}
+\begin{itemize}
+\item 190K tokens, 64K capitalized, 4K person name tokens
+\begin{itemize}
+\footnotesize
+\item 4K / 190K = 2.1\% prevalence of entity tokens
+\end{itemize}
+\item 10 annotators per token
+\item 100+ annotators, varying numbers of annotations
+\item Less than a week at 2 cents/400 tokens (US\$95)
+\item Aggregated Turkers better than LDC data
+\begin{itemize}
+\footnotesize
+\item Correctly Rejected:
+{\tt\footnotesize Webster's, Seagram, Du Pont,
+\\
+Buick-Cadillac, Moon, erstwhile Phineas Foggs}
+\item Incorrectly Accepted: {\tt\footnotesize Tass}
+\item Missed Punctuation: {\tt\footnotesize J~E.~``Buster'' Brown}
+\end{itemize}
+
+\end{itemize}
+
+
+\sld{Case 2: Morphological Stemming}
+
+\includegraphics[width=0.95\textwidth]{pngs/stems-v4.png}
+
+\sld{Morphological Stemming Worked}
+
+\begin{itemize}
+\vspace*{-8pt}
+\item Coded and tested by intern (Emily Jamison of OSU)
+\begin{itemize}
+\footnotesize
+\item Less than one month to code, modify and collect 
+\end{itemize}
+\item Three iterations of coding standard, Four of instructions
+\begin{itemize}
+\footnotesize
+\item began with full morphological segmentation (too hard)
+\item simplified task to one stem with full base (more ``natural'')
+\item added previously confusing full examples + affixes
+\end{itemize}
+
+\item Added qualifying test
+
+\item 60K (50K frequent Gigaword, 10K random) tokens
+\item 5 annotators / token
+\end{itemize}
+
+
+
+
+\sld{Case 3: RTE-1}
+\begin{itemize}
+\item Examples and gold standard by Dagan et al. (2005)
+\item 800 Items (400 true, 400 false in gold standard)
+\item Used for 1st Recognizing Textual Entailment Bakeoff
+\item Examples
+\begin{itemize}
+\footnotesize
+\item
+{\it ID:} 56   \ \ \ {\it Gold Label:} TRUE
+\\[2pt]
+{\it Text:} Euro-Scandinavian media cheer Denmark v Sweden draw.
+\\[2pt]
+{\it Hypothesis:} Denmark and Sweden tie.
+\\
+\item
+{\it ID:} 77  \ \ \ {\it Gold Label:} FALSE
+\\[2pt]
+{\it Text:} Clinton's new book is not big seller here.
+\\[2pt]
+{\it Hypotheis:} Clinton's book is a big seller.
+\end{itemize}
+\end{itemize}
+
+\sld{Turker Annotations for RTE-1}
+\begin{itemize}
+\item Collected by Dolores Labs
+\item Analyzed by Snow et al. in {\it EMNLP}\ paper
+\item They also recreated 4 other NLP datasets:
+\begin{itemize} 
+\footnotesize 
+\item word sense (multinomial)
+\item sentiment (multi-faceted scalar 1--100)
+\item temporal ordering (binary)
+\item word similarity (ordinal 1--10)
+\end{itemize}
+\item 2 items/task, 10 Turkers per item, 164 Turkers total
+\item All five tasks completed in a few days
+\item All five tasks cost under US\$100
+\end{itemize}
+
+\sld{Turker Instructions for RTE-1}
+\begin{itemize}
+\item Instructions
+\\[6pt]
+{\footnotesize Please state whether the
+second sentence (the Hypothesis) is implied by the information in
+first sentence (the Text), i.e., please state whether the Hypothesis
+can be determined to be true given that the Text is true.
+
+Assume that you do not know anything about the situation except what the Text itself says. 
+
+Also, note that every part of the Hypothesis must be implied by the Text in order for it to be true.
+}
+\item Plus, 2 true and 2 false examples
+\end{itemize}
+
+\sld{(Munged) Turker Data for RTE-1}
+\begin{verbatim}
+           Item   Coder  Label   |     k    i  j  x
+  -------------------------------------------------   
+     1     i[1]    j[1]   x[1]   |     1    1  1  1   
+     2     i[2]    j[2]   x[2]   |     2    1  2  1
+     3     i[3]    j[3]   x[3]   |     3    1  3  1
+     4     i[4]    j[4]   x[4]   |     4    1  4  0
+                                 |
+   509   i[509]  j[509]  x[509]  |   509   51  22 0
+   510   i[510]  j[510]  x[510]  |   510   51  10 1
+   511   i[511]  j[511]  x[511]  |   511   52   4 1
+   512   i[512]  j[512]  x[512]  |   512   52   1 1
+                                 |
+  8000  i[8000] j[8000] x[8000]  |  8000  800 144 1
+\end{verbatim}
+
+\sld{Two or More Category Labels}
+\begin{itemize}
+\item Assume binary categories for simplicity
+\begin{itemize}
+\footnotesize
+\item 0 = ``FALSE'',  1 = ``TRUE'' (arbitrary for task)
+\item e.g. Named entities: Token in Name = 1, not in Name = 0
+\item e.g. RTE-1: entailment = 1, non-entailment = 0
+\item e.g. Information Retrieval: relevant=1, irrelevant=0
+\end{itemize}
+\item Models generalize to more than two categories
+\begin{itemize}
+\footnotesize
+\item e.g. Named Entities: PERS, LOC, ORG, NOT-IN-NAME
+\end{itemize}
+\item Models generalize to ordinals or scalars
+\begin{itemize}
+\footnotesize
+\item e.g. Paper Review: 1-5 scale
+\item e.g. Sentiment: 1-100 scale of positivity
+\end{itemize}
+\end{itemize}
+
+\sld{Prevalence}
+\begin{itemize}
+\item Assumes binary categories (0 = ''FALSE'', 1 = ''TRUE'')
+\item Prevalence = \% of 1 labels
+\begin{itemize}
+\footnotesize
+\item e.g. RTE-1 400/800 = 50\%  \ [artificially ``balanced'']
+\item e.g. Bridging anaphors (among all anaphors): 6\%
+\item e.g. Person named entity tokens 4K / 190K = 2.1\%
+\item e.g. Zero (tennis) sense of ``love'' in newswire: 1\% 
+\item e.g. Relevant docs for web query [Malta LREC]: \\
+\hspace*{36pt}500K/1T = 0.00005\%
+\end{itemize}
+\end{itemize}
+
+\sld{Sensitivity and Specificity}
+\begin{itemize}
+\item Assume binary categories (0=''false'', 1=''true'')
+\item Reference is gold standard, Response from coder
+\item 
+\begin{tabular}{|r|l|l|}
+\hline
+      & Resp=1 & Resp=0 \\ 
+\hline
+Ref=1 & TP     & FN  \\ 
+\hline
+Ref=0 & FP     & TN \\ 
+\hline
+\end{tabular}
+\item Sensitivity = TP/(TP+FN) \ \ {\footnotesize = Recall}
+\begin{itemize}
+\footnotesize
+\item Accuracy on 1 (true) items
+\end{itemize}
+\item Specificity = TN/(TN+FP) \ \ {\footnotesize $\neq$ Precision = TP/(TP+FP)}
+\begin{itemize}
+\footnotesize
+\item Accuracy on 0 (false) items
+\end{itemize}
+\end{itemize}
+
+\sld{Generative Labeling Model}
+\vspace*{-8pt}
+\begin{itemize}
+\item Item $i$'s category $c_i \in \{ 0, 1 \}$
+\item Coder $j$'s specificity $\theta_{0,j} \in [0,1]$; \ sensitivity $\theta_{1,j} \in [0,1]$
+\item Coder $j$'s label for item $i$: $x_{i,j} \in \{ 0, 1 \}$
+\item If category $c=1$,
+\begin{itemize}
+\footnotesize
+\item $\mbox{Pr}(x_{i,j}=1) = \theta_{1,j}$ \ \ [correctly labeled]
+\item $\mbox{Pr}(x_{i,j}=0) = 1 - \theta_{1,j}$
+\end{itemize}
+\item If category $c=0$, 
+\begin{itemize}
+\footnotesize
+\item $\mbox{Pr}(x_{i,j}=1) = 1 - \theta_{0,j}$ 
+\item $\mbox{Pr}(x_{i,j}=0) = \theta_{0,j}$ \ \ [correctly labeled]
+\end{itemize}
+\item $\mbox{Pr}(x_{i,j}=1|c,\theta) = c_i \theta_{1,j} + (1 - c_i) (1 - \theta_{0,j})$
+\end{itemize}
+
+\sld{Calculating Category Probabilities}
+\begin{itemize}
+
+\end{itemize}
+
+\end{document}
+
