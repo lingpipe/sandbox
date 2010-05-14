@@ -18,8 +18,6 @@
 \setlength{\topmargin}{-1.25in}
 
 \newcommand{\sld}[1]{\newpage{\noindent\Large \ \ \ \underline{#1}}\vspace*{8pt}}
-\newcommand{\itm}[1]{\vspace*{8pt}\noindent#1}
-\newcommand{\itmb}{\itm{$\bullet$}\ }
 \newcommand{\spc}{\hspace*{0.25in}}
 
 \newcounter{gmlrx}
@@ -293,25 +291,82 @@ Ref=0 & FP     & TN \\
 \item Item $i$'s category $c_i \in \{ 0, 1 \}$
 \item Coder $j$'s specificity $\theta_{0,j} \in [0,1]$; \ sensitivity $\theta_{1,j} \in [0,1]$
 \item Coder $j$'s label for item $i$: $x_{i,j} \in \{ 0, 1 \}$
-\item If category $c=1$,
+\item If category $c_i=1$,
 \begin{itemize}
 \footnotesize
-\item $\mbox{Pr}(x_{i,j}=1) = \theta_{1,j}$ \ \ [correctly labeled]
-\item $\mbox{Pr}(x_{i,j}=0) = 1 - \theta_{1,j}$
+\item $\mbox{\rm Pr}(x_{i,j}=1) = \theta_{1,j}$ \ \ [correctly labeled]
+\item $\mbox{\rm Pr}(x_{i,j}=0) = 1 - \theta_{1,j}$
 \end{itemize}
-\item If category $c=0$, 
+\item If category $c_i=0$, 
 \begin{itemize}
 \footnotesize
-\item $\mbox{Pr}(x_{i,j}=1) = 1 - \theta_{0,j}$ 
-\item $\mbox{Pr}(x_{i,j}=0) = \theta_{0,j}$ \ \ [correctly labeled]
+\item $\mbox{\rm Pr}(x_{i,j}=1) = 1 - \theta_{0,j}$ 
+\item $\mbox{\rm Pr}(x_{i,j}=0) = \theta_{0,j}$ \ \ [correctly labeled]
 \end{itemize}
-\item $\mbox{Pr}(x_{i,j}=1|c,\theta) = c_i \theta_{1,j} + (1 - c_i) (1 - \theta_{0,j})$
+\item $\mbox{\rm Pr}(x_{i,j}=1|c,\theta) = c_i \theta_{1,j} + (1 - c_i) (1 - \theta_{0,j})$
 \end{itemize}
 
 \sld{Calculating Category Probabilities}
 \begin{itemize}
-
+\item Bayes's Rule 
+\\[4pt]
+$\begin{array}{rcl}
+p(a|b) 
+& =       & p(b|a) \ p(a) / p(b) 
+\\[4pt]
+& \propto & p(b|a) \ p(a)
+\end{array}$
+\item Applied to Category Probabilities
+\\[4pt]
+$\begin{array}{rcl}
+p(c_i|x_i,\theta,\pi) 
+& \propto & p(x_i|c_i,\theta,\pi) \ p(c_i|\theta,\pi) 
+\\[4pt]
+& = & p(x_i|c_i,\theta) \ p(c_i|\pi)
+\\[4pt]
+& = & p(c_i|\pi) \ \prod_{j=1}^J p(x_{i,j}|c_i,\theta)
+\end{array}$
 \end{itemize}
+
+\sld{Calculating Cat Probabilities: Example}
+
+\begin{itemize}
+\footnotesize
+\item Prevalence: \ $\pi = 0.2$
+\item Specificities: \  $\theta_{0,1} = 0.60$; \ \ $\theta_{0,2} = 0.70$; \ \ $\theta_{0,3} = 0.80$
+\item Sensitivities: \ $\theta_{1,1} = 0.75$; \ \ $\theta_{1,2} = 0.65$; \ \ $\theta_{1,3} = 0.95$
+\item Annotations for item $i$: \ $x_{i,1} = 1$, \ $x_{i,2} = 1$, \ $x_{i,3} = 0$
+\\[8pt]
+\hspace*{-12pt}$\begin{array}{rcl}
+\footnotesize
+\mbox{\rm Pr}(c_i=1|\theta,x) 
+& \propto & \pi \ \mbox{\rm Pr}(x_i=\langle 1,1,0 \rangle | \theta,c_i=1)
+\\[4pt]
+& = & 0.2 \cdot 0.75 \cdot 0.65 \cdot (1 - 0.95) = 0.004875
+\end{array}$
+\\[8pt]
+\hspace*{-12pt}
+$\begin{array}{rcl}
+\footnotesize
+\mbox{\rm Pr}(c_i=0|\theta,x) 
+& \propto & (1 - \pi) \ \mbox{\rm Pr}(x_i=\langle 1,1,0 \rangle | \theta,c_i=0)
+\\[4pt]
+& = & (1 - 0.2) \cdot (1 - 0.6) \cdot (1 - 0.7) \cdot (1 - 0.8) = 0.0192
+\end{array}$
+\\[8pt]
+\hspace*{-8pt}$\mbox{\rm Pr}(c_i=1|\theta,x) = 0.004875 / (0.004875 + 0.0192) = 0.2024922$
+\end{itemize}
+
 
 \end{document}
 
+\\[4pt]
+& = & \pi \ \prod_{j=1}^J c_i \ \theta_{1,j} + (1-c_i) \ (1-\theta_{1,j}) \mbox{ if } c_i = 1
+\\[4pt]
+& = & \pi \ \prod_{j=1}^J c_i \ \theta_{1,j} + (1-c_i) \ (1-\theta_{1,j}) \mbox{ if } c_i = 0
+
+\begin{itemize}
+\footnotesize
+\item $c_i=1$ : \ $p(x_i|c_i=1,\theta) \ \pi = \pi \ \prod_{j=1}^J p(x_i|c_i=1,\theta_1)$
+\item $c_i=0$ : \ $p(x_i|c_i=0,\theta) \ (1 - \pi) = (1-\pi) \ \prod_{j=1}^J p(x_i|c_i=0,\theta_0)$
+\end{itemize}
