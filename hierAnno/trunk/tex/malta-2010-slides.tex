@@ -357,16 +357,100 @@ $\begin{array}{rcl}
 \hspace*{-8pt}$\mbox{\rm Pr}(c_i=1|\theta,x) = 0.004875 / (0.004875 + 0.0192) = 0.2024922$
 \end{itemize}
 
-
-\end{document}
-
-\\[4pt]
-& = & \pi \ \prod_{j=1}^J c_i \ \theta_{1,j} + (1-c_i) \ (1-\theta_{1,j}) \mbox{ if } c_i = 1
-\\[4pt]
-& = & \pi \ \prod_{j=1}^J c_i \ \theta_{1,j} + (1-c_i) \ (1-\theta_{1,j}) \mbox{ if } c_i = 0
-
+\sld{Bayesian Models}
 \begin{itemize}
 \footnotesize
-\item $c_i=1$ : \ $p(x_i|c_i=1,\theta) \ \pi = \pi \ \prod_{j=1}^J p(x_i|c_i=1,\theta_1)$
-\item $c_i=0$ : \ $p(x_i|c_i=0,\theta) \ (1 - \pi) = (1-\pi) \ \prod_{j=1}^J p(x_i|c_i=0,\theta_0)$
+\item Observed data: \ $y$; \ \ \ Model parameter(s): \ $\phi$
+\item Likelihood function (or sampling distribution): \ $p(y|\phi)$
+\item Prior: \ $p(\phi)$
+\item Chain rule: \ $p(y,\phi) = p(y|\phi) \ p(\phi)$
+\item Marginal (prior predictive distribution): \ $p(y) = \int p(y|\phi) \ p(\phi) \ d\phi$
+\item Posterior: $p(\phi|y)$ calculated via Bayes's rule
+\\[4pt]
+$\begin{array}{rcl}
+p(\phi|y) & = & p(y,\phi) / p(y)
+\\[4pt]
+& = & p(y|\phi) \ p(\phi) / p(y)  
+\\[4pt]
+& = & p(y|\phi) \ p(\phi) / \int p(y | \phi') p(\phi') d\phi'
+\\[4pt]
+& \propto & p(y|\phi) \ p(\phi)
+\end{array}
+$
 \end{itemize}
+
+\sld{Point Estimators are ``Best'' Guesses}
+\footnotesize
+\begin{itemize}
+\item Estimate parameters $\phi$ given observed data $y$
+\item Maximum Likelihood Estimator (ML) 
+\\[4pt]
+$\phi^{*}(y) = \arg\max_\phi p(y|\phi)$
+\\[4pt]
+maximizes probability of observed data given parameters
+\item Maximum a Posteriori (MAP) Estimate 
+\\[4pt] 
+$\hat{\phi}(y) = \arg\max_\phi p(\phi|y) = \arg\max_\phi p(y|\phi) \ p(\phi)$
+\\[4pt]
+maximizes probability of parameters given observed data
+\item If prior is constant, [i.e. $p(\phi) = c$], then $\hat{\phi}(y) = \phi^{*}(y)$
+\item Bayesian estimator is expected parameter values given observed data
+\\[4pt]
+$\bar{\phi}(y) = \mathbb{E}[\phi] = \int \phi \ p(\phi|y) \ d\phi$
+\item Bayesian estimates are unbiased [i.e. estimate equals expection] by definition
+\end{itemize}
+
+\sld{Inference}
+\footnotesize
+\begin{itemize}
+\item Observed data $y$; \ \ New data $\tilde{y}$
+\item Posterior predictive distribution: \ $p(\tilde{y}|y)$
+\item Maximum likelihood approximation: \ $p(\tilde{y}|y) \approx p(\tilde{y}|\phi^*(y))$
+\item MAP approximation: \ $p(\tilde{y}|y) \approx p(\tilde{y}|\hat{\phi}(y))$
+\item Bayesian point approximation: \ $p(\tilde{y}|y) \approx p(\tilde{y} | \bar{\phi}(y))$
+\item Bayesian posterior predictive distribution
+\\[4pt]
+$p(\tilde{y}|y) = \int p(\tilde{y}|\phi) \ p(\phi|y) \ d\phi$
+\\[4pt]
+averages over uncertainty in estimate of $\phi$ [i.e. $p(\phi|y)$]
+\end{itemize}
+
+\sld{Conjugate Priors}
+\begin{itemize}
+\item Given a sampling distribution $p(y|\phi)$
+\item Given a family of distributions $\mathcal{F}$
+\item The family $\mathcal{F}$ is conjugate for $p(y|\phi)$ if'
+\\[4pt]
+the prior $p(\phi) \in \mathcal{F}$ implies the posterior $p(\phi|y) \in \mathcal{F}$
+\end{itemize}
+
+\sld{Bernoulli Distribution}
+\begin{itemize}
+\item Parameter $\theta \in [0,1]$ is chance of success
+\item Outcome $y \in \{ 0, 1 \}$
+\item 
+$p(y|\theta)
+= \mbox{\sf Bernoulli}(y|\theta) 
+= \theta^y \ (1 - \theta)^{1-y}
+=
+\begin{cases}
+\theta & \mbox{if } $y = 1$
+\\
+1 - \theta & \mbox{if } $y = 0$
+\end{cases}$
+\item
+For $N$ trials $y = y_1,\ldots,y_N$, \ where $y_n \in \{ 0, 1 \}$,
+\\[4pt]
+$\begin{array}{rcl}
+p(y|\theta) & = & \prod_{n = 1}^N p(y_n|\theta)
+\\[4pt]
+& = & \prod_{n=1}^N \theta^{y_n} \ (1-\theta)^{1-y_n}
+\\[4pt]
+& = & \theta^A (1-\theta)^B
+\end{array}$
+\\[4pt]
+where $A = \sum_{n=1}^N y_n$ and $B = \sum_{n=1}^N (1 - y_n) = N - A$
+\end{itemize}
+
+
+\end{document}
