@@ -35,6 +35,7 @@
 \put(\value{gmlrx},\value{gmlry}){\makebox(0,0){$#5$}}
 }
 
+\newcommand{\mypart}[1]{\newpage\vspace*{36pt}\noindent\ \ \ \ {\huge #1}}
 
 
 \begin{document}
@@ -48,6 +49,8 @@
 \spc{\large Massimo Poesio,} \ \ {\it Uni.\ Trento}
 \\[48pt]
 \spc LREC 2010 (Malta)
+
+\mypart{Mechanical Turk Examples}
 
 \sld{Amazon's Mechanical Turk}
 \begin{itemize}
@@ -221,16 +224,21 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
   8000  i[8000] j[8000] x[8000]  |  8000  800 144 1
 \end{verbatim}
 
-\sld{Two or More Category Labels}
+\mypart{Generative Labeling Model}
+\vfill
+\noindent
+\ \ \ \ (Dawid and Skene 1979; Bruce and Wiebe 1999)
+
+\sld{Assume Binary Labeling for Simplicity}
 \begin{itemize}
-\item Assume binary categories for simplicity
+\item 0 = ``FALSE'',  1 = ``TRUE'' (arbitrary for task)
 \begin{itemize}
 \footnotesize
-\item 0 = ``FALSE'',  1 = ``TRUE'' (arbitrary for task)
 \item e.g. Named entities: Token in Name = 1, not in Name = 0
 \item e.g. RTE-1: entailment = 1, non-entailment = 0
 \item e.g. Information Retrieval: relevant=1, irrelevant=0
 \end{itemize}
+\vfill
 \item Models generalize to more than two categories
 \begin{itemize}
 \footnotesize
@@ -246,8 +254,8 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 
 \sld{Prevalence}
 \begin{itemize}
-\item Assumes binary categories (0 = ''FALSE'', 1 = ''TRUE'')
-\item Prevalence = \% of 1 labels
+\item Assumes binary categories (0 = ``FALSE'', 1 = ``TRUE'')
+\item Prevalence $\pi$ is proportion of 1 labels
 \begin{itemize}
 \footnotesize
 \item e.g. RTE-1 400/800 = 50\%  \ [artificially ``balanced'']
@@ -259,9 +267,29 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 \end{itemize}
 \end{itemize}
 
-\sld{Sensitivity and Specificity}
+\sld{Gold-Standard Estimate of Prevalence}
 \begin{itemize}
-\item Assume binary categories (0=''false'', 1=''true'')
+\item Create gold-standard labels for a subset of data
+\begin{itemize}
+\footnotesize
+\item Choose the subset randomly from all unlabeled data
+\item Otherwise, may result in biased estimates
+\end{itemize}
+\item Use proportion of 1 labels for prevalence $\pi$
+\item More data produces more accurate estimates
+\begin{itemize}
+\footnotesize
+\item For $N$ examples with prevalence $\pi$, 95\% interval is
+\\[4pt] $\pi \ \pm \ 2 \ \sqrt{\frac{\displaystyle \pi(1-\pi)}{\displaystyle N}}$
+\item e.g. 100 samples, 20 positive, $\pi = 0.20 \pm 0.08$
+\item Given fixed prevalence, uncertainty inversely proportional to $\sqrt{N}$
+\item The law of large numbers in action
+\end{itemize}
+\end{itemize}
+
+\sld{Accuracies: Sensitivity and Specificity}
+\begin{itemize}
+\item Assumes binary categories (0 =``false'', \ 1 = ``true'')
 \item Reference is gold standard, Response from coder
 \item 
 \begin{tabular}{|r|l|l|}
@@ -273,17 +301,30 @@ Ref=1 & TP     & FN  \\
 Ref=0 & FP     & TN \\ 
 \hline
 \end{tabular}
-\item Sensitivity = TP/(TP+FN) \ \ {\footnotesize = Recall}
+\item Sensitivity = $\theta_1$ = TP/(TP+FN) \ \ {\footnotesize = Recall}
 \begin{itemize}
 \footnotesize
 \item Accuracy on 1 (true) items
 \end{itemize}
-\item Specificity = TN/(TN+FP) \ \ {\footnotesize $\neq$ Precision = TP/(TP+FP)}
+\item Specificity = $\theta_0$ = TN/(TN+FP) \ \ {\footnotesize $\neq$ Precision = TP/(TP+FP)}
 \begin{itemize}
 \footnotesize
 \item Accuracy on 0 (false) items
 \end{itemize}
 \end{itemize}
+
+\sld{Gold-Standard Estimate of Accuracies}
+
+\begin{itemize}
+\item Choose random set of positive (category 1) examples
+\item Choose random set of negative (category 0) examples
+\item Does \underline{not} need to be balanced according to prevalence
+\item Have annotator label the subsets
+\item Use agreement on negatives for specificity $\theta_{0}$
+\item Use agreement on positives for sensitivity $\theta_{1}$
+\item Again, more data means more accurate estimates
+\end{itemize}
+
 
 \sld{Generative Labeling Model}
 \vspace*{-8pt}
@@ -308,6 +349,7 @@ Ref=0 & FP     & TN \\
 
 \sld{Calculating Category Probabilities}
 \begin{itemize}
+\item Given prevalence $\pi$, specificities $\theta_0$, sensitivities $\theta_1$, and annotations $x$
 \item Bayes's Rule 
 \\[4pt]
 $\begin{array}{rcl}
@@ -334,7 +376,7 @@ p(c_i|x_i,\theta,\pi)
 \footnotesize
 \item Prevalence: \ $\pi = 0.2$
 \item Specificities: \  $\theta_{0,1} = 0.60$; \ \ $\theta_{0,2} = 0.70$; \ \ $\theta_{0,3} = 0.80$
-\item Sensitivities: \ $\theta_{1,1} = 0.75$; \ \ $\theta_{1,2} = 0.65$; \ \ $\theta_{1,3} = 0.95$
+\item Sensitivities: \ $\theta_{1,1} = 0.75$; \ \ $\theta_{1,2} = 0.65$; \ \ $\theta_{1,3} = 0.90$
 \item Annotations for item $i$: \ $x_{i,1} = 1$, \ $x_{i,2} = 1$, \ $x_{i,3} = 0$
 \\[8pt]
 \hspace*{-12pt}$\begin{array}{rcl}
@@ -342,7 +384,7 @@ p(c_i|x_i,\theta,\pi)
 \mbox{\rm Pr}(c_i=1|\theta,x) 
 & \propto & \pi \ \mbox{\rm Pr}(x_i=\langle 1,1,0 \rangle | \theta,c_i=1)
 \\[4pt]
-& = & 0.2 \cdot 0.75 \cdot 0.65 \cdot (1 - 0.95) = 0.004875
+& = & 0.2 \cdot 0.75 \cdot 0.65 \cdot (1 - 0.90) = 0.00975
 \end{array}$
 \\[8pt]
 \hspace*{-12pt}
@@ -351,11 +393,13 @@ $\begin{array}{rcl}
 \mbox{\rm Pr}(c_i=0|\theta,x) 
 & \propto & (1 - \pi) \ \mbox{\rm Pr}(x_i=\langle 1,1,0 \rangle | \theta,c_i=0)
 \\[4pt]
-& = & (1 - 0.2) \cdot (1 - 0.6) \cdot (1 - 0.7) \cdot (1 - 0.8) = 0.0192
+& = & (1 - 0.2) \cdot (1 - 0.6) \cdot (1 - 0.7) \cdot 0.8 = 0.0768 
 \end{array}$
 \\[8pt]
-\hspace*{-8pt}$\mbox{\rm Pr}(c_i=1|\theta,x) = 0.004875 / (0.004875 + 0.0192) = 0.2024922$
+\hspace*{-8pt}$\mbox{\rm Pr}(c_i=1|\theta,x) = \frac{\displaystyle 0.00975}{\displaystyle 0.00975+0.0768} = 0.1126516$
 \end{itemize}
+
+\mypart{Bayesian Estimation \\[12pt] {} \ \ \ \ and Inference}
 
 \sld{Bayesian Models}
 \begin{itemize}
@@ -394,10 +438,14 @@ $\hat{\phi}(y) = \arg\max_\phi p(\phi|y) = \arg\max_\phi p(y|\phi) \ p(\phi)$
 \\[4pt]
 maximizes probability of parameters given observed data
 \item If prior is constant, [i.e. $p(\phi) = c$], then $\hat{\phi}(y) = \phi^{*}(y)$
-\item Bayesian estimator is expected parameter values given observed data
+\item Bayesian estimator (given mean square error loss) 
 \\[4pt]
 $\bar{\phi}(y) = \mathbb{E}[\phi] = \int \phi \ p(\phi|y) \ d\phi$
-\item Bayesian estimates are unbiased [i.e. estimate equals expection] by definition
+\\[4pt]
+is expected parameter values given observed data
+\item Bayesian estimates are unbiased by construction 
+\\
+{} [i.e. expected estimate is parameter's true value]
 \end{itemize}
 
 \sld{Inference}
@@ -539,16 +587,25 @@ $\mbox{\rm mode}[\mbox{\sf Beta}(\alpha,\beta)]
 
 \sld{Beta is Conjugate Prior for Bernoulli}
 \begin{itemize}
-\item Data $y = y_1,\ldots,y_N$ for $y_n \in \{ 0, 1 \}$
+\item Data is $N$ Bernoulli samples $y = y_1,\ldots,y_N$ for $y_n \in \{ 0, 1 \}$
 \item Prior $p(\theta) = \mbox{\sf Beta}(\theta|\alpha,\beta)$
 \item Likelihood $p(y|\theta) = \prod_{n=1}^N \mbox{\sf Bern}(y_n|\theta) = \theta^A (1-\theta)^B$
 \\[4pt] {\scriptsize where $A$ is number of successes, $B$ number of failures in $y$}
 \item Posterior 
+\\[4pt]
 $\begin{array}{rcl}
 p(\theta|y) & \propto & p(y|\theta) \ p(\theta)
 \\[4pt]
-& = & \prod_{n=1}^N \mbox{\sf Bern}(y_n|\theta) 
+& = & \prod_{n=1}^N \mbox{\sf Bern}(y_n|\theta) \ \mbox{\sf Beta}(\theta|\alpha,\beta)
+\\[4pt]
+& \propto & \theta^A \ (1-\theta)^B \ \theta^{\alpha-1} \ (1-\theta)^{\beta-1}
+\\[4pt]
+& = & \theta^{A + \alpha - 1} \ (1-\theta)^{B + \beta - 1}
+\\[4pt]
+& \propto & \mbox{\sf Beta}(A+\alpha,B+\beta)
 \end{array}$
+\item i.e. add data counts $A$ and $B$ to prior counts $\alpha-1$ and $\beta-1$
+\item Concrete example of incremental updates -- just addition
 \end{itemize}
 
 \end{document}
