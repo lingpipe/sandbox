@@ -415,19 +415,10 @@ $p(\tilde{y}|y) = \int p(\tilde{y}|\phi) \ p(\phi|y) \ d\phi$
 averages over uncertainty in estimate of $\phi$ [i.e. $p(\phi|y)$]
 \end{itemize}
 
-\sld{Conjugate Priors}
+\sld{Bernoulli Distribution (Single Binary Trial)}
 \begin{itemize}
-\item Given a sampling distribution $p(y|\phi)$
-\item Given a family of distributions $\mathcal{F}$
-\item The family $\mathcal{F}$ is conjugate for $p(y|\phi)$ if'
-\\[4pt]
-the prior $p(\phi) \in \mathcal{F}$ implies the posterior $p(\phi|y) \in \mathcal{F}$
-\end{itemize}
-
-\sld{Bernoulli Distribution}
-\begin{itemize}
-\item Parameter $\theta \in [0,1]$ is chance of success
-\item Outcome $y \in \{ 0, 1 \}$
+\item Outcome $y \in \{ 0, 1 \}$ \ \ [success=1, failure=0]
+\item Parameter $\theta \in [0,1]$ is chance of success 
 \item 
 $p(y|\theta)
 = \mbox{\sf Bernoulli}(y|\theta) 
@@ -438,8 +429,9 @@ $p(y|\theta)
 \\
 1 - \theta & \mbox{if } $y = 0$
 \end{cases}$
+\vspace*{6pt}
 \item
-For $N$ trials $y = y_1,\ldots,y_N$, \ where $y_n \in \{ 0, 1 \}$,
+For $N$ independent trials $y = y_1,\ldots,y_N$, \ where $y_n \in \{ 0, 1 \}$,
 \\[4pt]
 $\begin{array}{rcl}
 p(y|\theta) & = & \prod_{n = 1}^N p(y_n|\theta)
@@ -450,7 +442,106 @@ p(y|\theta) & = & \prod_{n = 1}^N p(y_n|\theta)
 \end{array}$
 \\[4pt]
 where $A = \sum_{n=1}^N y_n$ and $B = \sum_{n=1}^N (1 - y_n) = N - A$
+\\[4pt]
+\vfill
+\item
+{\scriptsize $x^0 = 1$ \ \ and \ \ $x^a x^b = x^{a+b}$}
 \end{itemize}
 
+\sld{Conjugate Priors}
+\begin{itemize}
+\item Given a sampling distribution $p(y|\phi)$
+\item Given a family of distributions $\mathcal{F}$
+\item The family $\mathcal{F}$ is conjugate for $p(y|\phi)$ if
+\\[4pt]
+prior $p(\phi) \in \mathcal{F}$ implies posterior $p(\phi|y) \in \mathcal{F}$
+\item Provides analytic form of posterior (vs.\ numerical approximation)
+\item Supports incremental updates
+\begin{itemize}
+\item Start with prior $p(\phi) \in \mathcal{F}$
+\item After data $y$, have posterior $p(\phi|y) \in \mathcal{F}$
+\item Use $p(\phi|y)$ as prior for new data $y'$
+\item New posterior is $p(\phi|y,y') \in \mathcal{F}$
+\item i.e.\ updating with $y$ then $y'$ same as upating for $y,y'$ together
+\end{itemize}
+\item Not necessary for Bayesian inference
+\end{itemize}
+
+\sld{Mean, Mode and Variance for Bernoulli}
+
+\begin{itemize}
+\item Mean and Mode: \ $\mathbb{E}[\mbox{\sf Bern}(\theta)] = \mbox{\rm mode}[\mbox{\sf Bern}(\theta)] = \theta$
+\item Variance: \ $\mbox{\rm var}[\mbox{\sf Bern}(\theta)] = \theta \ (1-\theta)$
+\item Standard Deviation: \ $\mbox{\rm sd}[\mbox{\sf Bern}(\theta)] = \sqrt{\theta \ (1-\theta)}$
+\vfill
+\item {\scriptsize For discrete $X$ with $N$ outcomes $x_1,\ldots,x_N$ distributed $p_X(x)$}
+\begin{itemize}
+\scriptsize
+\item Mode (Max Value): \ $\mbox{\rm mode}[X] = \arg\max_{n=1}^N p(x_n)$
+\item Mean (Average Value): \ $\mathbb{E}[X] = \sum_{n=1}^N p(x_n) \ x_n $
+\item Variance: \ $\mbox{\rm var}[X] = \mathbb{E}[X-\mathbb{E}[X]] = \sum_{n=1}^N p(x_n) \ (x_n - \mathbb{E}[X])^2$
+\item Standard Deviation: \ $\mbox{\rm sd}[X] = \sqrt{\mbox{\rm var}[X]}$
+\end{itemize}
+\end{itemize}
+
+\sld{Beta Distribution}
+\begin{itemize}
+\item Outcome $\theta \in [0,1]$
+\item Parameters $\alpha,\beta > 0$
+\ \ \ [$\alpha-1$ prior successes; $\beta-1$ failures]
+\item 
+Continuous Density Function
+\\[4pt]
+$\begin{array}{rcl}
+p(\theta|\alpha,\beta) 
+& = & \mbox{\sf Beta}(\theta|\alpha,\beta)
+\\[8pt]
+& = & \frac{1}{\displaystyle \mbox{\rm B}(\alpha,\beta)} \ \ \theta^{\alpha-1} \ (1-\theta)^{\beta-1}
+\\[8pt]
+& \propto & \theta^{\alpha-1} \ (1-\theta)^{\beta-1}
+\end{array}$
+\vfill
+\item {\scriptsize
+Continuous densities $p(\theta)$ have $p(\theta) \geq 0$ and $\int p(\theta) d\theta = 1$
+}
+\item {\scriptsize
+Beta function $\mbox{\rm B}(\alpha,\beta) = \int_0^1 \theta^{\alpha-1} \ (1-\theta)^{\beta-1} \ d\theta 
+=  \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$}
+\item {\scriptsize
+$\Gamma(x) = \int_0^{\infty} y^{x-1} \ \exp(-y) dy$ \ \ is continuous generalization of factorial
+\\[4pt]
+i.e. $\Gamma(n+1) = n! = n \times (n-1) \times \cdots\times 2 \times 1$ \ for integer $n \geq 0$}
+\end{itemize}
+
+\sld{Mean, Mode and Variance for Beta}
+\begin{itemize}
+\item Mean: \ 
+$\mathbb{E}[\mbox{\sf Beta}(\alpha,\beta)] = \frac{\displaystyle \alpha}{\displaystle \alpha+\beta}$
+\item Variance: \ 
+$\mbox{\rm var}[\mbox{\sf Beta}(\alpha,\beta)] = \frac{\displaystyle \alpha\beta}{\displaystyle (\alpha+\beta)^2 \ (\alpha + \beta + 1)}$
+\item Mode: \ 
+$\mbox{\rm mode}[\mbox{\sf Beta}(\alpha,\beta)] 
+= 
+\begin{cases} 
+\frac{\displaystyle \alpha-1}{\displaystyle \alpha+\beta-2} & \mbox{if } \alpha > 1 \mbox{ and } \beta > 1
+\\[4pt]
+\mbox{undefined} & \mbox{otherwise}
+\end{cases}$
+\end{itemize}
+
+
+\sld{Beta is Conjugate Prior for Bernoulli}
+\begin{itemize}
+\item Data $y = y_1,\ldots,y_N$ for $y_n \in \{ 0, 1 \}$
+\item Prior $p(\theta) = \mbox{\sf Beta}(\theta|\alpha,\beta)$
+\item Likelihood $p(y|\theta) = \prod_{n=1}^N \mbox{\sf Bern}(y_n|\theta) = \theta^A (1-\theta)^B$
+\\[4pt] {\scriptsize where $A$ is number of successes, $B$ number of failures in $y$}
+\item Posterior 
+$\begin{array}{rcl}
+p(\theta|y) & \propto & p(y|\theta) \ p(\theta)
+\\[4pt]
+& = & \prod_{n=1}^N \mbox{\sf Bern}(y_n|\theta) 
+\end{array}$
+\end{itemize}
 
 \end{document}
