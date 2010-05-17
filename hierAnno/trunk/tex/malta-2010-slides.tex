@@ -51,6 +51,8 @@
 \spc LREC 2010 (Malta)
 
 \mypart{Mechanical Turk Examples}
+\vfill
+(Carpenter, Jamison and Baldwin, 2008)
 
 \sld{Amazon's Mechanical Turk}
 \begin{itemize}
@@ -65,7 +67,7 @@
 \end{itemize}
 \item Turkers fill out a form per task and submit
 \item We pay Turkers through Amazon
-\item We get resuls from Amazon in a CSV spreadsheet
+\item We get results from Amazon in a CSV spreadsheet
 \end{itemize}
 
 
@@ -84,7 +86,7 @@
 \item examples are key
 \end{itemize}
 
-\item Fitts' Law
+\item Fitts's Law
 \begin{itemize}
 \footnotesize
 \item time to position cursor inversely proportional to target size
@@ -138,7 +140,7 @@ Buick-Cadillac, Moon, erstwhile Phineas Foggs}
 \footnotesize
 \item began with full morphological segmentation (too hard)
 \item simplified task to one stem with full base (more ``natural'')
-\item added previously confusing full examples + affixes
+\item added previously confusing examples and sample affixes
 \end{itemize}
 
 \item Added qualifying test
@@ -150,79 +152,6 @@ Buick-Cadillac, Moon, erstwhile Phineas Foggs}
 
 
 
-\sld{Case 3: RTE-1}
-\begin{itemize}
-\item Examples and gold standard by Dagan et al. (2005)
-\item 800 Items (400 true, 400 false in gold standard)
-\item Used for 1st Recognizing Textual Entailment Bakeoff
-\item Examples
-\begin{itemize}
-\footnotesize
-\item
-{\it ID:} 56   \ \ \ {\it Gold Label:} TRUE
-\\[2pt]
-{\it Text:} Euro-Scandinavian media cheer Denmark v Sweden draw.
-\\[2pt]
-{\it Hypothesis:} Denmark and Sweden tie.
-\\
-\item
-{\it ID:} 77  \ \ \ {\it Gold Label:} FALSE
-\\[2pt]
-{\it Text:} Clinton's new book is not big seller here.
-\\[2pt]
-{\it Hypotheis:} Clinton's book is a big seller.
-\end{itemize}
-\end{itemize}
-
-\sld{Turker Annotations for RTE-1}
-\begin{itemize}
-\item Collected by Dolores Labs
-\item Analyzed by Snow et al. in {\it EMNLP}\ paper
-\item They also recreated 4 other NLP datasets:
-\begin{itemize} 
-\footnotesize 
-\item word sense (multinomial)
-\item sentiment (multi-faceted scalar 1--100)
-\item temporal ordering (binary)
-\item word similarity (ordinal 1--10)
-\end{itemize}
-\item 2 items/task, 10 Turkers per item, 164 Turkers total
-\item All five tasks completed in a few days
-\item All five tasks cost under US\$100
-\end{itemize}
-
-\sld{Turker Instructions for RTE-1}
-\begin{itemize}
-\item Instructions
-\\[6pt]
-{\footnotesize Please state whether the
-second sentence (the Hypothesis) is implied by the information in
-first sentence (the Text), i.e., please state whether the Hypothesis
-can be determined to be true given that the Text is true.
-
-Assume that you do not know anything about the situation except what the Text itself says. 
-
-Also, note that every part of the Hypothesis must be implied by the Text in order for it to be true.
-}
-\item Plus, 2 true and 2 false examples
-\end{itemize}
-
-\sld{(Munged) Turker Data for RTE-1}
-\begin{verbatim}
-           Item   Coder  Label   |     k    i  j  x
-  -------------------------------------------------   
-     1     i[1]    j[1]   x[1]   |     1    1  1  1   
-     2     i[2]    j[2]   x[2]   |     2    1  2  1
-     3     i[3]    j[3]   x[3]   |     3    1  3  1
-     4     i[4]    j[4]   x[4]   |     4    1  4  0
-                                 |
-   509   i[509]  j[509]  x[509]  |   509   51  22 0
-   510   i[510]  j[510]  x[510]  |   510   51  10 1
-   511   i[511]  j[511]  x[511]  |   511   52   4 1
-   512   i[512]  j[512]  x[512]  |   512   52   1 1
-                                 |
-  8000  i[8000] j[8000] x[8000]  |  8000  800 144 1
-\end{verbatim}
 
 \mypart{Generative Labeling Model}
 \vfill
@@ -261,7 +190,7 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 \item e.g. RTE-1 400/800 = 50\%  \ [artificially ``balanced'']
 \item e.g. Bridging anaphors (among all anaphors): 6\%
 \item e.g. Person named entity tokens 4K / 190K = 2.1\%
-\item e.g. Zero (tennis) sense of ``love'' in newswire: 1\% 
+\item e.g. Zero (tennis) sense of ``love'' in newswire: 0.5\% 
 \item e.g. Relevant docs for web query [Malta LREC]: \\
 \hspace*{36pt}500K/1T = 0.00005\%
 \end{itemize}
@@ -289,7 +218,7 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 
 \sld{Accuracies: Sensitivity and Specificity}
 \begin{itemize}
-\item Assumes binary categories (0 =``false'', \ 1 = ``true'')
+\item Assumes binary categories (0 =``FALSE'', \ 1 = ``TRUE'')
 \item Reference is gold standard, Response from coder
 \item 
 \begin{tabular}{|r|l|l|}
@@ -399,7 +328,589 @@ $\begin{array}{rcl}
 \hspace*{-8pt}$\mbox{\rm Pr}(c_i=1|\theta,x) = \frac{\displaystyle 0.00975}{\displaystyle 0.00975+0.0768} = 0.1126516$
 \end{itemize}
 
-\mypart{Bayesian Estimation \\[12pt] {} \ \ \ \ and Inference}
+\mypart{Bayesian Estimates \\[12pt]\hspace*{12pt}Example}
+
+\sld{Five Dentists Diagnosing Caries}
+
+{\footnotesize
+\begin{tabular}{cr|cr|cr}
+{\it Dentists} & {\it Count} &
+{\it Dentists} & {\it Count} &
+{\it Dentists} & {\it Count}
+\\ \hline
+00000 & 1880 & 10000 & 22 & 00001 & 789 \\
+10001 & 26 & 00010 & 43 & 10010 & 6 \\
+00011 & 75 & 10011 & 14 & 00100 & 23 \\
+10100 & 1 & 00101 & 63 & 10101 & 20 \\
+00110 & 8 & 10110 & 2 & 00111 & 22 \\
+10111 & 17 & 01000 & 188 & 11000 & 2 \\
+01001 & 191 & 11001 & 20 & 01010 & 17 \\
+11010 & 6 & 01011 & 67 & 11011 & 27 \\
+01100 & 15 & 11100 & 3 & 01101 & 85 \\
+11101 & 72 & 01110 & 8 & 11110 & 1 \\
+01111 & 56 & 11111 & 100
+\end{tabular}
+\vfill
+\begin{itemize}
+\item Caries is a type of tooth pitting preceding a cavity
+\item Can imagine it's a binary NLP tagging task
+\end{itemize}
+}
+
+\sld{Posterior Prevalence of Caries $\pi$}
+\vspace*{-6pt}
+\begin{itemize}
+\footnotesize
+\item Histogram of Gibbs samples approximates posterior
+\item 95\% interval (0.176, 0.215); \ Bayesian estimate 0.196
+\item Consensus estimate (all 1s) 0.026; \ Majority estimate ($\geq 3$ 1s), 0.13
+\end{itemize}
+\includegraphics[height=0.6\textheight]{pdf/dentistry-prevalence.pdf}
+
+
+
+\sld{Posteriors for Dentist Accuracies}
+
+\includegraphics[width=0.4\textwidth]{pngs/a-0-hist.pdf}
+\ \ \
+\includegraphics[width=0.4\textwidth]{pngs/a-1-hist.pdf}
+
+\begin{itemize}
+\item Posterior densities useful for downstream inference
+\item Mitigates overcertainty of point estimates
+\end{itemize}
+
+
+\sld{Posteriors for Dentistry Data Items}
+
+\hspace*{-24pt}
+\begin{tabular}{ll}
+\includegraphics[width=0.5\textwidth]{pngs/model-4-cat-posteriors-dentistry.pdf}
+&
+\includegraphics[width=0.5\textwidth]{pngs/model-4-cat-posteriors-dentistry-2.pdf}
+\end{tabular}
+\vspace*{-4pt}
+\begin{itemize}
+\footnotesize
+\item Accuracy adjustment results are very different than simple vote
+\end{itemize}
+
+\sld{Marginal Evaluation}
+{\footnotesize
+\begin{itemize}
+\item Common evaluation in epidemiology uses $\chi^2$ on marginals
+\\[12pt]
+\begin{tabular}{rr|rrr}
+{\it Positive} &   & \multicolumn{3}{c}{{\it Posterior Quantiles}} \\
+{\it Tests} & {\it Frequency} & {\it .025} & {\it .5} & {\it .975} \\  \hline
+0 & 1880 & 1818 & 1877 & 1935 \\
+1 & 1065 & 1029 & 1068 & 1117 \\
+2 & 404 & 385 & 408 & 434 \\
+3 & 247 & 206 & 227 & 248 \\
+4 & 173 & 175 & 193 & 212 \\
+5 & 100 & 80 & 93 & 109 \\
+\end{tabular}
+\\[8pt]
+\item Simpler models (all accuracies equal) are underdispersed (not enough all-0 or all-1 results)
+\item Better marginal eval is over all items (e.g. 00100, 01101, \ldots)
+\item Accounting for item difficulty provides even tighter fit
+\end{itemize}
+}
+
+\mypart{Hierarchical Bayesian \\[12pt]\hspace*{12pt}Annotation Model}
+\vfill
+(Carpenter 2008)
+
+\sld{Generative Annotation Model Sketch}
+
+\begin{picture}(195,145)
+
+\gmnode{57.5}{132.5}{\alpha_0}
+\gmnode{97.5}{132.5}{\beta_0}
+\gmnode{142.5}{132.5}{\alpha_1}
+\gmnode{182.5}{132.5}{\beta_1}
+\gmnode{77.5}{92.5}{\theta_{0,j}}
+\gmnode{162.5}{92.5}{\theta_{1,j}}
+\gmnode{10}{30}{\pi}
+\gmnode{55}{30}{c_i}
+\gmnode{120}{30}{x_k}
+
+\put(57.5,122.5){\vector(1,-1){19.75}}  % alpha_0 to theta_0_j
+\put(97.5,122.5){\vector(-1,-1){19.75}} % beta_0 to theta_0_j
+\put(142.5,122.5){\vector(1,-1){19.75}}  % alpha_1 to theta_1_j
+\put(182.5,122.5){\vector(-1,-1){19.75}} % beta_1 to theta_1_j
+\put(20,30){\vector(1,0){25}}  % \pi to c_i
+\put(65,30){\vector(1,0){45}}  % c_i to x_k
+\put(77.5,82.5){\vector(1,-1){42.5}}  % theta_0_j to x_k
+\put(162.5,82.5){\vector(-1,-1){42.5}}  % theta_1_j to x_k
+
+\gmplate{30}{55}{50}{50}{I}
+\gmplate{95}{55}{50}{50}{K}
+\gmplate{45}{115}{150}{45}{J}
+
+\end{picture}
+
+\sld{Generative Model of Annotation Process}
+\begin{itemize}
+\footnotesize
+\item Models \underline{all} random variables given constant (hyper)priors
+\item Annotators don't all label all items
+\item Label $x_k$ by annotator $i_k$ for item $j_k$
+\end{itemize}
+{\footnotesize
+\vspace*{-2pt}
+\begin{eqnarray*}
+\pi & \sim & \mathsf{Beta}(1,1) = \mathsf{Unif}([0,1])
+\\
+c_i & \sim & \mathsf{Bernoulli}(\pi)
+\\
+\theta_{0,j} & \sim & \mathsf{Beta}(\alpha_0,\beta_0)
+\\
+\theta_{1,j} & \sim & \mathsf{Beta}(\alpha_1,\beta_1)
+\\
+x_k & \sim & \mathsf{Bernoulli}(c_{i_k} \theta_{1,j_k}
+                                        + (1 - c_{i_k}) (1 - \theta_{0,j_k}))
+\end{eqnarray*}}
+\begin{itemize}
+\footnotesize
+\item Same annotation model as before for labels $x$ 
+given accuracies $\theta$ and category $c$
+\item Additionally model generation of prevalence $\pi$, 
+categories $c$, and accuracies $\theta$
+\end{itemize}
+
+\sld{Hierarchical Generation of Hyperpriors}
+\begin{itemize}
+\footnotesize
+\item Models annotator population: mean accuracies and variability
+\item Infers appropriate smoothing for low counts
+\item Prior mean accuracy: \ $\alpha/(\alpha+\beta)$
+\item Prior mean scale (inverse variability): \ $(\alpha+\beta)$
+\vspace*{4pt}
+{\footnotesize
+\begin{eqnarray*}
+\alpha_0/(\alpha_0 + \beta_0) & \sim & \mathsf{Beta}(1,1)
+\\
+\alpha_0 + \beta_0 & \sim & \mathsf{Pareto}(1.5)
+\\
+\alpha_1/(\alpha_1 + \beta_1) & \sim & \mathsf{Beta}(1,1)
+\\
+\alpha_1 + \beta_1 & \sim & \mathsf{Pareto}(1.5)
+\end{eqnarray*}}
+\item $\mathsf{Beta}(1,1)$ uniform prior on mean accuracies $\alpha/(\alpha+\beta) \in [0,1]$
+\item $\mathsf{Pareto}(x|1.5) \propto x^{-2.5}$ a diffuse prior for scales $\alpha+\beta \in [0,\infty)$
+\end{itemize}
+
+\sld{Sampling Notation Defines Joint Density}
+\footnotesize
+\vspace*{4pt}\hspace*{12pt}
+$\begin{array}{l}
+p(c,x,\theta_0,\theta_1,\pi,\alpha_0,\beta_0,\alpha_1,\beta_1)
+\\[4pt]
+{} \ \ \ {} = \prod_{i=1}^I \mathsf{Bern}(c_i|\pi)
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \prod_{k=1}^K \mathsf{Bern}(x_k|c_{i_k} \theta_{1,j_k}
+                                        + (1 - c_{i_k}) (1 - \theta_{0,j_k}))
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \prod_{j=1}^J \mathsf{Beta}(\theta_{0,j}|\alpha_0,\beta_0)
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \prod_{j=1}^J \mathsf{Beta}(\theta_{1,j}|\alpha_1,\beta_1)
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \mathsf{Beta}(\pi|1,1)
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \mathsf{Beta}(\alpha_0/(\alpha_0+\beta_0)|1,1)
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \mathsf{Beta}(\alpha_1/(\alpha_1+\beta_1)|1,1)
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \mathsf{Pareto}(\alpha_0+\beta_0|1.5)
+\\[4pt]
+{} \ \ \ \ \ \ \ {} \times \mathsf{Pareto}(\alpha_1+\beta_1|1.5)
+\end{array}$
+
+
+\mypart{Gibbs Sampling}
+
+\sld{Gibbs Sampling}
+\begin{itemize}
+\item General purpose Markov Chain Monte Carlo (MCMC) method
+\begin{itemize}
+\footnotesize
+\item States of Markov chain are samples of all variables
+\\[4pt] e.g.
+$(c^{(n)}, x^{(n)}, \theta_0^{(n)}, \theta_1^{(n)}, \pi^{(n)}, \alpha_0^{(n)}, \beta_0^{(n)}, \alpha_1^{(n)}, \beta_1^{(n)})$ 
+\item It's a continuous Markov process, unlike n-gram LMs or HMMs
+\end{itemize}
+\item Typically randomly initialize with ``reasonable'' values
+\item Reduces sampling of joint model to conditionals
+\begin{itemize}
+\item Requires sampler for each variable given all others
+\item We explicitly calculated $p(c_i|x,\pi,\theta_0,\theta_1)$ as example
+\item Next state samples each var given current value of other vars
+\end{itemize}
+\end{itemize}
+
+\sld{Gibbs Sampling (cont.)}
+\begin{itemize}
+\item Works for any model where dependencies form directed acyclic graph
+\item BUGS automatically computes all conditional distributions
+\item Convergences to stationary process sampling from posterior
+\begin{itemize}
+\item Typically sample from multiple chains to monitor convergence
+\item Typically throw away initial samples before convergence
+\end{itemize}
+\item Robust compared to Expectation Maximization [EM]
+\end{itemize}
+
+\sld{Gibbs Sample Traceplots}
+\begin{itemize}
+\item Plots multiple chains overlaid with different colors (3 chains here)
+\\
+\includegraphics[height=0.5\textheight]{pdf/binomial-traceplot-pi.pdf}
+\item Want to see this kind of mixing of different chains
+\item Potential scale reduction statistic $\hat{R}$ characterizes mixing
+\item BUGS shows traceplots for all vars; Coda package in R calcs $\hat{R}$
+\end{itemize}
+
+\sld{Gibbs Samples for Bayesian Estimation}
+\begin{itemize}
+\item Bayesian parameter estimate for variable $\phi$ given $N$ samples $\phi^{(n)}$
+\\[8pt]
+$\begin{array}{rcl}
+\hat{\phi} 
+& = & \mathbb{E}[\phi]
+\\[8pt]
+& = & \int \phi \ p(\phi) \ d\phi
+\\[8pt]
+& \approx & \frac{1}{N} \ \sum_{n=1}^N \phi^{(n)}
+\end{array}$
+\vspace*{4pt}
+\item Provides unbiased estimate (equal to expected parameter value)
+\item Works for any marginal or joint estimate
+\end{itemize}
+
+
+\sld{Gibbs Samples For Inference}
+\begin{itemize}
+\item Samples $\phi^{(n)}$ support plug-in inference (like the bootstrap)
+\begin{itemize}
+\item E.g. Predictive Posterior Inference
+\\[4pt]
+$p(\tilde{y}|y) = \int p(\tilde{y}|\phi) \ p(\phi|y) \ d\phi
+\approx
+\frac{1}{N} \ \sum_{n =1}^N \ p(\tilde{y}|\phi^{(n)})$
+\vspace*{8pt}
+\item E.g. (Multiple) Variable Comparisons
+\\[4pt]
+$\mbox{\rm Pr}(\theta_{0,j} > \theta_{0,j'}) \approx \frac{1}{N} \ \sum_{n=1}^N \ \mbox{\rm I}(\theta_{0,j}^{(n)} > \theta_{0,j'}^{(n)})$
+\\[12pt]
+$\mbox{\rm Pr}(j \mbox{ best specificity}) \approx \frac{1}{N} \ \sum_{n=1}^N \ \prod_{j' = 1}^J \mbox{\rm I}(\theta_{0,j}^{(n)} \geq \theta_{0,j'}^{(n)})$
+\vspace*{8pt}
+\end{itemize}
+\item Latter statistic can be used to compare systems (the `E' in ``LREC'')
+\item More samples provide more accurate approximations
+\end{itemize}
+
+
+\mypart{Simulation Study}
+
+\sld{Simulated Data Tests Estimators}
+
+\begin{itemize}
+\item Simulate data (with reasonable model settings)
+\item Test sampler's ability to fit
+\item Simulation Parameter Values
+\begin{itemize}
+\footnotesize
+\item $J=20$ annotators, $I=1000$ items
+\item prevalence $\pi = 0.2$
+\item specificity prior $(\alpha_0,\beta_0) = (40,8)$ (83\% accurate, medium var)
+\item sensitivity prior $(\alpha_1,\beta_1) = (20,8)$ (72\% accurate, high var)
+\item specificities $\theta_1$ generated randomly given $\alpha_1, \beta_1$
+\item sensitivities $\theta_1$ generated randomly given $\alpha_1, \beta_1$
+\item categories $c$ generated randomly given $\pi$
+\item annotations $x$ generated randomly given $\theta_0, \theta_1, c$
+\item 50\% missing annotations removed randomly
+\end{itemize}
+\end{itemize}
+
+\sld{Simulated Sensitivities / Specificities}
+
+\begin{itemize}
+\item Crosshairs at prior mean
+\item Realistic simulation compared to (estimated) real data
+\end{itemize}
+
+\includegraphics[width=0.4\textwidth]{pdf/beta-binomial-anno-sim-thetas.pdf}%
+
+
+\sld{Prevalence Estimate}
+\begin{itemize}
+\footnotesize
+\item Estimand of interest in sentiment (or epidemiology)
+\item Simulated with prevalence $\pi = 0.2$; \ \ sample prevalence $0.21$
+\item Estimates match samples; more data produces tighter estimates
+\item Histogram of posterior Gibbs samples:
+\end{itemize}
+\hspace*{24pt}\includegraphics[width=0.35\textwidth]{pdf/beta-binomial-anno-posterior-pi.pdf}%
+
+\sld{Sensitivity / Specificity Estimates}
+
+\includegraphics[width=0.4\textwidth]{pdf/beta-binomial-anno-theta0-fit.pdf}%
+\includegraphics[width=0.4\textwidth]{pdf/beta-binomial-anno-theta1-fit.pdf}%
+\vspace*{-2pt}
+\begin{itemize}
+\footnotesize
+\item Posterior mean and 95\% intervals
+\item Diagonal is perfect estimation
+\item More uncertainty for sensitivity (more data w.\ $\pi = 0.2$)
+\end{itemize}
+
+
+\sld{Sens / Spec Hyperprior Estimates}
+\vspace*{-8pt}
+\begin{itemize}
+\footnotesize
+\item Posterior samples $(\alpha^{(n)},\beta^{(n)})$ scatterplot
+\item Cross-hairs at simulated values
+\\[4pt]
+\begin{tabular}{ll}
+\includegraphics[width=0.40\textwidth]{pdf/beta-binomial-anno-scatter-sens.pdf}
+&
+\includegraphics[width=0.40\textwidth]{pdf/beta-binomial-anno-scatter-spec.pdf}
+\end{tabular}%
+\item Observe typical skew to high scale (low variance)
+\item Estimates match sample averages; more variance on sensitivity 
+\end{itemize}
+
+
+\mypart{Another\\[8pt]\hspace*{8pt}Mechanical Turk Example}
+\vfill
+\noindent\hspace*{8pt}
+(Snow, O'Connor, Jurafsky and Ng 2008)
+
+\sld{Case 3: RTE-1}
+\begin{itemize}
+\item Examples and gold standard by (Dagan, Glickman and Magnini 2006)
+\item 800 Items (400 true, 400 false in gold standard)
+\item Examples
+\begin{itemize}
+\footnotesize
+\item
+{\it ID:} 56   \ \ \ {\it Gold Label:} TRUE
+\\[2pt]
+{\it Text:} Euro-Scandinavian media cheer Denmark v Sweden draw.
+\\[2pt]
+{\it Hypothesis:} Denmark and Sweden tie.
+\\
+\item
+{\it ID:} 77  \ \ \ {\it Gold Label:} FALSE
+\\[2pt]
+{\it Text:} Clinton's new book is not big seller here.
+\\[2pt]
+{\it Hypotheis:} Clinton's book is a big seller.
+\end{itemize}
+\end{itemize}
+
+\sld{RTE-1 Gold-Standard Procedure}
+\begin{itemize}
+\item Each item labeled by two annotators
+\item Prevalence balanced at $\pi = 0.5$ by design
+\item Censoring Data
+\begin{itemize}
+\footnotesize
+\item Censored 20\% of data with disagreements
+\item Censored another 13\% authors found ``questionable''
+\item Censoring overestimates certainty and accuracy of evaluated systems on real data
+\end{itemize}
+\end{itemize}
+
+\sld{RTE-1 Inter-Annotator Agreement}
+\begin{itemize}
+\item Inter-annotator agreement was 80\%
+\item Chance agreement = $0.5^2 + 0.5^2 = 0.5$
+\item $\kappa = \frac{\displaystyle 0.8 - 0.5}{\displaystyle 1 - 0.5} = 0.6$
+\item Assuming 2 annotators at 80\% accuracy,
+\\[4pt] expect 4\% agreement on wrong label:
+\\[4pt] $(1-0.8) \times (1 - 0.8) = 0.04$
+\end{itemize}
+
+\sld{Turker Annotations for RTE-1}
+\begin{itemize}
+\item Collected by Dolores Labs
+\item Analyzed by Snow et al. in {\it EMNLP}\ paper
+\item They also recreated 4 other NLP datasets:
+\begin{itemize} 
+\footnotesize 
+\item word sense (multinomial)
+\item sentiment (multi-faceted scalar 1--100)
+\item temporal ordering (binary)
+\item word similarity (ordinal 1--10)
+\end{itemize}
+\item 2 items/task, 10 Turkers per item, 164 Turkers total
+\item All five tasks completed in a few days
+\item All five tasks cost under US\$100
+\end{itemize}
+
+\sld{Turker Instructions for RTE-1}
+\begin{itemize}
+\item Instructions
+\\[6pt]
+{\footnotesize Please state whether the
+second sentence (the Hypothesis) is implied by the information in
+first sentence (the Text), i.e., please state whether the Hypothesis
+can be determined to be true given that the Text is true.
+
+Assume that you do not know anything about the situation except what the Text itself says. 
+
+Also, note that every part of the Hypothesis must be implied by the Text in order for it to be true.
+}
+\item Plus, 2 true and 2 false examples
+\end{itemize}
+
+\sld{(Munged) Turker Data for RTE-1}
+\begin{verbatim}
+           Item   Coder  Label   |     k    i  j  x
+  -------------------------------------------------   
+     1     i[1]    j[1]   x[1]   |     1    1  1  1   
+     2     i[2]    j[2]   x[2]   |     2    1  2  1
+     3     i[3]    j[3]   x[3]   |     3    1  3  1
+     4     i[4]    j[4]   x[4]   |     4    1  4  0
+                                 |
+   509   i[509]  j[509]  x[509]  |   509   51  22 0
+   510   i[510]  j[510]  x[510]  |   510   51  10 1
+   511   i[511]  j[511]  x[511]  |   511   52   4 1
+   512   i[512]  j[512]  x[512]  |   512   52   1 1
+                                 |
+  8000  i[8000] j[8000] x[8000]  |  8000  800 144 1
+\end{verbatim}
+
+\sld{Gold-Standard Estimation (Again)}
+\begin{itemize}
+\item Used published gold standard as gold standard
+\item Inferred categories agreed closely with gold standard
+\item Snow et al.\ showed 3--5 Turkers as good as experts in most tasks
+\item Ten Turkers better than pair of ``experts''
+\begin{itemize}
+\footnotesize
+\item Turkers better matched coding standard on disagreements
+\item Lots of random (spam) annotations from Turkers
+\item Filtering out bad Turkers would have better ratio
+\end{itemize}
+\end{itemize}
+
+
+\sld{BUGS Code}
+\begin{center}
+{\tiny
+\begin{verbatim}
+    model {
+      pi ~ dbeta(1,1)
+      for (i in 1:I) {
+        c[i] ~ dbern(pi)
+      }
+      for (j in 1:J) {
+        theta.0[j] ~ dbeta(alpha.0,beta.0) I(.4,.99)
+        theta.1[j] ~ dbeta(alpha.1,beta.1) I(.4,.99)
+      }
+      for (k in 1:K) {
+        bern[k] <- c[ii[k]] * theta.1[jj[k]]
+                 + (1 - c[ii[k]]) * (1 - theta.0[jj[k]])
+        xx[k] ~ dbern(bern[k])
+      }
+      acc.0 ~ dbeta(1,1)
+      scale.0 ~ dpar(1.5,1)  I(1,100)
+      alpha.0 <- acc.0 * scale.0
+      beta.0 <- (1-acc.0) * scale.0
+      acc.1 ~ dbeta(1,1)
+      scale.1 ~ dpar(1.5,1) I(1,100)
+      alpha.1 <- acc.1 * scale.1;
+      beta.1 <- (1-acc.1) * scale.1
+    }
+\end{verbatim}
+}
+\end{center}
+
+\sld{Calling BUGS from R}
+\begin{center}
+{\tiny
+\begin{verbatim}
+    library("R2WinBUGS")
+    
+    data <- list("I","J","K","xx","ii","jj")
+    
+    parameters <- c("c", "pi","theta.0","theta.1",
+                    "alpha.0", "beta.0", "acc.0", "scale.0",
+                    "alpha.1", "beta.1", "acc.1", "scale.1")
+    
+    inits <- function() {
+      list(pi=runif(1,0.7,0.8),
+           c=rbinom(I,1,0.5),
+           acc.0 <- runif(1,0.9,0.9),
+           scale.0 <- runif(1,5,5),
+           acc.1 <- runif(1,0.9,0.9),
+           scale.1 <- runif(1,5,5),
+           theta.0=runif(J,0.9,0.9),
+           theta.1=runif(J,0.9,0.9))  }
+    
+    anno <- bugs(data, inits, parameters,
+                 "c:/carp/devguard/sandbox/hierAnno/trunk/R/bugs/beta-binomial-anno.bug",
+                  n.chains=3, n.iter=500, n.thin=5,
+                  bugs.directory="c:\\WinBUGS\\WinBUGS14")
+\end{verbatim}
+}
+\end{center}
+
+\sld{Estimated vs.\ ``Gold'' Accuracies}
+
+\includegraphics[width=0.4\textwidth]{pdf/dolores-rte-resids2D.pdf}%
+\includegraphics[width=0.4\textwidth]{pdf/dolores-rte-resids2D-pruned.pdf}%
+
+\begin{itemize}
+\footnotesize
+\item Diagonal green at chance (below is adversarial)
+\item  Blue lines at estimated prior means
+\item Circle area is items annotated, center at ``gold standard'' accuracy, lines to estimated accuracy (note pull to prior)
+\end{itemize}
+
+\sld{Annotator Pool Estimates}
+\begin{itemize}
+\item Gold-standard balanced (50\% prevalence) 
+\item Posterior 95\% intervals
+\begin{itemize}
+\footnotesize
+\item Prevalence (.45,.52)
+\item Specificity (.81,.87)
+\item Sensitivity (.82,.87)
+\item (Expect balanced sensitivity/specificity due to symmetry of task)
+\end{itemize}
+\item Dealing with bad Turkers
+\begin{itemize}
+\item 39\% of annotators no better than chance
+\item more than 50\% of annotations from spammers
+\item has little effect on inference
+\end{itemize}
+\end{itemize}
+
+
+\sld{Residual Cat Errors: $c_i - \mbox{Pr}(c_i=1|\cdots$)}
+
+\vspace*{-8pt}
+\noindent
+\hspace*{24pt}
+\includegraphics[width=0.25\textwidth]{pdf/dolores-cat-resids-model.pdf}%
+\includegraphics[width=0.25\textwidth]{pdf/dolores-cat-resids-model-pruned.pdf}%
+\\
+\hspace*{24pt}
+\includegraphics[width=0.25\textwidth]{pdf/dolores-cat-resids-voted.pdf}%
+\includegraphics[width=0.25\textwidth]{pdf/dolores-cat-resids-voted-pruned.pdf}%
+\begin{itemize}\footnotesize
+\item Most residual errors in gold std (extremes of top graphs), not Turkers
+\item Pruning bad annotators improves voting more than model estimates
+\end{itemize}
+
+
+
+\mypart{Bayesian Estimation \\[12pt] \hspace*{12pt}and Inference}
 
 \sld{Bayesian Models}
 \begin{itemize}
@@ -607,5 +1118,235 @@ p(\theta|y) & \propto & p(y|\theta) \ p(\theta)
 \item i.e. add data counts $A$ and $B$ to prior counts $\alpha-1$ and $\beta-1$
 \item Concrete example of incremental updates -- just addition
 \end{itemize}
+
+\mypart{Modeling Item Difficulty}
+
+\sld{Item Difficulty}
+
+\begin{itemize}
+\item Clear that some items easy and some hard
+\item Assuming all same leads to suboptimal marginal fit
+\item Hard to estimate even with 10 annotators/item
+\begin{itemize}
+\footnotesize
+\item Posterior intervals too wide for good read on difficulty
+\item Fattens posteriors on annotator accuracies
+\item Better marginal fits (by $\chi^2$)
+\end{itemize}
+\item Problem is multiple explanations
+\begin{itemize}
+\item Good annotators but hard items
+\item Mediocre annotators with average difficulty items
+\item Bad annotators but easy items
+\end{itemize}
+\end{itemize}
+
+\sld{Mixture Item Difficulty}
+\begin{itemize}
+\item Assume some items easy in sense all annotators agree
+\item Simple mixture model over items
+\item Easy to estimate
+\vfill
+\item (Espeland and Handelman 1989; Beigman-Klebanov, Beigman, and Diermeier 2008)
+\end{itemize}
+
+\sld{Modeling Scalar Item Difficulty}
+
+\begin{itemize}
+\item Assume item difficulties vary on continuous scale
+\item Logistic Item-Response or Rasch models
+\item Used in social sciences to model educational testing and voting
+\item Use logistic scale (maps $(-\infty,\infty)$ to $[0,1]$)
+\item $\alpha_j$: annotator $j$'s bias (ideally 0)
+\item $\delta_j$: annotator $j$'s discriminativeness (ideally $\infty$)
+\item $\beta_i$: item $i$'s ``location'' plus ``difficulty''
+\item $x_i \sim \mbox{logit}^{-1}(\delta_j(\alpha_i - \beta_j))$
+\item Other alternatives for discriminativeness and not
+\vfill
+\item (Uebersax and Grove 1993; Qu, Tan and Kutner 1996; Carpenter 2008)
+\end{itemize}
+
+\sld{Hierarchical Item Difficulty Model}
+
+\begin{itemize}
+\item Place normal (or other) priors on coefficients,
+\\[4pt]
+e.g. \ $\beta_i \sim \mathsf{Norm}(0,\sigma^2)$, \ \ \ $\sigma^2 \sim \mathsf{Unif}(0,100)$
+\item
+Priors may be estimated as before; leads to pooling of item difficulties.
+\item Harder to estimate computationally in BUGS
+\end{itemize}
+
+\mypart{Applications}
+
+\sld{Is the Truth Out There?}
+\begin{itemize}
+\item Evaluate uncertainty in item category with $\mbox{\rm Pr}(c_i = 1)$
+\item Do items all have true categories
+\begin{itemize}
+\item Vague coding standard
+\item Marginal items
+\end{itemize}
+\end{itemize}
+
+\sld{Evaluating Annotators}
+\begin{itemize}
+\item For accuracy 
+\item Ideally, annotators have high sensitivity and specificity
+\item Ideally annotators are unbiased 
+\begin{itemize}
+\item Bias indicated by sensitivity $>>$ specificity or vice-versa
+\end{itemize}
+\end{itemize}
+
+\sld{Evaluating ``Gold'' Standard}
+\begin{itemize}
+\item Get probabilities $\mbox{\rm Pr}(c_i=1)$
+\item Middling probabilities mean annotators uncertain
+\item Find items for which annotators having difficulty
+\begin{itemize}
+\item May indicate problem with coding standard
+\end{itemize}
+\item Alternative to explicitly modeling difficulty
+\end{itemize}
+
+\sld{Speed versus Accuracy}
+\begin{itemize}
+\item Assume all we want accurate gold standard
+\item May be beneficial to trade accuracy for speed
+\begin{itemize}
+\item e.g. 150 items at 80\% accuracy vs.\ 100 items at 90\%
+\item Former may be better with voting with adjustment for accuracies
+\end{itemize}
+\end{itemize}
+
+\sld{New Items versus New Labels}
+\begin{itemize}
+\item Evaluate whether to generate
+\begin{itemize}
+\item New label for uncertainly labeled item
+\item Label for currently unlabeled item
+\item (Sheng, Provost and Ipeirotis 2009)
+\end{itemize}
+\item Choose which annotator to label item
+\end{itemize}
+
+
+\sld{Evaluating Coding Standard Difficulty}
+\begin{itemize}
+\item Replacement for $\kappa$ with predictive power
+\item Sensitivity and Specificity priors $(\alpha,\beta)$ model
+\begin{itemize}
+\item Average annotator accuracy
+\item Annotator variation
+\end{itemize}
+\end{itemize}
+
+\sld{Probabilistic Training and Testing}
+\begin{itemize}
+\item Use probabilistic item posteriors for training
+\item Use probabilistic item posteriors for testing
+\item Directly with most probabilistic models (e.g. logistic regression, multinomial)
+\item Or, train/test with posterior samples
+\item Penalizes overconfidence of estimators (in log loss)
+\item Demonstrated theoretical effectiveness 
+\item Need to test in practice
+\vfill
+(Smyth 1995)
+\end{itemize}
+
+
+\sld{Bayesian {\Large $\kappa$} Estimates}
+\begin{itemize}
+\item Given estimates of sensitivity, specificity and prevalence, may
+\begin{itemize}
+\item Calculate expected $\kappa$ for two annotators
+\item Calculate expected $\kappa$ for two new annotators from pool
+\item Calcluate confidence/posterior uncertainty of $\kappa$
+\end{itemize}
+\item May estimate confidence intervals for $\kappa$ w/o model
+\end{itemize}
+
+\mypart{Extensions}
+
+\sld{Extending Coding Types}
+\begin{itemize}
+\item Multinomial responses (Dirichlet-multinomial)
+\item Ordinal responses (ordinal logistic model)
+\item Scalar responses (continuos responses)
+\end{itemize}
+
+\sld{Semi-Supervision}
+\begin{itemize}
+\item Easy to add in supervised cases with Bayesian models
+\begin{itemize}
+\footnotesize
+\item Gibbs sampling skips sampling for supervised cases
+\end{itemize}
+\item May go half way by mixing in ``gold standard'' annotators
+\begin{itemize}
+\footnotesize
+\item Fixed high, but non-100\% accuracies
+\item Stronger high accuracy prior
+\end{itemize}
+\end{itemize}
+
+\sld{Multimodal (Mixture) Priors}
+\begin{itemize}
+\item Model Mechanical Turk as mixture of spammers and hammers
+\item This is what the Mechanical Turk data suggests
+\item May also model covariance of sensitivity/specificity
+\end{itemize}
+
+\sld{Annotator and Item Random Effects}
+\begin{itemize}
+\item May add random effects for annotators
+\begin{itemize}
+\footnotesize
+\item amount of annotator training
+\item number of items annotated
+\item annotator native language
+\item annotator field of expertise
+\end{itemize}
+\item Also for Items
+\begin{itemize}
+\footnotesize
+\item difficulty (already discussed)
+\item type of item being annotated
+\item frequency of item in a large corpus
+\end{itemize}
+\end{itemize}
+
+
+\sld{Jointly Estimate Model and Annotations}
+\begin{itemize}
+\item Can train a model with inferred (probabilistic) gold standard
+\item Can use trained model like another annotator
+\vfill
+\item (Raykar, Yu, Zhao, Jerebko, Florin, Hermosillo-Valadez, Bogoni, and Moy 2009)
+\end{itemize}
+
+
+
+\mypart{The End}
+
+\sld{References}
+\begin{itemize}
+\item References
+\begin{itemize}
+\item {\tt http://lingpipe-blog.com/}
+\end{itemize}
+\item Contact
+\begin{itemize}
+\item
+{\tt carp@alias-i.com}
+\end{itemize}
+\item
+R/BUGS (Anon) Subversion Repository
+\\[4pt]
+{\tt\footnotesize svn co https://aliasi.devguard.com/svn/sandbox/hierAnno}
+\end{itemize}
+
+
 
 \end{document}
