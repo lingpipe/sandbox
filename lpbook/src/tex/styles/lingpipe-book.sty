@@ -1,10 +1,15 @@
 \usepackage[scale=0.85]{lucimatx}
 \linespread{1.05}
-
 %\renewcommand{\rmdefault}{ptm} % set roman; comment out for Lucida Bright
+
 \usepackage{graphicx}
+
+\usepackage{amsmath}
 %\usepackage{amssymb}
+
 \usepackage{fancyhdr}
+
+\usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={blue},filecolor={blue},linkcolor={blue},urlcolor={blue},pdffitwindow,pdfauthor={Bob Carpenter},pdftitle={LingPipe 4.0}]{hyperref}
 
 % Size            Lulu     CreateSpace
 % 7.0 x 10.0       -           +
@@ -80,6 +85,15 @@
 \addtocounter{section}{1}%
 \vspace*{.35in}%
 {\noindent{\Large\bf \thechapter.\thesection \ \ \ #1}}%
+\vspace*{.1in}%
+\noindent%
+}
+
+
+\newcommand{\mysubsection}[1]{%
+\addtocounter{subsection}{1}%
+\vspace*{.15in}%
+{\noindent{\large\bf \thechapter.\thesubsection \ \ #1}}%
 \vspace*{.1in}%
 \noindent%
 }
