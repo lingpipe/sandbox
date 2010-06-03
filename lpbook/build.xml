@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<project name="LingPipe Book"
+         basedir=".">
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/lp-book-${version}.jar"/>
+
+  <property name="java.src"
+            value="src/java"/>
+
+  <property name="java2tex.out"
+            value="build/tex/out"/>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac optimize="on"
+           debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes">
+      <src path="src/java/main"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="j2t">
+    <mkdir dir="${java2tex.out}"/>
+    <java classname="com.colloquial.java2tex.Java2Tex"
+          classpath="lib/java2tex-a.jar"
+          fork="true">
+      <arg value="${java.src}"/>
+      <arg value="${java2tex.out}"/>
+      <arg value="\.java$"/>
+    </java>
+  </target>
+
+  <target name="book">
+    <mkdir dir="build/tex-aux"/>
+    <exec executable="pdflatex"
+          dir="src/tex">
+      <arg value="-aux-directory=../../build/tex-aux"/>
+      <arg value="-output-directory=../../build"/>
+      <arg value="-include-directory=styles"/>
+      <arg value="lp-book.tex"/>
+    </exec>
+  </target>
+
+</project>
