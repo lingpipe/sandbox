@@ -1,61 +1,84 @@
 \mychapter{Introduction}{INTRODUCTION}
 
-\firstchar{L}ingPipe is a Java-based software framework and
-implementation for processing natural (human) language data.  This
-book provides a comprehensive tutorial on how to use LingPipe.  
+\firstchar{T}his book provides a comprehensive description of how
+LingPipe may be used to build natural language processing
+applications.  LingPipe is an interconnected suite of natural language
+processing software implemented in Java and accessed through its
+application programming interface (API).  LingPipe's interfaces are
+tailored to abstract over low-level implementation details to enable
+components such as tokenizers or classifiers to be swapped in a
+plug-and-play fashion.
+
+The presentation here will be hands on and assume the reader is
+comfortable reading Java programs.  idioms and higher-level design
+patterns will also be presupposed, though trickier aspects of both
+these and Java itself will be explained in some detail.
+
+LingPipe contains a mixture of heuristic rule-based components and
+statistical components, often implementing the same interfaces, as for
+statistical phrase chunkers and regular-expression-based chunkers.
+
+Familiarity with statistical notions such as probability will be
+assumed in the description of some statistical models and their
+associated algorithms and tuning parameters, but will not be assumed
+throughout.  This is not intended to be a statistics or
+machine-learning textbook.
+
+We do not presuppose any knowledge of linguistics beyond a simple
+understanding of the terms used in dictionaries such as words,
+syllables, pronunciations, and parts of speech such as noun and
+preposition.
+
+
 
 \mysection{The Java Programming Language}
 
 \noindent
-The presentation here assumes you have a basic familiarity with the
-Java programming language.  We chose Java as the basis for LingPipe
-because we felt it provided the best tradeoff between programmer
-efficiency, scalability, portability and usability.  
+We chose Java as the basis for LingPipe because we felt it provided
+the best tradeoff among efficiency, usability, portability, and
+library availability.
 
-On the other hand, several components of Java relevant for processing
-textual data and using LingPipe are discussed in detail, such as
-character-level I/O, serialization and generic types.  Several
-libraries are also discussed in depth as parts of applications.
+The presentation here assumes the reader has a basic working knowledge
+of the Java programming language.  We will focus on a few aspects of
+Java that are particularly crucial for processing textual language
+data, such as character and string representations, input and output
+streams and character encodings, regular expressions, parsing HTML and
+XML markup, etc.  In explaining LingPipe's design, we will also delve
+into greater detail on general features of Java such as concurrency,
+generics, floating point representations, and the collection package.
 
 \mysubsection{Java Standard Edition 6}
 
 \noindent
 This book is based on the latest currently supported standard edition
 of the Java platform (Java SE), which is version 6.  You will need the
-Java development kit (JDK) in order to compile programs.  The JDK
-includes the Java runtime environment (JRE), which you will need to
-run programs.  
+Java development kit (JDK) in order to compile Java programs.  A java
+virtual machine (JVM) is required to execute compiled Java programs.
+A Java runtime environment (JRE) contains platform-specific support
+and integration for a JVM and often interfaces to web browsers for
+applet support.
 
 \mysubsection{Downloading Java}
 
 \noindent
 Java is available for the Windows, Linux, and Solaris operating
-systems in both 32-bit and 64-bit versions.  Download whichever is
-appropriate for your hardware and operating system, keeping in mind
-that you will need the 64-bit version to use large (greater than 1.5
-gigabyte or so) heap sizes.
-
-Java is available for download for Windows, Linux and Solaris from
-
+systems in both 32-bit and 64-bit versions.  The 64-bit version is
+required to allocate JVMs with heaps larger than 1.5 or 2 gigabytes
+(depending on platform).  The JDK, JRE and JVM are updated regularly.
+The latest version for Windows, Linux, and Solaris is available from
+%
 \begin{quote}
 \hrefurl{http://java.sun.com/javase/downloads/index.jsp}
 \end{quote}
-
-The Java JDK and JRE are included as standard features on the
-Macintosh operating system as part of Mac OS X.  Updates are
-available through Apple's standard developer channel at
+%
+The Java JDK and JRE are included as part of Mac OS X.  Updates are
+available through
 %
 \begin{quote}
 \hrefurl{http://developer.apple.com/java/download/}
 \end{quote}
 %
-and frequently asked questions for Java on Mac OS X are answered at
-%
-\begin{quote}
-\hrefurl{http://developer.apple.com/java/faq/}
-\end{quote}
-
-Licesning terms for the JDK are available from
+Licensing terms for the JDK are provided at
 %
 \begin{quote}
 \hrefurl{http://java.sun.com/javase/6/jdk-6u20-license.txt}
@@ -64,11 +87,12 @@ Licesning terms for the JDK are available from
 and for the JRE at
 %
 \begin{quote}
-\hrefurl{http://www.java.com/en/download/license.jsp}
+\hrefurl{http://www.java.com/en/download/license.jsp}{}
 \end{quote}
 
 \mysubsection{Learning Java}
 
+\noindent
 For learning Java, we recommend the following two books pitched at
 beginners and intermediate Java programmers,
 %
@@ -78,8 +102,19 @@ beginners and intermediate Java programmers,
 \item Bloch, Joshua. 2008. {\it Effective Java}, 2nd Edition.  Prentice-Hall.
 \end{itemize}
 %
-James Gosling was the co-inventor of Java and Joshua Bloch was
-one of the main architects of the language.
+James Gosling designed the first version of Java and Joshua Bloch was
+one of the main architects for the language after that.
+
+We also highly recommend the algorithm section of the TopCoder
+contests.  TopCoder provides a complete online Java environment, well
+thought out problems at varying specified levels of difficulty, unit
+tests that check your submissions, and examples of what others did to
+provide code-reading practice.
+%
+\begin{quote}
+\hrefurl{http://www.topcoder.com/tc}
+\end{quote}
+%
 
 
 
