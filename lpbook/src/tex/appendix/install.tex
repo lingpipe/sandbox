@@ -1,0 +1,101 @@
+\mychapter{Installation}{INSTALLATION}
+
+\firstchar{T}his appendix explains how to install everything you'll
+ned to work with the code in this book.
+
+
+\mysection{Java Standard Edition 6}
+
+\noindent
+The programs in this book are based on Java Standard Edition Version
+6.  At the time of writing, this is the only version of Java being
+publicly supported by Sun/Oracle.
+
+In order to run the Java programs and their
+associated libraries, you will need a Java runtime environment (JRE),
+which contanis a Java virtual machine (JVM).  In order to compile Java
+programs, you will need a Java development kit (JDK).
+
+Java is available in 32-bit and 64-bit versions.  The 64-bit version
+is required to allocate JVMs with heaps larger than 1.5 or 2 gigabytes
+(the exact maximum for 32-bit Java depends on the platform).  
+
+Licensing terms for the JRE are at
+%
+\begin{quote}
+\hrefurl{http://www.java.com/en/download/license.jsp}{}
+\end{quote}
+and for the JDK at
+%
+\begin{quote}
+\hrefurl{http://java.sun.com/javase/6/jdk-6u20-license.txt}
+\end{quote}
+
+Java is available for the Windows, Linux, and Solaris operating
+systems in both 32-bit and 64-bit versions from
+%
+\begin{quote}
+\hrefurl{http://java.sun.com/javase/downloads/index.jsp}
+\end{quote}
+%
+The Java JDK and JRE are included as part of Mac OS X.  Updates are
+available through
+%
+\begin{quote}
+\hrefurl{http://developer.apple.com/java/download/}
+\end{quote}
+%
+Java is updated regularly and it's worth having the latest version.
+Updates include bug fixes and often include performance enhancements,
+some of which can be quite substantial.
+
+Java must be installed on the operating system so that shell commands
+will execute it.  
+
+\begin{quote}
+{\small
+\ttfamily
+{\it\ttfamily > java -version}
+\\
+java version "1.6.0\_18"
+\\
+Java(TM) SE Runtime Environment (build 1.6.0\_18-b07)
+\\
+Java HotSpot(TM) 64-Bit Server VM (build 16.0-b13, mixed mode)
+}
+\end{quote}
+
+\mysection{Ant}
+
+\noindent
+The build files for the code samples and examples are provided as Ant
+files.  Ant build files are coded in XML and use easy to read element
+and attribute names for build targets.  Unlike other build systems
+such as Make or Maven which try to resolve dependencies and determine
+if targets are up to date, Ant always executes all of a target,
+including all of the subtargets.
+
+Ant is is an Apache project, and as such, is subject to the Apache license,
+\begin{quote}
+\hrefurl{http://ant.apache.org/license.html}
+\end{quote}
+
+Ant is available from 
+
+\begin{quote}
+\hrefurl{http://ant.apache.org/}
+\end{quote}
+
+Ant must be 
+
+
+\mysection{LingPipe}
+
+\noindent
+LingPipe may be downloaded from its web site:
+
+\begin{quote}
+\hrefurl{http://alias-i.com/lingpipe/}
+\end{quote}
+
+
