@@ -1,6 +1,6 @@
-%\usepackage[scale=0.85]{lucimatx}
-%\linespread{1.05}
-%\renewcommand{\rmdefault}{ptm} % set roman; comment out for Lucida Bright
+\usepackage[scale=0.85]{lucimatx}
+\linespread{1.05}
+\renewcommand{\rmdefault}{ptm} % set roman; comment out for Lucida Bright
 
 \usepackage{graphicx}
 
@@ -93,7 +93,8 @@
 \newcommand{\mysubsection}[1]{%
 \addtocounter{subsection}{1}%
 \vspace*{.15in}%
-{\noindent{\large\bf \thechapter.\thesubsection \ \ #1}}%
+{\noindent{\large\bf% \thechapter.\thesubsection \ \ 
+#1}}%
 \vspace*{.1in}%
 \noindent%
 }
@@ -106,3 +107,5 @@
 \newcommand{\empLine}{\\[-8pt]}
 
 \newcommand{\cdBold}[1]{{\bf\ttfamily #1}}
+
+\newcommand{\code}[1]{{\ttfamily #1}}
