@@ -1,33 +1,52 @@
 \mychapter{Introduction}{INTRODUCTION}
 
-\firstchar{T}his book provides a comprehensive description of how
-LingPipe may be used to build natural language processing
-applications.  LingPipe is an interconnected suite of natural language
-processing software implemented in Java and accessed through its
-application programming interface (API).  LingPipe's interfaces are
-tailored to abstract over low-level implementation details to enable
-components such as tokenizers or classifiers to be swapped in a
-plug-and-play fashion.
+\firstchar{L}ingPipe is an interconnected suite of natural language
+processing libraries implemented in Java.  This book provides a
+comprehensive description of how LingPipe may be used to build natural
+language processing (NLP) applications.
 
-The presentation here will be hands on and assume the reader is
-comfortable reading Java programs.  idioms and higher-level design
-patterns will also be presupposed, though trickier aspects of both
-these and Java itself will be explained in some detail.
-
-LingPipe contains a mixture of heuristic rule-based components and
+LingPipe's application programming interface (API) is tailored to
+abstract over low-level implementation details to enable components
+such as tokenizers or classifiers to be swapped in a plug-and-play
+fashion.  LingPipe contains a mixture of heuristic rule-based components and
 statistical components, often implementing the same interfaces, as for
 statistical phrase chunkers and regular-expression-based chunkers.
 
-Familiarity with statistical notions such as probability will be
-assumed in the description of some statistical models and their
-associated algorithms and tuning parameters, but will not be assumed
-throughout.  This is not intended to be a statistics or
-machine-learning textbook.
+The presentation here will be hands on and assume the reader is
+comfortable reading short and relatively simple Java programs.  In
+some cases, programming idioms like loop boundaries being
+inclusive/exclusive and higher-level design patterns like visitors
+will also be presupposed.  More specific aspects of Java coding
+relating to text processing, such as streaming I/O, character
+decoding, string representations, and regular expression processing
+will be discussed in more depth.  We will also go into some detail on
+collections, XML/HTML parsing with SAX, and serialization patterns.
 
 We do not presuppose any knowledge of linguistics beyond a simple
 understanding of the terms used in dictionaries such as words,
 syllables, pronunciations, and parts of speech such as noun and
-preposition.
+preposition.  We will spend considerable time introducing linguistic
+concepts, such as word senses or noun phrase chunks, as they relate to
+natural language processing modules in LingPipe.
+
+This book is not intended to be a statistics or machine-learning
+textbook.  Nor is meant to be a primer for NLP algorithms.  We will do
+our best to first introduce LingPipe's modules and their application
+from a hands-on practical API perspective rather than a theoretical
+one.  In most cases, such as for logistic regression classifiers and
+conditional random field (CRF) taggers and chunkers, it's possible
+learn how to effectively fit complex and useful models without fully
+understanding the mathematical basis of LingPipe's estimation and
+optimization algorithms.  In other cases, such as naive Bayes
+classifiers, hierarchical clusterers and hidden Markov models (HMM),
+there is almost no hand-tuning required.
+
+Deeper understanding of LingPipe's algorithms and statistical models
+requires familiarity with complexity analysis and basic probability
+theory including information theory.  After introducing models and
+their applications at a programming level, we will provide
+mathematically precise definitions of all the models and algorithms
+used in LingPipe.
 
 
 
