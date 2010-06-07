@@ -1,7 +1,114 @@
 \mychapter{Installation}{INSTALLATION}
 
+\noindent
 \firstchar{T}his appendix explains how to install everything you'll
 ned to work with the code in this book.
+
+\mysection{Unix Shell Tools}
+
+\noindent
+We present examples as run from the shell through the Ant build
+environment or directly.  We use Unix-style commands, which should
+be familiar to anyone working in 
+a Unix, Linux, or Mac OS X environment.
+
+\mysubsection{Cygwin for Windows}
+
+\noindent
+If you're working in Windows (XP, Vista or 7), we recommend the 
+Cygwin suite of Unix command-line tools for Windows.  They may be
+downloaded and installed through Cygwin's home page,
+
+\begin{quote}
+\hrefurl{http://www.cygwin.com/}
+\end{quote}
+
+The {\tt setup.exe} program is small.  When you run it, it goes out
+over the internet to find the packages from registered mirrors.  It
+then lists all the packages available.  You can install some or all of
+them.  We  Just
+run the setup program again 
+
+\mysubsection{Archive and Compression Tools}
+
+\noindent
+We will assume you can run {\tt tar} archiving tool, as well as the
+unpacking commands {\tt unzip} and {\tt gunizp}.  These may be
+installed as part of Cygwin on Windows.
+
+\mysection{Version Control}
+
+\noindent
+If you don't live in some kind of version control environment, you should.
+Not only can you keep track of your own code across multiple sites and/or
+users, you can also keep up to date with all the LingPipe releases and
+code from free online version control repositories such as SourceForge.  
+
+We prefer the shell for all of our work, and you can install a
+shell-based version of Subversion, the command-name for which is {\tt
+svn}.  SVN itself requires a secure shell (SSH) client over which to
+run.  These may both be installed through Cygwin for Windows users.
+
+
+\mysection{Text Editors}
+
+You will need to be able to edit text.  We like to work in the emacs
+text editor, which contains too many features to begin to mention here.  
+It's as close as you'll get to an IDE in a simple text editor.   We
+use the XEmacs distribution of emacs, which is available from its home page,
+
+\begin{quote}
+\hrefurl{http://www.xemacs.org/}
+\end{quote}
+
+
+There's an installer for Windows.  We found the install from {\tt
+xemacs.org} to work better than the one that comes with Cygwin as far
+as interacting with Windows.  We like to work with the Lucida Console
+font, which is distributed with Windows; it's the font used for examples
+in this textbook.
+
+
+\mysection{Integrated Development Environment}
+
+\noindent
+LingPipe development may be carried out through an integrated
+development environment (IDE) that supports Java.  The two most
+popular ones are Eclipse and NetBeans.  
+
+\mysubsection{Eclipse Development Environment}
+
+\noindent
+Eclipse provides a full range of code checking (lint), auto-completion
+and code generation, and debugging facilities.  Eclipse is an open source
+project, and a wide range of additional tools are available as plugins.  It
+also has modules for languages other than Java, such as C++ and PHP.
+
+The full set of Eclipse downloads is listed on the following page,
+%
+\begin{quote}
+\hrefurl{http://download.eclipse.org/eclipse/downloads/}
+\end{quote}
+
+You'll want to make sure you choose the one compatible with the JDK
+you are using.  It's mainly designed to work on Windows, but has been
+ported to Linux and Mac OS X (though Carbon).
+
+
+\mysubsection{NetBeans}
+
+\noindent
+Unlike Eclipse, the NetBeans IDE is written entirely in Java.  Thus
+it's possible to run it under Windows, Linux, Solaris Unix, and Mac OS
+X. There is also a wide range of plug-ins available for NetBeans.
+
+You can get NetBeans for free from its home page,
+%
+\begin{quote}
+\hrefurl{http://netbeans.org/}
+\end{quote}
+%
+
 
 
 \mysection{Java Standard Edition 6}
@@ -50,7 +157,16 @@ Updates include bug fixes and often include performance enhancements,
 some of which can be quite substantial.
 
 Java must be installed on the operating system so that shell commands
-will execute it.  
+will execute it.  We have to manage multiple versions of Java, so
+typically we will define an environment variable {\tt JAVA\_HOME}, and
+add {\tt \$\{JAVA\_HOME\}/bin} (Unix) or {\tt \%JAVA\_HOME\%{\textbackslash}bin} (Windows) 
+to the {\tt PATH}.  We then set {\tt JAVA\_HOME} to either {\tt
+JAVA\_1\_5}, {\tt JAVA\_1\_6}, or {\tt JAVA\_1\_7} depending on use
+case.  Note that {\tt JAVA\_HOME} is one level above Java's {\tt bin}
+directory containing the executable Java commands.
+
+You can test this with the following command, which
+should produce similar results.
 
 \begin{quote}
 {\small
@@ -65,6 +181,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 16.0-b13, mixed mode)
 }
 \end{quote}
 
+
 \mysection{Ant}
 
 \noindent
@@ -74,6 +191,8 @@ and attribute names for build targets.  Unlike other build systems
 such as Make or Maven which try to resolve dependencies and determine
 if targets are up to date, Ant always executes all of a target,
 including all of the subtargets.
+
+Ant build files may be imported directly into the Eclipse IDE.
 
 Ant is is an Apache project, and as such, is subject to the Apache license,
 \begin{quote}
@@ -86,16 +205,49 @@ Ant is available from
 \hrefurl{http://ant.apache.org/}
 \end{quote}
 
-Ant must be 
+First, you need to unpack the distribution.  We like directory
+structures with release names, which is how ant unpacks, using
+top-level directory names like {\tt apache-ant-1.8.1}.  Then, you need
+to put the {\tt bin} subdirectory of the top-level directory into the
+{\tt PATH} environment variable so that Ant may be executed from the
+command line.
+
+Ant requires the {\tt JAVA\_HOME} environment variable to be set to
+the path above the {\tt bin} directory containing the Java
+executables.  
+
+Ant's installation instructions suggest setting the {\tt
+ANT\_HOME} directory in the same way, and then adding but it's not necessary unless
+you will be scripting calls to Ant.
 
 
 \mysection{LingPipe}
 
 \noindent
 LingPipe may be downloaded from its web site:
-
+%
 \begin{quote}
 \hrefurl{http://alias-i.com/lingpipe/}
 \end{quote}
+%
+Other than unpacking, the gzipped tarball, there is nothing required
+for installation.
 
 
+\mysection{Book Code and Libraries}
+
+\noindent
+The code samples from this book are available via anonymous subversion checkout
+from the LingPipe sandbox.  Specifically, the entire content of the book,
+including code and text, may be checked out anonymously using,
+
+\begin{quote}
+{\small\ttfamily
+> svn co https://aliasi.devguard.com/svn/sandbox/lpbook
+}
+\end{quote}
+%
+The distribution contains all of the code and Ant build files for
+running it.  It also contains the \LaTeX\ source for the book itself
+as well as the system to extract text from the source for automatic
+inclusion in the book.
