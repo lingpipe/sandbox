@@ -61,7 +61,7 @@
 \thispagestyle{empty}
 \renewcommand{\chaptername}{#1}%
 \setcounter{section}{0}%
-\addtocounter{chapter}{1}%
+\refstepcounter{chapter}%
 \mychapterstar{\thechapter. \ \ #1}{#2}
 }
 
@@ -80,7 +80,7 @@
 }
 
 \newcommand{\mysection}[1]{%
-\addtocounter{section}{1}%
+\refstepcounter{section}%
 \vspace*{.35in}%
 {\noindent{\Large\bf \thechapter.\thesection \ \ \ #1}}%
 \vspace*{.1in}%
@@ -89,7 +89,7 @@
 
 
 \newcommand{\mysubsection}[1]{%
-\addtocounter{subsection}{1}%
+\refstepcounter{subsection}%
 \vspace*{.15in}%
 {\noindent{\large\bf% \thechapter.\thesubsection \ \ 
 #1}}%
