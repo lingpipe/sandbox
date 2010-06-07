@@ -1,0 +1,319 @@
+\mychapter{Further Reading}{FURTHER READING}
+
+\noindent
+\firstchar{I}n order to fully appreciate contemporary approaches to natural language
+processing requires three fairly broad areas of expertise:
+linguistics, statistics, and algorithms.  We don't pretend to
+introduce these areas in any depth in this book.  Instead, we
+recommend the following textbooks, sorted by area, from among the many
+that are currently available.
+
+\mysection{Java}
+
+\noindent
+For learning Java, we recommend the following two books pitched at
+beginners and intermediate Java programmers,
+%
+\begin{itemize}
+\item Arnold, Ken, James Gosling and David Holmes.  2005.
+{\it The Java Programming Language}, 4th Edition.  Prentice-Hall.
+\\
+{\footnotesize Gosling invented Java, and this is the ``official'' introduction to the
+language.  It's also very good.}
+%
+\item Bloch, Joshua. 2008. {\it Effective Java}, 2nd Edition.  Prentice-Hall.
+\\
+{\footnotesize Bloch was one of the main architects of Java from
+version 1.1 forward.  This book is about taking Java program design
+to the next level.}
+%
+\item
+Fowler, Martin, Kent Beck, John Brant, William Opdyke, and Don Roberts.
+1999.
+{\it Refactoring: Improving the Design of Existing Code}.
+Addison-Wesley.
+\\
+{\footnotesize Great book on making code better, both existing
+code and code yet to be created.}
+\end{itemize}
+%
+
+
+\mysubsection{Practice Makes Perfect}
+
+\noindent
+Really, the only way to learn how to code is to practice.  Being a
+good coder means two things: being fast and efficient (assuming
+accuracy).  By accurate, we mean writing code that does what it's
+supposed to do.  By fast, we mean the coding goes quickly.  By efficient,
+we mean the resulting code is efficient.
+
+For practice, we highly recommend the algorithm section of the
+TopCoder contests.  TopCoder provides a complete online Java
+environment, well thought out problems at varying specified levels of
+difficulty, unit tests that check your submissions, and examples of
+what others did to provide code-reading practice.
+%
+\begin{quote}
+\hrefurl{http://www.topcoder.com/tc}
+\end{quote}
+%
+
+
+
+\mysection{General Programming}
+
+\noindent
+We would also recommend a book about programming in general, 
+especially for those who have not worked collaboratively with
+a good group of professional programmers.
+%
+\begin{itemize}
+\item Hunt, Andrew and David Thomas.
+1999.
+{\it The Pragmatic Programmer}.
+Addison-Wesley.
+\\
+{\footnotesize Read this book and follow its advice, which is just as relevant now
+as when it was written.  The best book on how to program
+we know.  A competitor to books like Steve McConnell's {\it Code Complete} (2004)
+and books on ``agile'' or ``extreme'' programming.}
+\end{itemize}
+
+
+\mysection{Algorithms}
+
+\noindent
+Because natural language processing requires comptuational
+implementations of its models, a good knowledge of algorithm analysis
+goes a long way in understanding the approaches found in a tool kit
+like LingPipe.
+
+\begin{itemize}
+%
+\item
+Cormen, Thomas H., Charles E.\ Leiserson, Ronald L.\ Rivest, and
+Clifford Stein. 
+2009.
+{\it Introduciton to Algorithms}, Third Edition.
+MIT Press.
+\\
+{\footnotesize A thorough yet readable introduction to algorithms.}
+%
+\item
+Durbin, Richard, Sean R.\ Eddy, Anders Krogh, Grame Mitchison.
+{\it Biological Sequence Analysis: Probabilistic Models of Proteins
+and Nucleic Acids}.
+Cambridge University Press.
+\\
+{\footnotesize Even though it focuses on biology, it has great
+descriptions of several key natural language processing algorithms
+such as hidden Markov models and probabilistic context-free grammars.}
+%
+\item
+Gusfield, Dan.
+1997.
+{\it Algorithms on Strings, Trees and Sequences}.
+Cambridge University Press.
+\\
+{\footnotesize Incredibly detailed and thorough introduction to
+string algorithms, mainly aimed at computational biology, but
+useful for all string and tree processing.}
+%
+\end{itemize}
+
+
+
+
+
+
+\mysection{Probability and Statistics}
+
+\noindent
+Most of the tools in LingPipe are statistical in nature.  To fully
+understand modern natural language processing it's necessary to
+understand the statistical models which make up their foundation.
+To do this requires an understanding of the basics of statistics.
+Much of the work in natural language processing is Bayesian, so
+understanding Bayesian statistics is now a must for understanding
+the field.  Much of it also relies on information theory, which is
+also introduced in the machine learning textbooks.
+
+\begin{itemize}
+%
+\item
+Bulmer, M.~G.
+1979.
+{\it Principles of Statistics}.
+Dover.
+\\
+{\footnotesize Packs an amazing amount of information into
+a readable little volume, though it assumes some mathematical
+sophistication.}
+%
+\item Cover, Thomas M.\ and Joy A.\ Thomas.
+2006.
+{\it Elements of Information Theory}, Second Edition.
+Wiley.
+\\
+{\footnotesize This is the classic textbook for information theory.}
+%
+\item
+DeGroot, Morris H.\ and Mark J.\ Schervish.
+2002.
+{\it Probability and Statistics},  Third Edition.
+Addison-Wesley.
+\\
+{\footnotesize Another introduction to classical frequentist
+statistical hypothesis testing and estimation but with some Bayesian
+concepts thrown into the mix.}
+%
+\item
+Gelman, Andrew and Jennifer Hill.
+2006.
+{\it Data Analysis Using Regression and Multilevel/Hierarchical Models}.
+Cambridge University Press.
+\\
+{\footnotesize A great practical introduction to regression from a Bayesian
+perspective with an emphasis on multilevel models.  Much less mathematically
+demanding than the other introductions, but still very rigorous.}
+%
+\item
+Gelman, Andrew, John B.~Carlin, Hal S.\ Stern, and Donald B.\ Rubin.
+2003.
+{\it Bayesian Data Analysis}, Second Edition.
+Chapman and Hall.
+\\
+{\footnotesize The bible for Bayesian methods.  Presupposes high
+mathematical sophistication and a background in classical probability
+and statistics to the level of DeGroot and Schervish or Larsen
+and Marx's books.}
+%
+\item
+Larsen, Richard J.\ and Morris L.\ Marx.
+2005.
+{\it Introduction to Mathematical Statistics and Its Applications}, Fourth Edition.
+Prentice-Hall.
+\\
+{\footnotesize A nice intro to classical frequentist statistics.}
+%
+\end{itemize}
+
+
+\mysection{Machine Learning}
+
+\noindent
+Machine learning, in contrast to statistics, focuses on implementation
+details and tends to concentrate on predictive inference for larger
+scale applications.  As such, understanding machine learning requires
+a background in both statistics and algorithms.
+
+\begin{itemize}
+\item
+Bishop, Christopher M.
+2007.
+{\it Pattern Recognition and Machine Learning}.
+Springer.
+\\
+{\footnotesize Introduction to general machine learning
+techniques that is self contained, but assumes more mathematical
+sophistication than this book.}
+%
+\item
+Hastie, Trevor, Robert Tibshirani and Jerome Friedman.
+2009.
+{\it The Elements of Statistical Learning}, Second Edition.
+Springer.
+\\
+{\footnotesize Presupposes a great deal of mathematics, providing
+fairly rigorous introductions to a wide range of algorithms and
+statistical models.}
+%
+\item
+MacKay, David J.~C.
+2002.
+{\it Information Theory, Inference, and Learning Algorithms}.
+Cambridge University Press.
+\\
+{\footnotesize More of a set of insightful case studies than a coherent textbook.
+Presupposes a high degree of mathematical sophistication.}
+%
+\item 
+Witten, Ian H.\ and Eibe Frank. 2005. {\it Data Mining: Practical
+Machine Learning Tools and Techniques} (Second Edition).  Elsevier.
+\\
+{\footnotesize The most similar to this book, explaining general machine
+learning techniques at a high level and 
+linking to the Java implementations (from their widely used Weka toolkit).}
+%
+\end{itemize}
+
+
+
+
+\mysection{Linguistics}
+
+\noindent
+Natural language processing is about language.  To fully appreciate
+the models in LingPipe, it is necessary to have some background in
+linguistics.  Unfortunately, most of the textbooks out there are based
+on traditional Chomskyan theoretical linguistics which divorces
+language from its processing, and from which natural language
+processing diverged several decades ago.
+
+\begin{itemize}
+%
+\item Bergmann, Anouschka, Kathleen Currie Hall, and Sharon Miriam Ross (editors).
+2007.
+{\it Language Files}, Tenth Edition.
+Ohio State University Press.
+\\
+{\footnotesize Easy to follow and engaging overview of just about every
+aspect of human language and linguistics.  Books on specific areas of
+linguistics tend to be more theory specific.}
+%
+\end{itemize}
+
+
+\mysection{Natural Language Processing}
+
+\noindent
+Natural language processing is largely about designing and coding computer
+programs that operate over natural language data.  Because most NLP is
+statistical these days, this requires not only a knowledge of linguistics,
+but also of algorithms and statistics.
+
+\begin{itemize}
+\item
+Jurafsky, Daniel, James H.\ Martin.
+2008.
+{\it Speech and Language Processing}, Second Edition.
+Prentice-Hall.
+\\
+{\footnotesize High-level overview of both speech and language
+processing.}
+%
+\item
+Manning, Christopher D., Raghavan Prabhakar, and Hinrich Sch\"utze.
+2008.
+{\it Introduction to Information Retrieval}.
+Cambridge University Press.
+\\
+{\footnotesize Good intro to IR and better intro to some NLP than
+Manning and Sch\"utze's previous book, which is starting to feel
+dated.}
+%
+\item
+Manning, Christopher D.\ and Hinrich Sch\"utze.
+1999.
+{\it Foundations of Statistical Natural Language Processing}.
+MIT Press.
+\\
+{\footnotesize Needs a rewrite to bring it up to date, but still
+worth reading given the lack of alternatives.}
+\end{itemize}
+
+
+
+
+

@@ -1,9 +1,9 @@
 \mychapter{Introduction}{INTRODUCTION}
 
 \firstchar{L}ingPipe is an interconnected suite of natural language
-processing libraries implemented in Java.  This book provides a
-comprehensive description of how LingPipe may be used to build natural
-language processing (NLP) applications.
+processing libraries implemented in Java.  This book explains the
+tools that are available in LingPipe and provides examples of how they
+may be used to build natural language processing (NLP) applications.
 
 LingPipe's application programming interface (API) is tailored to
 abstract over low-level implementation details to enable components
@@ -29,25 +29,27 @@ preposition.  We will spend considerable time introducing linguistic
 concepts, such as word senses or noun phrase chunks, as they relate to
 natural language processing modules in LingPipe.
 
-This book is not intended to be a statistics or machine-learning
-textbook.  Nor is meant to be a primer for NLP algorithms.  We will do
-our best to first introduce LingPipe's modules and their application
-from a hands-on practical API perspective rather than a theoretical
-one.  In most cases, such as for logistic regression classifiers and
-conditional random field (CRF) taggers and chunkers, it's possible
-learn how to effectively fit complex and useful models without fully
-understanding the mathematical basis of LingPipe's estimation and
-optimization algorithms.  In other cases, such as naive Bayes
-classifiers, hierarchical clusterers and hidden Markov models (HMM),
-there is almost no hand-tuning required.
+We will do our best to first introduce LingPipe's modules and their
+application from a hands-on practical API perspective rather than a
+theoretical one.  In most cases, such as for logistic regression
+classifiers and conditional random field (CRF) taggers and chunkers,
+it's possible learn how to effectively fit complex and useful models
+without fully understanding the mathematical basis of LingPipe's
+estimation and optimization algorithms.  In other cases, such as naive
+Bayes classifiers, hierarchical clusterers and hidden Markov models
+(HMM), there is almost no hand-tuning required.
 
 Deeper understanding of LingPipe's algorithms and statistical models
-requires familiarity with complexity analysis and basic probability
-theory including information theory.  After introducing models and
-their applications at a programming level, we will provide
-mathematically precise definitions of all the models and algorithms
-used in LingPipe.
+requires familiarity with computational complexity analysis and basic
+probability theory including information theory.  
 
+After introducing LingPipe's modules and their applications at a
+programming level, we will provide mathematically precise definitions.
+The goal is a complete description of the mathematical models
+underlying LingPipe.  To understand these sections will require a
+stronger background in algorithms and statistical modeling than
+the other sections of the book.
+        
 
 
 \mysection{The Java Programming Language}
@@ -76,33 +78,6 @@ virtual machine (JVM) is required to execute compiled Java programs.
 A Java runtime environment (JRE) contains platform-specific support
 and integration for a JVM and often interfaces to web browsers for
 applet support.
-
-\mysubsection{Learning Java}
-
-\noindent
-For learning Java, we recommend the following two books pitched at
-beginners and intermediate Java programmers,
-%
-\begin{itemize}
-\item Arnold, Ken, James Gosling and David Holmes.  2005.
-{\it The Java Programming Language}, 4th Edition.  Prentice-Hall.
-\item Bloch, Joshua. 2008. {\it Effective Java}, 2nd Edition.  Prentice-Hall.
-\end{itemize}
-%
-James Gosling designed the first version of Java and Joshua Bloch was
-one of the main architects for the language after that.
-
-We also highly recommend the algorithm section of the TopCoder
-contests.  TopCoder provides a complete online Java environment, well
-thought out problems at varying specified levels of difficulty, unit
-tests that check your submissions, and examples of what others did to
-provide code-reading practice.
-%
-\begin{quote}
-\hrefurl{http://www.topcoder.com/tc}
-\end{quote}
-%
-
 
 
 
