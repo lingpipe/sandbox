@@ -1,26 +1,26 @@
 \mychapter{Introduction}{INTRODUCTION}
 
-\firstchar{L}ingPipe is an interconnected suite of natural language
-processing libraries implemented in Java.  This book explains the
-tools that are available in LingPipe and provides examples of how they
-may be used to build natural language processing (NLP) applications.
+\firstchar{L}ingPipe is a library for natural language processing
+implemented in Java.  This book explains the tools that are available
+in LingPipe and provides examples of how they can be used to build
+natural language processing (NLP) applications.
 
 LingPipe's application programming interface (API) is tailored to
 abstract over low-level implementation details to enable components
-such as tokenizers or classifiers to be swapped in a plug-and-play
-fashion.  LingPipe contains a mixture of heuristic rule-based components and
-statistical components, often implementing the same interfaces, as for
-statistical phrase chunkers and regular-expression-based chunkers.
+such as tokenizers, feature extractors, or classifiers to be swapped
+in a plug-and-play fashion.  LingPipe contains a mixture of heuristic
+rule-based components and statistical components, often implementing
+the same interfaces, such as chunking or tokenization.
 
-The presentation here will be hands on and assume the reader is
-comfortable reading short and relatively simple Java programs.  In
-some cases, programming idioms like loop boundaries being
-inclusive/exclusive and higher-level design patterns like visitors
-will also be presupposed.  More specific aspects of Java coding
-relating to text processing, such as streaming I/O, character
-decoding, string representations, and regular expression processing
-will be discussed in more depth.  We will also go into some detail on
-collections, XML/HTML parsing with SAX, and serialization patterns.
+The presentation here will be hands on.  You should be comfortable
+reading short and relatively simple Java programs.  Java programming idioms
+like loop boundaries being inclusive/exclusive and higher-level design
+patterns like visitors will also be presupposed.  More specific
+aspects of Java coding relating to text processing, such as streaming
+I/O, character decoding, string representations, and regular
+expression processing will be discussed in more depth.  We will also
+go into some detail on collections, XML/HTML parsing with SAX, and
+serialization patterns.
 
 We do not presuppose any knowledge of linguistics beyond a simple
 understanding of the terms used in dictionaries such as words,
@@ -29,7 +29,7 @@ preposition.  We will spend considerable time introducing linguistic
 concepts, such as word senses or noun phrase chunks, as they relate to
 natural language processing modules in LingPipe.
 
-We will do our best to first introduce LingPipe's modules and their
+We will do our best to introduce LingPipe's modules and their
 application from a hands-on practical API perspective rather than a
 theoretical one.  In most cases, such as for logistic regression
 classifiers and conditional random field (CRF) taggers and chunkers,
@@ -37,11 +37,14 @@ it's possible learn how to effectively fit complex and useful models
 without fully understanding the mathematical basis of LingPipe's
 estimation and optimization algorithms.  In other cases, such as naive
 Bayes classifiers, hierarchical clusterers and hidden Markov models
-(HMM), there is almost no hand-tuning required.
+(HMM), the models are simpler, estimation is a matter of cuonting,
+and there is almost no hand-tuning required.
 
 Deeper understanding of LingPipe's algorithms and statistical models
 requires familiarity with computational complexity analysis and basic
-probability theory including information theory.  
+probability theory including information theory.   We provide
+a sequence of suggested readings in 
+\hyperref[appendix:reading]{Appendix~\ref*{appendix:reading}}.
 
 After introducing LingPipe's modules and their applications at a
 programming level, we will provide mathematically precise definitions.
