@@ -1,66 +1,119 @@
-\mychapter{Introduction}{INTRODUCTION}
+\mychapter{Getting Started}{GETTING STARTED}
 
-\firstchar{L}ingPipe is a library for natural language processing
-implemented in Java.  This book explains the tools that are available
-in LingPipe and provides examples of how they can be used to build
-natural language processing (NLP) applications.
+\firstchar{T}he purpose of this book is to provide a
+hands-on introduction to the use of the LingPipe
+natural language processing library for building natural
+language processing components and applications.  
 
-LingPipe's application programming interface (API) is tailored to
-abstract over low-level implementation details to enable components
-such as tokenizers, feature extractors, or classifiers to be swapped
-in a plug-and-play fashion.  LingPipe contains a mixture of heuristic
-rule-based components and statistical components, often implementing
-the same interfaces, such as chunking or tokenization.
+\noindent Before beginning with a hello world example that will verify
+that everything's in place, we'll take some time to explain the tools
+we'll be using or that you might want to use.  All of these tools are
+open source and freely available.  After describing and motivating our
+choice of each tool, we'll provide downloading and installation
+instructions.
 
-The presentation here will be hands on.  You should be comfortable
-reading short and relatively simple Java programs.  Java programming idioms
-like loop boundaries being inclusive/exclusive and higher-level design
-patterns like visitors will also be presupposed.  More specific
-aspects of Java coding relating to text processing, such as streaming
-I/O, character decoding, string representations, and regular
-expression processing will be discussed in more depth.  We will also
-go into some detail on collections, XML/HTML parsing with SAX, and
-serialization patterns.
+\mysection{Unix Shell Tools}
 
-We do not presuppose any knowledge of linguistics beyond a simple
-understanding of the terms used in dictionaries such as words,
-syllables, pronunciations, and parts of speech such as noun and
-preposition.  We will spend considerable time introducing linguistic
-concepts, such as word senses or noun phrase chunks, as they relate to
-natural language processing modules in LingPipe.
+\noindent We present examples as run from the shell through the Ant
+build environment or directly.  One reason to use shells or a build
+environment is that it's easy to script operations so that they may be
+repeated.
 
-We will do our best to introduce LingPipe's modules and their
-application from a hands-on practical API perspective rather than a
-theoretical one.  In most cases, such as for logistic regression
-classifiers and conditional random field (CRF) taggers and chunkers,
-it's possible learn how to effectively fit complex and useful models
-without fully understanding the mathematical basis of LingPipe's
-estimation and optimization algorithms.  In other cases, such as naive
-Bayes classifiers, hierarchical clusterers and hidden Markov models
-(HMM), the models are simpler, estimation is a matter of cuonting,
-and there is almost no hand-tuning required.
+The main problem with scripts is that they are not portable across
+operating systems or even types of command-line shells.
+We use Unix-style commands, which should
+be familiar to anyone working in a Unix, Linux, or Mac OS X environment.
 
-Deeper understanding of LingPipe's algorithms and statistical models
-requires familiarity with computational complexity analysis and basic
-probability theory including information theory.   We provide
-a sequence of suggested readings in 
-\hyperref[appendix:reading]{Appendix~\ref*{appendix:reading}}.
-
-After introducing LingPipe's modules and their applications at a
-programming level, we will provide mathematically precise definitions.
-The goal is a complete description of the mathematical models
-underlying LingPipe.  To understand these sections will require a
-stronger background in algorithms and statistical modeling than
-the other sections of the book.
-        
-
-
-\mysection{The Java Programming Language}
+\mysubsection{Cygwin for Windows}
 
 \noindent
-We chose Java as the basis for LingPipe because we felt it provided
-the best tradeoff among efficiency, usability, portability, and
-library availability.
+If you're working in Windows (XP, Vista or 7), we recommend the 
+Cygwin suite of Unix command-line tools for Windows.  They may be
+downloaded and installed through Cygwin's home page,
+
+\begin{quote}
+\hrefurl{http://www.cygwin.com/}
+\end{quote}
+
+The {\tt setup.exe} program is small.  When you run it, it goes out
+over the internet to find the packages from registered mirrors.  It
+then lists all the packages available.  You can install some or all of
+them.  We  Just
+run the setup program again 
+
+\mysubsection{Archive and Compression Tools}
+
+\noindent
+We will assume you can run {\tt tar} archiving tool, as well as the
+unpacking commands {\tt unzip} and {\tt gunizp}.  These may be
+installed as part of Cygwin on Windows.
+
+
+\mysection{Version Control}
+
+\noindent
+If you don't live in some kind of version control environment, you should.
+Not only can you keep track of your own code across multiple sites and/or
+users, you can also keep up to date with all the LingPipe releases and
+code from free online version control repositories such as SourceForge.  
+
+We prefer the shell for all of our work, and you can install a
+shell-based version of Subversion, the command-name for which is {\tt
+svn}.  SVN itself requires a secure shell (SSH) client over which to
+run.  These may both be installed through Cygwin for Windows users.
+
+
+\mysection{Text Editors}
+
+\noindent
+In order to generate code, HTML, and reports, you will need to be able
+to edit text.  We like to work in the emacs text editor, because of
+its configurability.  It's as close as you'll get to an IDE in a
+simple text editor.  We use the XEmacs distribution of emacs, which is
+available from its home page,
+
+\begin{quote}
+\hrefurl{http://www.xemacs.org/}
+\end{quote}
+
+There's an installer for Windows.  We found the install from {\tt
+xemacs.org} to work better than the one that comes with Cygwin as far
+as interacting with Windows.  We like to work with the Lucida Console
+font, which is distributed with Windows; it's the font used for examples
+in this textbook.
+
+\mysubsection{Spaces, Not Tabs}
+
+\noindent
+To make code portable, we highly recommend using spaces instead of
+tabs.  Yes, it takes up a bit more space, but it's worth it.
+Here's the command to put in your configuration file (get there
+by selecting the {\tt Edit Init File} selection from the {\tt Options}
+menu in XEmacs, then save using the {\tt Save Options to Custom File}
+selecting from the {\tt Options} menu.
+
+\begin{verbatim}
+(defun java-mode-untabify ()
+  (save-excursion
+    (goto-char (point-min))
+    (if (search-forward "t" nil t)
+        (untabify (1- (point)) (point-max))))
+  nil)
+
+(add-hook 'java-mode-hook
+          '(lambda ()
+             (make-local-variable 'write-contents-hooks)
+             (add-hook 'write-contents-hooks 'java-mode-untabify)))
+
+(setq indent-tabs-mode nil)
+\end{verbatim}
+
+
+\mysection{Java Standard Edition 6}
+
+\noindent We chose Java as the basis for LingPipe because we felt it
+provided the best tradeoff among efficiency, usability, portability,
+and library availability.  
 
 The presentation here assumes the reader has a basic working knowledge
 of the Java programming language.  We will focus on a few aspects of
@@ -71,9 +124,6 @@ XML markup, etc.  In explaining LingPipe's design, we will also delve
 into greater detail on general features of Java such as concurrency,
 generics, floating point representations, and the collection package.
 
-\mysubsection{Java Standard Edition 6}
-
-\noindent
 This book is based on the latest currently supported standard edition
 of the Java platform (Java SE), which is version 6.  You will need the
 Java development kit (JDK) in order to compile Java programs.  A java
@@ -82,23 +132,211 @@ A Java runtime environment (JRE) contains platform-specific support
 and integration for a JVM and often interfaces to web browsers for
 applet support.
 
-Information on installing Java is available in Appendix~\ref{appendix:installation}.
+Java is available in 32-bit and 64-bit versions.  The 64-bit version
+is required to allocate JVMs with heaps larger than 1.5 or 2 gigabytes
+(the exact maximum for 32-bit Java depends on the platform).  
 
 
-\mysection{Shell and Apache Ant Build Tool}
+Licensing terms for the JRE are at
+%
+\begin{quote}
+\hrefurl{http://www.java.com/en/download/license.jsp}{}
+\end{quote}
+and for the JDK at
+%
+\begin{quote}
+\hrefurl{http://java.sun.com/javase/6/jdk-6u20-license.txt}
+\end{quote}
+
+Java is available for the Windows, Linux, and Solaris operating
+systems in both 32-bit and 64-bit versions from
+%
+\begin{quote}
+\hrefurl{http://java.sun.com/javase/downloads/index.jsp}
+\end{quote}
+%
+The Java JDK and JRE are included as part of Mac OS X.  Updates are
+available through
+%
+\begin{quote}
+\hrefurl{http://developer.apple.com/java/download/}
+\end{quote}
+%
+Java is updated regularly and it's worth having the latest version.
+Updates include bug fixes and often include performance enhancements,
+some of which can be quite substantial.
+
+Java must be installed on the operating system so that shell commands
+will execute it.  We have to manage multiple versions of Java, so
+typically we will define an environment variable {\tt JAVA\_HOME}, and
+add {\tt \$\{JAVA\_HOME\}/bin} (Unix) or {\tt \%JAVA\_HOME\%{\textbackslash}bin} (Windows) 
+to the {\tt PATH}.  We then set {\tt JAVA\_HOME} to either {\tt
+JAVA\_1\_5}, {\tt JAVA\_1\_6}, or {\tt JAVA\_1\_7} depending on use
+case.  Note that {\tt JAVA\_HOME} is one level above Java's {\tt bin}
+directory containing the executable Java commands.
+
+You can test this with the following command, which
+should produce similar results.
+
+\begin{quote}
+{\small
+\ttfamily
+{\it\ttfamily > java -version}
+\\
+java version "1.6.0\_18"
+\\
+Java(TM) SE Runtime Environment (build 1.6.0\_18-b07)
+\\
+Java HotSpot(TM) 64-Bit Server VM (build 16.0-b13, mixed mode)
+}
+\end{quote}
+
+
+
+\mysection{Ant}
+
+\noindent We present examples for compilation and for running programs
+using the Apache Ant build tool.  Ant has three key features that make
+it well suited for expository purposes.  First, it's portable across
+all the platforms that support Java.  Second, it provides clear XML
+representations for core Java concepts such as classpaths and
+command-line arguments.  Third, invoking a target in Ant directly
+executes the dependent targets and then all of the commands in the
+target.  Thus we find Ant builds easier to follow than those using the
+classic build tool Make or its modern incarnation Apache Maven, both
+of which attempt to resolve dependencies among targets and determine
+if targets are up to date before executing them.
+
+Although we're not attempting to teach Ant, we'll walk through a basic
+Ant build file in this introduction to give you a reading knowledge of
+Ant.  If you're using an IDE like Eclipse or NetBeans, you can import
+Ant build files directly to create a project.
+
+Ant is is an Apache project, and as such, is subject to the Apache license,
+\begin{quote}
+\hrefurl{http://ant.apache.org/license.html}
+\end{quote}
+%
+Ant is available from 
+%
+\begin{quote}
+\hrefurl{http://ant.apache.org/}
+\end{quote}
+%
+You only need one of the binary distributions, which will
+look like {\ttfamily apache-ant-{\it\ttfamily version}-bin.tar.gz}.
+
+First, you need to unpack the distribution.  We like directory
+structures with release names, which is how ant unpacks, using
+top-level directory names like {\tt apache-ant-1.8.1}.  Then, you need
+to put the {\tt bin} subdirectory of the top-level directory into the
+{\tt PATH} environment variable so that Ant may be executed from the
+command line.
+
+Ant requires the {\tt JAVA\_HOME} environment variable to be set to
+the path above the {\tt bin} directory containing the Java
+executables.  
+
+Ant's installation instructions suggest setting the {\tt
+ANT\_HOME} directory in the same way, and then adding but it's not necessary unless
+you will be scripting calls to Ant.
+
+Ant build files may be imported directly into the Eclipse IDE.
+
+
+\mysection{Integrated Development Environment}
 
 \noindent
-We primarily work in the shell with a text editor. Instructions for
-installing shells for Windows are availabe in Appendix~\ref{appendix:installation}.
+Many pepeople prefer to write (and compile and debug) code in an
+integrated development environment (IDE).  IDE's offer advantages such
+as automatic command completion, easily configurable text formatting,
+stepwise debuggers, and automated tools for code generation and
+refactoring.  
 
-though it's
-possible to do everything in an integrated development environment for
-Java like Eclipse or NetBeans.
+LingPipe development may be carried out through an IDE.  The two most
+popular IDEs for Java are Eclipse and NetBeans.
 
-We present examples for compilation and for running programs using the
-Apache Ant build tool.  This is an XML-based tool for scripting builds
-and other operations that's simpler than dependency-based tools such
-as the classic Unix make program or Apache's Maven.  
+\mysubsection{Eclipse Development Environment}
+
+\noindent
+Eclipse provides a full range of code checking (lint), auto-completion
+and code generation, and debugging facilities.  Eclipse is an open source
+project, and a wide range of additional tools are available as plugins.  It
+also has modules for languages other than Java, such as C++ and PHP.
+
+The full set of Eclipse downloads is listed on the following page,
+%
+\begin{quote}
+\hrefurl{http://download.eclipse.org/eclipse/downloads/}
+\end{quote}
+
+You'll want to make sure you choose the one compatible with the JDK
+you are using.  It's mainly designed to work on Windows, but has been
+ported to Linux and Mac OS X (though Carbon).
+
+
+\mysubsection{NetBeans}
+
+\noindent
+Unlike Eclipse, the NetBeans IDE is written entirely in Java.  Thus
+it's possible to run it under Windows, Linux, Solaris Unix, and Mac OS
+X. There is also a wide range of plug-ins available for NetBeans.
+
+You can get NetBeans for free from its home page,
+%
+\begin{quote}
+\hrefurl{http://netbeans.org/}
+\end{quote}
+%
+
+
+\mysection{LingPipe}
+
+\noindent
+LingPipe is distributed under both commercial licenses
+and under a royalty-free license.  A copy of the royalty free
+license is available at:
+%
+\begin{quote}
+\hrefurl{http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt}
+\end{quote}
+
+LingPipe may be downloaded with full source from its web site:
+%
+\begin{quote}
+\hrefurl{http://alias-i.com/lingpipe/}
+\end{quote}
+%
+Other than unpacking, the gzipped tarball, there is nothing required
+for installation.  Downloading LingPipe is not technically necessary for
+running the examples in this book because the LingPipe library jar is
+included with the book's source download.
+
+
+\mysection{Book Source and Libraries}
+
+\noindent
+The code samples from this book are available via anonymous subversion checkout
+from the LingPipe sandbox.  Specifically, the entire content of the book,
+including code and text, may be checked out anonymously using,
+
+\begin{quote}
+{\small\ttfamily
+> svn co https://aliasi.devguard.com/svn/sandbox/lpbook
+}
+\end{quote}
+%
+The distribution contains all of the code and Ant build files for
+running it.  It also contains the \LaTeX\ source for the book itself
+as well as the system to extract text from the source for automatic
+inclusion in the book.
+
+
+
+
+
+
+
 
 
 
