@@ -1,66 +1,110 @@
 \mychapter{Getting Started}{GETTING STARTED}
 
-\firstchar{T}he purpose of this book is to provide a
-hands-on introduction to the use of the LingPipe
-natural language processing library for building natural
-language processing components and applications.  
+\firstchar{T}his book is intended to provide two things.  First and
+foremost, it presents a hands-on introduction to the use of the
+LingPipe natural language processing library for building natural
+language processing components and applications.  Our main focus is on
+programming with the LingPipe library.  Second, the book contains
+precise mathematical definitions of all of the models and substantial
+algorithms underlying LingPipe.  Understanding the finer mathematical
+points will not be assumed for the practical sections of the book.  Of
+course, it's impossible to fully sidestep mathematics while explaining
+what is essentially a collection of algorithms implementing mathematical
+models of language.
 
-\noindent Before beginning with a hello world example that will verify
-that everything's in place, we'll take some time to explain the tools
-we'll be using or that you might want to use.  All of these tools are
-open source and freely available.  After describing and motivating our
-choice of each tool, we'll provide downloading and installation
-instructions.
+Before beginning with a ``hello world'' example that will verify that
+everything's in place for compiling and executing the code in the
+book, we'll take some time to explain the tools we'll be using or that
+you might want to use.  All of these tools are open source and freely
+available, though under a perplexing array of licensing terms and
+conditions.  After describing and motivating our choice of each tool,
+we'll provide downloading and installation instructions.
 
 \mysection{Unix Shell Tools}
 
-\noindent We present examples as run from the shell through the Ant
-build environment or directly.  One reason to use shells or a build
-environment is that it's easy to script operations so that they may be
-repeated.
+\noindent We present examples as run from a unix-like command-line shell.
+One reason to use the shell is that it's easy to script operations so
+that they may be repeated.  
 
 The main problem with scripts is that they are not portable across
-operating systems or even types of command-line shells.
-We use Unix-style commands, which should
-be familiar to anyone working in a Unix, Linux, or Mac OS X environment.
+operating systems or even types of command-line shells.  In this book,
+we use the so-called ``Bourne Again Shell'' (bash) for Unix-style
+commands.  Bash is the default shell in Cygwin on Windows, for Mac OS
+X, and for Linux, and is also available for Solaris.
 
 \mysubsection{Cygwin for Windows}
 
 \noindent
 If you're working in Windows (XP, Vista or 7), we recommend the 
-Cygwin suite of Unix command-line tools for Windows.  They may be
-downloaded and installed through Cygwin's home page,
+Cygwin suite of Unix command-line tools for Windows.  
 
+Cygwin is released under version 2 of the Gnu Public License (GPLv2), with
+terms outlined here:
+%
+\begin{quote}
+\hrefurl{http://cygwin.com/license.html}
+\end{quote}
+%
+and also available with a commercial license.
+
+Cygwin can be downloaded and installed through Cygwin's home page,
+%
 \begin{quote}
 \hrefurl{http://www.cygwin.com/}
 \end{quote}
-
+%
 The {\tt setup.exe} program is small.  When you run it, it goes out
 over the internet to find the packages from registered mirrors.  It
 then lists all the packages available.  You can install some or all of
-them.  We  Just
-run the setup program again 
+them.  You can just run the setup program again to update or install
+new packages; it'll show you what version of what's already installed.
 
+\begin{samepage}
 \mysubsection{Archive and Compression Tools}
 
 \noindent
-We will assume you can run {\tt tar} archiving tool, as well as the
-unpacking commands {\tt unzip} and {\tt gunizp}.  These may be
-installed as part of Cygwin on Windows.
-
+In order to unpack data and library distributions, you need to be able
+\end{samepage}
+to run the {\tt tar} archiving tool, as well as the unpacking commands
+{\tt unzip} and {\tt gunizp}.  These may be installed as part of
+Cygwin on Windows.
 
 \mysection{Version Control}
 
 \noindent
 If you don't live in some kind of version control environment, you should.
 Not only can you keep track of your own code across multiple sites and/or
-users, you can also keep up to date with all the LingPipe releases and
-code from free online version control repositories such as SourceForge.  
+users, you can also keep up to date with projects with version control,
+such as this book, the LingPipe sandbox, and projects hosted by SourceForge.
 
-We prefer the shell for all of our work, and you can install a
-shell-based version of Subversion, the command-name for which is {\tt
-svn}.  SVN itself requires a secure shell (SSH) client over which to
-run.  These may both be installed through Cygwin for Windows users.
+We are currently using Subversion (SVN) for LingPipe and this book.
+You can install a shell-based version of Subversion, the command-name
+for which is {\tt svn}.  Subversion itself requires a secure shell
+(SSH) client over which to run, at least for most installations.  Both
+SVN and SSH can be installed through Cygwin for Windows users.
+
+There are also graphical versions of subversion, the two most popular
+being Web-SVN, which as its name implies, runs as a server and is
+accessible through a web browser, and Tortoise SVN, which integrates
+with the Windows Explorer.  The home pages for these products are
+%
+\begin{itemize}
+\item WebSVN: \hrefurl{http://websvn.tigris.org/}
+\item Tortoise SVN: \hrefurl{http://tortoisesvn.net/}
+\end{itemize}
+
+There are also other popular version control systems, the older
+concurrent version system (CVS), as well as the increasingly popular
+Git system, which is used by the Linux developers.  
+
+The best reference for Subversion of which we are aware is
+found to be {\it Version Control with Subversion} (Second Edition,
+2008, O'Reilly Press), which is available free online in HTML or PDF
+formats from
+%
+\begin{quote}
+\hrefurl{http://svnbook.red-bean.com/}
+\end{quote}
 
 
 \mysection{Text Editors}
@@ -71,27 +115,29 @@ to edit text.  We like to work in the emacs text editor, because of
 its configurability.  It's as close as you'll get to an IDE in a
 simple text editor.  We use the XEmacs distribution of emacs, which is
 available from its home page,
-
+%
 \begin{quote}
 \hrefurl{http://www.xemacs.org/}
 \end{quote}
-
+%
 There's an installer for Windows.  We found the install from {\tt
 xemacs.org} to work better than the one that comes with Cygwin as far
 as interacting with Windows.  We like to work with the Lucida Console
-font, which is distributed with Windows; it's the font used for examples
-in this textbook.
+font, which is distributed with Windows; it's the font used for code
+examples in this book.
 
 \mysubsection{Spaces, Not Tabs}
 
 \noindent
 To make code portable, we highly recommend using spaces instead of
-tabs.  Yes, it takes up a bit more space, but it's worth it.
-Here's the command to put in your configuration file (get there
-by selecting the {\tt Edit Init File} selection from the {\tt Options}
-menu in XEmacs, then save using the {\tt Save Options to Custom File}
-selecting from the {\tt Options} menu.
+tabs.  Yes, it takes up a bit more space, but it's worth it.  
+The requisite command is shown in \reffig{emacs-tabs}.  To apply
+it, first select the {\tt Edit Init File} selection from the {\tt Options}
+menu in XEmacs, add the text in \reffig{emacs-tabs}, 
+then save using the {\tt Save Options to Custom File}
+selection from the {\tt Options} menu.
 
+\begin{figure}
 \begin{verbatim}
 (defun java-mode-untabify ()
   (save-excursion
@@ -105,15 +151,16 @@ selecting from the {\tt Options} menu.
              (make-local-variable 'write-contents-hooks)
              (add-hook 'write-contents-hooks 'java-mode-untabify)))
 
-(setq indent-tabs-mode nil)
-\end{verbatim}
+(setq indent-tabs-mode nil)\end{verbatim}%
+\caption{Required configuration for emacs so that it uses spaces rather than tabs for Java.}\label{fig:emacs-tabs}
+\end{figure}
 
 
 \mysection{Java Standard Edition 6}
 
 \noindent We chose Java as the basis for LingPipe because we felt it
 provided the best tradeoff among efficiency, usability, portability,
-and library availability.  
+and library availability.
 
 The presentation here assumes the reader has a basic working knowledge
 of the Java programming language.  We will focus on a few aspects of
@@ -175,13 +222,13 @@ JAVA\_1\_5}, {\tt JAVA\_1\_6}, or {\tt JAVA\_1\_7} depending on use
 case.  Note that {\tt JAVA\_HOME} is one level above Java's {\tt bin}
 directory containing the executable Java commands.
 
-You can test this with the following command, which
+You can test whether you can run Java with the following command, which
 should produce similar results.
-
+%
 \begin{quote}
 {\small
 \ttfamily
-{\it\ttfamily > java -version}
+> {\it\ttfamily java -version}
 \\
 java version "1.6.0\_18"
 \\
@@ -190,7 +237,15 @@ Java(TM) SE Runtime Environment (build 1.6.0\_18-b07)
 Java HotSpot(TM) 64-Bit Server VM (build 16.0-b13, mixed mode)
 }
 \end{quote}
-
+%
+Similarly, you can test for the Java compiler version, using
+%
+\begin{quote}
+{\small\ttfamily
+> {\it ttfamily javac -version}
+javac 1.6.0\_20
+}
+\end{quote}
 
 
 \mysection{Ant}
@@ -208,9 +263,9 @@ of which attempt to resolve dependencies among targets and determine
 if targets are up to date before executing them.
 
 Although we're not attempting to teach Ant, we'll walk through a basic
-Ant build file in this introduction to give you a reading knowledge of
-Ant.  If you're using an IDE like Eclipse or NetBeans, you can import
-Ant build files directly to create a project.
+Ant build file later in this chapter to give you at least a reading
+knowledge of Ant.  If you're using an IDE like Eclipse or NetBeans,
+you can import Ant build files directly to create a project.
 
 Ant is is an Apache project, and as such, is subject to the Apache license,
 \begin{quote}
@@ -241,25 +296,34 @@ Ant's installation instructions suggest setting the {\tt
 ANT\_HOME} directory in the same way, and then adding but it's not necessary unless
 you will be scripting calls to Ant.
 
-Ant build files may be imported directly into the Eclipse IDE.
+Ant build files may be imported directly into either the Eclipse or
+NetBeans IDEs.
 
+You can test whether Ant is installed with
+
+\begin{quote}
+{\small\ttfamily
+> {\it\ttfamily ant -version}
+Apache Ant version 1.8.1 compiled on April 30 2010
+}
+\end{quote}
 
 \mysection{Integrated Development Environment}
 
 \noindent
 Many pepeople prefer to write (and compile and debug) code in an
-integrated development environment (IDE).  IDE's offer advantages such
-as automatic command completion, easily configurable text formatting,
-stepwise debuggers, and automated tools for code generation and
-refactoring.  
+integrated development environment (IDE).  IDEs offer advantages such
+as automatic method, class and constant completion, easily
+configurable text formatting, stepwise debuggers, and automated tools
+for code generation and refactoring.
 
 LingPipe development may be carried out through an IDE.  The two most
 popular IDEs for Java are Eclipse and NetBeans.
 
-\mysubsection{Eclipse Development Environment}
+\mysubsection{Eclipse IDE}
 
 \noindent
-Eclipse provides a full range of code checking (lint), auto-completion
+Eclipse provides a full range of code checking, auto-completion
 and code generation, and debugging facilities.  Eclipse is an open source
 project, and a wide range of additional tools are available as plugins.  It
 also has modules for languages other than Java, such as C++ and PHP.
@@ -269,25 +333,41 @@ The full set of Eclipse downloads is listed on the following page,
 \begin{quote}
 \hrefurl{http://download.eclipse.org/eclipse/downloads/}
 \end{quote}
-
+%
 You'll want to make sure you choose the one compatible with the JDK
-you are using.  It's mainly designed to work on Windows, but has been
-ported to Linux and Mac OS X (though Carbon).
+you are using.  Though originally a Windows-based system, Eclipse has been
+ported to Mac OS X (though Carbon) and Linux.  
+
+Eclipse is released under the Eclipse Public License (EPL), a slightly modified
+version of the Common Public License (CPL) from IBM, the full text of which is
+available from
+%
+\begin{quote}
+\hrefurl{http://www.eclipse.org/legal/epl-v10.html}
+\end{quote}
 
 
-\mysubsection{NetBeans}
+\mysubsection{NetBeans IDE}
 
 \noindent
 Unlike Eclipse, the NetBeans IDE is written entirely in Java.  Thus
 it's possible to run it under Windows, Linux, Solaris Unix, and Mac OS
 X. There is also a wide range of plug-ins available for NetBeans.
 
-You can get NetBeans for free from its home page,
+Netbeans is free, and may be downloaded from its home page,
 %
 \begin{quote}
 \hrefurl{http://netbeans.org/}
 \end{quote}
 %
+Its licensing is rather complex, being released under a dual license
+consisting of the Common Development and Distribution License (CDDL)
+and version 2 of the Gnu Public License version (GPLv2).  Full details
+are at
+%
+\begin{quote}
+\hrefurl{http://netbeans.org/about/legal/license.html}
+\end{quote}
 
 
 \mysection{LingPipe}
