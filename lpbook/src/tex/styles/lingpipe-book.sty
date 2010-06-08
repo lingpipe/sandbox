@@ -9,7 +9,7 @@
 
 \usepackage{fancyhdr}
 
-\usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={blue},filecolor={blue},linkcolor={blue},urlcolor={blue},pdffitwindow,pdfauthor={Bob Carpenter},pdftitle={LingPipe 4.0}]{hyperref}
+\usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={blue},filecolor={blue},linkcolor={blue},urlcolor={blue},pdfauthor={Bob Carpenter},pdftitle={LingPipe 4.0}]{hyperref}
 
 % Size            Lulu     CreateSpace
 % 7.0 x 10.0       -           +
@@ -48,7 +48,7 @@
 \newcommand{\autocodedir}{../build/tex/out}
 \newcommand{\codeblock}[1]{\vspace*{8pt}{\noindent\ttfamily\input{\autocodedir/#1}}\\[-4pt]}
 
-\def\fnum@figure{{\sc Fig.} \thefigure}
+% \def\fnum@figure{{\sc Fig.} \thefigure}
 
 \renewcommand{\thechapter}{\arabic{chapter}}
 \renewcommand{\thesection}{\arabic{section}}
@@ -73,7 +73,7 @@
 \fancyhead[RE]{{\footnotesize\it\booknamecaps}}%
 \fancyhead[LO]{{\footnotesize\it #2}}%
 \fancyhead[RO]{{\small\thepage}}%
-\thispagestyle{empty}%
+\thispagestyle{plain}%
 \vspace*{0.25in}%
 {\hfill{\Huge\bf #1}}
 \vspace*{0.5in}%
@@ -81,20 +81,22 @@
 
 \newcommand{\mysection}[1]{%
 \refstepcounter{section}%
-\vspace*{.35in}%
+\vspace{.25in}%
 {\noindent{\Large\bf \thechapter.\thesection \ \ \ #1}}%
-\vspace*{.1in}%
-\noindent%
+\nopagebreak%
+\vspace{.1in}%
+\nopagebreak%
 }
 
 
 \newcommand{\mysubsection}[1]{%
 \refstepcounter{subsection}%
-\vspace*{.15in}%
+\vspace{.15in}%
 {\noindent{\large\bf% \thechapter.\thesubsection \ \ 
 #1}}%
-\vspace*{.1in}%
-\noindent%
+\nopagebreak%
+\vspace{.1in}%
+\nopagebreak%
 }
 
 
@@ -111,3 +113,4 @@
 \newcommand{\bksl}{\hspace*{0.75pt}$\mathbf{\backslash}$\hspace*{0.25pt}}
 
 \newcommand{\refappendix}[1]{\hyperref[appendix:#1]{Appendix~\ref*{appendix:#1}}}
+\newcommand{\reffig}[1]{\hyperref[fig:#1]{Figure~\ref*{fig:#1}}}
