@@ -20,6 +20,8 @@ available, though under a perplexing array of licensing terms and
 conditions.  After describing and motivating our choice of each tool,
 we'll provide downloading and installation instructions.
 
+\mysection{Tools of the Trade}
+
 \mysection{Unix Shell Tools}
 
 \noindent We present examples as run from a unix-like command-line shell.
@@ -32,9 +34,6 @@ we use the so-called ``Bourne Again Shell'' (bash) for Unix-style
 commands.  Bash is the default shell in Cygwin on Windows, for Mac OS
 X, and for Linux, and is also available for Solaris.
 
-\mysubsection{Cygwin for Windows}
-
-\noindent
 If you're working in Windows (XP, Vista or 7), we recommend the 
 Cygwin suite of Unix command-line tools for Windows.  
 
@@ -75,7 +74,8 @@ Cygwin on Windows.
 If you don't live in some kind of version control environment, you should.
 Not only can you keep track of your own code across multiple sites and/or
 users, you can also keep up to date with projects with version control,
-such as this book, the LingPipe sandbox, and projects hosted by SourceForge.
+such as this book, the LingPipe sandbox, and projects hosted by open
+source hosting services such as SourceForge or Google Code.
 
 We are currently using Subversion (SVN) for LingPipe and this book.
 You can install a shell-based version of Subversion, the command-name
@@ -98,7 +98,7 @@ concurrent version system (CVS), as well as the increasingly popular
 Git system, which is used by the Linux developers.  
 
 The best reference for Subversion of which we are aware is
-found to be {\it Version Control with Subversion} (Second Edition,
+{\it Version Control with Subversion} (Second Edition,
 2008, O'Reilly Press), which is available free online in HTML or PDF
 formats from
 %
@@ -130,14 +130,15 @@ examples in this book.
 
 \noindent
 To make code portable, we highly recommend using spaces instead of
-tabs.  Yes, it takes up a bit more space, but it's worth it.  
-The requisite command is shown in \reffig{emacs-tabs}.  To apply
-it, first select the {\tt Edit Init File} selection from the {\tt Options}
-menu in XEmacs, add the text in \reffig{emacs-tabs}, 
-then save using the {\tt Save Options to Custom File}
-selection from the {\tt Options} menu.
+tabs.  Yes, it takes up a bit more space, but it's worth it.  The
+requisite commands are shown in \reffig{emacs-tabs}.  To apply these
+commands, first select the {\tt Edit Init File} selection from the {\tt
+Options} menu in XEmacs, add the text in \reffig{emacs-tabs}, then
+save using the {\tt Save Options to Custom File} selection from the
+{\tt Options} menu.
 
 \begin{figure}
+{\small
 \begin{verbatim}
 (defun java-mode-untabify ()
   (save-excursion
@@ -151,7 +152,7 @@ selection from the {\tt Options} menu.
              (make-local-variable 'write-contents-hooks)
              (add-hook 'write-contents-hooks 'java-mode-untabify)))
 
-(setq indent-tabs-mode nil)\end{verbatim}%
+(setq indent-tabs-mode nil)\end{verbatim}}%
 \caption{Required configuration for emacs so that it uses spaces rather than tabs for Java.}\label{fig:emacs-tabs}
 \end{figure}
 
@@ -242,7 +243,8 @@ Similarly, you can test for the Java compiler version, using
 %
 \begin{quote}
 {\small\ttfamily
-> {\it ttfamily javac -version}
+> {\it\ttfamily javac -version}
+\\
 javac 1.6.0\_20
 }
 \end{quote}
@@ -258,7 +260,7 @@ representations for core Java concepts such as classpaths and
 command-line arguments.  Third, invoking a target in Ant directly
 executes the dependent targets and then all of the commands in the
 target.  Thus we find Ant builds easier to follow than those using the
-classic build tool Make or its modern incarnation Apache Maven, both
+classic Unix build tool Make or its modern incarnation Apache Maven, both
 of which attempt to resolve dependencies among targets and determine
 if targets are up to date before executing them.
 
@@ -290,14 +292,12 @@ command line.
 
 Ant requires the {\tt JAVA\_HOME} environment variable to be set to
 the path above the {\tt bin} directory containing the Java
-executables.  
-
-Ant's installation instructions suggest setting the {\tt
-ANT\_HOME} directory in the same way, and then adding but it's not necessary unless
-you will be scripting calls to Ant.
+executables.  Ant's installation instructions suggest setting the {\tt
+ANT\_HOME} directory in the same way, and then adding but it's not
+necessary unless you will be scripting calls to Ant.
 
 Ant build files may be imported directly into either the Eclipse or
-NetBeans IDEs.
+NetBeans IDEs (see below for a description of these).
 
 You can test whether Ant is installed with
 
@@ -324,8 +324,8 @@ popular IDEs for Java are Eclipse and NetBeans.
 
 \noindent
 Eclipse provides a full range of code checking, auto-completion
-and code generation, and debugging facilities.  Eclipse is an open source
-project, and a wide range of additional tools are available as plugins.  It
+and code generation, and debugging facilities.  Eclipse is an open-source
+project with a wide range of additional tools available as plugins.  It
 also has modules for languages other than Java, such as C++ and PHP.
 
 The full set of Eclipse downloads is listed on the following page,
@@ -352,7 +352,7 @@ available from
 \noindent
 Unlike Eclipse, the NetBeans IDE is written entirely in Java.  Thus
 it's possible to run it under Windows, Linux, Solaris Unix, and Mac OS
-X. There is also a wide range of plug-ins available for NetBeans.
+X. There are also a wide range of plug-ins available for NetBeans.
 
 Netbeans is free, and may be downloaded from its home page,
 %
@@ -387,7 +387,7 @@ LingPipe may be downloaded with full source from its web site:
 \hrefurl{http://alias-i.com/lingpipe/}
 \end{quote}
 %
-Other than unpacking, the gzipped tarball, there is nothing required
+Other than unpacking the gzipped tarball, there is nothing required
 for installation.  Downloading LingPipe is not technically necessary for
 running the examples in this book because the LingPipe library jar is
 included with the book's source download.
@@ -411,6 +411,8 @@ running it.  It also contains the \LaTeX\ source for the book itself
 as well as the system to extract text from the source for automatic
 inclusion in the book.
 
+
+\mysection{Hello World}
 
 
 
