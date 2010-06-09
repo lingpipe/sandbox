@@ -1,4 +1,4 @@
-\mychapter{Getting Started}{GETTING STARTED}
+\chapter{Getting Started}
 
 \firstchar{T}his book is intended to provide two things.  First and
 foremost, it presents a hands-on introduction to the use of the
@@ -20,11 +20,18 @@ available, though under a perplexing array of licensing terms and
 conditions.  After describing and motivating our choice of each tool,
 we'll provide downloading and installation instructions.
 
-\mysection{Tools of the Trade}
+\section{Tools of the Trade}
 
-\mysection{Unix Shell Tools}
+In this section, we go over the various tools we use for program
+development.  Most are required at some point for running examples
+in this book, the exceptions being the full LingPipe download and
+interactive development environments, neither of which are needed
+to run the examples.
 
-\noindent We present examples as run from a unix-like command-line shell.
+
+\subsection{Unix Shell Tools}
+
+We present examples as run from a unix-like command-line shell.
 One reason to use the shell is that it's easy to script operations so
 that they may be repeated.  
 
@@ -58,19 +65,16 @@ then lists all the packages available.  You can install some or all of
 them.  You can just run the setup program again to update or install
 new packages; it'll show you what version of what's already installed.
 
-\begin{samepage}
-\mysubsection{Archive and Compression Tools}
+\subsubsection{Archive and Compression Tools}
 
-\noindent
 In order to unpack data and library distributions, you need to be able
-\end{samepage}
 to run the {\tt tar} archiving tool, as well as the unpacking commands
 {\tt unzip} and {\tt gunizp}.  These may be installed as part of
 Cygwin on Windows.
 
-\mysection{Version Control}
 
-\noindent
+\subsection{Version Control}
+
 If you don't live in some kind of version control environment, you should.
 Not only can you keep track of your own code across multiple sites and/or
 users, you can also keep up to date with projects with version control,
@@ -107,9 +111,9 @@ formats from
 \end{quote}
 
 
-\mysection{Text Editors}
 
-\noindent
+\subsection{Text Editors}
+
 In order to generate code, HTML, and reports, you will need to be able
 to edit text.  We like to work in the emacs text editor, because of
 its configurability.  It's as close as you'll get to an IDE in a
@@ -126,9 +130,8 @@ as interacting with Windows.  We like to work with the Lucida Console
 font, which is distributed with Windows; it's the font used for code
 examples in this book.
 
-\mysubsection{Spaces, Not Tabs}
+\subsubsection{Spaces, Not Tabs}
 
-\noindent
 To make code portable, we highly recommend using spaces instead of
 tabs.  Yes, it takes up a bit more space, but it's worth it.  The
 requisite commands are shown in \reffig{emacs-tabs}.  To apply these
@@ -157,9 +160,10 @@ save using the {\tt Save Options to Custom File} selection from the
 \end{figure}
 
 
-\mysection{Java Standard Edition 6}
 
-\noindent We chose Java as the basis for LingPipe because we felt it
+\subsection{Java Standard Edition 6}
+
+We chose Java as the basis for LingPipe because we felt it
 provided the best tradeoff among efficiency, usability, portability,
 and library availability.
 
@@ -250,9 +254,9 @@ javac 1.6.0\_20
 \end{quote}
 
 
-\mysection{Ant}
+\subsection{Ant}
 
-\noindent We present examples for compilation and for running programs
+We present examples for compilation and for running programs
 using the Apache Ant build tool.  Ant has three key features that make
 it well suited for expository purposes.  First, it's portable across
 all the platforms that support Java.  Second, it provides clear XML
@@ -308,9 +312,8 @@ Apache Ant version 1.8.1 compiled on April 30 2010
 }
 \end{quote}
 
-\mysection{Integrated Development Environment}
+\subsection{Integrated Development Environment}
 
-\noindent
 Many pepeople prefer to write (and compile and debug) code in an
 integrated development environment (IDE).  IDEs offer advantages such
 as automatic method, class and constant completion, easily
@@ -320,9 +323,8 @@ for code generation and refactoring.
 LingPipe development may be carried out through an IDE.  The two most
 popular IDEs for Java are Eclipse and NetBeans.
 
-\mysubsection{Eclipse IDE}
+\subsubsection{Eclipse IDE}
 
-\noindent
 Eclipse provides a full range of code checking, auto-completion
 and code generation, and debugging facilities.  Eclipse is an open-source
 project with a wide range of additional tools available as plugins.  It
@@ -347,9 +349,8 @@ available from
 \end{quote}
 
 
-\mysubsection{NetBeans IDE}
+\subsubsection{NetBeans IDE}
 
-\noindent
 Unlike Eclipse, the NetBeans IDE is written entirely in Java.  Thus
 it's possible to run it under Windows, Linux, Solaris Unix, and Mac OS
 X. There are also a wide range of plug-ins available for NetBeans.
@@ -370,9 +371,8 @@ are at
 \end{quote}
 
 
-\mysection{LingPipe}
+\subsection{Full LingPipe Distribution}
 
-\noindent
 LingPipe is distributed under both commercial licenses
 and under a royalty-free license.  A copy of the royalty free
 license is available at:
@@ -393,9 +393,8 @@ running the examples in this book because the LingPipe library jar is
 included with the book's source download.
 
 
-\mysection{Book Source and Libraries}
+\subsection{Book Source and Libraries}
 
-\noindent
 The code samples from this book are available via anonymous subversion checkout
 from the LingPipe sandbox.  Specifically, the entire content of the book,
 including code and text, may be checked out anonymously using,
@@ -412,7 +411,12 @@ as well as the system to extract text from the source for automatic
 inclusion in the book.
 
 
-\mysection{Hello World}
+\section{Hello World}
+
+In this section, we provide a very simple hello world program.  If
+you can run it, you'll be all set to jump into the next chapter and
+get started with the real examples.
+
 
 
 
