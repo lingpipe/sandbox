@@ -56,48 +56,54 @@
 
 \renewcommand{\headrulewidth}{0.0in}
 
-\newcommand{\mychapter}[2]{%
-\clearpage
-\thispagestyle{empty}
-\renewcommand{\chaptername}{#1}%
-\setcounter{section}{0}%
-\refstepcounter{chapter}%
-\mychapterstar{\thechapter. \ \ #1}{#2}
-}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
 
-
-\newcommand{\mychapterstar}[2]{%
-\cleardoublepage%
-\renewcommand{\chaptername}{#1}%
+% CUT-AND-PASTE WITH CHAPTER
+\makeatletter
+\newcommand\chapterStar[1]{\@startsection%
+{chapter}%
+{5}%
+{0pt}%
+{-2\baselineskip}%
+{4\baselineskip}%
+{\renewcommand{\chaptername}{\MakeUppercase{#1}}%
 \fancyhead[LE]{\small\thepage}%
 \fancyhead[RE]{{\footnotesize\it\booknamecaps}}%
-\fancyhead[LO]{{\footnotesize\it #2}}%
+\fancyhead[LO]{{\footnotesize\it\MakeUppercase{#1}}}%
 \fancyhead[RO]{{\small\thepage}}%
-\thispagestyle{plain}%
-\vspace*{0.25in}%
-{\hfill{\Huge\bf #1}}
-\vspace*{0.5in}%
-}
+\cleardoublepage\thispagestyle{plain}%
+\vspace*{24pt}%
+\raggedleft\fontsize{30}{40}\selectfont\bfseries}
+{#1}}
+\makeatother
 
-\newcommand{\mysection}[1]{%
-\refstepcounter{section}%
-\vspace{.25in}%
-{\noindent{\Large\bf \thechapter.\thesection \ \ \ #1}}%
-\nopagebreak%
-\vspace{.1in}%
-\nopagebreak%
-}
+% CUT-AND-PASTE WITH CHAPTERSTAR
+\makeatletter
+\renewcommand\chapter[1]{\@startsection%
+{chapter}%
+{0}%
+{0pt}%
+{-2\baselineskip}%
+{4\baselineskip}%
+{\renewcommand{\chaptername}{\MakeUppercase{#1}}%
+\fancyhead[LE]{\small\thepage}%
+\fancyhead[RE]{{\footnotesize\it\booknamecaps}}%
+\fancyhead[LO]{{\footnotesize\it\MakeUppercase{#1}}}%
+\fancyhead[RO]{{\small\thepage}}%
+\cleardoublepage\thispagestyle{plain}%
+\vspace*{24pt}%
+\raggedleft\fontsize{30}{40}\selectfont\bfseries}
+{#1}}
+\makeatother
 
+\makeatletter
+\renewcommand{\section}[1]{\@startsection{section}{1}{0pt}{-1.5\baselineskip}{0.5\baselineskip}{\raggedright\noindent\LARGE\bf\thechapter.}{#1}}
+\makeatother
 
-\newcommand{\mysubsection}[1]{%
-\refstepcounter{subsection}%
-\vspace{.15in}%
-{\noindent{\large\bf% \thechapter.\thesubsection \ \ 
-#1}}%
-\nopagebreak%
-\vspace{.1in}%
-\nopagebreak%
-}
+\makeatletter
+\renewcommand{\subsection}[1]{\@startsection{subsection}{2}{0pt}{-1\baselineskip}{0.25\baselineskip}{\raggedright\noindent\large\bf\thechapter.}{#1}}
+\makeatother
 
 
 \newlength{\charWidth}
@@ -114,3 +120,9 @@
 
 \newcommand{\refappendix}[1]{\hyperref[appendix:#1]{Appendix~\ref*{appendix:#1}}}
 \newcommand{\reffig}[1]{\hyperref[fig:#1]{Figure~\ref*{fig:#1}}}
+
+\newcommand{\bookname}{LingPipe 4.0}
+\newcommand{\booknamecaps}{LINGPIPE 4.0}
+\newcommand{\firstchar}[1]{{\Huge\bf #1}}
+
+\newcommand{\hrefurl}[1]{\href{#1}{\small\tt #1}}
