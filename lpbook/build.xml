@@ -47,9 +47,9 @@
   <target name="book">
     <mkdir dir="build/tex-aux"/>
     <exec executable="pdflatex"
-          dir="src/tex">
-      <arg value="-aux-directory=../../build/tex-aux"/>
-      <arg value="-output-directory=../../build"/>
+          dir="tex">
+      <arg value="-aux-directory=../build/tex-aux"/>
+      <arg value="-output-directory=../build"/>
       <arg value="-include-directory=styles"/>
       <arg value="lp-book.tex"/>
     </exec>
