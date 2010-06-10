@@ -18,7 +18,8 @@
     <javac optimize="on"
            debug="yes"
            debuglevel="source,lines,vars"
-           destdir="build/classes">
+           destdir="build/classes"
+           includeantruntime="false">
       <src path="src/"/>
     </javac>
     <jar destfile="${jar}">
