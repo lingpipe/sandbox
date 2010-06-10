@@ -421,17 +421,30 @@ walk through a simple Ant build file.
 \subsection{Running the Example}
 
 To the extent we are able, we'll start each discussion with an example
-of how to run examples.  This is pretty easy for the hello-world example.
-
-\noindent
-{\it\ttfamily > cd \$BOOK/src/intro}
+of how to run examples.  This is pretty easy for the hello-world
+example.  As with all of our examples, we begin by changing
+directories into the directory containing the example.  We suppose
+that {\small\tt \$BOOK} is the home page for the book and execute the
+{\small\tt cd} command,
+\\[8pt]
+{\small \$ \it\ttfamily cd \$BOOK/intro/}
+\\[8pt]
+Note that we have italicized the commands issued by the user.
+%
+We then run the demo using Ant.  In this case, the target is {\small\tt hello},
+invoked by
+\\[8pt]
+{\ttfamily \$ \it\ttfamily ant hello}
+\\[8pt]
+which produces the following output
+%
 {\small\begin{verbatim}
-Buildfile: c:\carp\devguard\sandbox\lpbook\src\intro\build.xml
+Buildfile: c:\lpb\src\intro\build.xml
 
 jar:
-    [mkdir] Created dir: ...\lpbook\src\intro\build\classes
-    [javac] Compiling 1 source file to ...\lpbook\src\intro\build\classes
-      [jar] Building jar: ...x\lpbook\src\intro\build\lp-book-intro-4.0.jar
+    [mkdir] Created dir: c:\lpb\src\intro\build\classes
+    [javac] Compiling 1 source file to c:\lpb\src\intro\build\classes
+      [jar] Building jar: c:\lpb\src\intro\build\lp-book-intro-4.0.jar
 
 hello:
      [java] Hello World
@@ -439,6 +452,60 @@ hello:
 BUILD SUCCESSFUL
 Total time: 1 second
 \end{verbatim}}
+%
+First, Ant echoes the name of the build file, here {\tt
+c:{\bk}lpb{\bk}src{\bk}intro{\bk}build.xml}.  When Ant is
+invoked without specifying a particular build file, it uses the
+{\tt build.xml} in the directory from which it was called.  
+
+Reading down the left side of the output, you see the targets that are
+invoked.  The first target invoked is the {\tt jar} target, and the
+second target is the {\tt hello} target.  The targets are left aligned
+and followed by semicolons.  A target consists of an ordered list of
+dependent targets to invoke before the current target, and an ordered
+list of tasks to execute after the dependent targets are invoked.
+
+Under the targets, you see the particular tasks that the target
+executes.  These are indented, square bracketed, and right aligned.
+The {\tt jar} target invokes three tasks, {\tt mkdir}, {\tt javac},
+and {\tt jar}.  The {\tt hello} target invokes one task, {\tt java}.
+All of the output for each task is shown after the task name.  If
+there is more than one line of output, the name of the task is
+repeated.
+
+In this example, the {\tt mkdir} task makes a new directory, here the {\tt
+build{\bk}classes} directory.  The {\tt javac} task runs the
+Java compiler, here compiling a single source file into the
+newly created directory.  The {\tt jar} task builds the Java
+library into the build subdirectory {\tt build} in file
+{\tt lp-book-intro-4.0.jar}.  Moving onto the {\tt hello} target,
+the {\tt java} task runs a command-line Java program, in this
+case printing the output of the hello world program.
+
+The reason the {\tt jar} target was invoked was because the {\tt
+hello} target was defined to depend on the {\tt jar} target.  Ant
+invokes all dependent targets (recursively) before the invoked target.
+
+Finally, Ant reports that the build was successful and reports the
+amount of time taken.  In the future, we will usually only show the
+output of the Java program executed and not all of the output from the
+compilation steps.  To save more space, we also remove the {\tt
+[java]} tag on the task.  Under this scheme, the {\tt hello} target
+invocation would be displayed in this book as
+\\[8pt]
+{\ttfamily \$ \it\ttfamily ant hello}
+{\small\begin{verbatim}
+Hello World
+\end{verbatim}}
+
+
+
+
+
+
+\subsection{Code Walkthrough}
+
+
 
 
 
