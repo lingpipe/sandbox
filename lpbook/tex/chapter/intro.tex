@@ -418,6 +418,27 @@ can run it, you'll be all set to jump into the next chapter and get
 started with the real examples.  We'll also take this opportunity to
 walk through a simple Ant build file.
 
+\subsection{Running the Example}
+
+To the extent we are able, we'll start each discussion with an example
+of how to run examples.  This is pretty easy for the hello-world example.
+
+\noindent
+{\it\ttfamily > cd \$BOOK/src/intro}
+{\small\begin{verbatim}
+Buildfile: c:\carp\devguard\sandbox\lpbook\src\intro\build.xml
+
+jar:
+    [mkdir] Created dir: ...\lpbook\src\intro\build\classes
+    [javac] Compiling 1 source file to ...\lpbook\src\intro\build\classes
+      [jar] Building jar: ...x\lpbook\src\intro\build\lp-book-intro-4.0.jar
+
+hello:
+     [java] Hello World
+
+BUILD SUCCESSFUL
+Total time: 1 second
+\end{verbatim}}
 
 
 
