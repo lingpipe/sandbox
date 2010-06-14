@@ -46,7 +46,7 @@
 \newcommand{\cdbd}[1]{{\fontseries{b}\ttfamily #1}}
 
 \newcommand{\autocodedir}{../build/tex/out}
-\newcommand{\codeblock}[1]{\vspace*{8pt}{\noindent\ttfamily\input{\autocodedir/#1}}\\[-4pt]}
+\newcommand{\codeblock}[1]{\begin{trivlist}\item[] \ttfamily\input{\autocodedir/#1}\end{trivlist}}
 
 % \def\fnum@figure{{\sc Fig.} \thefigure}
 
@@ -91,7 +91,7 @@
 \fancyhead[RE]{{\footnotesize\it\booknamecaps}}%
 \fancyhead[LO]{{\footnotesize\it\MakeUppercase{#1}}}%
 \fancyhead[RO]{{\small\thepage}}%
-\cleardoublepage\thispagestyle{plain}%
+\pagestyle{empty}\cleardoublepage\thispagestyle{plain}%
 \vspace*{24pt}%
 \raggedleft\fontsize{30}{40}\selectfont\bfseries}
 {#1}}
@@ -105,6 +105,10 @@
 \renewcommand{\subsection}[1]{\@startsection{subsection}{2}{0pt}{-1\baselineskip}{0.25\baselineskip}{\raggedright\noindent\large\bf\thechapter.}{#1}}
 \makeatother
 
+\makeatletter
+\renewcommand{\subsubsection}[1]{\@startsection{subsubsection}{3}{0pt}{-0.75\baselineskip}{0.25\baselineskip}{\raggedright\noindent\bf}{#1}}
+\makeatother
+
 
 \newlength{\charWidth}
 \settowidth{\charWidth}{\tt X}
@@ -116,6 +120,7 @@
 
 \newcommand{\code}[1]{{\ttfamily #1}}
 \newcommand{\usercode}[1]{{\sl\ttfamily #1}}
+\newcommand{\varcode}[1]{{\sl\ttfamily #1}}
 
 \newcommand{\bk}{\hspace*{0.75pt}$\mathbf{\backslash}$\hspace*{0.25pt}}
 
@@ -127,8 +132,18 @@
 \newcommand{\booknamecaps}{LINGPIPE 4.0}
 \newcommand{\firstchar}[1]{{\Huge\bf #1}}
 
-\newcommand{\hrefurl}[1]{\href{#1}{\small\tt #1}}
+\newcommand{\hrefurl}[1]{\href{#1}{\tt #1}}
 
 \newcommand{\filepath}[1]{\code{#1}}
 \newcommand{\relpath}[1]{\code{\$BOOK}/#1}
-\newcommand{\commandline}[1]{\begin{trivlist}\item[] \code{\$}~\usercode{#1}\end{trivlist}}
+\newcommand{\commandline}[1]{\begin{trivlist}\item[] \code{>}~\usercode{#1}\end{trivlist}}
+\newcommand{\commandlinefollow}[1]{\begin{trivlist}\item[] \code{>}~\usercode{#1}\end{trivlist}\vspace*{-12pt}}
+\newcommand{\urldisplay}[1]{\begin{trivlist}\item[] \hspace*{2\parindent}\hrefurl{#1}\end{trivlist}}
+\newcommand{\urldisplaynote}[2]{\begin{trivlist}\item[] \hspace*{2\parindent}#1: \hrefurl{#2}\end{trivlist}}
+\newcommand{\urlin}[1]{\code{#1}}
+\newcommand{\pathin}[1]{\code{#1}}
+\newcommand{\booktitle}[1]{{\it #1}}
+\newcommand{\site}[1]{\code{#1}}
+\newcommand{\menuitem}[1]{\code{#1}}
+\newcommand{\envvar}[1]{\code{#1}}
+\newcommand{\ie}[1]{(i.e.~#1)}
