@@ -10,7 +10,7 @@
             value="build/lp-book-${version}.jar"/>
 
   <property name="java.src"
-            value="src/java"/>
+            value="src/"/>
 
   <property name="java2tex.out"
             value="build/tex/out"/>

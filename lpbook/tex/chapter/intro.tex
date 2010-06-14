@@ -47,19 +47,15 @@ Cygwin suite of Unix command-line tools for Windows.
 Cygwin is released under version 2 of the Gnu Public License (GPLv2), with
 terms outlined here:
 %
-\begin{quote}
-\hrefurl{http://cygwin.com/license.html}
-\end{quote}
+\urldisplay{http://cygwin.com/license.html}
 %
 and also available with a commercial license.
 
 Cygwin can be downloaded and installed through Cygwin's home page,
 %
-\begin{quote}
-\hrefurl{http://www.cygwin.com/}
-\end{quote}
+\urldisplay{http://www.cygwin.com/}
 %
-The {\tt setup.exe} program is small.  When you run it, it goes out
+The \code{setup.exe} program is small.  When you run it, it goes out
 over the internet to find the packages from registered mirrors.  It
 then lists all the packages available.  You can install some or all of
 them.  You can just run the setup program again to update or install
@@ -68,8 +64,8 @@ new packages; it'll show you what version of what's already installed.
 \subsubsection{Archive and Compression Tools}
 
 In order to unpack data and library distributions, you need to be able
-to run the {\tt tar} archiving tool, as well as the unpacking commands
-{\tt unzip} and {\tt gunizp}.  These may be installed as part of
+to run the \code{tar} archiving tool, as well as the unpacking commands
+\code{unzip} and \code{gunizp}.  These may be installed as part of
 Cygwin on Windows.
 
 
@@ -83,7 +79,7 @@ source hosting services such as SourceForge or Google Code.
 
 We are currently using Subversion (SVN) for LingPipe and this book.
 You can install a shell-based version of Subversion, the command-name
-for which is {\tt svn}.  Subversion itself requires a secure shell
+for which is \code{svn}.  Subversion itself requires a secure shell
 (SSH) client over which to run, at least for most installations.  Both
 SVN and SSH can be installed through Cygwin for Windows users.
 
@@ -92,24 +88,19 @@ being Web-SVN, which as its name implies, runs as a server and is
 accessible through a web browser, and Tortoise SVN, which integrates
 with the Windows Explorer.  The home pages for these products are
 %
-\begin{itemize}
-\item WebSVN: \hrefurl{http://websvn.tigris.org/}
-\item Tortoise SVN: \hrefurl{http://tortoisesvn.net/}
-\end{itemize}
+\urldisplaynote{WebSVN}{http://websvn.tigris.org/}
+\urldisplaynote{Tortoise SVN}{http://tortoisesvn.net/}
 
 There are also other popular version control systems, the older
 concurrent version system (CVS), as well as the increasingly popular
 Git system, which is used by the Linux developers.  
 
 The best reference for Subversion of which we are aware is
-{\it Version Control with Subversion} (Second Edition,
+\booktitle{Version Control with Subversion} (Second Edition,
 2008, O'Reilly Press), which is available free online in HTML or PDF
 formats from
 %
-\begin{quote}
-\hrefurl{http://svnbook.red-bean.com/}
-\end{quote}
-
+\urldisplay{http://svnbook.red-bean.com/}
 
 
 \subsection{Text Editors}
@@ -120,28 +111,25 @@ its configurability.  It's as close as you'll get to an IDE in a
 simple text editor.  We use the XEmacs distribution of emacs, which is
 available from its home page,
 %
-\begin{quote}
-\hrefurl{http://www.xemacs.org/}
-\end{quote}
+\urldisplay{http://www.xemacs.org/}
 %
-There's an installer for Windows.  We found the install from {\tt
-xemacs.org} to work better than the one that comes with Cygwin as far
-as interacting with Windows.  We like to work with the Lucida Console
-font, which is distributed with Windows; it's the font used for code
-examples in this book.
+There's an installer for Windows.  We found the install from
+\site{xemacs.org} to work better than the one that comes with Cygwin
+as far as interacting with Windows.  We like to work with the Lucida
+Console font, which is distributed with Windows; it's the font used
+for code examples in this book.
 
 \subsubsection{Spaces, Not Tabs}
 
 To make code portable, we highly recommend using spaces instead of
 tabs.  Yes, it takes up a bit more space, but it's worth it.  The
 requisite commands are shown in \reffig{emacs-tabs}.  To apply these
-commands, first select the {\tt Edit Init File} selection from the {\tt
-Options} menu in XEmacs, add the text in \reffig{emacs-tabs}, then
-save using the {\tt Save Options to Custom File} selection from the
-{\tt Options} menu.
+commands, first select the \menuitem{Edit Init File} selection from
+the \menuitem{Options} menu in XEmacs, add the text in
+\reffig{emacs-tabs}, then save using the \menuitem{Save Options to Custom
+File} selection from the \menuitem{Options} menu.
 
 \begin{figure}
-{\small
 \begin{verbatim}
 (defun java-mode-untabify ()
   (save-excursion
@@ -155,8 +143,8 @@ save using the {\tt Save Options to Custom File} selection from the
              (make-local-variable 'write-contents-hooks)
              (add-hook 'write-contents-hooks 'java-mode-untabify)))
 
-(setq indent-tabs-mode nil)\end{verbatim}}%
-\caption{Required configuration for emacs so that it uses spaces rather than tabs for Java.}\label{fig:emacs-tabs}
+(setq indent-tabs-mode nil)\end{verbatim}\vspace*{-12pt}%
+\caption{Required configuration for emacs so that it uses spaces rather than tabs for Java.}\label{fig:emacs-tabs}%
 \end{figure}
 
 
@@ -191,28 +179,21 @@ is required to allocate JVMs with heaps larger than 1.5 or 2 gigabytes
 
 Licensing terms for the JRE are at
 %
-\begin{quote}
-\hrefurl{http://www.java.com/en/download/license.jsp}{}
-\end{quote}
+\urldisplay{http://www.java.com/en/download/license.jsp}
+%
 and for the JDK at
 %
-\begin{quote}
-\hrefurl{http://java.sun.com/javase/6/jdk-6u20-license.txt}
-\end{quote}
+\urldisplay{http://java.sun.com/javase/6/jdk-6u20-license.txt}
 
 Java is available for the Windows, Linux, and Solaris operating
 systems in both 32-bit and 64-bit versions from
 %
-\begin{quote}
-\hrefurl{http://java.sun.com/javase/downloads/index.jsp}
-\end{quote}
+\urldisplay{http://java.sun.com/javase/downloads/index.jsp}
 %
 The Java JDK and JRE are included as part of Mac OS X.  Updates are
 available through
 %
-\begin{quote}
-\hrefurl{http://developer.apple.com/java/download/}
-\end{quote}
+\urldisplay{http://developer.apple.com/java/download/}
 %
 Java is updated regularly and it's worth having the latest version.
 Updates include bug fixes and often include performance enhancements,
@@ -220,38 +201,29 @@ some of which can be quite substantial.
 
 Java must be installed on the operating system so that shell commands
 will execute it.  We have to manage multiple versions of Java, so
-typically we will define an environment variable {\tt JAVA\_HOME}, and
-add {\tt \$\{JAVA\_HOME\}/bin} (Unix) or {\tt \%JAVA\_HOME\%{\textbackslash}bin} (Windows) 
-to the {\tt PATH}.  We then set {\tt JAVA\_HOME} to either {\tt
-JAVA\_1\_5}, {\tt JAVA\_1\_6}, or {\tt JAVA\_1\_7} depending on use
-case.  Note that {\tt JAVA\_HOME} is one level above Java's {\tt bin}
+typically we will define an environment variable \envvar{JAVA\_HOME}, and
+add \envvar{\$\{JAVA\_HOME\}/bin} (Unix) or \envvar{\%JAVA\_HOME\%{\textbackslash}bin} (Windows) 
+to the \envvar{PATH} environment variable (or its equivalent for your
+operating system).  We then set \envvar{JAVA\_HOME} to either \envvar{JAVA\_1\_5}, \envvar{JAVA\_1\_6}, or \envvar{JAVA\_1\_7} depending on use
+case.  Note that \envvar{JAVA\_HOME} is one level above Java's \filepath{bin}
 directory containing the executable Java commands.
 
 You can test whether you can run Java with the following command, which
 should produce similar results.
 %
-\begin{quote}
-{\small
-\ttfamily
-> {\it\ttfamily java -version}
-\\
-java version "1.6.0\_18"
-\\
-Java(TM) SE Runtime Environment (build 1.6.0\_18-b07)
-\\
+\commandlinefollow{java -version}
+\begin{verbatim}
+java version "1.6.0_18"
+Java(TM) SE Runtime Environment (build 1.6.0_18-b07)
 Java HotSpot(TM) 64-Bit Server VM (build 16.0-b13, mixed mode)
-}
-\end{quote}
+\end{verbatim}
 %
 Similarly, you can test for the Java compiler version, using
 %
-\begin{quote}
-{\small\ttfamily
-> {\it\ttfamily javac -version}
-\\
-javac 1.6.0\_20
-}
-\end{quote}
+\commandlinefollow{javac -version}
+\begin{verbatim}
+javac 1.6.0_20
+\end{verbatim}
 
 
 \subsection{Ant}
@@ -274,18 +246,15 @@ knowledge of Ant.  If you're using an IDE like Eclipse or NetBeans,
 you can import Ant build files directly to create a project.
 
 Ant is is an Apache project, and as such, is subject to the Apache license,
-\begin{quote}
-\hrefurl{http://ant.apache.org/license.html}
-\end{quote}
+%
+\urldisplay{http://ant.apache.org/license.html}
 %
 Ant is available from 
 %
-\begin{quote}
-\hrefurl{http://ant.apache.org/}
-\end{quote}
+\urldisplay{http://ant.apache.org/}
 %
 You only need one of the binary distributions, which will
-look like {\ttfamily apache-ant-{\it\ttfamily version}-bin.tar.gz}.
+look like \code{apache-ant-}\varcode{version}\code{-bin.tar.gz}.
 
 First, you need to unpack the distribution.  We like directory
 structures with release names, which is how ant unpacks, using
@@ -304,13 +273,12 @@ Ant build files may be imported directly into either the Eclipse or
 NetBeans IDEs (see below for a description of these).
 
 You can test whether Ant is installed with
-
-\begin{quote}
-{\small\ttfamily
-> {\it\ttfamily ant -version}
+%
+\commandlinefollow{ant -version}
+\begin{verbatim}
 Apache Ant version 1.8.1 compiled on April 30 2010
-}
-\end{quote}
+\end{verbatim}
+
 
 \subsection{Integrated Development Environment}
 
@@ -332,9 +300,7 @@ also has modules for languages other than Java, such as C++ and PHP.
 
 The full set of Eclipse downloads is listed on the following page,
 %
-\begin{quote}
-\hrefurl{http://download.eclipse.org/eclipse/downloads/}
-\end{quote}
+\urldisplay{http://download.eclipse.org/eclipse/downloads/}
 %
 You'll want to make sure you choose the one compatible with the JDK
 you are using.  Though originally a Windows-based system, Eclipse has been
@@ -344,9 +310,7 @@ Eclipse is released under the Eclipse Public License (EPL), a slightly modified
 version of the Common Public License (CPL) from IBM, the full text of which is
 available from
 %
-\begin{quote}
-\hrefurl{http://www.eclipse.org/legal/epl-v10.html}
-\end{quote}
+\urldisplay{http://www.eclipse.org/legal/epl-v10.html}
 
 
 \subsubsection{NetBeans IDE}
@@ -357,18 +321,14 @@ X. There are also a wide range of plug-ins available for NetBeans.
 
 Netbeans is free, and may be downloaded from its home page,
 %
-\begin{quote}
-\hrefurl{http://netbeans.org/}
-\end{quote}
+\urldisplay{http://netbeans.org/}
 %
 Its licensing is rather complex, being released under a dual license
 consisting of the Common Development and Distribution License (CDDL)
 and version 2 of the Gnu Public License version (GPLv2).  Full details
 are at
 %
-\begin{quote}
-\hrefurl{http://netbeans.org/about/legal/license.html}
-\end{quote}
+\urldisplay{http://netbeans.org/about/legal/license.html}
 
 
 \subsection{Full LingPipe Distribution}
@@ -377,15 +337,11 @@ LingPipe is distributed under both commercial licenses
 and under a royalty-free license.  A copy of the royalty free
 license is available at:
 %
-\begin{quote}
-\hrefurl{http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt}
-\end{quote}
+\urldisplay{http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt}
 
 LingPipe may be downloaded with full source from its web site:
 %
-\begin{quote}
-\hrefurl{http://alias-i.com/lingpipe/}
-\end{quote}
+\urldisplay{http://alias-i.com/lingpipe/}
 %
 Other than unpacking the gzipped tarball, there is nothing required
 for installation.  Downloading LingPipe is not technically necessary for
@@ -398,12 +354,8 @@ included with this book's source download.
 The code samples from this book are available via anonymous subversion checkout
 from the LingPipe sandbox.  Specifically, the entire content of the book,
 including code and text, may be checked out anonymously using,
-
-\begin{quote}
-{\small\ttfamily
-> svn co https://aliasi.devguard.com/svn/sandbox/lpbook
-}
-\end{quote}
+%
+\commandline{svn co https://aliasi.devguard.com/svn/sandbox/lpbook}
 %
 The distribution contains all of the code and Ant build files for
 running it.  It also contains the \LaTeX\ source for the book itself
@@ -425,20 +377,20 @@ of how to run examples.  This is pretty easy for the hello-world
 example.  As with all of our examples, we begin by changing
 directories into the directory containing the example.  We suppose
 that \relpath{} is the home page for the book and execute the
-{\small\tt cd} command,
+\code{cd} command,
 %
 \commandline{cd \$BOOK/intro}
 %
 Note that we have italicized the commands issued by the user.
 %
-We then run the demo using Ant.  In this case, the target is {\small\tt hello},
+We then run the demo using Ant.  In this case, the target is \code{hello},
 invoked by
 %
 \commandline{ant hello}
 %
 which produces the following output
 %
-{\small\begin{verbatim}
+\begin{verbatim}
 Buildfile: c:\lpb\src\intro\build.xml
 
 jar:
@@ -451,52 +403,53 @@ hello:
 
 BUILD SUCCESSFUL
 Total time: 1 second
-\end{verbatim}}
+\end{verbatim}
 %
-First, Ant echoes the name of the build file, here {\tt
-c:{\bk}lpb{\bk}src{\bk}intro{\bk}build.xml}.  When Ant is
+First, Ant echoes the name of the build file, here
+\pathin{c:{\bk}lpb{\bk}src{\bk}intro{\bk}build.xml}.  When Ant is
 invoked without specifying a particular build file, it uses the
-{\tt build.xml} in the directory from which it was called.  
+\pathin{build.xml} in the directory from which it was called.  
 
 Reading down the left side of the output, you see the targets that are
-invoked.  The first target invoked is the {\tt jar} target, and the
-second target is the {\tt hello} target.  The targets are left aligned
+invoked.  The first target invoked is the \code{jar} target, and the
+second target is the \code{hello} target.  The targets are left aligned
 and followed by semicolons.  A target consists of an ordered list of
 dependent targets to invoke before the current target, and an ordered
 list of tasks to execute after the dependent targets are invoked.
 
 Under the targets, you see the particular tasks that the target
 executes.  These are indented, square bracketed, and right aligned.
-The {\tt jar} target invokes three tasks, {\tt mkdir}, {\tt javac},
-and {\tt jar}.  The {\tt hello} target invokes one task, {\tt java}.
+The \code{jar} target invokes three tasks, \code{mkdir}, \code{javac},
+and \code{jar}.  The \code{hello} target invokes one task, \code{java}.
 All of the output for each task is shown after the task name.  If
 there is more than one line of output, the name of the task is
 repeated.
 
-In this example, the {\tt mkdir} task makes a new directory, here the {\tt
-build{\bk}classes} directory.  The {\tt javac} task runs the
+In this example, the \code{mkdir} task makes a new directory, here the 
+\filepath{build{\bk}classes} directory.  The \code{javac} task runs the
 Java compiler, here compiling a single source file into the
-newly created directory.  The {\tt jar} task builds the Java
-library into the build subdirectory {\tt build} in file
-{\tt lp-book-intro-4.0.jar}.  Moving onto the {\tt hello} target,
-the {\tt java} task runs a command-line Java program, in this
+newly created directory.  The \code{jar} task builds the Java
+library into the build subdirectory \code{build} in file
+\code{lp-book-intro-4.0.jar}.  Moving onto the \code{hello} target,
+the \code{java} task runs a command-line Java program, in this
 case printing the output of the hello world program.
 
-The reason the {\tt jar} target was invoked was because the {\tt
-hello} target was defined to depend on the {\tt jar} target.  Ant
-invokes all dependent targets (recursively) before the invoked target.
+The reason the \code{jar} target was invoked was because the
+\code{hello} target was defined to depend on the \code{jar} target.
+Ant invokes all dependent targets (recursively) before the invoked
+target.
 
 Finally, Ant reports that the build was successful and reports the
 amount of time taken.  In the future, we will usually only show the
 output of the Java program executed and not all of the output from the
-compilation steps.  To save more space, we also remove the {\tt
-[java]} tag on the task.  Under this scheme, the {\tt hello} target
-invocation would be displayed in this book as
-\\[8pt]
-{\ttfamily \$ \it\ttfamily ant hello}
-{\small\begin{verbatim}
+compilation steps.  To save more space, we also remove the
+\code{[java]} tag on the task.  Under this scheme, the \code{hello}
+target invocation would be displayed in this book as
+%
+\commandlinefollow{ant hello}
+\begin{verbatim}
 Hello World
-\end{verbatim}}
+\end{verbatim}
 
 
 \subsection{A Quick Introduction to Ant}
@@ -532,7 +485,7 @@ to infer the character encoding, but it's always good practice to make
 it explicit.
 
 The ellipses (\code{...}) indicate ellided material that will be
-filled in or not in continuing discussion.  
+filled in (or not) in continuing discussion.  
 
 \subsubsection{Top-Level Project Element} 
 
@@ -588,13 +541,12 @@ property \code{version} has been substituted for the substring \code{\$\{version
 In general, properties are accessed by
 \code{\$\{...\}} with the property filled in for the ellipses.
 
-Properties may be overridden from the command line using, for example,
+Properties may be overridden from the command line by declaring
+an environment variable for the command.  For example,
 %
-\begin{verbatim}
-ant -Djar=foo.jar jar
-\end{verbatim}
+\commandline{ant -Djar=foo.jar jar}
 %
-would call the build file, setting the value of the \code{jar}
+calls the build file, setting the value of the \code{jar}
 property to be the string \code{foo.jar} (which would create a library
 archive called \code{foo.jar}).  The value of a property in Ant is
 always the first value to which it is set; further attempts to set it
@@ -687,7 +639,7 @@ The java compilation task here has content, namely a single
 source element with tag \code{src}.  This says where to find
 the source code to compile.  Here we specify the value of
 attribute for the path to the source, \code{path}, as
-\code{src/}.  Again, this is interpreted relative to the base directory,
+\code{src/}.  As usual, this path is interpreted relative to the base directory,
 which is the one holding the \code{build.xml} file.  
 
 In more elaborate builds, we would specify a classpath element as
@@ -772,18 +724,40 @@ command-line arguments and other arguments to the Java virtual machine
 
 \subsection{Code Walkthrough}
 
+The code for the hello world program can be found in
+\relpath{src/intro/src/com/lingpipe/book/intro/HelloWorld.java}. 
+Throughout the book, the files are organized this way, under the
+top-level \filepath{src} directory, then the name of the chapter (here
+\filepath{intro}), followed by \filepath{src}, followed by the path to
+the actual program.  We follow the Java convention of placing files in
+a directory structure that mirrors their package structure, so the
+remaining part of the path is
+\filepath{com/lingpipe/book/intro/HelloWorld.java}.  The contents of
+the \filepath{HelloWorld.java} program file is as follows.
+%
+\codeblock{HelloWorld.1}
+%
+As usual for Java programs, the first thing in the file is the package
+declaration, here \code{com.lingpipe.book.intro}; note how it matches
+the end of the path to the file, \filepath{com/lingpipe/book/intro}.
+Next is the class definition, \code{HelloWorld}, which matches the
+name of the file, \filepath{HelloWorld.java}.
 
+When a Java class is invoked from the command line (or equivalently
+through Ant), it must implement a static method with a signature like
+the one shown.  Specifically, the method must be named \code{main},
+must take a single string array argument of type \code{String[]}, must
+not have a return value \ie{return type \code{void}}, and must be
+declared to be both public and static using the
+\code{public} and \code{static} modifiers.  The method may optionally throw
+any kind of exception.
 
+When a Java program is invoked from the command line, a call is made
+to the main program with arguments set to the command-line arguments.  
+Here, we are not considering any arguments.
 
-
-
-
-
-
-
-
-
-
-
-
+The body of the program here just prints \code{Hello World} to the
+system output.  As usual, Java provides a handle to the system output
+through the public static variable \code{out} of type
+\code{java.io.PrintStream} in the \code{java.lang.System} class.
 
