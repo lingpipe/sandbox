@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-
-<project name="LingPipe Book: Intro"
-         basedir=".">
+<?xml version="1.0" encoding="ASCII"?>
+<project>
 
   <property name="version"
             value="4.0"/>
@@ -15,8 +13,7 @@
 
   <target name="jar">
     <mkdir dir="build/classes"/>
-    <javac optimize="on"
-           debug="yes"
+    <javac debug="yes"
            debuglevel="source,lines,vars"
            destdir="build/classes"
            includeantruntime="false">
