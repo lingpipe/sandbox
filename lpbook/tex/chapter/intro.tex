@@ -390,7 +390,7 @@ LingPipe may be downloaded with full source from its web site:
 Other than unpacking the gzipped tarball, there is nothing required
 for installation.  Downloading LingPipe is not technically necessary for
 running the examples in this book because the LingPipe library jar is
-included with the book's source download.
+included with this book's source download.
 
 
 \subsection{Book Source and Libraries}
@@ -507,7 +507,7 @@ hello world program in some detail.
 
 The build file for hello world is located at
 \relpath{src/intro/build.xml}, where \relpath{} is the root of the
-directory in which the book's files were unpacked.  In general, the
+directory in which this book's files have been unpacked.  In general, the
 build files will be broken out by chapter and/or section.  The goal is
 to make each of them relatively self contained so that they may be
 used as a minimal basis for further development.
@@ -518,6 +518,7 @@ The first thing in any Ant build file is the XML declaration, here
 %
 \begin{verbatim}
 <?xml version="1.0" encoding="ASCII"?>
+...
 \end{verbatim}
 %
 This just tells Ant's XML parser that what it's looking at is an XML
@@ -764,7 +765,7 @@ Finally, there is a flag indicated by attribute \code{fork} being
 set to value \code{true}, which tells Ant to fork a new process with
 a new JVM in which to run the indicated class.  
 
-In more elaborate uses of the \code{java} target, we can also specify
+In more elaborate uses of the \code{java} task, we can also specify
 command-line arguments and other arguments to the Java virtual machine
 (JVM).  
 
