@@ -115,6 +115,7 @@
 \newcommand{\cdBold}[1]{{\bf\ttfamily #1}}
 
 \newcommand{\code}[1]{{\ttfamily #1}}
+\newcommand{\usercode}[1]{{\sl\ttfamily #1}}
 
 \newcommand{\bk}{\hspace*{0.75pt}$\mathbf{\backslash}$\hspace*{0.25pt}}
 
@@ -130,4 +131,4 @@
 
 \newcommand{\filepath}[1]{\code{#1}}
 \newcommand{\relpath}[1]{\code{\$BOOK}/#1}
-\newcommand{\commandline}[1]{\begin{trivlist}\item[] \code{\$ #1}\end{trivlist}}
+\newcommand{\commandline}[1]{\begin{trivlist}\item[] \code{\$} \usercode{#1}}\end{trivlist}}
