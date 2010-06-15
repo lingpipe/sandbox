@@ -11,11 +11,8 @@ public class ByteTable {
             byte b = (byte) i; // overflows if i > 127
             int k = b < 0 ? (b + 256) : b;
             System.out.printf("%3d  %5d  %3s  %2s  %8s\n",
-                              k,
-                              b, 
-                              Integer.toOctalString(k),
-                              Integer.toHexString(k),
-                              Integer.toBinaryString(k));
+                      k, b, Integer.toOctalString(k),
+                      Integer.toHexString(k), Integer.toBinaryString(k));
         }
         /*x*/
     }
