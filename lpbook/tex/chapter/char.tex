@@ -1,363 +1,176 @@
-\chapter{Introduction}{INTRODUCTION}\label{chap:char}
+\chapter{Bytes, Characters, and Strings}\label{chap:char}
 
-\firstchar{W}hat is LingPipe?
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
 
-\mysection{More Introducing}
+\firstchar{I}n this chapter, we show first how bytes may be used
+to encode characters and second how characters and strings are
+represented in Java.
 
-\noindent
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
+\section{Numbers}
 
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
+In this section, we explain different numerical bases, including
+decimal, octal, hexadecimal and binary.  
 
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
+\subsection{Digits and Decimal Numbers}
 
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
-Lucene is a search engine written in Java.  Lucene is part of the
-open-source Apache project.
+Typically we write numbers in the Arabic form (as opposed to, say, the
+Roman form), using decimal notation.  That is, we employ sequences of the
+ten digits 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.  
+
+A number such as 23 may be decomposed into a 2 in the ``tens place''
+and a 3 in the ``ones place''.  What that means is that $23 = (2 \times
+10) + (3 \times 1)$; similarly $4700 = (4 \times 1000) + (7 \times
+100)$.  We can write these equivalently as $23 = 2 \times 10^1 + 3 \times 10^0$
+and $4700 = (4 \times 10^3) + (7 \times 10^2)$.  Because of the base
+of the exponent, decimal notation is also called ``base 10''.
+
+The number 0 is special.  It's the additive identity, meaning
+that for any number $x$, $0 + x = x + 0 = x$.  
+
+We also conventionally use negative numbers and negation.  For
+instance, -22 is read as ``negative 22''.  We have to add 22 to it to
+get back to zero.  That is, negation is the additive inverse, so that
+$x + (-x) = (-x) + x = 0$.
+
+The number 1 is also special.  1 is the multiplicative identity,
+so that $1 \times x = x \times 1 = x$.  Division is multiplicative
+inverse, so that for all numbers $x$ other than 0, $\frac{x}{x} = 1$.
+
+We also use fractions, written after the decimal place.  Fractions are
+defined using negative exponents.  For instance $.2 = 2 \times 10^{-1}
+= \frac{2}{10^1}$, and $.85 = .8 \times 10^{-1} + .5 \times 10^{-2}$.
+
+For really large or really small numbers, we use scientific notation,
+which decomposes a value into a number times an exponent of 10.  For
+instance, we write 4700 as $4.7 \times 10^3$ and 0.0047 as $4.7 \times
+10^{-3}$.  In computer languages, 4700 and 0.0047 are typically
+written as \code{4.7E+3} and \code{4.7E-3}.  Java's floating point
+numbers may be input and output in scientific notation.
+
+\subsection{Bits and Binary Numbers}
+
+Rather than the decimal system, computers work in the binary system,
+where there are only two values.  In binary arithmetic, bits play the
+role that digits play in the decimal system.  The two bits are
+conventionally written as the first two digits, 0 and 1.  Sequences of
+0s and 1s are read in the same way in binary numbers as sequences of
+digits in decimal numbers; the only difference is that the base is 2
+rather than 10.  For instance, in binary, $101 = (1 \times 2^3) + (0
+\times 2^2) + (1 \times 2^0)$, which is 7 in decimal notation.  Fractions
+can be handled the same way as in decimal numbers.  Scientific notation
+is not generally used for binary numbers.
+
+\subsection{Octal Numbers}
+
+Two other numbering schemes are common in computer languages, octal
+and hexadecimal.  As may be gathered from its name, octal is base 8,
+conventionally written using the digits 0--7.  Numbers are read in the
+usual way, so that octal 43 is expanded as $(4 \times 8^1) + (3 \times
+8^0)$, or 35 in decimal notation.
+
+In Java (and many other computer languages), octal notation is very
+confusing.  Prefixing a numeric literal with a \code{0} (that's a
+zero, not a capital o) leads to it being interpreted as octal.  For
+instance, the Java literal \code{043} is interpreted as the decimal
+35.
+
+\subsection{Hexadecimal Numbers}
+
+Hexadecimal is base 16, and thus we need some additional symbols.
+The first 16 numbers in hex are conventionally written
+
+\displ{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F.}
+
+In hexadecimal, the value of A is what we'd write as 10 in decimal
+notation.  Similarly, C has the value 12 and F the value 15.  We read
+off compound numbers in the usual way, so that in hex, $93 = (9 \times
+16^1) + (3 \times 16^0)$, or 138 in decimal notation.  Similarly, in
+hex, the number $\mbox{\rm B2F} = (11 \times 16^2) + (2 \times 16^1) + (15 \times
+16^0)$, or 2863 in decimal notation.
+
+In Java (and other languages), hexadecimal numbers are distinguished
+by prefixing them with \code{0x}.  For example,
+\code{0xB2F} is the hexadecimal equivalent of the decimal 2863.
+
+\subsection{Bytes}
+
+The basic unit of organization in contemporary computing systems is
+the byte.  
+
+A byte is a sequence of 8 bits.  Thus there are 256
+distinct bytes, ranging from \code{00000000} to \code{11111111}.  The
+bits are read from the high (left) end to the low (right end).
+
+In Java, the \code{byte} primitive type is signed.  Any number between
+\code{00000000} and \code{01111111} is interpreted as a binary number
+with decimal value between 0 and 127 (inclusive).  If the high order
+bit is 1, the value is interpreted as negative.  The negative value is
+value of the least significant 7 bits minus 128.  For instance,
+\code{10000011} is interpreted as $3 - 128 = -125$, because
+\code{00000011} (the result of setting the high bit to \code{0}) is interpreted as 3.
+
+The unsigned value of a byte \code{b} is returned by \code{(b~<~0 ?\
+(b~+~256) :\ b)}.  
+
+The primitive data type for computers is a sequence of bytes.  For
+instance, the contents of a file is a sequence of bytes, and so
+is the response from a web server to an HTTP request for a web page.
+Most importantly for using LingPipe, sequences of characters are
+represented by sequences of bytes.
+
+Often the bit \code{0} is identified with the number 0
+and the bit \code{1} with the number 1.  
+
+\subsection{Code Example: Displaying Numbers}
+
+There is a simple program in
 %
+\displ{\pathin{src/chars/src/com/lingpipe/book/chars/ByteTable.java}}
+%
+for displaying bytes, their corresponding unsigned value, and the
+conversion of the unsigned value to octal, hexadecimal and binary
+notations.  The work is done by the loop
+%
+\codeblock{ByteTable.1}
+%
+This code may be run from Ant using
+%
+\commandlinefollow{cd \rootdir/src/chars}%
+\commandline{ant byte-table}
+%
+The output, after trimming the filler generated by Ant, looks like
+%
+\begin{verbatim}
+BASES
+ 10    -10    8  16         2
 
-\mysection{Hello World}
-
-\noindent
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Here's a very simple Lucene program.  Very simple.
-Lucene.
-Lucene.
-Lucene.
-Lucene.
-Lucene.
-Lucene.
-Lucene.
-Lucene.
-Lucene.
-
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene with some nice inlined
-bold code
-\cdbd{org.lucene.analysis.Analyzer} stuff.
-Very simple Lucene.
-and some simpler \cd{com.aliasi.lingpipe} stuff.
-Very simple Lucene.
-Very simple Lucene.
-
-\codeblock{HelloWorld.1}%
-
-\noindent
-Continuing after figure with more very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-
-% \codeblock{GoodbyeWorld.1}%
-
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-
-Very simple Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very simple Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-
-% \codeblock{GoodbyeWorld.2}%
-
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very trivially simplified versus  Lucene.
-Very simple Lucene.
-Very simple Lucene.
-Very trivially simplified versus  Lucene.
-Very simple Lucene.
-
-\mychapter{The Document}{DOCUMENT}
-
-\firstchar{L}et's start this chapter off right with a nice
-first letter.  Nice first letter. Letter.
-Nice first letter. Letter.
-
-\mysection{Fields and Values}
-
-\noindent
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
+  0      0    0   0         0
+  1      1    1   1         1
+  2      2    2   2        10
+...
+  9      9   11   9      1001
+ 10     10   12   a      1010
+ 11     11   13   b      1011
+...
+127    127  177  7f   1111111
+128   -128  200  80  10000000
+129   -127  201  81  10000001
+...
+254     -2  376  fe  11111110
+255     -1  377  ff  11111111
+\end{verbatim}
 
 
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
-Documents are made up of fields with string values.
+\subsection{Floating Point}
 
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
+Java's floating point types, \code{float} and \code{double} add three
+additional values.  There is positive infinity, conventionally
+$\infty$ in mathematical notation, and referenced for floating point
+values by the static constant \code{Float.POSITIVE\_INFINITY} in Java.
+There is also negative infinity, $-\infty$, or
+\code{Float.NEGATIVE\_INFINITY}.  There is also an ``undefined'' value,
+picked out by the constant \code{Float.NaN}.  There are corresponding
+constants in \code{Double} with the same names. 
 
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-can be saved; others can't..  Bits of documents.
+Arithmetic is extended in the obvious way for these values.
 
-Some bits of documents can be saved; others can't..  Be saved.
-can be saved; others can't..  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be savedh.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
-Some bits of documents can be saved.  Be saved.
-Can be saved.  Bits of documents.
 

@@ -27,7 +27,7 @@
 
   <target name="byte-table"
           depends="jar">
-    <java classname="com.lingpipe.book.char.ByteTable"
+    <java classname="com.lingpipe.book.chars.ByteTable"
           classpath="${jar}"
           fork="true">
     </java>

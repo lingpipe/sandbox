@@ -8,8 +8,9 @@
 %\usepackage{amssymb}
 
 \usepackage{fancyhdr}
+\usepackage{fancyvrb}
 
-\usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={blue},filecolor={blue},linkcolor={blue},urlcolor={blue},pdfauthor={Bob Carpenter},pdftitle={LingPipe 4.0}]{hyperref}
+\usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={black},filecolor={black},linkcolor={black},urlcolor={black},pdfauthor={Bob Carpenter},pdftitle={LingPipe 4.0}]{hyperref}
 
 % Size            Lulu     CreateSpace
 % 7.0 x 10.0       -           +
@@ -122,7 +123,9 @@
 \newcommand{\usercode}[1]{{\sl\ttfamily #1}}
 \newcommand{\varcode}[1]{{\sl\ttfamily #1}}
 
-\newcommand{\bk}{\hspace*{0.75pt}$\mathbf{\backslash}$\hspace*{0.25pt}}
+\newcommand{\bkk}{\hspace*{0.75pt}$\mathtt{\backslash}$\hspace*{0.25pt}}
+\SaveVerb{bkslverb}=\=
+\newcommand{\bk}{\protect\UseVerb{bkslverb}}
 
 \newcommand{\refappendix}[1]{\hyperref[appendix:#1]{Appendix~\ref*{appendix:#1}}}
 \newcommand{\reffig}[1]{\hyperref[fig:#1]{Figure~\ref*{fig:#1}}}
@@ -132,14 +135,17 @@
 \newcommand{\booknamecaps}{LINGPIPE 4.0}
 \newcommand{\firstchar}[1]{{\Huge\bf #1}}
 
+
+\newcommand{\displ}[1]{\begin{trivlist}\item[] #1\end{trivlist}}
 \newcommand{\hrefurl}[1]{\href{#1}{\tt #1}}
 
+\newcommand{\rootdir}{\$BOOK}
 \newcommand{\filepath}[1]{\code{#1}}
-\newcommand{\relpath}[1]{\code{\$BOOK}/#1}
+\newcommand{\relpath}[1]{\code{\$BOOK/#1}}
 \newcommand{\commandline}[1]{\begin{trivlist}\item[] \code{>}~\usercode{#1}\end{trivlist}}
 \newcommand{\commandlinefollow}[1]{\begin{trivlist}\item[] \code{>}~\usercode{#1}\end{trivlist}\vspace*{-12pt}}
-\newcommand{\urldisplay}[1]{\begin{trivlist}\item[] \hspace*{2\parindent}\hrefurl{#1}\end{trivlist}}
-\newcommand{\urldisplaynote}[2]{\begin{trivlist}\item[] \hspace*{2\parindent}#1: \hrefurl{#2}\end{trivlist}}
+\newcommand{\urldisplay}[1]{\displ{\hspace*{2\parindent}\hrefurl{#1}}}
+\newcommand{\urldisplaynote}[2]{\displ{\hspace*{2\parindent}#1: \hrefurl{#2}}}
 \newcommand{\urlin}[1]{\code{#1}}
 \newcommand{\pathin}[1]{\code{#1}}
 \newcommand{\booktitle}[1]{{\it #1}}
@@ -147,3 +153,4 @@
 \newcommand{\menuitem}[1]{\code{#1}}
 \newcommand{\envvar}[1]{\code{#1}}
 \newcommand{\ie}[1]{(i.e.~#1)}
+\newcommand{\tblhead}[1]{\emph{#1}}
