@@ -103,9 +103,10 @@ term ``word'' is ambiguously applied to a sequence of two bytes, or to
 the size of the sequence of bytes at which a particular piece of
 hardware operates.
 
-A byte is a sequence of 8 bits.  Thus there are 256 distinct bytes,
-ranging from \code{00000000} to \code{11111111}.  The bits are read
-from the high (left) end to the low (right end).
+A byte is a sequence of 8 bits, and is sometimes called an octet for
+that reason.  Thus there are 256 distinct bytes, ranging from
+\code{00000000} to \code{11111111}.  The bits are read from the high
+(left) end to the low (right end).
 
 In Java, the \code{byte} primitive type is signed.  Any number between
 \code{00000000} and \code{01111111} is interpreted as a binary number
@@ -213,22 +214,418 @@ infinity is zero.
 \section{Character Encodings}
 
 For processing natural language text, we are primarily concerned with
-the representation of characters in natural languages.  These range
-from the relatively limited set of 26 characters used in English to
-the tens of thousands of characters used in Chinese.  Characters are
-used in language to represent sounds at the level of segments or
-individual sounds \eg{Latin}, syllables \eg(Japanese Hirigana
-and Katakana scripts}, or logographic \eg{Chinese Han characters}.
+the representation of characters in natural languages.  A set of
+(abstract) characters is known as a character set.  These range from
+the relatively limited set of 26 characters (52 if you count upper and
+lower case characters) used in English to the tens of thousands of
+characters used in Chinese.
+
+
+\subsection{What is a Character?}
+
+Precise definitions of characters in human writing systems is a
+notoriously tricky business.  
+
+\subsubsection{Types of Character Sets}
+
+Characters are used in language to represent sounds at the level of
+phonemic segments \eg{Latin}, syllables \eg{Japanese Hirigana and
+Katakana scripts, Linear B, and Cherokee}, or words or morphemes, also
+known as logograms \eg{Chinese Han characters, Egyptian
+hieroglyphics}.  
+
+These distinctions are blurry.  For instance, both Chinese characters
+and Egyptian hieroglyphs are typically pronounced as single syllables
+and words may require multiple characters.
+
+\subsubsection{Abstraction over Visualization}
+
+One problem with dealing with characters is the issue of visual
+representation versus the abstraction.  Character sets abstract away
+from the visual representations of characters.  
+
+A sequence of characters is also an abstract concept.  When
+visualizing a sequence of characters, different writing systems lay
+them out differently on the page.  When visualizing a sequence of
+characters, we must make a choice in how to lay them out on a page.
+English, for instance, traditionally lays out a sequence of characters
+in left to right order horizontally across a page. 
+Arabic, on the other hand, lays out a sequence of
+characters on a page horizontally from right to left.  In contast,
+Japanese was traditionally set from top to bottom with the following
+character being under the preceding characters.
+
+English stacks lines of text from top to bottom, whereas traditional
+Japanese orders its columns of text from right to left.  
+
+When combining multiple pages, English has pages that ``turn'' from
+right to left, whereas Arabic and traditional Japanese conventionally
+order their pages in the opposite direction.  Obviously, page order
+isn't relevant for digital documents rendered a page at a time, such
+as on e-book readers.
+
+Even with conventional layouts, it is not uncommon to see caligraphic
+writing or signage laid out in different directions.  It's not
+uncommon to see English written from top to bottom or diagonally from
+upper left to lower right.
+
+
+\subsubsection{Compound versus Primitive Characters}
 
 Characters may be simple or compound.  For instance, the character
 '\"o' used in German is composed of a plain Latin 'o' character with
 an umlaut diacritic on top.  Diacritics are visual representations
 added to other characters, and there is a broad range of them in
-European languages.  Semitic languages like Hebrew and Arabic
-optionally use diacritics to mark vowels, but typically omit them in
-any but the most formal writing.
+European languages.  
 
-Korean Hangul script is a complex phonemic alphabet often involving
-multiple glyps overlaid.  Devanagari, a script used to write languages
-including Hindi and Nepali, includes pitch accent marks.
+Hebrew and Arabic are typically written without vowels.  In very
+formal writing, vowels may be indicated in these languages with
+diacritics on the consonants.  Devanagari, a script used to write
+languages including Hindi and Nepali, includes pitch accent marks.
+
+The Hangul script used for Korean is a compound phonemic system often
+involving multiple glyphs overlaid to form syllabic units.
+
+
+\subsection{Coded Sets and Encoding Schemes}
+
+Eventually, we need to represent sequences of characters as sequences
+of bytes.  There are two components to a full character encoding.
+
+The first step is to define a coded character set, which assigns each
+character in the set a unique non-negative integer code point.  For
+instance, the English character 'A' (capital A) might be assigned the
+code point 65 and 'B' to code point 66, and so on.  Code points are
+conventionally written using hexadecimal notation, so we would
+typically use the hexadecmial notation 0x41 instead of the decimal
+notation 65 for capital A.
+
+The second step is to define a character encoding scheme that maps
+each code point to a sequence of bytes (bytes are often called octets
+in this context).
+
+Translating a sequence of characters in the character set to a
+sequence of bytes thus consists of first translating to the sequence
+of code points, then encoding these code points into a sequence of
+bytes.
+
+
+\subsection{Legacy Character Encodings}
+
+We consider in this section some widely used character encodings, but
+because there are literally hundreds of them in use, we can't be
+exhaustive.  In the next section we consider Unicode.
+
+\subsubsection{ASCII}
+
+ASCII is a character encoding consisting of a small character set of
+128 code points.  Being designed by computer scientists, the numbering
+starts at 0, so the code points are in the range 0--127 (inclusive).
+Each code point is then encoded as the corresponding single unsigned
+byte with the same value.  It includes characters for the standard
+keys of an American typewriter, and also some ``characters''
+representing abstract typesetting notions such as line feeds and
+carriage returns as well as terminal controls like ringing the
+``bell''.
+
+The term ``ASCII'' is sometimes used informally to refer to character
+data in general, rather than the specific ASCII character encoding.
+
+\subsubsection{Latin1 and the Other Latins}
+
+Given that ASCII only uses 7 bits and bytes are 8 bits, the natural
+extension is to add another 128 characters to ASCII.  Latin1
+(officially named ISO-8859-1) did just this, adding common accented
+European characters to ASCII, as well as punctuation like upside down
+exclaimation points and question marks, French quote symbols, section
+symbols, a copyright symbol, and so on.  
+
+There are 256 code points in Latin1, and the encoding just uses the
+corresponding unsigned byte to encode each of the 256 characters
+numbered 0--255.
+
+The Latin1 character set includes the entire ASCII character set.
+Conveniently, Latin1 uses the same code points as ASCII for the ASCII
+characters (code points 0--127).  This means that every ASCII encoding
+is also a Latin1 encoding of exactly the same characters.
+
+Latin1 also introduced ambiguity in coding, containing both an 'a'
+character, the '\"{}' umlaut character, and their combination '\"{a}'.
+It also includes all of 'a', 'e', and the compound '\ae', as well as
+'1', '/', '2' and the compound $\frac{1}{2}$.
+
+With only 256 characters, Latin1 couldn't render all of the characters
+in use in Indo-European languages, so a slew of similar standards,
+such as Latin2 (ISO-8859-2) for (some) Eastern European languages,
+Latin3 (ISO-8859-1) for Turkish, Maltese and Esperanto, up through
+Latin16 (ISO-8859-16) for other Eastern European languages, new styles
+of Western European languages and Irish Gaelic.  
+
+\subsubsection{Windows 1252}
+
+Microsoft Windows, insisting on doing things its own way, uses a
+character set known as Windows-1252, which is almost identical to Latin1,
+but uses code points 128--159 as graphical characters, such as curly
+quotes, the euro and yen symbols, and so on.
+
+\subsubsection{Big5 and GB(K)}
+
+The Big5 character encoding is used for traditional Chinese scripts
+and the GB (more recently GBK) for simplified Chinese script.  Because
+there are so many characters in Chinese, both were designed to use a
+fixed-width two-byte encoding of each character.  Using two bytes
+allows up to $2^{16} = 65,536$ characters, which is enough for most
+of the commonly used Chinese characters.
+
+\subsection{Unicode}
+
+Unicode is the de facto standard for character sets of all kinds.  The
+latest version is Unicode 5.2, and it contains over 1,000,000 distinct
+characters drawn from hundreds of languages (technically, it assumes
+all code points are in the range 0x0 to 0x10FFFF (0 to 1,114,111 in
+decimal notation).
+
+One reason Unicode has been so widely adopted is that it contains
+almost all of the characters in almost all of the widely used
+character sets in the world.  It also happens to have done so in a
+thoughful and well-defined manner.
+
+Conveniently, Unicode's first 256 code points (0--255) exactly match
+those of Latin1, and hence Unicode's first 128 code points (0--127)
+exactly match those of ASCII.
+
+Unicode code points are conventionally displayed in text using a
+hexadecimal representation of their code point padded to at least four
+digits with initial zeroes, prefixed by \code{U+}.  For instance, code
+point 65 (hex 0x41), which represents capital A in ASCII, Latin1 and
+Unicode, is conventionally written \unicode{0041} for Unicode.
+
+The problem with having over a million characters is that it would
+require three bytes to store each character ($2^{24} = 16,777,216$).
+This is very wasteful for encoding languages based on Latin characters
+like Spanish or English.
+
+\subsubsection{Unicode Transformation Formats}
+
+There are three standard encodings for Unicode code points that are
+specified in the Unicode standard, UTF-8, UTF-16, and UTF-32 (``UTF''
+stands for ``Unicode transformation format'').%
+%
+\footnote{There are also non-standard encodings of (subsets of) 
+Unicode, like Apache Lucene's and the one in Java's
+\code{DataOutput.writeUTF()} method.}
+%
+The numbers represent the coding size; UTF-8 uses single bytes,
+UTF-16 pairs of bytes, and UTF-32 quadruples of bytes.
+
+\subsubsection{UTF-32}
+
+The UTF-32 encoding is fixed-width, meaning each character occupies
+the same number of bytes (in this case, 4).  As with ASCII and
+Latin1, the code points are encoded directly as bits in base 2.
+
+There are actually two UTF-32 encodings, UTF-32BE and UTF-32LE,
+depending on the order of the four bytes making up the 32 bit blocks.
+In the big-endian (BE) scheme, bytes are ordered from left to right
+from most significant to least significant digits (like for bits in a
+byte).  
+
+In the little-endian (LE) scheme, they are ordered in the
+opposite direction.  For instance, in UTF-32BE, \unicode{0041}
+(capital A), is encoded as 0x00000041, indicating the four byte
+sequence 0x00, 0x00, 0x00, 0x41.  In UTF32-LE, it's encoded as
+0x41000000, corresponding to the byte sequence 0x41, 0x00, 0x00, 0x00.
+
+There is also an unmarked encoding scheme, UTF-32, which tries to
+infer which order the bytes come in.  Due to restrictions on the
+coding scheme, this is usually possible.  In the simplest case,
+0x41000000 is only legal in little endian, because it'd be out of
+range in big-endian notation.  
+
+Different computer processors use different endian-ness
+internally.  For example, Intel and AMD x86 architecture is little
+endian, Motorola's PowerPC is big endian.  Some hardware, such
+as Sun Sparc, Intel Itanium and the ARM, is called bi-endian, because
+endianness may be switched.
+
+\subsubsection{UTF-16}
+
+The UTF-16 encoding is variable length, meaning that different code
+points use different numbers of bytes.  For UTF-16, each character is
+represented using either two bytes (16 bits) or four bytes (32 bits).
+
+Because there are two bytes involved, their order must be defined.  As
+with UTF-32, UTF-16BE is the big-endian order and UTF-16LE the
+little-endian order.
+
+In UTF-16, code points below \unicode{10000} are represented using a
+single byte in the natural base-2 encodings.  For instance, our old
+friend \unicode{0041} (capital A) is represented in big endian as
+the sequence of bytes 0x00, 0x41.  
+
+Code points at or above \unicode{10000} are represented using four
+bytes arranged in two pairs.  Calculating the two pairs of bytes
+involves bit-twiddling.  For instance, given a code point
+\code{codepoint}, the following code
+calculates the four bytes.
+%
+\footnote{This code example and the following one for decoding were
+adapted from the example code supplied by the Unicode Consortium in
+their FAQ at 
+\urldisplay{http://unicode.org/faq/utf\_bom.html}
+}
+%
+\begin{verbatim}
+static final int LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
+static final int SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
+
+int lead = LEAD_OFFSET + (codepoint >> 10);
+int trail = 0xDC00 + (codepoint & 0x3FF);
+
+int byte1 = lead >>> 8;
+int byte2 = lead & 0xFF;
+int byte3 = trail >>> 8;
+int byte4 = trail & 0xFF;
+\end{verbatim}
+%
+Going the other way around, given the four bytes, we
+can calculate the code point with the following code.
+%
+\begin{verbatim}
+int lead = byte1 << 8 | byte2;
+int trail = byte3 << 8 | byte4;
+
+int codepoint = (lead << 10) + trail + SURROGATE_OFFSET;
+\end{verbatim}
+
+Another way to view this transformation is through the following
+table.%
+%
+\footnote{Adapted from {\it Unicode Standard Version 5.2}, Table 3-5.}
+%
+\begin{center}
+\begin{tabular}{|r|r|}
+\hline
+\tblhead{Code Point Bits} & \tblhead{UTF-16 Bytes} 
+\\ \hline
+\code{xxxxxxxx xxxxxxxx} & \code{xxxxxxxx xxxxxxxx}
+\\ \hline
+\code{000uuuuuxxxxxxxxxxxxxxxx} & \code{110110ww wwxxxxxx 110111xx xxxxxxxx}
+\\ \hline
+\end{tabular}
+\end{center}
+%
+Here \code{wwww} = \code{uuuuu} - 1 (interpreted as numbers then
+recoded as bits).  The first line indicates is that if the value fits
+in 16 bits, those 16 bits are used as is.  Note that this
+representation is only possible because not all code points between 0
+and $2^{16}-1$ are legal.  The second line indicates that if we have a
+code point above \unicode{10000}, we strip off the high-order five
+bits uuuuu and subtract one from it to get four bits wwww; again, this
+is only possible because of the size restriction on uuuuu.  Then,
+distribute these bits in order across the four bytes shown on the
+right.  The constants 110110 and 110111 are used to indicate what are
+known as surrogate pairs.
+
+Any 16-bit sequence starting with 110110 is the leading half of a
+surrogate pair, and any sequence starting with 110111 is the trailing
+half of a surrogate pair.  Any other sequence of initial bits means a
+16-bit encoding of the code point.  Thus it is possible to determine
+by looking at a pair of bytes whether we have a whole character, the
+first half of a character represented as a surrogate pair, or the
+second half of a character represented as a pair.
+
+\subsubsection{UTF-8}
+
+UTF-8 works in much the same way as UTF-16 (see the previous section),
+only using single bytes as the minimum encoding scheme.  We
+use the table-based visualization of the encoding scheme.%
+%
+\footnote{Adapted from {\it Unicode Standard Version 5.2},  Table 3-6.}
+%
+\begin{center}
+\begin{tabular}{|r|r|}
+\hline
+\tblhead{Code Point Bits} & \tblhead{UTF-8 Bytes}
+\\ \hline
+\code{0xxxxxxxx} & \code{0xxxxxxx}
+\\ \hline
+\code{00000yyyyyxxxxxx} & \code{110yyyyy 10xxxxxx}
+\\ \hline
+\code{zzzzyyyyyyxxxxxx} & \code{1110zzzz 10yyyyyy 10xxxxxx}
+\\ \hline
+\code{000uuuuuzzzzyyyyyyxxxxxx} & \code{11110uuu 10uuzzzz 10yyyyyy 10xxxxxx}
+\\ \hline
+\end{tabular}
+\end{center}
+%
+Thus 7-bit ASCII values, which have values from \unicode{0000} to
+\unicode{007F}, are encoded directly in a single byte.  Values from
+\unicode{0080} to \unicode{07FF} are represented with two bytes, 
+values between \unicode{0800} and \unicode{FFFF} with three bytes, 
+and values between \unicode{10000} and \unicode{10FFFF} with four bytes.
+
+
+\subsubsection{Non-Overlap Principle}
+
+The UTF-8 and UTF-16 encoding schemes obey what the Unicode Consortium
+calls the ``non-overlap principle.''  Technically, the leading,
+continuing and trailing code units (bytes in UTF-8, pairs of bytes in
+UTF-16) overlap.  Take UTF-8 for example.  Bytes starting with
+\code{0} are singletons, encoding a single character in the range 
+\unicode{0000} to \unicode{007F}.  Bytes starting with \code{110}
+are the leading byte in a two-byte sequence representing a character
+in the range \unicode{0080} to \unicode{07FF}.  Similarly, bytes
+starting with \code{1110} represent the leading byte in a three-byte
+sequence, and \code{11110} the leading byte in a four-byte sequence.
+Any bytes starting with \code{10} are continuation bytes.
+
+What this means in practice is that it is possible to reconstruct
+characters locally, without going back to the beginning of a file.
+At most, if a byte starts with \code{10} you have to look back
+up to three bytes to find the first byte in the sequence.
+
+Furthermore, the corruption of a byte is localized so that the rest of
+the stream doesn't get corrupted if one byte is corrupted.
+
+Another advantage is that the sequence of bytes encoding one character
+is never a subsequence of the bytes making up another character.  This
+makes applications like search more robust.
+
+
+\subsubsection{Byte Order Marks}
+
+In the encoding schemes which are not explicitly marked as being
+little or big endian, namely UTF-32, UTF-16 and UTF-8, it is also
+legal, according to the Unicode standard, to prefix the sequence of
+bytes with a byte-order mark (BOM).  It is not legal to have
+byte-order marks preceding the explicitly marked encodings, UTF-32BE,
+UTF-32LE, UTF-16BE, UTF-16LE.
+
+For UTF-32, the byte-order mark is a sequence of four bytes indicating
+whether the following encoding is little endian or big endian.  the
+sequence 0x00, 0x00, 0xFE, 0xFF indicates a big-endian encoding and
+the reverse, 0xFF, 0xFE, 0x00, 0x00 indicates little endian.
+
+For UTF-16, two bytes are used, 0xFE, 0xFF for big endian, and the
+reverse, 0xFF, 0xFE for little endian.
+
+Although superfluous in UTF-8, the three byte sequence 0xEF, 0xBB,
+0xBF is a ``byte order mark'', though there is no byte order to mark.  
+As a result, all three UTF schemes may be distinguished by inspecting
+their initial bytes.
+
+Any text processor dealing with Unicode needs to handle the byte order
+marks.  Some text editing packages automatically insert byte-order
+marks for UTF encodings and some don't.
+
+\subsubsection{Canonical Forms}
+
+Because 
+
+
+
+
+
+
 
