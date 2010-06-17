@@ -18,6 +18,7 @@
   <target name="clean">
     <delete dir="build"/>
     <ant dir="src/intro" target="clean"/>
+    <ant dir="src/chars" target="clean"/>
   </target>
 
   <target name="jar">
