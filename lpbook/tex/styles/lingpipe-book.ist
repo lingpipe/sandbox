@@ -1,0 +1,3 @@
+heading_prefix "{\\Large\\bfseries "
+heading_suffix "\\vspace*{8pt}}\\nopagebreak\n"
+headings_flag 1

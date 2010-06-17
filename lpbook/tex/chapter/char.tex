@@ -619,9 +619,36 @@ Any text processor dealing with Unicode needs to handle the byte order
 marks.  Some text editing packages automatically insert byte-order
 marks for UTF encodings and some don't.
 
+
 \subsubsection{Canonical Forms}
 
-Because 
+Consider again the problem of compound characters.  For example,
+consider the three characters: \unicode{00E0},
+\unicodedesc{latin small letter a with grave}, rendered
+\charmention{\`a}, \unicode{0061}, \unicodedesc{latin small letter a}, 
+rendered as \charmention{a}, and \unicode{0300},
+\unicodedesc{combining grave accent}, which is typically rendered
+by combining it as an accent on the previous character.  For most
+purposes, the combination \unicode{00E0} means the same thing in text
+as \unicode{0061} followed by \unicode{0300}.
+
+In order to aid text processing efforts, such as search, Unicode
+defines a notion of canonical decomposition.  The \techdefs{canonical
+decomposition}{unicode!canonical decomposition} of \unicode{00E0} is
+as the sequence \unicode{0061},
+\unicode{0300}.  In general, a full canonical decomposition continues
+to decompose characters into their components until a sequence of
+non-decomposible characters is produced.  Furthermore, if there is
+more than one nonspacing mark (like \unicode{0300}), then they are
+sorted into a canonical order.
+
+From the notion of canonical decomposition, two seqeunces are said to
+be \techdefs{canonical equivalents}{unicode!canonical equivalent} if their
+full canonical decompositions are equal.
+
+Heres a \techdefs{foo}{foo}
+
+
 
 
 
