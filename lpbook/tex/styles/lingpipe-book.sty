@@ -10,6 +10,8 @@
 \usepackage{fancyhdr}
 \usepackage{fancyvrb}
 
+\usepackage{xspace}
+
 \usepackage{makeidx}
 \makeindex
 
@@ -159,8 +161,8 @@
 \newcommand{\tblhead}[1]{\emph{#1}}
 \newcommand{\unicode}[1]{U+#1}
 \newcommand{\unicodedesc}[1]{{\sc #1}}
-\newcommand{\charmention}[1]{'#1'}
+\newcommand{\charmention}[1]{{\it #1}\xspace}
 
 \newcommand{\techdef}[1]{\techdefs{#1}{#1}}
-\newcommand{\techdefs}[2]{{\it #1}\index{#2}}
+\newcommand{\techdefs}[2]{{\it #1}\index{#2}\xspace}
 
