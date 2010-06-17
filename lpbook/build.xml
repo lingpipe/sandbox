@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 
 <project name="LingPipe Book"
-         basedir=".">
+         basedir="."
+         default="book">
 
-  <property name="version"
-            value="4.0"/>
-
-  <property name="jar"
-            value="build/lp-book-${version}.jar"/>
+  <property name="title"
+           value="lp-book"/>
 
   <property name="java.src"
             value="src/"/>
@@ -53,7 +51,13 @@
       <arg value="-aux-directory=../build/tex-aux"/>
       <arg value="-output-directory=../build"/>
       <arg value="-include-directory=styles"/>
-      <arg value="lp-book.tex"/>
+      <arg value="${title}.tex"/>
+    </exec>
+    <exec executable="makeindex"
+          dir="build/tex-aux">
+      <arg value="-s"/>
+      <arg value="../../tex/styles/lingpipe-book.ist"/>
+      <arg value="${title}.idx"/>
     </exec>
   </target>
 

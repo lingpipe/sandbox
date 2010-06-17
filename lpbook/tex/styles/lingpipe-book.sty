@@ -10,6 +10,9 @@
 \usepackage{fancyhdr}
 \usepackage{fancyvrb}
 
+\usepackage{makeidx}
+\makeindex
+
 \usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={black},filecolor={black},linkcolor={black},urlcolor={black},pdfauthor={Bob Carpenter},pdftitle={LingPipe 4.0}]{hyperref}
 
 % Size            Lulu     CreateSpace
@@ -155,3 +158,9 @@
 \newcommand{\eg}[1]{(e.g.,~#1)}
 \newcommand{\tblhead}[1]{\emph{#1}}
 \newcommand{\unicode}[1]{U+#1}
+\newcommand{\unicodedesc}[1]{{\sc #1}}
+\newcommand{\charmention}[1]{'#1'}
+
+\newcommand{\techdef}[1]{\techdefs{#1}{#1}}
+\newcommand{\techdefs}[2]{{\it #1}\index{#2}}
+
