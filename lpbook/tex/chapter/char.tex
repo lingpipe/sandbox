@@ -50,11 +50,13 @@ numbers may be input and output in scientific notation.
 
 Rather than the decimal system, computers work in the binary system,
 where there are only two values.  In binary arithmetic, bits play the
-role that digits play in the decimal system.  The two bits are
-conventionally written as the first two digits, 0 and 1.  Sequences of
-0s and 1s are read in the same way in binary numbers as sequences of
-digits in decimal numbers; the only difference is that the base is 2
-rather than 10.  For instance, in binary, $101 = (1 \times 2^3) + (0
+role that digits play in the decimal system.  A \techdef{bit} can have
+the value 0 or 1.  
+
+A number in \techdefs{binary notation}{binary} consists of a sequence
+of bits (0s and 1s).  Bits in binary binary numbers play the same role
+as digits in decimal numbers; the only difference is that the base is
+2 rather than 10.  For instance, in binary, $101 = (1 \times 2^3) + (0
 \times 2^2) + (1 \times 2^0)$, which is 7 in decimal notation.  Fractions
 can be handled the same way as in decimal numbers.  Scientific notation
 is not generally used for binary numbers.
@@ -62,21 +64,23 @@ is not generally used for binary numbers.
 \subsection{Octal Numbers}
 
 Two other numbering schemes are common in computer languages, octal
-and hexadecimal.  As may be gathered from its name, octal is base 8,
-conventionally written using the digits 0--7.  Numbers are read in the
-usual way, so that octal 43 is expanded as $(4 \times 8^1) + (3 \times
-8^0)$, or 35 in decimal notation.
+and hexadecimal.  As may be gathered from its name,
+\techdef{octal}{octal} is base 8, conventionally written using the
+digits 0--7.  Numbers are read in the usual way, so that octal 43 is
+expanded as $(4 \times 8^1) + (3 \times 8^0)$, or 35 in decimal
+notation.
 
-In Java (and many other computer languages), octal notation is very
-confusing.  Prefixing a numeric literal with a \code{0} (that's a
-zero, not a capital o) leads to it being interpreted as octal.  For
-instance, the Java literal \code{043} is interpreted as the decimal
-35.
+In Java (and many other computer languages), octal
+notation\index{octal!notation} is very confusing.  Prefixing a numeric
+literal with a \code{0} (that's a zero, not a capital o) leads to it
+being interpreted as octal.  For instance, the Java literal \code{043}
+is interpreted as the decimal 35.
 
 \subsection{Hexadecimal Numbers}
 
-Hexadecimal is base 16, and thus we need some additional symbols.
-The first 16 numbers in hex are conventionally written
+\techdefs{Hexadecimal}{hexadecimal} is base 16, 
+and thus we need some additional symbols.  The first 16 numbers in hex
+are conventionally written
 
 \displ{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F.}
 
@@ -87,8 +91,9 @@ off compound numbers in the usual way, so that in hex, $93 = (9 \times
 hex, the number $\mbox{\rm B2F} = (11 \times 16^2) + (2 \times 16^1) + (15 \times
 16^0)$, or 2863 in decimal notation.
 
-In Java (and other languages), hexadecimal numbers are distinguished
-by prefixing them with \code{0x}.  For example,
+In Java (and other languages), hexadecimal
+numbers\index{hexadecimal!notation} are distinguished by prefixing
+them with \code{0x}.  For example,
 \code{0xB2F} is the hexadecimal equivalent of the decimal 2863.
 
 \subsection{Bytes}
@@ -103,16 +108,17 @@ term ``word'' is ambiguously applied to a sequence of two bytes, or to
 the size of the sequence of bytes at which a particular piece of
 hardware operates.
 
-A byte is a sequence of 8 bits, and is sometimes called an octet for
-that reason.  Thus there are 256 distinct bytes, ranging from
-\code{00000000} to \code{11111111}.  The bits are read from the high
-(left) end to the low (right end).
+A \techdef{byte}{byte} is a sequence of 8 bits, and is sometimes
+called an octet for that reason.  Thus there are 256 distinct bytes,
+ranging from \code{00000000} to \code{11111111}.  The bits are read
+from the high (left) end to the low (right end).
 
-In Java, the \code{byte} primitive type is signed.  Any number between
-\code{00000000} and \code{01111111} is interpreted as a binary number
-with decimal value between 0 and 127 (inclusive).  If the high order
-bit is 1, the value is interpreted as negative.  The negative value is
-value of the least significant 7 bits minus 128.  For instance,
+In Java, the \code{byte} primitive type\index{Java!primitive!byte} is
+signed.  Any number between \code{00000000} and \code{01111111} is
+interpreted as a binary number with decimal value between 0 and 127
+(inclusive).  If the high order bit is 1, the value is interpreted as
+negative.  The negative value is value of the least significant 7 bits
+minus 128.  For instance,
 \code{10000011} is interpreted as $3 - 128 = -125$, because
 \code{00000011} (the result of setting the high bit to \code{0}) is interpreted as 3.
 
@@ -124,9 +130,6 @@ instance, the contents of a file is a sequence of bytes, and so
 is the response from a web server to an HTTP request for a web page.
 Most importantly for using LingPipe, sequences of characters are
 represented by sequences of bytes.
-
-Often the bit \code{0} is identified with the number 0
-and the bit \code{1} with the number 1.  
 
 \subsection{Code Example: Integral Number Bases}
 
@@ -169,7 +172,7 @@ BASES
 \end{verbatim}
 
 
-\subsection{Floating Point}
+\subsection{Floating Point}\index{arithmetic!floating point}
 
 Java has two floating point types, \code{float} and \code{double}.  A
 \code{float} is represented with 4 bytes and said to be single
@@ -628,7 +631,7 @@ consider the three characters: \unicode{00E0},
 \charmention{\`a}, \unicode{0061}, \unicodedesc{latin small letter a}, 
 rendered as \charmention{a}, and \unicode{0300},
 \unicodedesc{combining grave accent}, which is typically rendered
-by combining it as an accent on the previous character.  For most
+by combining it as an accent over the previous character.  For most
 purposes, the combination \unicode{00E0} means the same thing in text
 as \unicode{0061} followed by \unicode{0300}.
 
@@ -646,7 +649,110 @@ From the notion of canonical decomposition, two seqeunces are said to
 be \techdefs{canonical equivalents}{unicode!canonical equivalent} if their
 full canonical decompositions are equal.
 
-Heres a \techdefs{foo}{foo}
+
+\subsection{Supported Encodings in Java}
+
+
+Each Java installation has a default character encoding.  Each Java
+installation also supports a range of other encodings.  Every
+compliant Java installation supports all of the UTF encodings of
+Unicode.  Other encodings may be added at the installation level,
+or implemented programatically within a JVM instance.
+
+The class \code{SupportedEncodings} contains code to display the
+default encoding and the complete range of other encodings supported.
+The first part of the main pulls out the default encoding using
+a static method of \code{java.nio.charset.Charset},
+
+\codeblock{SupportedEncodings.1}
+%
+The code to pull out the full set of encodings along with their
+aliases is
+%
+\codeblock{SupportedEncodings.2}
+
+The result of running the program is
+%
+\commandlinefollow{ant available-charsets}
+\begin{verbatim}
+Default Encoding=windows-1252
+
+Big5
+     csBig5
+...
+x-windows-iso2022jp
+    windows-iso2022jp
+\end{verbatim}
+%
+The program first writes out the default encoding.  This is
+\code{windows-1252} on my Windows install.  It's typically
+\code{ISO-8859-1} on Linux installs in the United States.
+After that, the program writes all of the encodings, with the official
+name followed by a list of aliases that are also recognized.  We
+ellided most of the output, because there are dozens of encodings
+supported.
+
+\subsection{Encoding Java Programs}
+
+Java programs themselves may be written in any supported
+character encoding.
+
+If you use characters other than ASCII characters in your Java
+programs, you should provide the \code{javac} command with a
+specification of which character set you used.  If it's not specified,
+the platform default is used, which is typically Windows-1252 on
+Windows systems and Latin1 on other systems, but can be modified as
+part of the install.  
+
+The command line to write your programs in Chinese using Big5 encoding
+is
+%
+\begin{verbatim}
+javac -encoding Big5 ...
+\end{verbatim}
+%
+For Ant, you want to use the \code{encoding} attribute on the
+\code{javac} task, as in
+%
+\begin{verbatim}
+<javac encoding="Big5" ...
+\end{verbatim}
+
+
+
+\section{Java Characters}
+
+Java's primitive \code{char} data type is essentially a 16-bit (two
+byte) unsigned integer. Thus a \code{char} can hold values between 0
+and $2^16-1 = 65535$.  Furthermore, arithmetic over \code{char} types
+works like an unsigned 16-bit representation, including casting a
+\code{char} to a numerical primitive type \ie{\code{byte}, \code{short}, 
+\code{int}, or \code{long}}.
+
+In typical uses, instances of \code{char} will be used to model text
+characters.  For this reason, there is a special syntax for character
+literals.  Any character wrapped in single quotes is treated as
+a character in a program.  For instance, we can assign a character
+to a variable with 
+
+\begin{verbatim}
+char c = 'a'; 
+\end{verbatim}
+
+Because Java programs can be written using a range of character
+encodings, these quoted character literals may refer to just about any
+character.  In general, inside a Java program, you can refer to a
+character using a Unicode escape, using \code{{\bk}u}\varcode{xxxx}
+for the Unicode character with hexadecimal code point \varcode{xxxx}.
+For instance, these can be used inside of character literals, so
+the above statement could also be written as
+
+\begin{verbatim}
+char c = '\u0061'; 
+\end{verbatim}
+
+The use of Unicode escapes like \code{{\bk}u0061} makes it possible
+to write programs using non-ASCII characters using only ASCII.
 
 
 
