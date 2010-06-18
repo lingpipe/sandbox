@@ -1,5 +1,4 @@
-\chapter{Bytes, Characters, and Strings}\label{chap:char}
-
+\chapter{Numbers and Characters}\label{chap:char}
 
 \firstchar{I}n this chapter, we show first how bytes may be used
 to encode characters and second how characters and strings are
@@ -61,10 +60,10 @@ as digits in decimal numbers; the only difference is that the base is
 can be handled the same way as in decimal numbers.  Scientific notation
 is not generally used for binary numbers.
 
-\subsection{Octal Numbers}
+\subsection{Octal Notation}
 
-Two other numbering schemes are common in computer languages, octal
-and hexadecimal.  As may be gathered from its name,
+Two other schemes for representing numbers are common in computer
+languages, octal and hexadecimal.  As may be gathered from its name,
 \techdef{octal}{octal} is base 8, conventionally written using the
 digits 0--7.  Numbers are read in the usual way, so that octal 43 is
 expanded as $(4 \times 8^1) + (3 \times 8^0)$, or 35 in decimal
@@ -76,7 +75,7 @@ literal with a \code{0} (that's a zero, not a capital o) leads to it
 being interpreted as octal.  For instance, the Java literal \code{043}
 is interpreted as the decimal 35.
 
-\subsection{Hexadecimal Numbers}
+\subsection{Hexadecimal Notation}
 
 \techdefs{Hexadecimal}{hexadecimal} is base 16, 
 and thus we need some additional symbols.  The first 16 numbers in hex
@@ -171,6 +170,12 @@ BASES
 255     -1  377  ff  11111111
 \end{verbatim}
 
+\subsection{Other Primitive Numbers}
+
+In addition to bytes, Java provides three other primitive integer
+types.  Each has a fixed width in bytes.  Values of type \code{short}
+occupy 2 bytes, \code{int} 4 bytes, and \code{long} 8 bytes.  All of
+them use the same signed notation as \code{byte}, only with more bits.
 
 \subsection{Floating Point}\index{arithmetic!floating point}
 
@@ -212,6 +217,108 @@ negative number is \code{NaN}, the log of 0 is negative infinity, and
 the log of positive infinity is positive infinity.  The exponent of
 positive infinity is positive infinity and the exponent of negative
 infinity is zero.
+
+\subsection{Number Objects}
+
+For each of the primitive number types, there is a corrsponding class
+for representing the object.  Specifically, the number classes for
+integers are \code{Byte}, \code{Short}, \code{Integer}, and
+\code{Long}.  For floating point, there is \code{Float} and
+\code{Double}.  These objects are all in the base package
+\code{java.lang}, so they do not need to be explicitly imported before
+they are used.  Objects are useful because many of the underlying Java
+libraries, particular the collection framework in \code{java.util},
+operate over objects, rather than over primitives.%
+%
+\footnote{Open source libraries are available for primitive collections.
+The Jakarta Commons Primitives and Carrot Search's
+High Performance Primitive Collections are released under the Apache license,
+and GNU Trove under the Lessger GNU Public License (LGPL).}
+
+Each of these wrapper classes holds an immutable reference to an
+object of the underlying type.  Thus the class is said to ``box'' the
+underlying primitive (as in ``put in a box'').  Each object has a
+corresponding method to return the underlying object.  For instance,
+to get the underlying byte from a \code{Byte} object, use
+\code{byteValue()}.
+
+Two numerical objects are equal if and only
+if they are of the same type and refer to the same primitive value.
+Each of the numerical object classes is both serializable and
+comparable, with comparison being defined numerically.
+
+
+\subsubsection{Constructing Numerical Objects}
+
+Number objects may be created using one-argument constructors.  For
+instance, we can construct an object for the integer 42 using
+\code{new~Integer(42)}.  
+
+The problem with construction is that a fresh object is allocated for
+each call to \code{new}.  Because the underlying references are
+immutable, we only need a single instance of each object for each
+underlying primitive value.  The current JVM implementations are smart
+enough to save and reuse numerical objects rather than creating new
+ones.  The preferred way to acquire a reference to a numerical object
+is to use the \code{valueOf()} static factory method from the
+approrpiate class.  For example, \code{Integer.valueOf(42)} returns an
+object that is equal to the result of \code{new~Integer(42)}, but is
+not guaranteed to be a fresh instance, and thus may be reference equal
+(\code{==}) to other \code{Integer} objects.
+
+\subsubsection{Autoboxing}
+
+Autoboxing automatically provides an object wrapper for a primitive
+type when a primitive expression is used where an object is expected.
+For instance, it is legal to write
+%
+\begin{verbatim}
+Integer i = 7;
+\end{verbatim}
+%
+Here we require an \code{Integer} object to assign, but the expression
+\code{7} returns an \code{int} primitive.  The compiler automatically
+boxes the primitive, rendering the above code equivalent to
+%
+\begin{verbatim}
+Integer i = Integer.valueOf(7);
+\end{verbatim}
+
+Autoboxing also applies in other contexts, such as loops, where
+we may write
+%
+\begin{verbatim}
+int[] ns = new int[] { 1, 2, 3 };
+for (Integer n : ns) { ... }
+\end{verbatim}
+%
+Each member of the array visited in the loop body is autoboxed.
+Boxing is relatively expensive in time and memory, and should be
+avoided where possible.
+
+The Java compiler also carries out auto-unboxing, which allows things like
+%
+\begin{verbatim}
+int n = Integer.valueOf(15);
+\end{verbatim}
+%
+This is equivalent to using the \code{intValue()} method,
+%
+\begin{verbatim}
+Integer nI = Integer.valueOf(15);
+int n = nI.intValue();
+\end{verbatim}
+
+
+\subsubsection{Number Base Class}
+
+Conveniently, all of the numerical classes extend the abstract class
+\code{Number}.  The class \code{Number} simply defines all of the
+get-value methods, \code{byteValue()}, \code{shortValue()}, ...,
+\code{doubleValue()}, returning the corresponding primitive type.
+Thus we can call \code{doubleValue()} on an \code{Integer} object; the
+return value is equivalent to casting the \code{int} returned by
+\code{intValue()} to a \code{double}.
 
 
 \section{Character Encodings}
@@ -622,6 +729,24 @@ Any text processor dealing with Unicode needs to handle the byte order
 marks.  Some text editing packages automatically insert byte-order
 marks for UTF encodings and some don't.
 
+\subsubsection{Character Types and Categories}
+
+The Unicode specification defines a number of character types and
+general categories of character.  These are useful in Java
+applications because characters may be examined programatically for
+their class membership and the classes may be used in regular
+expressions.
+
+For example, category ``Me'' is the general category for enclosing
+marks, and ``Pf'' the general category for final quote punctuation,
+whereas ``Pd'' is the general category for dash-like punctuation, and
+``Sc'' the category of currency symbols.  Unicode supplies a notion of
+case, with the category ``Lu'' used for uppercase characters and
+``Ll'' for lowercase.
+
+Unicode marks the directionality in which characters are typically
+wirtten using character types like ``R'' for right-to-left
+and ``L'' for left-to-right.
 
 \subsubsection{Canonical Forms}
 
@@ -650,20 +775,28 @@ be \techdefs{canonical equivalents}{unicode!canonical equivalent} if their
 full canonical decompositions are equal.
 
 
+\section{Encodings in Java}
+
+Java has native support for many encodings, as well as the ability
+to plug in additional encodings as the need arises.
+
 \subsection{Supported Encodings in Java}
 
-
-Each Java installation has a default character encoding.  Each Java
-installation also supports a range of other encodings.  Every
+Each Java installation supports a range of character encoding, with
+one character encoding serving as the default encoding.  Every
 compliant Java installation supports all of the UTF encodings of
-Unicode.  Other encodings may be added at the installation level,
-or implemented programatically within a JVM instance.
+Unicode.  Other encodings may be added at the installation level, or
+implemented programatically within a JVM instance.
+
+The supported encodings determine what characters can be used to write
+Java programs, as well as which character encoding objects are
+available to convert sequences of bytes to sequences of characters.
 
 The class \code{SupportedEncodings} contains code to display the
 default encoding and the complete range of other encodings supported.
 The first part of the main pulls out the default encoding using
 a static method of \code{java.nio.charset.Charset},
-
+%
 \codeblock{SupportedEncodings.1}
 %
 The code to pull out the full set of encodings along with their
@@ -719,8 +852,49 @@ For Ant, you want to use the \code{encoding} attribute on the
 \end{verbatim}
 
 
+\subsection{Unicode Charactes in Java Programs}
 
-\section{Java Characters}
+Even if a Java program is encoded in a small character set encoding
+like ASCII, it has the ability to express arbitrary Unicode characters
+by using escapes.  In a Java program, the sequence
+\code{{\bk}u}\varcode{xxxx}  behaves like the character
+\unicode{\varcode{xxxx}}, where \varcode{xxxx} is a hexadecimal
+encoded value padded to four characters with leading zeroes.
+
+For instance, instead of writing
+
+\begin{verbatim}
+int n = 1;
+\end{verbatim}
+%
+we could write
+%
+\begin{verbatim}
+\u0069\u006E\u0074\u0020\u006E\u0020\u003D\u0020\u0031\u003B
+\end{verbatim}
+%
+and it would behave exactly the same way, because
+\charmention{i} is \unicode{0069}, \charmention{n} is
+\unicode{006E}, \charmention{t} is \unicode{0074},
+the space character is \unicode{0020}, and so on, up
+through\charmention{;}, which is \unicode{003B}.
+
+As popular as Unicode is, it's not widely enough supported in
+components like text editors and not widely enough understood among
+engineers.  Writing your programs in any character encoding other than
+ASCII is thus highly error prone.  Our recommendation, which we follow
+in LingPipe, is to write your Java programs in ASCII, using the full
+\code{{\bk}u}\varcode{xxxx} form of non-ASCII characters.
+
+
+\section{Java Character Data Types}
+
+Java contains primitive data types for characters and numerical
+values.  For each primitive type, there is a corresponding
+class.  For the primitive \code{char} data type, the corresponding
+class is \code{Character}.
+
+\subsection{Primitive Character Type}
 
 Java's primitive \code{char} data type is essentially a 16-bit (two
 byte) unsigned integer. Thus a \code{char} can hold values between 0
@@ -729,36 +903,157 @@ works like an unsigned 16-bit representation, including casting a
 \code{char} to a numerical primitive type \ie{\code{byte}, \code{short}, 
 \code{int}, or \code{long}}.
 
+\subsubsection{Character Literals}
+
 In typical uses, instances of \code{char} will be used to model text
 characters.  For this reason, there is a special syntax for character
 literals.  Any character wrapped in single quotes is treated as
 a character in a program.  For instance, we can assign a character
 to a variable with 
-
+%
 \begin{verbatim}
 char c = 'a'; 
 \end{verbatim}
-
-Because Java programs can be written using a range of character
-encodings, these quoted character literals may refer to just about any
-character.  In general, inside a Java program, you can refer to a
-character using a Unicode escape, using \code{{\bk}u}\varcode{xxxx}
-for the Unicode character with hexadecimal code point \varcode{xxxx}.
-For instance, these can be used inside of character literals, so
-the above statement could also be written as
-
+%
+Given the availability of arbitrary Unicode characters in Java
+programs using the syntax \code{{\bk}u}\varcode{xxxx}, it's easy
+to assign arbitrary Unicode characters.  For instance, 
+to assign the variable \code{c} to the character \charmention{\`a},
+\unicode{00E0}, use
+%
 \begin{verbatim}
-char c = '\u0061'; 
+char c = '\u00E0'; 
 \end{verbatim}
+%
+Equivalently, because values of type \code{char} act like unsigned
+short integers, it's possible to directly assign integer values
+to them, as in
+%
+\begin{verbatim}
+char c = \0x00E0;
+\end{verbatim}
+%
+The expression \code{{\bk}0x00E0} is an integer literal in hexadecimal
+notation.  In general, the compiler will infer which kind of integer
+is intended.  
 
-The use of Unicode escapes like \code{{\bk}u0061} makes it possible
-to write programs using non-ASCII characters using only ASCII.
+Because the Java \code{char} data type is only 16 bits, it is not
+allowed to assign Unicode code points above \unicode{FFFF} to a
+\code{char} variable.  For instance, \code{{\bk}u10000} is illegal.
 
 
 
+\subsubsection{Character Arithmetic}
+
+A character expression may be assigned to an integer result, as in
+%
+\begin{verbatim}
+int n = 'a';
+\end{verbatim}
+%
+After this statement is executed, the value of the variable \code{n}
+will be 97.  This is often helpful for debugging, because it allows
+the code points for characters to be printed or otherwise examined.
+
+It's also possible, though not recommended, to do arithmetic with Java
+character types.  For instance, the expression \code{'a'+1} is equal
+to the expression \code{'b'}.
+
+Character data types behave differently in the context of string
+concatenation than integers.  The expressions \code{'a' + "bc"} and
+\code{{\bk}u0061 + "bc"} are identical because the compiler treats
+\code{{\bk}u0061} and \code{'a'} identically, because the Unicode
+code point for \charmention{a} is \unicode{0061}.  Both expressions
+evaluate to a string equal to \code{"abc"}.  
+
+The expression \code{0x0061 + "bc"} evaluates to \code{"97bc"},
+because \code{0x0061} is taken as a hexadecimal integer literal, which
+when concatenated to a string, first gets converted to its
+string-based decimal representation, \code{"97"}.  There are static methods in
+\code{java.lang.Integer} to convert integers to string-based
+representations.  The method \code{Integer.toString(int)} may be used
+to convert an integer to a string-based decimal notation;
+\code{Integer.toHexString(int)} does the same for hex.
+
+\subsubsection{Characters Interpreted as UTF-16}
+
+Java made the questionable decision to use 2-byte representations for
+characters.  This is both too wide and too narrow.  It's wasteful for
+representing text in Western European languages, where most characters
+have single-byte representations.  It's also too narrow, in that
+any code point above \unicode{FFFF} requires two characters to
+represent in Java; to represent code points would require an
+integer (primitive \code{int} type, which is 4 bytes).
+%
+\footnote{The designers' choice is more understandable given that there were no
+code points that used more than a single pair of bytes for UTF-16 when
+Java was designed, though Unicode all along advertised that it would
+continue to add characters and was not imposing a 16-bit upper limit.}
+
+When \code{char} primitives are used in strings, they are interpreted
+as UTF-16.  For any code point that uses only two bytes in UTF-16,
+this is just the unsigned integer representation of that code point.
+This is why UTF-16 seemed so natural for representing characters in
+the original Java language design.  Unfortunately, for code points
+requiring four bytes in UTF-16, Java requires two characters, so now
+we have all the waste of 2-bytes per character and all the
+disadvantages of having Unicode code points that require multiple
+characters.
 
 
+\subsection{The Character Class}
 
+Just like for the numerical types, there is a class,
+\code{Character}, used to box an underlying primitive
+of type \code{char} with an immutable reference.  As for numbers, the
+preferred way to acquire an instance of \code{Character} is with the
+static factory method \code{Character.valueOf(char)}.  Autoboxing and
+unboxing works the same way as for numerical values.  
 
+Like the numerical classes, the \code{Character} class is also
+serializable and comparable, with comparison being carried out based
+on interpreting the underlying \code{char} as an unsigned integer.
+There are also utilities in Java to sort sequences of \code{char}
+values (such as strings) in a locale-specific way, because not every
+or dialect of a language uses the same lexicographic sorting.
 
+Equality and hash codes are also defined similarly, so that two
+character objects are equal if and only if they reference the same
+underlying character.
 
+\subsubsection{Static Utilities}
+
+The \code{Character} class supports a wide range of Unicode-sensitive
+static utility constants and methods in addition to the factory method
+\code{valueOf()}.
+
+For each of the Unicode categories, there is a constant, represented
+using a byte, because the class predates enums.  For instance, the
+general category ``Pe'' in the Unicode specification is represented by
+the constant \code{END\_PUNCTUATION} and the general category of
+mathematical symbols, ``Sm'' in Unicode, is represented by the
+constant\code{MATH\_SYMBOL}.
+
+For many of these constants, there are corresponding methods.  For
+instance, the method \code{getDirectionality(char)} returns the
+directionality of a character as a byte value, which can then be tested
+against the possible values represented as static constants.  There
+are also useful methods for determining the category of a characer,
+such as \code{isLetter(char)} and \code{isWhitespace(char)}.
+
+Because multiple Java \code{char} instances might be needed to
+represent a code point, there are also methods operating on code
+points directly using integer (primitive \code{int}) arguments.  For
+instance, \code{isLetter(int)} is the same as \code{isLetter(char)}
+but generalized to arbitrary code points.  The method
+\code{charCount(int)} returns the number of \code{char} values
+required to represent the code point (so the value will be 1 or 2,
+reflecting 2 or 4 bytes in UTF-16).  The methods
+\code{isLowSurrogate(char)} and \code{isHighSurrogate(char)} determine
+if the \code{char} represents the first or second half of the UTF-16
+representation of a code point above \unicode{FFFF}.  
+
+The method \code{charPointAt(char[],int)} determines the code point
+that starts at the specified index int he array of \code{char}.  The
+method \code{charPointCount(char[],int,int)} returns the number of
+code points encoded by the specified \code{char} array slice.
