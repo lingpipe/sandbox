@@ -226,6 +226,22 @@ javac 1.6.0_20
 \end{verbatim}
 
 
+\subsubsection{Java Source}
+
+You can download the Java source files from the same location as the
+JDK.  The source is subject to yet anoher license, available at
+%
+\urldisplay{http://java.sun.com/javase/6/scsl\_6-license.txt}
+%
+The source provides a fantastic set of examples of how to design,
+code, and document Java programs.  We especially recommend studying
+the source for strings, I/O and collections.  Further, like all
+source, it provides a definitive answer to the questions of what a
+particular piece of code does and how it does it.  This can be useful
+for understanding deeper issues like thread safety, equality and
+hashing, efficiency and memory usage.
+
+
 \subsection{Ant}
 
 We present examples for compilation and for running programs
@@ -359,8 +375,9 @@ including code and text, may be checked out anonymously using,
 %
 The distribution contains all of the code and Ant build files for
 running it.  It also contains the \LaTeX\ source for the book itself
-as well as the system to extract text from the source for automatic
-inclusion in the book.
+as well as the library we created to extract text from the source for
+automatic inclusion in the book.  This last feature is actually
+critical to ensure the code in the distribution and in the book match.  
 
 
 \section{Hello World Example}

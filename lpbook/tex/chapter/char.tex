@@ -648,7 +648,7 @@ second half of a character represented as a pair.
 \subsubsection{UTF-8}
 
 UTF-8 works in much the same way as UTF-16 (see the previous section),
-only using single bytes as the minimum encoding scheme.  We
+only using single bytes as the minimum code size.  We
 use the table-based visualization of the encoding scheme.%
 %
 \footnote{Adapted from {\it Unicode Standard Version 5.2},  Table 3-6.}
@@ -1057,3 +1057,166 @@ The method \code{charPointAt(char[],int)} determines the code point
 that starts at the specified index int he array of \code{char}.  The
 method \code{charPointCount(char[],int,int)} returns the number of
 code points encoded by the specified \code{char} array slice.
+
+\section{Character Sequences}
+
+Java provides an interface for dealing with sequences of characters
+aptly named \code{CharSequence}.  It resides in the package
+\code{java.lang}, so it's automatically imported.  Implementations
+include strings and string builders, which we describe in the next
+sections.
+
+The character sequence interface specifies a method \code{length()}
+that returns the number of characters in the sequence.  
+
+The method \code{charAt(int)} may be used to return the character at a
+specified position in the string.  Like arrays, positions are numbered
+starting from zero.  Thus the method must be passed an integer in the
+range from zero (inclusive) to the length of the string (exclusive).
+Passing an index that's out of range raises an
+\code{IndexOutOfBoundsException}, which is also in the
+\code{java.lang} package.
+
+Indexing from position zero (inclusive) to length (exclusive) supports
+the conventional \code{for} loop for iterating over items in a sequence,
+%
+\begin{verbatim}
+CharSeqeunce cs = ...;
+for (int i = 0; i < cs.length(); ++i) {
+    char c = cs.charAt(i);
+    ...
+}
+\end{verbatim}
+%
+Because lengths are instances of \code{int}, are only allowed to be as
+long as the longest positive \code{int} value, $2^{32-1} - 1$, which
+is approximately 2 billion.  Any longer sequence of characters needs
+to be streamed \eg{with a \code{Reader} or \code{Writer}} or scanned
+\eg{with a \code{RandomAccessFile}}.
+
+\subsubsection{Creating Subsequences}
+
+Given a character sequence, a subsequence may be generated using
+\code{subSequence(int,int)}, where the two indexes are start position
+(inclusive) and end position (exclusive).  As for \code{charAt}, the
+indexes must be in range (start greater than or equal to zero and less
+than or equal to end, and end less than or equal to the sequence
+length). One nice feature of this inclusive-start/exclusive-end
+encoding is that the length of the subsequence is the end minus the
+start.  
+
+The mutable implementations of \code{CharSequence} approach
+subsequencing differently.  The \code{StringBuffer} and
+\code{StringBuilder} classes return instances of \code{String}, which
+are immutable.  Thus changes to the buffer or builder won't affect any
+subsequences generated.  The \code{CharBuffer} abstract class in
+\code{java.nio} returns a view into itself rather than an independent
+copy.  Thus when the underlying buffer changes, so does the
+subsequence.
+
+\subsubsection{Converting Character Sequences to Strings}
+
+The last method in \code{CharSequence} is \code{toString()}, which is
+specified to return a string that has the same sequence of characters
+as the character sequence.  
+
+\subsubsection{Equality and Hashing}
+
+The \code{CharSequence} interface does not place any constraints on
+the behavior of equality or hash codes.  Thus two character sequences
+may contain the same sequence of characters while not being equal
+and having different hash codes.  We'll discuss equality and hash
+codes for particular implementations of \code{CharSequence} in the
+next few sections.
+
+
+\section{Strings}
+
+Strings are so fundamental to Java that they have special literals and
+operators built into the Java language.  Functionally, the class
+\code{String}, in the package \code{java.lang}, provides an immutable
+implementation of \code{CharSequence}.  Sequence immutability, along
+with a careful lazy initialization of the hash code, makes strings
+thread safe.
+
+Because \code{String} is declared to be final, there can be no
+subclasses defined that might potentially override useful invariants
+such as equality, comparability, and serializability.  This is
+particularly useful because strings are so widely used as constants
+and method inputs and outputs.
+
+
+\subsection{String Equality and Comparison}
+
+Two strings are equal if they have the same length and the same
+character at each position.  Strings are not equal to objects of any
+other runtime class, even other implementations of \code{CharSequence}.
+
+Strings implement \code{Comparable<String>} in a way that is
+consistent with equality.  The order they use is lexicographic
+sort over the underlying \code{char} values.  This is exactly the
+way words are sorted in dictionaries.  The easiest way to define
+lexicographic sort is with code, here comparing strings \code{s}
+and \code{t}.
+%
+\begin{verbatim}
+for (int i = 0; i < Math.min(s.length(),t.length()); ++i)
+    if (s.charAt(i) != t.charAt(i))
+        return s.charAt(i) - t.charAt(i);
+return s.length() - t.length();
+\end{verbatim}
+
+We walk over both strings from the beginning until we find a position
+where the characters are different, at which point we return the
+difference.%
+%
+\footnote{Conveniently, \code{char} values are converted to integers
+  for arithmetic, allowing negative results for the difference of two
+  values.  Also, because string lengths are non-negative, there can't
+  be underflow or overflow in the difference.}
+%
+For instance, \stringCode{abc} is less than \stringCode{abde}
+\stringCode{ae}, and \stringCode{e}.  If we finish either string, we
+return the difference in lengths.  Thus \stringCode{a} is less than
+\stringCode{ab}.  If we finish one of the strings and the strings are
+the same length, we return zero, because they are equal.
+
+
+
+
+\section{String Builders}
+
+It is common to create string objects using the builder pattern, which
+is implemented by \code{StringBuilder}, a mutable implementation
+
+
+The two most commonly used are \code{String} and \code{StringBuilder},
+which provide an immutable sequence of characters and mutable sequence
+respectively.
+
+ class
+\code{String} provides an immutable implementation and
+\code{StringBuilder} a mutable implementation.  The older
+\code{StringBuffer} class provides a synchronized version of
+\code{StringBuilder}, but is rarely needed.
+
+%
+%
+\footnote{The class \code{StringBuilder} is an unsynchronized version
+of \code{StringBuffer}.  Because it is rarely desirable to write to
+a string buffer concurrently, \code{StringBuilder}}
+
+Java's \code{String} class is essentially an immutable sequence of
+characters.  The \code{String} class implements the \code{CharSequence}
+interface, which is essentially a sequence of characters.
+
+Various operations are built into the language to support
+string processing.  
+
+
+
+\subsection{Creating Strings}
+
+
+
+\subsubsection{String Literals}
