@@ -321,6 +321,167 @@ return value is equivalent to casting the \code{int} returned by
 \code{intValue()} to a \code{double}.
 
 
+\section{Objects}
+
+Every object in Java inherits from the base class \code{Object}.
+There are several kinds of methods defined for \code{Object}, which
+are thus defined on every Java object.
+
+\subsection{Equality}
+
+Java distinguishes reference equality, written \code{==}, from object
+equality.  Reference equality requires that the two variables refer to
+the exact same object.  Some objects may be equal, even if they are
+not identical.  To handle this possibility, the \code{Object} class
+defines a method \code{equals(Object)} returning a \code{boolean}
+result.  
+
+In the \code{Object} class itself, the equality method
+delegates to reference equality.  Thus subclasses that do not override
+\code{Object}'s implementation of equality will have their equality
+conditions defined by reference equality.
+
+Subclasses that define their own notion of equality, such as
+\code{String}, should do so consistently.  Specifically, equality
+should form an equivalence relation.  First, equality should
+be reflexive, so that every object is equal to itself; 
+\code{x.equals(x)} is always true for non-null \code{x}.  Second,
+equality should be symmetric, so if \code{x} is equal to \code{y},
+\code{y} is equal to \code{x}; \code{x.equals(y)} is true if
+and only if \code{y.equals(x)} is true.  Third, equality should be
+transitive, so that if \code{x} is equal to \code{y} and \code{y} is
+equal to \code{z}, then \code{x} is equal to \code{z};
+\code{x.equals(y)} and \code{y.equals(z)} both being true imply
+\code{x.equals(z)} is true.
+
+\subsection{Hash Codes}
+
+The \code{Object} class also defines a \code{hashCode()} method,
+returning an \code{int} value.  This value is typically used in
+collections as a first approximation to equality.  Thus the
+specification requires consistency with equality in that if two
+objects are equal as defined by \code{equals()}, they must have the
+same hash code.
+
+In order for collections and other
+hash-code dependent objects to function properly, hash codes should be
+defined
+
+Although the implementation of \code{hashCode()} is not determined for
+\code{Object} by the language specification, it is required to be 
+consistent with equality.  Thus any two objects that are reference
+equal must have the same hash code. 
+
+\subsection{String Representations}
+
+The \code{Object} class defines a \code{toString()} method returning a
+\code{String}.  The default behavior is to return the name of the
+class followed by a hexadecimal representation of its hash code.  This
+method should be overridden in subclasses primarily to help with
+debugging.  Some subclasses use \code{toString()} for real work, too,
+as we will see with \code{StringBuilder}.
+
+\subsection{Other Object Methods}
+
+\subsubsection{Determining an Object's Class}
+
+The runtime class of an object is returned by the \code{getClass()}
+method.  This is particularly useful for deserialized objects and
+other objects passed in whose class might not be known.  It is neither
+very clear nor very efficient to exploit \code{getClass()} for 
+branching logic.  Note that because generics are erased at runtime,
+there is no generic information in the return.
+
+\subsubsection{Finalization}
+
+At some point after there are no more references to an object left
+alive in a program, it will be finalized by a call to \code{finalize()}
+by the garbage collector.  Using finalization is tricky and we will not
+have cause to do so in this book.  For some reason, it was defined
+to throw arbitrary throwables (the superinterface of exceptions). 
+
+\subsubsection{Threading}
+
+Java supports multithreaded applications as part of its language
+specification.  The primitives for synchronization are built on top of
+the \code{Object} class.  Each object may be used as a lock to
+synchronize arbitrary blocks of code using the \code{synchronized}
+keyword.  Methods may also be marked with \code{synchornized}, which
+is equivalent to explicitly marking their code block as synchronized.
+
+In addition, there are three \code{wait()} methods that cause the
+current thread to pause and wait for a notification, and two
+\code{notify()} methods that wake up (one or all) threads waiting
+for this object.  
+
+Rather than dealing with Java concurrency directly, we strongly
+recommend the \code{java.util.concurrent} library for handling
+threading of any complexity beyond exclusive synchronization.
+
+\subsection{Object Size}
+
+There's no getting around it -- Java objects are heavy.  The language
+specification does not determine how objects are represented on disk,
+and different JVMs may handle things differently.  We'll discuss how
+the 32-bit and 64-bit Sun/Oracle JVMs work.
+
+First, every object contains two pieces of information.  The first 
+establishes the object's identity, and is also used for locking
+and the \code{hashCode()} returned by \code{Object}.  Even if
+an object is relocated in memory, its reference identity and locking
+properties remain fixed.  The second piece of information is 
+a reference to the class definition.  
+
+A reference-sized chunk of memory is used for each piece of
+information, so that's four bytes on a 32-bit architecture and eight
+bytes on a 64-bit architecture.  Thus an instance of \code{Object} is
+8 bytes in a 32-bit JVM and 16 bytes in a 64-bit JVM.
+
+Additional storage is required for member variables.  Each primitive
+member variable requires at least the amount of storage required for
+the primitive \eg{1 byte for \code{byte}, 2 bytes for \code{short},
+and 8 bytes for \code{double}}.  To help with word alignment, they are
+ordered in decreasing order of size, with doubles and longs coming
+first, then ints and floats, down to bytes.
+
+Finally, the object size is rounded up so that its overall size
+is a multiple of 8 bytes.  This is so all the internal 8-byte
+objects inside of an object line up on 8-byte word boundaries.
+
+Static variables are stored at the class level, not at the individual
+object level.
+
+Subclasses need to use their superclass memory layout for efficiency,
+but this can lead to badly aligned memory for member variables of the
+subclass.  For instance, a superclass with a single \code{int} member
+variable must be padded to a round multiple of either 4 or 8 bytes,
+depending on the architecture.  To save space, subclasses can pack
+variables that fit into the padding in some cases. 
+
+A serious drawback to Java for high-performance computing is that
+there is no equivalent to C's \code{struct} types, which have no
+runtime memory overhead and may additionally have types unfolded into
+them.  To get around this problem, LingPipe employs parallel arrays
+rather than defining object wrappers.
+
+
+
+
+\section{Arrays}
+
+Arrays in Java are objects.  They have a fixed size that is determined
+when they are constructed.  Attempts to set or get objects out of
+range raises an \code{IndexOutOfBoundsException}.
+
+In addition to the usual object header (8 bytes in 32-bit and
+16 bytes in 64-bit Sun/Oracle JVMs), they also store an integer
+length in 4 bytes.  After that, they store the elements one after
+the other.  If the values are \code{double} or \code{long} values,
+there is an additional 4 bytes of padding after the length so
+that they start on 8-byte boundaries.
+
+
+
 \section{Character Encodings}
 
 For processing natural language text, we are primarily concerned with
@@ -1145,6 +1306,75 @@ such as equality, comparability, and serializability.  This is
 particularly useful because strings are so widely used as constants
 and method inputs and outputs.
 
+\subsection{Constructing a String}
+
+Strings may be constructed from arrays of bytes, arrays of characters,
+or arrays of integer representations of Unicode code points.  When
+consructing a string from an array of characters, the array is copied
+and stored in the string.  When constructing a string from bytes, a
+character encoding must be specified by name or through an
+implementation of \code{java.nio.CharSet} in order to determine the
+conversion from a sequence of bytes to a sequence of unicode code
+points.  If no encoding is specified, the platform's default is used,
+which is highly non-portable.  When constructing a string from Unicode
+code points, the code points are converted to UTF-16 and the resulting
+pairs of bytes to \code{char} values.  
+
+A string may also be constructed from another string.  In this case, a
+deep copy is created with its own fresh underlying array.  this may
+seem useless, but consider the behavior of \code{substring()}, as
+defined below; in this case, constructing a new copy may actually save
+space.  
+
+Strings may also be constructed by copying the current contents of a
+string builder or string buffer (see the next section for more about
+these classes, which implement the builder pattern for strings).
+
+\subsection{String Literals}
+
+In Java code, strings may be represented as characters surrounded
+by double quotes.  For instance,
+%
+\begin{verbatim}
+String name = "Fred";
+\end{verbatim}
+%
+The characters between the quotes can be any characters in the Java
+program.  Specifically, they can be Unicode escapes, so we could've
+written the above replacing \code{F} and \code{e} with Unicode
+escapes, as in
+%
+\begin{verbatim}
+String name = "\u0046r\u0065d";
+\end{verbatim}
+
+In practice, string literals essentially create static constants for
+the strings.  Because strings are immutable, the value of string
+contstants including literals, will be shared.  Thus 
+\code{"abc" == "abc"} will evaluate to true because the two literals
+will denote reference identical strings.  This is carried out as if
+\code{intern()} had been called on constructed strings (see below).
+
+
+\subsection{Contents of a String}
+
+Strings are very heavy objects in Java.  First, they are full-fledged
+objects, as opposed to the C-style strings consisting only of a
+pointer into an array.  Second, they contain references to an array of
+characters, \code{char[]}, holding the actual characters, as well as
+an integer start index into that array and an integer length.  They
+also store their hash code as an integer.  Thus an empty string will
+be 36 bytes in the 32-bit Sun/Oracle JVM and 56 bytes in the 64-bit
+version (basic object plus integer offset, length and hashcode,
+reference to the array, and the array itself, consisting of the array
+object representation and length).
+
+% String:  8   +8
+% offset:  4
+% len:     4
+% hashcode:4
+% arr ref: 4   +4
+% array: 8+4   +8
 
 \subsection{String Equality and Comparison}
 
@@ -1181,30 +1411,152 @@ return the difference in lengths.  Thus \stringCode{a} is less than
 \stringCode{ab}.  If we finish one of the strings and the strings are
 the same length, we return zero, because they are equal.
 
+\subsection{Hash Codes}
+
+The hash code for a string \code{s} is computed as if by
+%
+\begin{verbatim}
+int hashCode = 0;
+for (int i = 0; i < s.length(); ++i)
+    hashCode = 31 * hashCode + s.charAt(i);
+\end{verbatim}
+%
+This definition is consistent with equals in that two equal strings
+have the same character sequence, and hence the same hash code.
+
+Because the hash code is expensive to compute, requiring an
+assignment, add and multiply for each character, it is lazily
+initialized.  What this means is that when hash code is called, if
+there is not a value already, it will be computed and stored. This
+operation is thread safe without synchronization because integer
+assignment is atomic and the sequence of characters is immutable.
+
+\subsection{Substrings and Subsequences}
+
+The \code{substring(int,int)} and method return subsequences of a
+string specified by a start position (inclusive) and an end position
+(exclusive).  The \code{subSequence(int,int)} method just delegates to
+the substring method.
+
+When a substring is generated from a string, it shares the same array
+as the string from which it was generated.  Thus if a large string is
+created and a substring generated, the substring will actually hold a
+reference to a large array, potentially wasting a great deal of
+memory.  Alternatively, if a large string is created and a large
+number of substrings are created, this implementation potentially
+saves space.
+
+A copy of the character array underlying the string is returned
+by \code{toCharArray()}.  
+
+\subsection{Simple Pattern Matching}
+
+Simple text processing may be carried out using methods supplied
+by \code{String}.  For instance, \code{endsWith(String)} and
+\code{startsWith(String)} return boolean values based on whether
+the string has the specified exact suffix or prefix.  These
+comparisons are carried out based on the underlying \code{char[]}
+array.  There is also a multiple argument \code{regionMatches()}
+method that compares a fixed number the characters starting at a given
+position to be matched against the characters starting at a different
+position in a second string.
+
+There is also a method \code{contains(CharSequence)}, which returns
+true if the string contains the characters specified by the character
+sequence argument as a substring.  And there is a method
+\code{contentEquals(CharSequence)} that compares the character content
+of the string with a character sequence.
+
+The \code{indexOf(char,int)} method returns the index of the first
+appearance of a character after the specified position, and
+\code{lastIndexOf(char,int)} does the same thing in reverse,
+returning the last instance of the character before the specified
+position.  There are also string-based methods, \code{indexOf(String,int)} and
+\code{lastIndexOf(String,int)}.
+
+\subsection{Manipulating Strings}
+
+Several useful string manipulation methods are provided, such as
+\code{trim()}, which returns a copy of the string with no whitespace
+at the front or end of the string.  The methods
+\code{toLowerCase(Locale)} and \code{toUpperCase(Locale)} return a
+copy of the string in the specified locale.
+
+\subsection{Unicode Code Points}
+
+The string class also defines methods for manipulating Unicode
+code points, which may be coded by either one or two underlying
+\code{char} values.  The method \code{codePointAt(int)} returns
+the integer code point starting at the specified index.  To find out
+the length of a string in unicode code points, there is the method
+\code{codePointCount(int,int)} which returns the number of Unicode
+code points coded by the specified range of underlying characters.  It
+is up to the user to get the boundaries correct.
+
+\subsection{Interning Canonical Representations}
+
+The JVM keeps an underlying pool of string constants.  A call to
+\code{intern()} on a string returns a string in the constant pool.
+If two strings are equal, they will \code{intern()} to reference
+identical objects.  For instance,  suppose we call
+%
+\begin{verbatim}
+String s = new String("abc");   
+String t = new String("abc");   
+\end{verbatim}
+%
+The expression \code{s.equals(t)} will be true, but
+\code{s == t} will be false.  The constructor \code{new} always
+constructs new objects.
+
+String sIn = s.intern();  String tIn = t.inern();
+Thus two calls to \code{intern()} on two reference distinct strings
+that are equal (in the sense of \code{equals(Object)})
+
+The method \code{intern()} returns a string that is equal to the
+string on which it is called, and is furthermore reference identical
+to any other equal string that has been internalized.
+
+deeply tied into the implementation of strings in the JVM.  
+
+
+\subsection{Utility Methods}
+
+There are a number of convenience methods in the string class that
+reproduce behavior available elsewhere.  
+
+\subsubsection{Regular Expression Utilities}
+
+The string class contains various \code{split()} and
+\code{replace}\varcode{X}\code{()} methods based on regular expressions.
+For instance, \code{split(String)} interprets its argument as a
+regular expression and returns an array of strings containing the
+sequences of text between matches of the specified pattern.
+Matching is defined as in the regular expression method
+\code{Matcher.find()}.
+
+\subsubsection{String Representations of Primitives}
+
+The string class contains a range of static \code{valueOf()}
+methods for converting primitives, objects, and arrays of characters
+to strings.  For instance, \code{valueOf(double)} converts a
+double-precision floating point value to a string using the same
+method as \code{Double.toString(double)}.
 
 
 
 \section{String Builders}
 
 It is common to create string objects using the builder pattern, which
-is implemented by \code{StringBuilder}, a mutable implementation
-
-
-The two most commonly used are \code{String} and \code{StringBuilder},
-which provide an immutable sequence of characters and mutable sequence
-respectively.
-
- class
-\code{String} provides an immutable implementation and
-\code{StringBuilder} a mutable implementation.  The older
-\code{StringBuffer} class provides a synchronized version of
-\code{StringBuilder}, but is rarely needed.
+is implemented by \code{StringBuilder}.  Conveniently, the string
+builder class implements the \code{CharSequence} interface.  In cases
+where character sequence arguments suffice, this allows us to bypass
+the construction of a string altogether.
 
 %
-%
-\footnote{The class \code{StringBuilder} is an unsynchronized version
-of \code{StringBuffer}.  Because it is rarely desirable to write to
-a string buffer concurrently, \code{StringBuilder}}
+\footnote{The class \code{StringBuffer} is a synchornized version
+of \code{StringBuilder}.  Because it is rarely desirable to write to
+a string buffer concurrently, \code{StringBuilder}.}
 
 Java's \code{String} class is essentially an immutable sequence of
 characters.  The \code{String} class implements the \code{CharSequence}
