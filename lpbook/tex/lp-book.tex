@@ -3,23 +3,31 @@
 \usepackage{lingpipe-book}
 
 \begin{document}
-
+%
+\frontmatter
 \include{frontmatter/style}
 \include{frontmatter/simple-title}
 \include{frontmatter/title}
 \include{frontmatter/copyright}
+\tableofcontents  %\listoffigures%\listoftables
 \include{frontmatter/preface}
 \include{frontmatter/simple-title}
-
+%
+\pagestyle{empty}
+\mainmatter
+\pagestyle{fancy}
 \include{chapter/style}
 \include{chapter/intro}
 \include{chapter/char}
-
+%
+\appendix
 \include{appendix/style}
-\include{appendix/reading}
+\include{appendix/java}
 \include{appendix/libs}
+\include{appendix/reading}
 \include{appendix/licenses}
-
+%
+\backmatter
 \printindex
 
 \end{document}
