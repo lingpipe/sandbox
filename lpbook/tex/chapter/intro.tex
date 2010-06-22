@@ -270,7 +270,7 @@ Ant is available from
 \urldisplay{http://ant.apache.org/}
 %
 You only need one of the binary distributions, which will
-look like \code{apache-ant-}\varcode{version}\code{-bin.tar.gz}.
+look like \code{apache-ant-}\codeVar{version}\code{-bin.tar.gz}.
 
 First, you need to unpack the distribution.  We like directory
 structures with release names, which is how ant unpacks, using
@@ -423,9 +423,9 @@ Total time: 1 second
 \end{verbatim}
 %
 First, Ant echoes the name of the build file, here
-\pathin{c:{\bk}lpb{\bk}src{\bk}intro{\bk}build.xml}.  When Ant is
+\filepath{c:{\bk}lpb{\bk}src{\bk}intro{\bk}build.xml}.  When Ant is
 invoked without specifying a particular build file, it uses the
-\pathin{build.xml} in the directory from which it was called.  
+\filepath{build.xml} in the directory from which it was called.  
 
 Reading down the left side of the output, you see the targets that are
 invoked.  The first target invoked is the \code{jar} target, and the
