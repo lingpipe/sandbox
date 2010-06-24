@@ -1,5 +1,8 @@
 \chapter{Java Basics}\label{appendix:java}
 
+In this appendix, we go over some of the basics of Java that are
+particularly relevant for text and numerical processing.  
+
 \section{Numbers}
 
 In this section, we explain different numerical bases, including
@@ -214,6 +217,169 @@ the log of positive infinity is positive infinity.  The exponent of
 positive infinity is positive infinity and the exponent of negative
 infinity is zero.
 
+
+
+\section{Objects}
+
+Every object in Java inherits from the base class \code{Object}.
+There are several kinds of methods defined for \code{Object}, which
+are thus defined on every Java object.
+
+\subsection{Equality}
+
+Java distinguishes reference equality, written \code{==}, from object
+equality.  Reference equality requires that the two variables refer to
+the exact same object.  Some objects may be equal, even if they are
+not identical.  To handle this possibility, the \code{Object} class
+defines a method \code{equals(Object)} returning a \code{boolean}
+result.  
+
+In the \code{Object} class itself, the equality method
+delegates to reference equality.  Thus subclasses that do not override
+\code{Object}'s implementation of equality will have their equality
+conditions defined by reference equality.
+
+Subclasses that define their own notion of equality, such as
+\code{String}, should do so consistently.  Specifically, equality
+should form an equivalence relation.  First, equality should
+be reflexive, so that every object is equal to itself; 
+\code{x.equals(x)} is always true for non-null \code{x}.  Second,
+equality should be symmetric, so if \code{x} is equal to \code{y},
+\code{y} is equal to \code{x}; \code{x.equals(y)} is true if
+and only if \code{y.equals(x)} is true.  Third, equality should be
+transitive, so that if \code{x} is equal to \code{y} and \code{y} is
+equal to \code{z}, then \code{x} is equal to \code{z};
+\code{x.equals(y)} and \code{y.equals(z)} both being true imply
+\code{x.equals(z)} is true.
+
+\subsection{Hash Codes}
+
+The \code{Object} class also defines a \code{hashCode()} method,
+returning an \code{int} value.  This value is typically used in
+collections as a first approximation to equality.  Thus the
+specification requires consistency with equality in that if two
+objects are equal as defined by \code{equals()}, they must have the
+same hash code.
+
+In order for collections and other
+hash-code dependent objects to function properly, hash codes should be
+defined
+
+Although the implementation of \code{hashCode()} is not determined for
+\code{Object} by the language specification, it is required to be 
+consistent with equality.  Thus any two objects that are reference
+equal must have the same hash code. 
+
+\subsection{String Representations}
+
+The \code{Object} class defines a \code{toString()} method returning a
+\code{String}.  The default behavior is to return the name of the
+class followed by a hexadecimal representation of its hash code.  This
+method should be overridden in subclasses primarily to help with
+debugging.  Some subclasses use \code{toString()} for real work, too,
+as we will see with \code{StringBuilder}.
+
+\subsection{Other Object Methods}
+
+\subsubsection{Determining an Object's Class}
+
+The runtime class of an object is returned by the \code{getClass()}
+method.  This is particularly useful for deserialized objects and
+other objects passed in whose class might not be known.  It is neither
+very clear nor very efficient to exploit \code{getClass()} for 
+branching logic.  Note that because generics are erased at runtime,
+there is no generic information in the return.
+
+\subsubsection{Finalization}
+
+At some point after there are no more references to an object left
+alive in a program, it will be finalized by a call to \code{finalize()}
+by the garbage collector.  Using finalization is tricky and we will not
+have cause to do so in this book.  For some reason, it was defined
+to throw arbitrary throwables (the superinterface of exceptions). 
+
+\subsubsection{Threading}
+
+Java supports multithreaded applications as part of its language
+specification.  The primitives for synchronization are built on top of
+the \code{Object} class.  Each object may be used as a lock to
+synchronize arbitrary blocks of code using the \code{synchronized}
+keyword.  Methods may also be marked with \code{synchornized}, which
+is equivalent to explicitly marking their code block as synchronized.
+
+In addition, there are three \code{wait()} methods that cause the
+current thread to pause and wait for a notification, and two
+\code{notify()} methods that wake up (one or all) threads waiting
+for this object.  
+
+Rather than dealing with Java concurrency directly, we strongly
+recommend the \code{java.util.concurrent} library for handling
+threading of any complexity beyond exclusive synchronization.
+
+\subsection{Object Size}
+
+There's no getting around it -- Java objects are heavy.  The lack of a
+C-like \code{struct} type presents a serious obstacle to even
+medium-performance computing.  To get around this problem, in places
+where you might declare an array of \code{struct} type in C, LingPipe
+employs parallel arrays rather than arrays of objects.
+
+The language specification does not describe how objects are
+represented on disk, and different JVMs may handle things differently.
+We'll discuss how the 32-bit and 64-bit Sun/Oracle JVMs work.
+
+\subsubsection{Header}
+
+Objects consist of a header and the values of their member variables.
+The header itself consists of two references.  The first establishes
+the object's identity.  This identity reference is used for reference
+equality (\code{==}) and thus for locking, and also as a return value
+for the \code{hashCode()} implementation in \code{Object}.  Even if an
+object is relocated in memory, its reference identity and locking
+properties remain fixed.  The second piece of information is a
+reference to the class definition.
+
+A reference-sized chunk of memory is used for each piece of
+information.  In a a 32-bit architecture, references are four bytes.
+In 64-bit architectures, they are 8 bytes by default.  
+
+As of build 14 of Java SE 6, the \code{-XX:+UseCompressedOops} option
+may be used as an argument to \code{java} on 64-bit JVMs to instruct
+them to compress their ordinary object pointers (OOP) to 32-bit
+representations.  This saves an enormous amount of space, cutting the
+size of a simple \code{Object} in half.  It does limit the heap size
+to around four billion objects, which should be sufficient for most
+applications.
+
+\subsubsection{Member Values}
+
+Additional storage is required for member variables.  Each primitive
+member variable requires at least the amount of storage required for
+the primitive \eg{1 byte for \code{byte}, 2 bytes for \code{short},
+and 8 bytes for \code{double}}.  References will be 4 bytes in
+a 32-bit JVM and a 64-bit JVM using compressed pointers, and 8 bytes
+in the default 64-bit JVM.
+
+To help with word alignment, values are ordered in decreasing order of
+size, with doubles and longs coming first, then references, then ints
+and floats, down to bytes.
+
+Finally, the object size is rounded up so that its overall size
+is a multiple of 8 bytes.  This is so all the internal 8-byte
+objects inside of an object line up on 8-byte word boundaries.
+
+Static variables are stored at the class level, not at the individual
+object level.
+
+\subsubsection{Subclasses}
+
+Subclasses reference their own class definition, which will in turn
+reference the superclass definition.  They lay their superclass member
+variables out the same way as their superclass.  They then lay out
+their own member variables.  If the superclass needed to be padded, some
+space is recoverable by reordering the subclass member variables
+slightly.
+
 \subsection{Number Objects}
 
 For each of the primitive number types, there is a corrsponding class
@@ -317,162 +483,18 @@ return value is equivalent to casting the \code{int} returned by
 \code{intValue()} to a \code{double}.
 
 
-\section{Objects}
-
-Every object in Java inherits from the base class \code{Object}.
-There are several kinds of methods defined for \code{Object}, which
-are thus defined on every Java object.
-
-\subsection{Equality}
-
-Java distinguishes reference equality, written \code{==}, from object
-equality.  Reference equality requires that the two variables refer to
-the exact same object.  Some objects may be equal, even if they are
-not identical.  To handle this possibility, the \code{Object} class
-defines a method \code{equals(Object)} returning a \code{boolean}
-result.  
-
-In the \code{Object} class itself, the equality method
-delegates to reference equality.  Thus subclasses that do not override
-\code{Object}'s implementation of equality will have their equality
-conditions defined by reference equality.
-
-Subclasses that define their own notion of equality, such as
-\code{String}, should do so consistently.  Specifically, equality
-should form an equivalence relation.  First, equality should
-be reflexive, so that every object is equal to itself; 
-\code{x.equals(x)} is always true for non-null \code{x}.  Second,
-equality should be symmetric, so if \code{x} is equal to \code{y},
-\code{y} is equal to \code{x}; \code{x.equals(y)} is true if
-and only if \code{y.equals(x)} is true.  Third, equality should be
-transitive, so that if \code{x} is equal to \code{y} and \code{y} is
-equal to \code{z}, then \code{x} is equal to \code{z};
-\code{x.equals(y)} and \code{y.equals(z)} both being true imply
-\code{x.equals(z)} is true.
-
-\subsection{Hash Codes}
-
-The \code{Object} class also defines a \code{hashCode()} method,
-returning an \code{int} value.  This value is typically used in
-collections as a first approximation to equality.  Thus the
-specification requires consistency with equality in that if two
-objects are equal as defined by \code{equals()}, they must have the
-same hash code.
-
-In order for collections and other
-hash-code dependent objects to function properly, hash codes should be
-defined
-
-Although the implementation of \code{hashCode()} is not determined for
-\code{Object} by the language specification, it is required to be 
-consistent with equality.  Thus any two objects that are reference
-equal must have the same hash code. 
-
-\subsection{String Representations}
-
-The \code{Object} class defines a \code{toString()} method returning a
-\code{String}.  The default behavior is to return the name of the
-class followed by a hexadecimal representation of its hash code.  This
-method should be overridden in subclasses primarily to help with
-debugging.  Some subclasses use \code{toString()} for real work, too,
-as we will see with \code{StringBuilder}.
-
-\subsection{Other Object Methods}
-
-\subsubsection{Determining an Object's Class}
-
-The runtime class of an object is returned by the \code{getClass()}
-method.  This is particularly useful for deserialized objects and
-other objects passed in whose class might not be known.  It is neither
-very clear nor very efficient to exploit \code{getClass()} for 
-branching logic.  Note that because generics are erased at runtime,
-there is no generic information in the return.
-
-\subsubsection{Finalization}
-
-At some point after there are no more references to an object left
-alive in a program, it will be finalized by a call to \code{finalize()}
-by the garbage collector.  Using finalization is tricky and we will not
-have cause to do so in this book.  For some reason, it was defined
-to throw arbitrary throwables (the superinterface of exceptions). 
-
-\subsubsection{Threading}
-
-Java supports multithreaded applications as part of its language
-specification.  The primitives for synchronization are built on top of
-the \code{Object} class.  Each object may be used as a lock to
-synchronize arbitrary blocks of code using the \code{synchronized}
-keyword.  Methods may also be marked with \code{synchornized}, which
-is equivalent to explicitly marking their code block as synchronized.
-
-In addition, there are three \code{wait()} methods that cause the
-current thread to pause and wait for a notification, and two
-\code{notify()} methods that wake up (one or all) threads waiting
-for this object.  
-
-Rather than dealing with Java concurrency directly, we strongly
-recommend the \code{java.util.concurrent} library for handling
-threading of any complexity beyond exclusive synchronization.
-
-\subsection{Object Size}
-
-There's no getting around it -- Java objects are heavy.  The language
-specification does not determine how objects are represented on disk,
-and different JVMs may handle things differently.  We'll discuss how
-the 32-bit and 64-bit Sun/Oracle JVMs work.
-
-First, every object contains two pieces of information.  The first 
-establishes the object's identity, and is also used for locking
-and the \code{hashCode()} returned by \code{Object}.  Even if
-an object is relocated in memory, its reference identity and locking
-properties remain fixed.  The second piece of information is 
-a reference to the class definition.  
-
-A reference-sized chunk of memory is used for each piece of
-information, so that's four bytes on a 32-bit architecture and eight
-bytes on a 64-bit architecture.  Thus an instance of \code{Object} is
-8 bytes in a 32-bit JVM and 16 bytes in a 64-bit JVM.
-
-Additional storage is required for member variables.  Each primitive
-member variable requires at least the amount of storage required for
-the primitive \eg{1 byte for \code{byte}, 2 bytes for \code{short},
-and 8 bytes for \code{double}}.  To help with word alignment, they are
-ordered in decreasing order of size, with doubles and longs coming
-first, then ints and floats, down to bytes.
-
-Finally, the object size is rounded up so that its overall size
-is a multiple of 8 bytes.  This is so all the internal 8-byte
-objects inside of an object line up on 8-byte word boundaries.
-
-Static variables are stored at the class level, not at the individual
-object level.
-
-Subclasses need to use their superclass memory layout for efficiency,
-but this can lead to badly aligned memory for member variables of the
-subclass.  For instance, a superclass with a single \code{int} member
-variable must be padded to a round multiple of either 4 or 8 bytes,
-depending on the architecture.  To save space, subclasses can pack
-variables that fit into the padding in some cases. 
-
-A serious drawback to Java for high-performance computing is that
-there is no equivalent to C's \code{struct} types, which have no
-runtime memory overhead and may additionally have types unfolded into
-them.  To get around this problem, LingPipe employs parallel arrays
-rather than defining object wrappers.
-
-
-
 
 \section{Arrays}
 
 Arrays in Java are objects.  They have a fixed size that is determined
 when they are constructed.  Attempts to set or get objects out of
-range raises an \code{IndexOutOfBoundsException}.
+range raises an \code{IndexOutOfBoundsException}.  This is much better
+behaved than C, where out of bounds indexes may point into some other
+part of memory that may then be inadvertently read or corrupted.
 
-In addition to the usual object header (8 bytes in 32-bit and
-16 bytes in 64-bit Sun/Oracle JVMs), they also store an integer
-length in 4 bytes.  After that, they store the elements one after
-the other.  If the values are \code{double} or \code{long} values,
-there is an additional 4 bytes of padding after the length so
-that they start on 8-byte boundaries.
+In addition to the usual object header, arrays also store an integer
+length in 4 bytes.  After that, they store the elements one after the
+other.  If the values are \code{double} or \code{long} values or
+uncompressed references, there is an additional 4 bytes of padding
+after the length so that they start on 8-byte boundaries.
 
