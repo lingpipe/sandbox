@@ -94,6 +94,7 @@
 \newcommand{\refappendix}[1]{\hyperref[appendix:#1]{Appendix~\ref*{appendix:#1}}}
 \newcommand{\reffig}[1]{\hyperref[fig:#1]{Figure~\ref*{fig:#1}}}
 \newcommand{\refchap}[1]{\hyperref[chap:#1]{Chapter~\ref*{chap:#1}}}
+\newcommand{\refsec}[1]{\hyperref[section:#1]{Section~\ref*{section:#1}}}
 
 % DISPLAYS
 \newcommand{\displ}[1]{\begin{trivlist}\item[] #1\end{trivlist}}
@@ -101,6 +102,7 @@
 \newcommand{\urldisplaynote}[2]{\displ{\hspace*{2\parindent}#1: \hrefurl{#2}}}
 \newcommand{\commandline}[1]{\begin{trivlist}\item[] \code{>}~\codeUser{#1}\end{trivlist}}
 \newcommand{\commandlinefollow}[1]{\begin{trivlist}\item[] \code{>}~\codeUser{#1}\end{trivlist}\vspace*{-12pt}}
+\newcommand{\bibanno}[2]{\item #1\vspace*{-6pt}\begin{quote}{\small\it #2}\end{quote}}
 
 % STYLING
 \newcommand{\firstchar}[1]{{\LARGE\bf #1}}
@@ -109,6 +111,7 @@
 \newcommand{\booktitle}[1]{{\it #1}}
 \newcommand{\tblhead}[1]{\emph{#1}}
 \newcommand{\charmention}[1]{{\it #1}\xspace}
+\newcommand{\stringmention}[1]{{\it #1}\xspace}
 
 \newcommand{\filepath}[1]{\code{#1}}
 \newcommand{\hrefurl}[1]{\href{#1}{\tt #1}}

@@ -848,11 +848,10 @@ A string may also be constructed from another string.  In this case, a
 deep copy is created with its own fresh underlying array.  this may
 seem useless, but consider the behavior of \code{substring()}, as
 defined below; in this case, constructing a new copy may actually save
-space.  
-
-Strings may also be constructed by copying the current contents of a
-string builder or string buffer (see the next section for more about
-these classes, which implement the builder pattern for strings).
+space.  Strings may also be constructed by copying the current
+contents of a string builder or string buffer (see the next section
+for more about these classes, which implement the builder pattern for
+strings).
 
 \subsection{String Literals}
 
@@ -874,10 +873,11 @@ String name = "\u0046r\u0065d";
 
 In practice, string literals essentially create static constants for
 the strings.  Because strings are immutable, the value of string
-contstants including literals, will be shared.  Thus 
-\code{"abc" == "abc"} will evaluate to true because the two literals
-will denote reference identical strings.  This is carried out as if
-\code{intern()} had been called on constructed strings (see below).
+contstants including literals, will be shared.  Thus \code{"abc" ==
+  "abc"} will evaluate to true because the two literals will denote
+reference identical strings.  This is carried out as if
+\code{intern()} had been called on constructed strings, as described
+in \refsec{string-intern}.
 
 
 \subsection{Contents of a String}
@@ -1017,12 +1017,15 @@ the length of a string in unicode code points, there is the method
 code points coded by the specified range of underlying characters.  It
 is up to the user to get the boundaries correct.
 
-\subsection{Interning Canonical Representations}
+\subsection{Interning Canonical Representations}\label{section:string-intern}
 
 The JVM keeps an underlying pool of string constants.  A call to
 \code{intern()} on a string returns a string in the constant pool.
-If two strings are equal, they will \code{intern()} to reference
-identical objects.  For instance,  suppose we call
+The method \code{intern()} returns a string that is equal to the
+string on which it is called, and is furthermore reference identical
+to any other equal string that has also been interned.
+
+For example,  suppose we call
 %
 \begin{verbatim}
 String s = new String("abc");   
@@ -1031,17 +1034,17 @@ String t = new String("abc");
 %
 The expression \code{s.equals(t)} will be true, but
 \code{s == t} will be false.  The constructor \code{new} always
-constructs new objects.
-
-String sIn = s.intern();  String tIn = t.inern();
-Thus two calls to \code{intern()} on two reference distinct strings
-that are equal (in the sense of \code{equals(Object)})
-
-The method \code{intern()} returns a string that is equal to the
-string on which it is called, and is furthermore reference identical
-to any other equal string that has been internalized.
-
-deeply tied into the implementation of strings in the JVM.  
+constructs new objects.  Next, consider calling
+%
+\begin{verbatim}
+String sIn = s.intern();  
+String tIn = t.inern();
+\end{verbatim}
+%
+Afterwards, \code{sIn == tIn} will return true, as will
+\code{sIn.equals(tIn)}.  The interned strings are equal to their
+originals, so that \code{sIn.equals(s)} and \code{tIn.equals(t)} also
+return true.
 
 
 \subsection{Utility Methods}
@@ -1071,28 +1074,118 @@ method as \code{Double.toString(double)}.
 
 \section{String Builders}
 
-It is common to create string objects using the builder pattern, which
-is implemented by \code{StringBuilder}.  Conveniently, the string
-builder class implements the \code{CharSequence} interface.  In cases
-where character sequence arguments suffice, this allows us to bypass
-the construction of a string altogether.
+The \code{StringBuilder} class is essentially a mutable implementation
+of the \code{CharSequence} interface.  It contains an underlying array
+of \code{char} values, which it resizes as necessary to support a
+range of \code{append()} methods.  It implements a standard
+builder pattern for strings, where after adding content, \code{toString()}
+is used to construct a string based on the buffered values.
 
+A typical use would be to create a string by concatenating the members
+of an array, as in
 %
-\footnote{The class \code{StringBuffer} is a synchornized version
-of \code{StringBuilder}.  Because it is rarely desirable to write to
-a string buffer concurrently, \code{StringBuilder}.}
+\begin{verbatim}
+String[] xs = ...;
+StringBuilder sb = new StringBuilder();
+for (String x : xs)
+    sb.append(x);
+String s = sb.toString();
+\end{verbatim}
+%
+First a string builder is created, then values are appended to it,
+then it is converted to a string.  When a string builder is converted
+to a string, a new array is constructed and the buffered contents of
+the builder copied into it.
 
-Java's \code{String} class is essentially an immutable sequence of
-characters.  The \code{String} class implements the \code{CharSequence}
-interface, which is essentially a sequence of characters.
+The string builder class lets you append any type of argument, with
+the effect being the same as if appending the string resulting from
+the matching \code{String.valueOf()} method.  For instance, non-null
+objects get converted using their \code{toString()} methods and null
+objects are converted to the string \stringmention{null}.  Primitive
+numbers converted to their decimal notation, using scientific notation
+if necessary, and booleans to either \stringmention{true} or
+\stringmention{false}.
 
-Various operations are built into the language to support
-string processing.  
+The underlying array for buffering characters starts at length 16 by
+default, though may be set explicitly in the constructor.  Resizing
+adds one to the length then doubles it, leading to roughly log (base
+2) resizings in the length of the buffer \eg{16, 34, 70, 142, 286,
+  574, \ldots}.  Because string builders are rarely used in locations
+that pose a computational bottleneck, this is usually an acceptable
+behavior.
+
+In cases where character sequence arguments suffice, this allows us to
+bypass the construction of a string altogether.  Thus many of
+LingPipe's methods accept character sequence inputs without first
+converting to strings.
+
+\subsection{Unicode Support}
+
+The append method \code{appendCodePoint(int)} appends the characters
+representing the UTF-16 encoding of the specified Unicode code point.
+The builder also supports a \code{codePointAt()}, \code{codePointBefore()},
+and \code{codePointCount()} methods with behavior like those for strings.
+
+\subsection{Modifying the Contents}
+
+String builders are mutable, and hence support operations like
+\code{setCharAt(int,char)}, which replaces a single character, and
+\code{insert(int,String)} and the longer form
+\code{replace(int,int,String)}, which splice the characters of a
+string into the buffer in place of the specified character slice.
+There is also a \code{setLength(int)} method which changes the length
+of the charactr sequence, either shrinking or extending the underlying
+buffer as necessary.
+
+\subsection{Reversing Character Arrays, Not Strings}
+
+The method \code{reverse()} reverses the order of the \code{char}
+values in the buffer.  This is just fine if the characters only encode
+Unicode code points at or below \unicode{FFFF}, because there is one
+\code{char} per code point.  If there are larger code points, the
+reversed array of characters is no longer a legal UTF-16 sequence.
 
 
+\subsection{Chaining and String Concatenation}
 
-\subsection{Creating Strings}
+Like many builder implementations, string builders let you chain
+arguments.  Thus it's legal to write
+%
+\begin{verbatim}
+String s  = new StringBuilder().append(7).append(" foo").toString();
+\end{verbatim}
+%
+with the reslt that string \code{s} has a value equal to
+\code{"7 foo"}.
+
+In fact, this is exactly the behavior underlying Java's heavily
+overloaded addition (\code{+}) operator.  When one of the arguments to
+addition is a string, the other argument is converted to a string as
+if by the appropriate \code{String.valueOf()} method.  Thus an
+equivalent way to write the chaining build above is
+%
+\begin{verbatim}
+String s = 7 + " foo";
+\end{verbatim}
+%
+Multiple additions of strings just get unfolded to multiple appends.
 
 
+\subsection{Equality and Hash Codes}
 
-\subsubsection{String Literals}
+The \code{StringBuilder} class does not override the definitions of
+equality or hash codes in \code{Object}.  Thus two string builders are
+equal only if they are reference equal.  In particular, string
+builders are never equal to strings.  There is a utility method on
+strings, \code{String.contentEquals(CharSequence)} method which
+returns true if the char sequence is the same length as the string and
+contains the same character as the string at each position.
+
+\subsection{String Buffers}
+
+The class \code{StringBuffer}, which predates
+\code{StringBuilder}, is essentially a string builder with
+synchronization.  Because it is rarely desirable to write to a
+string buffer concurrently, \code{StringBuffer} has all but
+disappeared from contemporary Java programs.
+
