@@ -109,7 +109,13 @@ bytes.
 
 We consider in this section some widely used character encodings, but
 because there are literally hundreds of them in use, we can't be
-exhaustive.  In the next section we consider Unicode.
+exhaustive.  
+
+The characters in these and many other character sets are part of
+Unicode.  Because LingPipe and Java both work with Unicode, typically
+the only thing you need to know about a character encoding in order
+to convert data in that encoding to Unicode is the name of the
+character encoding.
 
 \subsubsection{ASCII}
 
@@ -465,7 +471,7 @@ full canonical decompositions are equal.
 Java has native support for many encodings, as well as the ability
 to plug in additional encodings as the need arises.
 
-\subsection{Supported Encodings in Java}
+\subsection{Supported Encodings in Java}\label{section:supported-encodings}
 
 Each Java installation supports a range of character encoding, with
 one character encoding serving as the default encoding.  Every
@@ -537,7 +543,7 @@ For Ant, you want to use the \code{encoding} attribute on the
 \end{verbatim}
 
 
-\subsection{Unicode Charactes in Java Programs}
+\subsection{Unicode Characters in Java Programs}
 
 Even if a Java program is encoded in a small character set encoding
 like ASCII, it has the ability to express arbitrary Unicode characters
@@ -588,7 +594,7 @@ works like an unsigned 16-bit representation, including casting a
 \code{char} to a numerical primitive type \ie{\code{byte}, \code{short}, 
 \code{int}, or \code{long}}.
 
-\subsubsection{Character Literals}
+\subsubsection{Character Literals}\label{section:character-literals}
 
 In typical uses, instances of \code{char} will be used to model text
 characters.  For this reason, there is a special syntax for character
@@ -622,11 +628,52 @@ The expression \code{{\bk}0x00E0} is an integer literal in hexadecimal
 notation.  In general, the compiler will infer which kind of integer
 is intended.  
 
-Because the Java \code{char} data type is only 16 bits, it is not
-allowed to assign Unicode code points above \unicode{FFFF} to a
-\code{char} variable.  For instance, \code{{\bk}u10000} is illegal.
+Because the Java \code{char} data type is only 16 bits, the Unicode
+escape notation only goes up to \unicode{FFFF}.
 
-
+Several characters may not be used directly within character (or
+string) literals: new lines, returns, form feeds, backslash, or a
+single quote character.  We can't just drop in a Unicode escape
+like \code{{\bk}u000A} for a newline, because that behaves just
+like a newline itself.  To get around this problem, Java provides
+some special escape sequences which may be used in character and
+string literals.  
+%
+\begin{center}
+\hfill
+\begin{tabular}{lll}
+\tblhead{Escape} & \tblhead{Code Point} & \tblhead{Description}
+\\
+\code{{\bk}n} & \unicode{000A} & \unicodedesc{newline}
+\\
+\code{{\bk}t} & \unicode{0009} & \unicodedesc{tab}
+\\
+\code{{\bk}b} & \unicode{0008} & \unicodedesc{backspace}
+\\
+\code{{\bk}r} & \unicode{000D} & \unicodedesc{return}
+\end{tabular}
+\hfill
+\begin{tabular}{lll}
+\tblhead{Escape} & \tblhead{Code Point} & \tblhead{Description}
+\\
+\code{{\bk}f} & \unicode{000C} & \unicodedesc{form feed}
+\\
+\code{{\bk}{\bk}} & \unicode{005C} & \unicodedesc{backslash}
+\\
+\code{{\bk}'} & \unicode{0027} & \unicodedesc{single quote}
+\\
+\code{{\bk}"} & \unicode{0022} & \unicodedesc{double quote}
+\end{tabular}
+\hfill
+\end{center}
+%
+For instance, we'd write
+%
+\begin{verbatim}
+char c = '\n';
+\end{verbatim}
+%
+to assign the newline character to the variable \code{c}.
 
 \subsubsection{Character Arithmetic}
 
@@ -832,17 +879,28 @@ and method inputs and outputs.
 
 \subsection{Constructing a String}
 
-Strings may be constructed from arrays of bytes, arrays of characters,
-or arrays of integer representations of Unicode code points.  When
-consructing a string from an array of characters, the array is copied
-and stored in the string.  When constructing a string from bytes, a
-character encoding must be specified by name or through an
-implementation of \code{java.nio.CharSet} in order to determine the
-conversion from a sequence of bytes to a sequence of unicode code
-points.  If no encoding is specified, the platform's default is used,
-which is highly non-portable.  When constructing a string from Unicode
-code points, the code points are converted to UTF-16 and the resulting
-pairs of bytes to \code{char} values.  
+Strings may be constructed from arrays of integer Unicode code points,
+arrays of characters, or arrays of bytes.  In all cases, a new array
+of characters is allocated to hold the underlying \code{char} values
+in the string.  Thus the string becomes immutable and subsequent
+changes to the array from which it was constructed will not affect it.
+
+\subsubsection{From Unicode Code Points}
+
+When constructing a string from an array of Unicode code points, the
+code points are encoded using UTF-16 and the resulting sequence
+converted to a sequence of \code{char} values.  Not all integers are
+valid Unicode code points.  This constructor will throw an
+\code{IllegalArgumentException} if there are illegal code points in
+the sequence.
+
+\subsubsection{From \code{char} Values}
+
+When constructing a string from an array of characters or another
+string or character sequence, the characters are just copied into the
+new array.  There is no checking to ensure that the sequence of
+\code{char} values is a legal UTF-16 sequence.  Thus we never know if
+a string is well-formed Unicode.
 
 A string may also be constructed from another string.  In this case, a
 deep copy is created with its own fresh underlying array.  this may
@@ -852,6 +910,34 @@ space.  Strings may also be constructed by copying the current
 contents of a string builder or string buffer (see the next section
 for more about these classes, which implement the builder pattern for
 strings).
+
+\subsubsection{From Bytes}
+
+When constructing a string from bytes, a character encoding is used to
+convert the bytes into \code{char} values.  Typically character
+encodings are specified by name.  Any supported encoding or one of its
+aliases may be named; the list of available encodings may be accessed
+programatically and listed as shown in \refsec{supported-encodings}.
+
+If a character encoding is not specified, the platform's default is
+used, resulting in highly non-portable behavior.
+
+A character encoding is represented as an instance of \code{CharSet},
+which is in the \code{java.nio.charset} package.  A \code{CharSet} may
+be provided directly to the constructor for \code{String}, or they may
+be specified by name.  Instances of \code{CharSet} may be retrieved by
+name using the static method \code{CharSet.forName(String)}.
+
+If a byte sequence can't be converted to Unicode code points, its
+behavior is determined by the underlying \code{CharSetDecoder}
+referenced by the \code{CharSet} instance.  This decoder will
+typically replace illegal sequences of bytes with a replacement string
+determined by \code{CharSetDecoder.replacement()}, typically a
+question mark character.  
+
+If you need more control over the behavior in the face of illegal byte
+sequences, you may retrieve the \code{CharSet} by name and then use
+its \code{newDecoder()} method to get a \code{CharSetDecoder}.
 
 \subsection{String Literals}
 
@@ -879,6 +965,9 @@ reference identical strings.  This is carried out as if
 \code{intern()} had been called on constructed strings, as described
 in \refsec{string-intern}.
 
+String literals may contain the same character escape sequences as
+character literals (see \refsec{character-literals}).
+
 
 \subsection{Contents of a String}
 
@@ -888,10 +977,12 @@ pointer into an array.  Second, they contain references to an array of
 characters, \code{char[]}, holding the actual characters, as well as
 an integer start index into that array and an integer length.  They
 also store their hash code as an integer.  Thus an empty string will
-be 36 bytes in the 32-bit Sun/Oracle JVM and 56 bytes in the 64-bit
-version (basic object plus integer offset, length and hashcode,
-reference to the array, and the array itself, consisting of the array
-object representation and length).
+be 36 bytes in the 32-bit Sun/Oracle JVM and 60 bytes in the 64-bit
+JVM.%
+%
+\footnote{The JVM option \code{+XX:-XX:+UseCompressedOops} will reduce
+the memory footprint of 64-bit objects to the same size as 32-bit
+objects in many cases.}
 
 % String:  8   +8
 % offset:  4
