@@ -41,4 +41,12 @@
     </java>
   </target>
 
+  <target name="byte-to-string"
+          depends="jar">
+    <java classname="com.lingpipe.book.chars.ByteToString"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+
 </project>
