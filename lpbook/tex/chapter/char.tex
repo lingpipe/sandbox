@@ -466,60 +466,12 @@ be \techdefs{canonical equivalents}{unicode!canonical equivalent} if their
 full canonical decompositions are equal.
 
 
-\section{Encodings in Java}
+\section{Encoding Java Programs}
 
-Java has native support for many encodings, as well as the ability
-to plug in additional encodings as the need arises.
-
-\subsection{Supported Encodings in Java}\label{section:supported-encodings}
-
-Each Java installation supports a range of character encoding, with
-one character encoding serving as the default encoding.  Every
-compliant Java installation supports all of the UTF encodings of
-Unicode.  Other encodings may be added at the installation level, or
-implemented programatically within a JVM instance.
-
-The supported encodings determine what characters can be used to write
-Java programs, as well as which character encoding objects are
-available to convert sequences of bytes to sequences of characters.
-
-The class \code{SupportedEncodings} contains code to display the
-default encoding and the complete range of other encodings supported.
-The first part of the main pulls out the default encoding using
-a static method of \code{java.nio.charset.Charset},
-%
-\codeblock{SupportedEncodings.1}
-%
-The code to pull out the full set of encodings along with their
-aliases is
-%
-\codeblock{SupportedEncodings.2}
-
-The result of running the program is
-%
-\commandlinefollow{ant available-charsets}
-\begin{verbatim}
-Default Encoding=windows-1252
-
-Big5
-     csBig5
-...
-x-windows-iso2022jp
-    windows-iso2022jp
-\end{verbatim}
-%
-The program first writes out the default encoding.  This is
-\code{windows-1252} on my Windows install.  It's typically
-\code{ISO-8859-1} on Linux installs in the United States.
-After that, the program writes all of the encodings, with the official
-name followed by a list of aliases that are also recognized.  We
-ellided most of the output, because there are dozens of encodings
-supported.
-
-\subsection{Encoding Java Programs}
-
-Java programs themselves may be written in any supported
-character encoding.
+Java has native support for many encodings, as well as the ability to
+plug in additional encodings as the need arises (see
+\refsec{supported-encodings}).  Java programs themselves may be
+written in any supported character encoding.
 
 If you use characters other than ASCII characters in your Java
 programs, you should provide the \code{javac} command with a
@@ -578,14 +530,7 @@ in LingPipe, is to write your Java programs in ASCII, using the full
 \code{{\bk}u}\codeVar{xxxx} form of non-ASCII characters.
 
 
-\section{Java Character Data Types}
-
-Java contains primitive data types for characters and numerical
-values.  For each primitive type, there is a corresponding
-class.  For the primitive \code{char} data type, the corresponding
-class is \code{Character}.
-
-\subsection{Primitive Character Type}
+\section{\code{char} Primitive Type}
 
 Java's primitive \code{char} data type is essentially a 16-bit (two
 byte) unsigned integer. Thus a \code{char} can hold values between 0
@@ -621,7 +566,7 @@ short integers, it's possible to directly assign integer values
 to them, as in
 %
 \begin{verbatim}
-char c = \0x00E0;
+char c = 0x00E0;
 \end{verbatim}
 %
 The expression \code{{\bk}0x00E0} is an integer literal in hexadecimal
@@ -733,7 +678,7 @@ disadvantages of having Unicode code points that require multiple
 characters.
 
 
-\subsection{The Character Class}
+\section{\code{Character} Class}
 
 Just like for the numerical types, there is a class,
 \code{Character}, used to box an underlying primitive
@@ -753,7 +698,7 @@ Equality and hash codes are also defined similarly, so that two
 character objects are equal if and only if they reference the same
 underlying character.
 
-\subsubsection{Static Utilities}
+\subsection{Static Utilities}
 
 The \code{Character} class supports a wide range of Unicode-sensitive
 static utility constants and methods in addition to the factory method
@@ -790,7 +735,8 @@ that starts at the specified index int he array of \code{char}.  The
 method \code{charPointCount(char[],int,int)} returns the number of
 code points encoded by the specified \code{char} array slice.
 
-\section{Character Sequences}
+
+\section{\code{CharSequence} Class}
 
 Java provides an interface for dealing with sequences of characters
 aptly named \code{CharSequence}.  It resides in the package
@@ -862,7 +808,7 @@ codes for particular implementations of \code{CharSequence} in the
 next few sections.
 
 
-\section{Strings}
+\section{\code{String} Class}
 
 Strings are so fundamental to Java that they have special literals and
 operators built into the Java language.  Functionally, the class
@@ -1163,7 +1109,7 @@ method as \code{Double.toString(double)}.
 
 
 
-\section{String Builders}
+\section{\code{StringBuilder} Class}
 
 The \code{StringBuilder} class is essentially a mutable implementation
 of the \code{CharSequence} interface.  It contains an underlying array
@@ -1279,4 +1225,89 @@ The class \code{StringBuffer}, which predates
 synchronization.  Because it is rarely desirable to write to a
 string buffer concurrently, \code{StringBuffer} has all but
 disappeared from contemporary Java programs.
+
+
+\section{\code{Charset} Class}
+
+Conversions between sequences of bytes and sequences of characters are
+carried out by three related classes in the \code{java.nio.charset}
+package.  A character encoding is represented by the confusingly named
+\code{Charset} class.  Encoding characters as bytes is carried out by
+an instance of \code{CharsetDecoder} and decoding by an instance of
+\code{CharsetEncoder}.  All characters are represented as usual in
+Java with sequences of \code{char} values representing UTF-16
+encodings of Unicode.
+
+Encoders read from character buffers and write to byte buffers and
+decoders work in the opposite direction.  Specifically, they use the
+\code{java.nio} classes \code{CharBuffer} and \code{ByteBuffer}.  The
+class \code{CharBuffer} implements \code{CharSequence}.
+
+\subsection{Creating a \code{Charset}}
+
+Typically, instances of \code{Charset} and their corresponding
+encoders and decoders are specified by name and accessed behind the
+scenes.  Examples include constructing strings from bytes, converting
+strings to bytes, and constructing \code{char} streams from
+\code{byte} streams.
+
+Java's built-in implementations of \code{Charset} may be accessed by
+name with the static factory method \code{CharSet.forName(String)},
+which returns the character encoding with a specified name.  Once a
+\code{Charset} is obtained, its methods \code{newEncoder()} and
+\code{newDecoder()} may be used to get fresh encoders or decoders for
+the character encoding.
+
+It's also possible to implement subclasses of \code{Charset} by
+implementing the abstract \code{newEncoder()} and \code{newDecoder()}
+methods.  Decoders and encoders need to define behavior in the face of
+malformed input and unmappable characters, possibly defining
+replacement values. So if you must have Morse code, it's possible to
+support it directly.  
+
+\subsection{Supported Encodings in Java}\label{section:supported-encodings}
+
+Each Java installation supports a range of character encodings, with
+one character encoding serving as the default encoding.  Every
+compliant Java installation supports all of the UTF encodings of
+Unicode.  Other encodings, as specified by \code{Charset}
+implementations, may be added at the installation level, or
+implemented programatically within a JVM instance.
+
+The supported encodings determine what characters can be used to write
+Java programs, as well as which character encoding objects are
+available to convert sequences of bytes to sequences of characters.
+
+We provide a class \code{com.lingpipe.book.char.SupportedEncodings} to
+display the default encoding and the complete range of other encodings
+supported.  The first part of the main pulls out the default encoding
+using a static method of \code{java.nio.charset.Charset},
+%
+\codeblock{SupportedEncodings.1}
+%
+The code to pull out the full set of encodings along with their
+aliases is
+%
+\codeblock{SupportedEncodings.2}
+
+The result of running the program is
+%
+\commandlinefollow{ant available-charsets}
+\begin{verbatim}
+Default Encoding=windows-1252
+
+Big5
+     csBig5
+...
+x-windows-iso2022jp
+    windows-iso2022jp
+\end{verbatim}
+%
+The program first writes out the default encoding.  This is
+\code{windows-1252} on my Windows install.  It's typically
+\code{ISO-8859-1} on Linux installs in the United States.
+After that, the program writes all of the encodings, with the official
+name followed by a list of aliases that are also recognized.  We
+ellided most of the output, because there are dozens of encodings
+supported.
 
