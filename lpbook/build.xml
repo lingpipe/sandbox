@@ -63,11 +63,28 @@
     </exec>
   </target>
 
+  <target name="clean-demos">
+    <subant failonerror="false">
+            <fileset dir="src" includes="**/build.xml" excludes="build.xml"/>
+            <target name="clean"/>
+    </subant>
+  </target>
+
+  <target name="jar-demos">
+    <subant failonerror="false">
+            <fileset dir="." includes="**/build.xml" excludes="build.xml"/>
+            <target name="clean"/>
+            <target name="jar"/>
+    </subant>
+  </target>
+
+
   <target name="run-demos">
-    <ant dir="src/intro" target="run"/>
-    <ant dir="src/chars" target="run"/>
-    <ant dir="src/io" target="run"/>
-    <ant dir="src/appjava" target="run"/>    
+    <subant failonerror="false">
+            <fileset dir="." includes="**/build.xml" excludes="build.xml"/>
+            <target name="clean"/>
+            <target name="run"/>
+    </subant>
   </target>
 
 </project>
