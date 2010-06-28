@@ -27,10 +27,13 @@
 
   <target name="byte-table"
           depends="jar">
-    <java classname="com.lingpipe.book.chars.ByteTable"
+    <java classname="com.lingpipe.book.appjava.ByteTable"
           classpath="${jar}"
           fork="true">
     </java>
   </target>
+
+  <target name="run"
+          depends="byte-table"/>
 
 </project>

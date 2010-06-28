@@ -17,6 +17,8 @@
     <delete dir="build"/>
     <ant dir="src/intro" target="clean"/>
     <ant dir="src/chars" target="clean"/>
+    <ant dir="src/io" target="clean"/>
+    <ant dir="src/appjava" target="clean"/>
   </target>
 
   <target name="jar">
@@ -59,6 +61,13 @@
       <arg value="../../tex/styles/lingpipe-book.ist"/>
       <arg value="${title}.idx"/>
     </exec>
+  </target>
+
+  <target name="run-demos">
+    <ant dir="src/intro" target="run"/>
+    <ant dir="src/chars" target="run"/>
+    <ant dir="src/io" target="run"/>
+    <ant dir="src/appjava" target="run"/>    
   </target>
 
 </project>

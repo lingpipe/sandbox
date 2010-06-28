@@ -33,4 +33,7 @@
     </java>
   </target>
 
+  <target name="run"
+          depends="hello"/>
+
 </project>
