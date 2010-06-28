@@ -41,4 +41,8 @@
     </java>
   </target>
 
+  <target name="run"
+          depends="available-charsets,
+                   byte-to-string"/>
+
 </project>
