@@ -5,7 +5,7 @@
             value="4.0"/>
 
   <property name="jar"
-            value="build/lp-book-intro-${version}.jar"/>
+            value="build/lp-book-java-${version}.jar"/>
 
   <target name="clean">
     <delete dir="build"/>
@@ -28,22 +28,6 @@
   <target name="byte-table"
           depends="jar">
     <java classname="com.lingpipe.book.chars.ByteTable"
-          classpath="${jar}"
-          fork="true">
-    </java>
-  </target>
-
-  <target name="available-charsets"
-          depends="jar">
-    <java classname="com.lingpipe.book.chars.SupportedEncodings"
-          classpath="${jar}"
-          fork="true">
-    </java>
-  </target>
-
-  <target name="byte-to-string"
-          depends="jar">
-    <java classname="com.lingpipe.book.chars.ByteToString"
           classpath="${jar}"
           fork="true">
     </java>
