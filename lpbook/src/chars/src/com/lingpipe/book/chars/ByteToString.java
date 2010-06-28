@@ -1,46 +1,38 @@
 package com.lingpipe.book.chars;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 public class ByteToString {
 
+    /*x ByteToString.1 */
     public static void main(String[] args) 
-        throws UnsupportedEncodingException, IOException {
+        throws UnsupportedEncodingException {
 
-        String dv = "D\u00E9j\u00E0a vu";  
+        String s = "D\u00E9j\u00E0 vu\n";
+        String encode = args[0];
+        String decode = args[1];
 
-        String[] encodings = { "UTF-8", "UTF-16", "Latin1", "ASCII" };
+        byte[] bs = s.getBytes(encode);
+        String t = new String(bs,decode);
+    /*x*/
 
-        for (String enc : encodings)
-            dumpBytes(dv,enc);
-
-        for (String enc1 : encodings)
-            for (String enc2 : encodings)
-                codec(dv,enc1,enc2);
+        System.out.println("char[] from string");
+        dumpString(s);
+        System.out.println("byte[] from encoding with " + encode);
+        dumpBytes(bs);
+        System.out.println("char[] from decoding with " + decode);
+        dumpString(t);
     }
 
-    static void dumpBytes(String s, String encoding) 
-        throws IOException {
-        byte[] bs = s.getBytes(encoding);
-        System.out.println("\nEncoding=" + encoding);
-        for (int i = 0; i < bs.length; ++i)
-            System.out.print(bs[i] + " ");
+    static void dumpBytes(byte[] bs) {
+        for (byte b : bs)
+            System.out.printf("%4d  ",b);
         System.out.println();
     }
 
-    static void codec(String s, String enc1, String enc2) 
-        throws IOException {
-        byte[] bs = s.getBytes(enc1);
-        String s2 = new String(bs,enc2);
-        System.out.println("\n" + enc1 + "->" + enc2 + "  OK=" + (s.equals(s2)));
-        dump(s);
-        dump(s2);
-    }
-
-    static void dump(String s) {
-        for (int i = 0; i < s.length(); ++i)
-            System.out.printf("%6h", (int)s.charAt(i));
+    static void dumpString(String s) {
+        for (char c : s.toCharArray())
+            System.out.printf("%4h  ",c);
         System.out.println();
     }
 

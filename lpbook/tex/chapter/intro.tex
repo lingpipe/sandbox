@@ -139,9 +139,9 @@ File} selection from the \menuitem{Options} menu.
   nil)
 
 (add-hook 'java-mode-hook
-          '(lambda ()
-             (make-local-variable 'write-contents-hooks)
-             (add-hook 'write-contents-hooks 'java-mode-untabify)))
+      '(lambda ()
+         (make-local-variable 'write-contents-hooks)
+         (add-hook 'write-contents-hooks 'java-mode-untabify)))
 
 (setq indent-tabs-mode nil)\end{verbatim}\vspace*{-12pt}%
 \caption{Required configuration for emacs so that it uses spaces rather than tabs for Java.}\label{fig:emacs-tabs}%

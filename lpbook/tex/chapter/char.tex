@@ -914,6 +914,45 @@ in \refsec{string-intern}.
 String literals may contain the same character escape sequences as
 character literals (see \refsec{character-literals}).
 
+\subsection{Example Conversions}
+
+We wrote a simple program to illustrate encoding and decoding between
+strings and byte arrays.  
+%
+\codeblock{ByteToString.1}
+%
+First, the string \stringmention{D\'ej\`a vu} is
+assigned to variable
+\code{s}.  The string literal uses two Unicode escapes, 
+\code{{\bk}u00E9} for \charmention{\'e} and \code{{\bk}u00E0} for 
+\charmention{\`a}.  The name of the character encoding to use for
+encoding and decoding are read from the command line.  
+
+Then we convert the string \code{s} to an array of bytes
+\code{bs} using the character encoding \code{encode}.  Next, we
+reconstitute a string using the bytes we just created using the
+character encoding \code{decode}.  Either of these methods may raise
+an exception if the specified encoding is not supported, so the 
+\code{main()} method is declared to throw an
+\code{UnsupportedEncodingException}, imported from \code{java.io}.
+The rest of the code just prints the relevant characters and bytes.
+
+There is an Ant target \code{byte-to-string} that's configured to take
+two arguments consisting of the names of the character encodings.  The
+first is used to convert a string to bytes and the second to convert
+the bytes back to a string.  For instance, to use UTF-8 to encode and
+Latin1 (ISO-8859-1) to decode, the program prints
+%
+\commandlinefollow{ant -Dencode=UTF-8 -Ddecode=Latin1 byte-to-string}
+\begin{verbatim}
+char[] from string
+  44    e9    6a    e0    20    76    75     a
+byte[] from encoding with UTF-8
+  68   -61   -87   106   -61   -96    32   118   117    10
+char[] from decoding with Latin1
+  44    c3    a9    6a    c3    a0    20    76    75     a
+\end{verbatim}
+
 
 \subsection{Contents of a String}
 
@@ -926,7 +965,7 @@ also store their hash code as an integer.  Thus an empty string will
 be 36 bytes in the 32-bit Sun/Oracle JVM and 60 bytes in the 64-bit
 JVM.%
 %
-\footnote{The JVM option \code{+XX:-XX:+UseCompressedOops} will reduce
+\footnote{The JVM option \code{-XX:+UseCompressedOops} will reduce
 the memory footprint of 64-bit objects to the same size as 32-bit
 objects in many cases.}
 
@@ -1227,6 +1266,158 @@ string buffer concurrently, \code{StringBuffer} has all but
 disappeared from contemporary Java programs.
 
 
+\section{\code{CharBuffer} Class}
+
+The \code{CharBuffer} class resides in the \code{java.nio} package
+along with corresponding classes for other primitive types, such as
+\code{ByteBuffer} and \code{IntBuffer}.  These buffers all hold sequences
+of their corresponding primitive types and provide efficient means to
+bulk load or bulk dump sequences of the primitive values they hold.
+
+\subsection{Basics of Buffer Positions}
+
+The buffers all extend the \code{Buffer} class, also from
+\code{java.nio}.  Buffers may be created backed by an array that holds the appropriate
+primitive values, though array backing is not required.
+
+Every buffer has four important integer values that determine how it
+behaves, its capacity, position, mark and limit.  Buffers may thus
+only have a capacity of up to \code{Integer.MAX\_VALUE} (about 2
+billion) primitive values.  
+
+The capacity of a buffer is available through the \code{capacity()}
+method.  This is the maximum number of items the buffer can hold.
+
+The position of a buffer is available through the \code{position()}
+method and settable with \code{setPosition(int)}.  The position is the
+index of the next value to be accessed.  The position must always
+be between zero (inclusive) and the buffer's capacity (inclusive).
+
+Relative read and write operations start at the current position and
+increment the position by the number of primitive values read or
+written.  Underflow or overflow exceptions will be thrown if there are
+not enough values to read or write respectively.  There are also
+absolute read and write operations which require an explicit index.
+
+The limit for a buffer indicates the first element that should not be
+read or written to.  The limit is always between the position (inclusive)
+and the capacity (inclusive).
+
+Three general methods are used for resetting these values.  The
+\code{clear()} method sets the limit to the capacity and the position
+to zero.  The \code{flip()} method sets the limit to the current
+position and the position to zero.  The \code{rewind()} method just
+sets the position to zero.  
+
+All of the buffers in \code{java.nio} also implement the
+\code{compact()} operation, which moves the characters from between
+the current position and the limit to the start of the buffer,
+resetting the position to be just past the moved characters (limit
+minus original position plus one).
+
+Finally, the mark for a buffer indicates the position the buffer will
+have after a call to \code{reset()}.  It may be set to the current
+position using \code{mark()}.  The mark must always be between the
+zero (inclusive) and the position (inclusive).
+
+\subsection{Equality and Comparison}
+
+Equality and comparison work on the remaining characters, which is the
+sequence of characters between the current position and the limit.
+Two \code{CharBuffer} instances are equal if they have the same number
+of (remaining) elements and all these elements are the same.  Thus the
+value of \code{hashCode()} only depends on the remaining characters.
+Similarly, comparison is done lexicographically using the remaining
+characters.
+
+Because hash codes for buffers may change as their elements change,
+they should not be put into collections based on their hash code
+\ie{\code{HashSet} or \code{HashMap}} or their natural order
+\ie{\code{TreeSet} or \code{TreeMap}}.
+
+The \code{length()} and \code{charAt(int)} methods from \code{CharSequence}
+are also defined relative to the remaining characters.
+
+
+\subsection{Creating a \code{CharBuffer}}
+
+A \code{CharBuffer} of a given capacity may be created along with
+a new backing array using
+\code{CharBuffer.allocate(int)}; a buffer may also be created from
+an existing array using \code{CharBuffer.wrap(char[])} or from a slice
+of an existing array.  Wrapped buffers are backed by the specified
+arrays, so changes to them affect the buffer and vice-versa.
+
+\subsection{Absolute Sets and Gets}
+
+Values may be added or retrieved as if it were an array, using
+\code{get(int)}, which returns a
+\code{char}, and \code{set(int,char)}, which sets the specified index
+to the specified \code{char} value.
+
+\subsection{Relative Sets and Gets}
+
+There are also relative set and get operations, whose behavior is
+based on the position of the buffer.  The \code{get()} method returns
+the character at the current position and increments the position.
+The \code{put(char)} method sets the character at the current position
+to the specified value and increments the position.  
+
+In addition to single characters, entire \code{CharSequence} or
+\code{char[]} values or slices thereof may be put into the array, with
+overflow exceptions raised if not all values fit in the buffer.
+Similarly, \code{get(char[])} fills the specified character array
+starting from the current position and increments the position,
+throwing an exception if there are not enough characters left in the
+buffer to fill the specified array.  The portion of the array to fill
+may also be specified by slice.
+
+The idiom for bulk copying between arrays is to fill the first array
+using relative puts, flip it, then copy to another array using
+relative gets.  For instance, to use a \code{CharBuffer} to concatenate
+the values in an array, we might use%
+%
+\footnote{Actually, a \code{StringBuilder} is better for this job
+because its size doesn't need to be set in advance like a
+\code{CharBuffer}'s.}%
+%
+\begin{verbatim}
+String[] xs = ...;
+CharBuffer cb = CharBuffer.allocate(1000);
+for (String s : ss)
+    cb.put(s);
+flip();
+String s = cb.toString();
+\end{verbatim}
+%
+After the \code{put()} operations in the loop, the position is
+after the last character.  If we were to dump to a string at this
+point, we would get nothing.  So we call \code{flip()}, which
+sets the position back to zero and the limit to the current
+position.  Then when we call \code{toString()}, we get the values
+between zero and the limit, namely all the characters we appended.
+The call to \code{toString()} does not modify the buffer.
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+\subsection{Thread Safety}
+
+Buffers maintain state and are not synchronized for thread safety.
+Read-write synchronization would be sufficient.
+
+
+
 \section{\code{Charset} Class}
 
 Conversions between sequences of bytes and sequences of characters are
@@ -1253,10 +1444,7 @@ strings to bytes, and constructing \code{char} streams from
 
 Java's built-in implementations of \code{Charset} may be accessed by
 name with the static factory method \code{CharSet.forName(String)},
-which returns the character encoding with a specified name.  Once a
-\code{Charset} is obtained, its methods \code{newEncoder()} and
-\code{newDecoder()} may be used to get fresh encoders or decoders for
-the character encoding.
+which returns the character encoding with a specified name.  
 
 It's also possible to implement subclasses of \code{Charset} by
 implementing the abstract \code{newEncoder()} and \code{newDecoder()}
@@ -1264,6 +1452,56 @@ methods.  Decoders and encoders need to define behavior in the face of
 malformed input and unmappable characters, possibly defining
 replacement values. So if you must have Morse code, it's possible to
 support it directly.  
+
+\subsection{Decoding and Encoding with a \code{Charset}}
+
+Once a \code{Charset} is obtained, its methods \code{newEncoder()} and
+\code{newDecoder()} may be used to get fresh instances of
+\code{CharsetEncoder} and \code{CharsetDecoder} as needed. These classes
+provide methods for encoding \code{char} buffers as \code{byte}
+buffers and decoding \code{byte} buffers to \code{char} buffers.  The
+\code{Charset} class also provides convenience methods for decoding
+and encoding characters.
+
+The basic encoding method is
+\code{encode(CharBuffer,ByteBuffer,boolean)}, which maps the
+\code{byte} values in the \code{ByteBuffer} to \code{char} values in
+the \code{CharBuffer}.  These buffer classes are in \code{java.nio}.
+The third argument is a flag indicating whether or not the bytes are
+all the bytes that will ever be coded.  It's also possible to use the
+\code{canEncode(char)} or \code{canEncode(CharSequence)} methods to
+test for encodability.  
+
+The \code{CharsetEncoder} determines the behavior in the face of
+unmappable characters.  The options are determined by the values of
+class \code{CodingErrorAction} (also in \code{java.nio.charset}).%
+%
+\footnote{The error action class is the way type-safe enumerations used to
+be encoded before \code{enum}s were added diretly to the language, with
+a private constructor and a set of static constant implementations.}%
+%
+The three actions allowed are to ignore unmappable characters (static
+constant \code{IGNORE} in \code{CodingErrorAction}), replace them with
+a specified sequence of bytes (\code{REPLACE}), or to report the
+error, either by raising an exception or through a return value
+(\code{REPORT}).  Whether an exception is raised or an exceptional return
+value provided depends on the calling method.  For the replacement option,
+the bytes used to replace an unmappable character may be set on the
+\code{CharsetEncoder} using the \code{replaceWith(byte[])} method.
+
+The \code{CharsetDecoder} class is similar to the encoder class, only
+moving from a \code{CharBuffer} back to a \code{ByteBuffer}.  The way
+the decoder handles malformed sequences of bytes is similar to the
+encoder's handling of unmappable characters, only allowing a sequence
+of \code{char} as a replacement rather than a sequence of \code{byte}
+values.
+
+The \code{CharsetEncoder} and \code{CharsetDecoder} classes maintain
+buffered state, so are not thread safe.  New instances should be
+created for each encoding and decoding job, though they may be reused
+after a call to \code{reset()}.
+
+
 
 \subsection{Supported Encodings in Java}\label{section:supported-encodings}
 
