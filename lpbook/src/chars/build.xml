@@ -25,14 +25,6 @@
     </jar>
   </target>
 
-  <target name="byte-table"
-          depends="jar">
-    <java classname="com.lingpipe.book.chars.ByteTable"
-          classpath="${jar}"
-          fork="true">
-    </java>
-  </target>
-
   <target name="available-charsets"
           depends="jar">
     <java classname="com.lingpipe.book.chars.SupportedEncodings"
