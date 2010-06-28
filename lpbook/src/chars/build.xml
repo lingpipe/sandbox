@@ -33,11 +33,18 @@
     </java>
   </target>
 
+  <property name="encode"
+            value="UTF-8"/>
+  <property name="decode"
+            value="Latin1"/>
+
   <target name="byte-to-string"
           depends="jar">
     <java classname="com.lingpipe.book.chars.ByteToString"
           classpath="${jar}"
           fork="true">
+      <arg value="${encode}"/>
+      <arg value="${decode}"/>
     </java>
   </target>
 

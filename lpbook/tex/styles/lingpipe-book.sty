@@ -1,6 +1,10 @@
 % ====================== IMPORTS ======================
 
-\usepackage[scale=0.90]{lucimatx}
+\usepackage[scale=0.925]{lucimatx}
+% 0.950 62 chars of code full scale
+% 0.925 64
+% 0.900 65.5
+% 0.850 69.5
 %\renewcommand{\rmdefault}{ptm} % set roman; comment out for Lucida Bright
 
 \usepackage{amsmath}
@@ -49,7 +53,7 @@
 \sloppy % no over-runs on lines
 \raggedbottom % allows uneven pages (vs. \flushbottom)
 
-\linespread{1.05} % tied to lucimatx; Lucida Bright looks too cramped at 1.0
+\linespread{1.075} % tied to lucimatx; Lucida Bright looks too cramped at 1.0
 
 
 % ====================== LOOK ======================
@@ -69,9 +73,8 @@
 
 % CONSTANTS
 \newcommand{\autocodedir}{../build/tex/out}
-\newcommand{\bookname}{LingPipe 4.0}
-\newcommand{\booknamecaps}{LINGPIPE 4.0}
 \newcommand{\rootdir}{\$BOOK}
+\newcommand{\bookname}{LingPipe 4.0}
 
 % AUTO CODE
 \newcommand{\codeblock}[1]{\begin{trivlist}\item[] \ttfamily\input{\autocodedir/#1}\end{trivlist}}
@@ -126,3 +129,14 @@
 \newcommand{\techdef}[1]{\techdefs{#1}{#1}}
 \newcommand{\techdefs}[2]{{\it #1}\index{#2}\xspace}
 
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{0mm}{-1.5\baselineskip}{0.4\baselineskip}{\normalfont\large\bf}}
+\makeatother
+
+\makeatletter
+\renewcommand\subsection{\@startsection{subsection}{2}{0mm}{-1\baselineskip}{0.25\baselineskip}{\normalfont\bf}}
+\makeatother
+
+\makeatletter
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{0mm}{-0.75\baselineskip}{0.25\baselineskip}{\normalfont\it}}
+\makeatother
