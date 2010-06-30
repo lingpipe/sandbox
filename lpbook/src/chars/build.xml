@@ -5,7 +5,7 @@
             value="4.0"/>
 
   <property name="jar"
-            value="build/lp-book-intro-${version}.jar"/>
+            value="build/lp-book-chars-${version}.jar"/>
 
   <path id="classpath">
     <pathelement location="${jar}"/>
