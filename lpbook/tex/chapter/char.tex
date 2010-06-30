@@ -68,10 +68,10 @@ upper left to lower right.
 \subsubsection{Compound versus Primitive Characters}
 
 Characters may be simple or compound.  For instance, the character
-'\"o' used in German is composed of a plain Latin 'o' character with
-an umlaut diacritic on top.  Diacritics are visual representations
-added to other characters, and there is a broad range of them in
-European languages.  
+\charmention{\"o} used in German is composed of a plain Latin \charmention{o}
+character with an umlaut diacritic on top.  Diacritics are visual
+representations added to other characters, and there is a broad range
+of them in European languages.
 
 Hebrew and Arabic are typically written without vowels.  In very
 formal writing, vowels may be indicated in these languages with
@@ -439,10 +439,15 @@ Unicode marks the directionality in which characters are typically
 wirtten using character types like ``R'' for right-to-left
 and ``L'' for left-to-right.
 
-\subsubsection{Canonical Forms}
+\subsubsection{Normalization Forms}\label{section:unicode-normalization-forms}
 
-Consider again the problem of compound characters.  For example,
-consider the three characters: \unicode{00E0},
+In order to aid text processing efforts, such as search, Unicode
+defines several notions of normalization.  These are defined in great
+detail in Unicode Standard Annex~\#15, \booktitle{The Unicode
+Normalization Forms}.
+
+First, we consider decomposition of precomposed characters.  For
+example, consider the three Unicode characters: \unicode{00E0},
 \unicodedesc{latin small letter a with grave}, rendered
 \charmention{\`a}, \unicode{0061}, \unicodedesc{latin small letter a}, 
 rendered as \charmention{a}, and \unicode{0300},
@@ -451,19 +456,89 @@ by combining it as an accent over the previous character.  For most
 purposes, the combination \unicode{00E0} means the same thing in text
 as \unicode{0061} followed by \unicode{0300}.
 
-In order to aid text processing efforts, such as search, Unicode
-defines a notion of canonical decomposition.  The \techdefs{canonical
-decomposition}{unicode!canonical decomposition} of \unicode{00E0} is
-as the sequence \unicode{0061},
-\unicode{0300}.  In general, a full canonical decomposition continues
+There are four basic normalization forms, reproduced here from Table 1
+in the normalization annex document.
+%
+\begin{center}
+\begin{tabular}{|l|p{0.5\textwidth}|}
+\hline
+\tblhead{Normalization Form} & \tblhead{Description} 
+\\ \hline
+NFD & canonical decomposition
+\\ \hline
+NFC & canonical decomposition, followed by canonical composition
+\\ \hline
+NFKD & compatibility decomposition
+\\ \hline
+NFKC & compatibility decomposition, followed by canonical composition
+\\ \hline
+\end{tabular}
+\end{center}
+%
+The first two forms, NFD and NFC, first perform a canonical
+decomposition of character sequences.  This breaks compound characters
+into a base character plus accent marks, sorting multiple accent marks
+into a canonical order.  For instance, the canonical decomposition of
+the sequence \unicode{0061}, \unicode{0300} (small a followed by grave
+accent) is the same as that of the single character \unicode{00E0} (small a
+with grave accent), namely the sequence
+\unicode{0061}, \unicode{0300}.  
+
+In general, a full canonical decomposition continues
 to decompose characters into their components until a sequence of
 non-decomposible characters is produced.  Furthermore, if there is
 more than one nonspacing mark (like \unicode{0300}), then they are
 sorted into a canonical order.
 
-From the notion of canonical decomposition, two seqeunces are said to
-be \techdefs{canonical equivalents}{unicode!canonical equivalent} if their
-full canonical decompositions are equal.
+NFC differs from NFD in that it further puts the characters back
+together into their canonical composed forms, whereas NFD leaves them
+as a sequence.  Applying NFC normalization to either the sequence
+\unicode{0061}, \unicode{0300} or the precomposed character
+\unicode{00E0} results in the canonical composed character \unicode{00E0}.
+
+The second two forms, NFKD and NFKC, replace the canonical
+decomposition with a compatibility decomposition.  This reduces
+different Unicode code points that are in some sense the same
+character to a common representation.  As an example, the character
+\unicode{2075}, \unicodedesc{superscript five}, is typically written
+as a superscripted version of \unicode{0035}, \unicodedesc{digit five},
+namely as ${}^{\mbox{\footnotesize\charmention{5}}}$.
+Both involve the underlying character \charmention{5}.  With
+canonical decomposition, \unicode{2075} is normalized to \unicode{0035}.
+Similarly, the so-called ``full width'' forms of ASCII characters, 
+\unicode{FF00} to \unicode{FF5E}, are often used in Chinese; each
+has a corresponding ASCII character in \unicode{0021} to \unicode{007E}
+to which it is compatibility normalized.  
+
+There are special behaviors for multiple combining marks.  When
+recombining, only one mark may wind up being combined, as the
+character with multiple marks may not have its own precomposed code
+point.  
+
+There is also special behavior for composites like the ligature
+character \charmention{fi}, which in Unicode gets its own precomposed
+code point, \unicode{FB01}, \unicodedesc{latin small ligature fi}.
+Only the compatibility version decomposes the ligature into
+\unicode{0066}, \unicodedesc{latin small f}, followed by \unicode{0069},
+\unicodedesc{latin small i}.
+
+Two strings are said to be canonical equivalent if they have
+the same canonical decomposition, and compatibility equivalent
+if they have the same compatibility decomposition.  
+
+The normalizations are nice in that if strings are canonical
+equivalents, then their NFC normalizations are the same.  If two
+strings are canonical equivalents, their NFD normalizations are also
+the same.  The NFD normalization and NFC normalization of a single
+string are not necessarily the same.  The same properties hold for
+compatibility equivalents and NFKC and NFKD normalizations.  Another
+nice property is that the transformations are stable in that applying
+a normalization twice (in the sense of applying it once, then applying
+it again to the output), produces the same result as applying it
+once \ie{its an idemopotent transformation}. 
+
+We show how to convert character sequences to their canonical forms
+programatically using the ICU package in \refsec{icu-unicode-normalization}.
 
 
 \section{Encoding Java Programs}
@@ -585,7 +660,6 @@ some special escape sequences which may be used in character and
 string literals.  
 %
 \begin{center}
-\hfill
 \begin{tabular}{lll}
 \tblhead{Escape} & \tblhead{Code Point} & \tblhead{Description}
 \\
@@ -596,10 +670,6 @@ string literals.
 \code{{\bk}b} & \unicode{0008} & \unicodedesc{backspace}
 \\
 \code{{\bk}r} & \unicode{000D} & \unicodedesc{carriage return}
-\end{tabular}
-\hfill
-\begin{tabular}{lll}
-\tblhead{Escape} & \tblhead{Code Point} & \tblhead{Description}
 \\
 \code{{\bk}f} & \unicode{000C} & \unicodedesc{form feed}
 \\
@@ -609,7 +679,6 @@ string literals.
 \\
 \code{{\bk}"} & \unicode{0022} & \unicodedesc{quotation mark}
 \end{tabular}
-\hfill
 \end{center}
 %
 For instance, we'd write
@@ -1618,13 +1687,146 @@ linguistic processing, including boundary detection for words,
 sentences and paragraphs as well as transliteration between texts in
 different languages.
 
+\subsection{Unicode Normalization}\label{section:icu-unicode-normalization}
+
+ICU implements all the Unicode normalization schemes (see
+\refsec{unicode-normalization-forms}).  The following code shows how to use NFKC,
+the normalization form that uses compatibility decomposition, followed
+by a canonical composition.
+%
+\codeblock{NormalizeUnicode.1}
+%
+The ICU class \code{Normalizer2} is defined in the package
+\code{com.ibm.icu.text}.  There is no public constructor, so we use the
+rather overloaded and confusing static factory method
+\code{getInstance()} to create a normalizer instance.  The first
+argument is \code{null}, which causes the normalizer to use ICU's
+definitions of normalization rather than importing definitions through
+an input stream.  The second argument, \code{"nfkc"} is an
+unfortunately named string contstant indicating that we'll use NFKC or
+NFKD normalization.  The third argument is the static constant
+\code{COMPOSE}, from the static nested class \code{Normalizer2.Mode},
+which says that we want to compose the output, hence producing NFKC.
+Had we used the constant \code{DECOMPOSE} for the third argument, we'd
+get an NFKD normalizer.  Finally, it allows case folding after the NFKC normalization
+by specifying the second argument as \code{"nfkc\_cf"}.  
+
+Once we've constructed the normalizer, using it is straightforward.
+We just call its \code{normalize()} method, which takes a
+\code{CharSequence} argument.  We first created two sequences of Unicode
+characters, \unicode{00E0} (small a with grave accent), and
+\unicode{0061}, \unicode{0300} (small a followed by grave accent).
+After that, we just print out the \code{char} values from the
+strings.
+
+\commandlinefollow{ant normalize-unicode}
+\begin{verbatim}
+s1 char values=  e0
+s2 char values=  61, 300
+n1 char values=  e0
+n2 char values=  e0
+\end{verbatim}
+%
+Clearly the initial strings \code{s1} and \code{s2} are different.
+Their normalized forms, \code{n1} and \code{n2}, are both the same as
+\code{s1}, because we chose the composing normalization scheme that
+recomposes compound characters to the extent possible.
+
+
 \subsection{Encoding Detection}
 
 Unfortunately, we are often faced with texts with unknown character
-encodings.  Even when character encodings are specified, say for
-an XML document, they can be wrong.  ICU does a good job at 
-detecting the character encoding from a sequence of bytes.  Using
-it is simple, 
+encodings.  Even when character encodings are specified, say for an
+XML document, they can be wrong.  ICU does a good job at detecting the
+character encoding from a sequence of bytes, although it only supports
+a limited range of character encodings, not including the pesky
+Windows-1252, which is highly confusible with Latin1 and just as
+confuisble with UTF-8 as Latin1.  It's also problematic for Java use,
+because the default Java install on Windows machines uses Windows-1252 as
+the default character encoding.
+
+We created a sample class \relpath{DetectEncoding}, which begins its
+\code{main()} method by extracting (and then displaying) the detectable
+character encodings,
+%
+\codeblock{DetectEncoding.1}
+%
+These are the only encodings that will ever show up as return values
+from detection.  
+
+The next part of the program does the actual detection
+%
+\codeblock{DetectEncoding.2}
+%
+First, it sets a variable that we'll use for the declared encoding,
+ISO-8859-1, a variable for the string we'll decode,
+\stringmention{D\'ej\`a vu}, and an array of encodings we'll test.
+For each of those encodings, we set the byte array \code{bs} to result
+of getting the bytes using the current encoding.  We then create an
+instance of \code{CharsetDetector} (in \code{com.ibm.icu.text}) using
+the no-arg constructor, set its declared encoding, and set its text to
+the byte array.  We then generate an array of matches using the
+\code{detecAll()} method on the detector.  These matches are instances
+of \code{CharsetMatch}, in the same pacakge.  
+
+The rest of our the code just iterates through the matches and prints them.
+%
+\codeblock{DetectEncoding.3}
+%
+For each match, we grab the name name of the character encoding, the
+integer confidence value, which will range from 0 to 100 with higher
+numbers being better, and the inferred language, which will be a
+3-letter ISO code.  We also get the text that is produced by using
+the specified character encoding to convert the string.  
+These are then printed, but instead of printing the text, we just
+print whether its equal to our original string \code{s}.
+
+The result of running the code is
+%
+\commandlinefollow{ant detect-encoding}
+\begin{verbatim}
+Detectable Charsets=[UTF-8, UTF-16BE, UTF-16LE, UTF-32BE, 
+UTF-32LE, Shift_JIS, ISO-2022-JP, ISO-2022-CN, ISO-2022-KR, 
+GB18030, EUC-JP, EUC-KR, Big5, ISO-8859-1, ISO-8859-2, 
+ISO-8859-5, ISO-8859-6, ISO-8859-7, ISO-8859-8, windows-1251, 
+windows-1256, KOI8-R, ISO-8859-9, IBM424_rtl, IBM424_ltr, 
+IBM420_rtl, IBM420_ltr]
+
+encoding=UTF-8 # matches=3
+     guess=UTF-8 conf=80 lang=null
+         chars= 44 e9 6a e0 20 76 75 2e
+     guess=Big5 conf=10 lang=zh
+         chars= 44 77c7 6a fffd 20 76 75 2e
+     ...
+
+encoding=UTF-16 # matches=4
+     guess=UTF-16BE conf=100 lang=null
+         chars= feff 44 e9 6a e0 20 76 75 2e
+     guess=ISO-8859-2 conf=20 lang=cs
+         chars= 163 2d9 0 44 0 e9 0 6a 0 155 0 20 0 ...
+     ...
+
+encoding=ISO-8859-1 # matches=0
+\end{verbatim}
+%
+Overall, it doesn't do such a good job on short strings like this.
+The only fully correct answer is for UTF-8, which retrieves
+the correct sequence of \code{char} values.
+
+The UTF-16BE encoding is the right guess, but it messes up the
+conversion to text by concatenating the two byte order marks \code{FE}
+and \code{FF} indicating big-endian into a single \code{char} with value
+\code{0xFEFF}.  The detector completely misses the Latin1 encoding, which
+seems like it should be easy.    
+
+The language detection is very weak, being linked to the character
+encoding.  For instance, if the guessed encoding is Big5, the language
+is going to be Chinese (ISO code ``zh'').
+
+Confidence is fairly low all around other than UTF-16BE, but
+this is mainly because we have a short string.  In part, the
+character set detector is operating statistically by weighing how
+much evidence it has for a decision.
 
 
 
