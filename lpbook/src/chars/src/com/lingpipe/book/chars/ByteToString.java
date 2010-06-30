@@ -8,7 +8,7 @@ public class ByteToString {
     public static void main(String[] args) 
         throws UnsupportedEncodingException {
 
-        String s = "D\u00E9j\u00E0 vu\n";
+        String s = "D\u00E9j\u00E0 vu";
         String encode = args[0];
         String decode = args[1];
 
@@ -26,7 +26,7 @@ public class ByteToString {
 
     static void dumpBytes(byte[] bs) {
         for (byte b : bs)
-            System.out.printf("%4d  ",b);
+            System.out.printf("%4h  ",b >= 0 ? b : 256+b);
         System.out.println();
     }
 

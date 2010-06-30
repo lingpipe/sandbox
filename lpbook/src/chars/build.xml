@@ -7,6 +7,12 @@
   <property name="jar"
             value="build/lp-book-intro-${version}.jar"/>
 
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/icu4j-4_4_1.jar"/>
+  </path>
+            
+
   <target name="clean">
     <delete dir="build"/>
   </target>
@@ -17,6 +23,7 @@
            debuglevel="source,lines,vars"
            destdir="build/classes"
            includeantruntime="false">
+      <classpath refid="classpath"/>
       <src path="src/"/>
     </javac>
     <jar destfile="${jar}">
@@ -48,8 +55,20 @@
     </java>
   </target>
 
+
+  <target name="detect-encoding"
+          depends="jar">
+    <java classname="com.lingpipe.book.chars.DetectEncoding"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${bytes}"/>
+      <arg value="${decode}"/>
+    </java>
+  </target>
+
   <target name="run"
           depends="available-charsets,
-                   byte-to-string"/>
+                   byte-to-string,
+                   detect-encoding"/>
 
 </project>
