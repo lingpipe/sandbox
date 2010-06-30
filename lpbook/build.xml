@@ -13,12 +13,9 @@
   <property name="java2tex.out"
             value="build/tex/out"/>
 
-  <target name="clean">
+  <target name="clean"
+          depends="clean-demos">
     <delete dir="build"/>
-    <ant dir="src/intro" target="clean"/>
-    <ant dir="src/chars" target="clean"/>
-    <ant dir="src/io" target="clean"/>
-    <ant dir="src/appjava" target="clean"/>
   </target>
 
   <target name="jar">
