@@ -132,7 +132,7 @@ carriage returns as well as terminal controls like ringing the
 The term ``ASCII'' is sometimes used informally to refer to character
 data in general, rather than the specific ASCII character encoding.
 
-\subsubsection{Latin1 and the Other Latins}
+\subsubsection{Latin1 and the Other Latins}\label{section:latin1}
 
 Given that ASCII only uses 7 bits and bytes are 8 bits, the natural
 extension is to add another 128 characters to ASCII.  Latin1
@@ -249,7 +249,7 @@ endian, Motorola's PowerPC is big endian.  Some hardware, such
 as Sun Sparc, Intel Itanium and the ARM, is called bi-endian, because
 endianness may be switched.
 
-\subsubsection{UTF-16}
+\subsubsection{UTF-16}\label{section:utf-16}
 
 The UTF-16 encoding is variable length, meaning that different code
 points use different numbers of bytes.  For UTF-16, each character is
@@ -336,7 +336,7 @@ by looking at a pair of bytes whether we have a whole character, the
 first half of a character represented as a surrogate pair, or the
 second half of a character represented as a pair.
 
-\subsubsection{UTF-8}
+\subsubsection{UTF-8}\label{section:utf-8}
 
 UTF-8 works in much the same way as UTF-16 (see the previous section),
 only using single bytes as the minimum code size.  We
@@ -394,7 +394,7 @@ is never a subsequence of the bytes making up another character.  This
 makes applications like search more robust.
 
 
-\subsubsection{Byte Order Marks}
+\subsubsection{Byte Order Marks}\label{section:byte-order-marks}
 
 In the encoding schemes which are not explicitly marked as being
 little or big endian, namely UTF-32, UTF-16 and UTF-8, it is also
@@ -589,13 +589,13 @@ string literals.
 \begin{tabular}{lll}
 \tblhead{Escape} & \tblhead{Code Point} & \tblhead{Description}
 \\
-\code{{\bk}n} & \unicode{000A} & \unicodedesc{newline}
+\code{{\bk}n} & \unicode{000A} & \unicodedesc{line feed}
 \\
-\code{{\bk}t} & \unicode{0009} & \unicodedesc{tab}
+\code{{\bk}t} & \unicode{0009} & \unicodedesc{character tabulation}
 \\
 \code{{\bk}b} & \unicode{0008} & \unicodedesc{backspace}
 \\
-\code{{\bk}r} & \unicode{000D} & \unicodedesc{return}
+\code{{\bk}r} & \unicode{000D} & \unicodedesc{carriage return}
 \end{tabular}
 \hfill
 \begin{tabular}{lll}
@@ -603,11 +603,11 @@ string literals.
 \\
 \code{{\bk}f} & \unicode{000C} & \unicodedesc{form feed}
 \\
-\code{{\bk}{\bk}} & \unicode{005C} & \unicodedesc{backslash}
+\code{{\bk}{\bk}} & \unicode{005C} & \unicodedesc{reverse solidus}
 \\
-\code{{\bk}'} & \unicode{0027} & \unicodedesc{single quote}
+\code{{\bk}'} & \unicode{0027} & \unicodedesc{apostrophe}
 \\
-\code{{\bk}"} & \unicode{0022} & \unicodedesc{double quote}
+\code{{\bk}"} & \unicode{0022} & \unicodedesc{quotation mark}
 \end{tabular}
 \hfill
 \end{center}
@@ -914,44 +914,6 @@ in \refsec{string-intern}.
 String literals may contain the same character escape sequences as
 character literals (see \refsec{character-literals}).
 
-\subsection{Example Conversions}
-
-We wrote a simple program to illustrate encoding and decoding between
-strings and byte arrays.  
-%
-\codeblock{ByteToString.1}
-%
-First, the string \stringmention{D\'ej\`a vu} is
-assigned to variable
-\code{s}.  The string literal uses two Unicode escapes, 
-\code{{\bk}u00E9} for \charmention{\'e} and \code{{\bk}u00E0} for 
-\charmention{\`a}.  The name of the character encoding to use for
-encoding and decoding are read from the command line.  
-
-Then we convert the string \code{s} to an array of bytes
-\code{bs} using the character encoding \code{encode}.  Next, we
-reconstitute a string using the bytes we just created using the
-character encoding \code{decode}.  Either of these methods may raise
-an exception if the specified encoding is not supported, so the 
-\code{main()} method is declared to throw an
-\code{UnsupportedEncodingException}, imported from \code{java.io}.
-The rest of the code just prints the relevant characters and bytes.
-
-There is an Ant target \code{byte-to-string} that's configured to take
-two arguments consisting of the names of the character encodings.  The
-first is used to convert a string to bytes and the second to convert
-the bytes back to a string.  For instance, to use UTF-8 to encode and
-Latin1 (ISO-8859-1) to decode, the program prints
-%
-\commandlinefollow{ant -Dencode=UTF-8 -Ddecode=Latin1 byte-to-string}
-\begin{verbatim}
-char[] from string
-  44    e9    6a    e0    20    76    75     a
-byte[] from encoding with UTF-8
-  68   -61   -87   106   -61   -96    32   118   117    10
-char[] from decoding with Latin1
-  44    c3    a9    6a    c3    a0    20    76    75     a
-\end{verbatim}
 
 
 \subsection{Contents of a String}
@@ -1146,6 +1108,89 @@ to strings.  For instance, \code{valueOf(double)} converts a
 double-precision floating point value to a string using the same
 method as \code{Double.toString(double)}.
 
+\subsection{Example Conversions}
+
+We wrote a simple program to illustrate encoding and decoding between
+strings and byte arrays.  
+%
+\codeblock{ByteToString.1}
+%
+First, the string \stringmention{D\'ej\`a vu} is
+assigned to variable
+\code{s}.  The string literal uses two Unicode escapes, 
+\code{{\bk}u00E9} for \charmention{\'e} and \code{{\bk}u00E0} for 
+\charmention{\`a}.  The name of the character encoding to use for
+encoding and decoding are read from the command line.  
+
+Then we convert the string \code{s} to an array of bytes
+\code{bs} using the character encoding \code{encode}.  Next, we
+reconstitute a string using the bytes we just created using the
+character encoding \code{decode}.  Either of these methods may raise
+an exception if the specified encoding is not supported, so the 
+\code{main()} method is declared to throw an
+\code{UnsupportedEncodingException}, imported from \code{java.io}.
+The rest of the code just prints the relevant characters and bytes.
+
+There is an Ant target \code{byte-to-string} that's configured to take
+two arguments consisting of the names of the character encodings.  The
+first is used to convert a string to bytes and the second to convert
+the bytes back to a string.  For instance, to use UTF-8 to encode and
+Latin1 (ISO-8859-1) to decode, the program prints 
+%
+\commandlinefollow{ant -Dencode=UTF-8 -Ddecode=Latin1 byte-to-string}
+\begin{verbatim}
+char[] from string
+  44    e9    6a    e0    20    76    75
+byte[] from encoding with UTF-8
+  44    c3    a9    6a    c3    a0    20    76    75
+char[] from decoding with Latin1
+  44    c3    a9    6a    c3    a0    20    76    75
+\end{verbatim}
+%
+The characters are printed using hexadecimal notation.  The initial
+line of characters is just what we'd expect; for instance the
+\code{char} value 44 is the code point and UTF-16 representation of
+\unicode{0044}, \unicodedesc{latin capital letter d}, \code{char} e9
+picks out \unicode{00E9}, \unicodedesc{latin small letter e with
+acute}, and so on.
+
+We have printed out the bytes using unsigned hexadecimal notation (see
+\refsec{java-bytes} for more information about signs and bytes).  
+Note that there are more bytes than \code{char} values.  This is
+because characters above \unicode{0080} require two bytes or more to
+encode in UTF-8 (see \refsec{utf-8}).  For instance, the sequence of
+bytes 0xC3, 0xA9 is the UTF-8 encoding of
+\unicode{00E9}, \unicodedesc{Latin small letter e with acute}.
+
+We use Latin1 to decode the bytes back into a sequence of \code{char}
+values.  Latin1 simply translates the bytes one-for-one into unsigned
+characters (see \refsec{latin1}.  This is fine for the first byte,
+0x44, which corresponds to \unicode{0044}, but things go wrong for the
+second character.  Rather than recover the single \code{char} value
+\unicode{00E9}, we have 0xC3 and 0xA9, which are \unicode{00C3},
+\unicodedesc{latin capital letter a with tilde}, and \unicode{00A9}, 
+\unicodedesc{copyright sign}.  Further down, we see 0xA0, which
+represents \unicode{00A0}, \unicodedesc{no-break space}.  Thus instead
+of getting \stringmention{D\'ej\`a vu} back, we get 
+\stringmention{D\copyright\~Aj\copyright~ vu}.  
+
+If we use \code{-Dencode=UTF-16} when invoking the Ant target
+\code{byte-to-string}, we get the bytes
+%
+\begin{verbatim}
+byte[] from encoding with UTF-16
+  fe    ff     0    44     0    e9     0    6a     0    ...
+\end{verbatim}
+%
+The first two bytes are the byte-order marks \unicode{00FE} and
+\unicode{00FF}; in this order, they indicate big-endian 
+(see \refsec{byte-order-marks}).  The two bytes after the byte-order
+marks are 0x0 and 0x44, which is the UTF-16 big-endian representation
+of the character \unicode{0044}, \unicodedesc{latin capital letter d}.
+Similarly, 0x0 and 0xE9 are the UTF-16 big-endian representation of
+\unicode{00E9}, \unicodedesc{latin small letter e with acute}.  The
+UTF-16 encoding is twice as long as the Latin1 encoding, plus an
+additional two bytes for the byte-order marks.
 
 
 \section{\code{StringBuilder} Class}
@@ -1228,11 +1273,14 @@ Like many builder implementations, string builders let you chain
 arguments.  Thus it's legal to write
 %
 \begin{verbatim}
-String s  = new StringBuilder().append(7).append(" foo").toString();
+int n = 7;  String s = "ABC";  boolean b = true;  
+char c = 'C';  Object z = null;
+String s = new StringBuilder().append(n).append(s).append(b)
+               .append(c).append(z).toString();
 \end{verbatim}
 %
-with the reslt that string \code{s} has a value equal to
-\code{"7 foo"}.
+with the reslt that string \code{s} has a value equal to the
+literal \code{"7ABCtrueCnull"}.
 
 In fact, this is exactly the behavior underlying Java's heavily
 overloaded addition (\code{+}) operator.  When one of the arguments to
