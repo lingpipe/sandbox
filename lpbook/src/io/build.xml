@@ -5,7 +5,7 @@
             value="4.0"/>
 
   <property name="jar"
-            value="build/lp-book-intro-${version}.jar"/>
+            value="build/lp-book-io-${version}.jar"/>
 
   <target name="clean">
     <delete dir="build"/>

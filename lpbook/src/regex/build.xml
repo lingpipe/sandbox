@@ -5,7 +5,13 @@
             value="4.0"/>
 
   <property name="jar"
-            value="build/lp-book-appjava-${version}.jar"/>
+            value="build/lp-book-regex-${version}.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/icu4j-4_4_1.jar"/>
+  </path>
+            
 
   <target name="clean">
     <delete dir="build"/>
@@ -17,6 +23,7 @@
            debuglevel="source,lines,vars"
            destdir="build/classes"
            includeantruntime="false">
+      <classpath refid="classpath"/>
       <src path="src/"/>
     </javac>
     <jar destfile="${jar}">
@@ -25,15 +32,22 @@
     </jar>
   </target>
 
-  <target name="byte-table"
+  <property name="regex"
+            value="a*b"/>
+  <property name="text"
+            value="aaaaabb"/>
+
+  <target name="regex"
           depends="jar">
-    <java classname="com.lingpipe.book.appjava.ByteTable"
+    <java classname="com.lingpipe.book.regex.RegexTester"
           classpath="${jar}"
           fork="true">
+      <arg value="${regex}"/>
+      <arg value="${text}"/>
     </java>
   </target>
 
   <target name="run"
-          depends="byte-table"/>
+          depends="regex"/>
 
 </project>
