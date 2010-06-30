@@ -1597,3 +1597,34 @@ name followed by a list of aliases that are also recognized.  We
 ellided most of the output, because there are dozens of encodings
 supported.
 
+
+\section{International Components for Unicode}
+
+The International Components for Unicode (ICU) provide a range of
+useful open source tools for dealing with Unicode and
+internationalization (I18N).  Mark Davis, the co-developer of Unicode
+and president of the Unicode Consortium, designed most of ICU
+including the Java implementation, and is still active on its project
+management committee.  The original implementation was from IBM, so
+the class paths still reflect that for backward compatibility, though
+it is now managed independently.
+
+We are primarily interested in the Unicode utilities for normalization
+of character sequences to canonical representations and for
+auto-detecting character encodings from sequences of bytes.  ICU also
+contains a range of locale-specific formatting utilities, time
+calculations and collation (sorting).  It also contains deeper
+linguistic processing, including boundary detection for words,
+sentences and paragraphs as well as transliteration between texts in
+different languages.
+
+\subsection{Encoding Detection}
+
+Unfortunately, we are often faced with texts with unknown character
+encodings.  Even when character encodings are specified, say for
+an XML document, they can be wrong.  ICU does a good job at 
+detecting the character encoding from a sequence of bytes.  Using
+it is simple, 
+
+
+
