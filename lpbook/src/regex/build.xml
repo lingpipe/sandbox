@@ -37,9 +37,19 @@
   <property name="text"
             value="aaaaabb"/>
 
-  <target name="regex"
+  <target name="regex-match"
           depends="jar">
-    <java classname="com.lingpipe.book.regex.RegexTester"
+    <java classname="com.lingpipe.book.regex.RegexMatch"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${regex}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+
+  <target name="regex-find"
+          depends="jar">
+    <java classname="com.lingpipe.book.regex.RegexFind"
           classpath="${jar}"
           fork="true">
       <arg value="${regex}"/>
@@ -48,6 +58,7 @@
   </target>
 
   <target name="run"
-          depends="regex"/>
+          depends="regex-match,
+                   regex-find"/>
 
 </project>
