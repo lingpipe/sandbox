@@ -24,7 +24,9 @@
 
 \usepackage{xspace}
 
-\usepackage{lettrine}
+\usepackage{tocloft}
+%\cftsetpnumwidth{1in}
+\setlength{\cftsecnumwidth}{3em}
 
 % ====================== SIZING ======================
 
@@ -142,3 +144,9 @@
 \makeatletter
 \renewcommand\subsubsection{\@startsection{subsubsection}{3}{0mm}{-0.75\baselineskip}{0.25\baselineskip}{\normalfont\it}}
 \makeatother
+
+% more space for subsection numbers in tableofcontents
+%\makeatletter
+%\renewcommand\l@section{\@dottedtocline{2}{1.5em}{3em}}
+%\makeatother
+

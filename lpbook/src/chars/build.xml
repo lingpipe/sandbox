@@ -75,10 +75,36 @@
     </java>
   </target>
 
+
+  <target name="show-transliterations"
+          depends="jar">
+    <java classname="com.lingpipe.book.chars.ShowTransliterations"
+          fork="true">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+  <property name="text"
+            value="taxi cab"/>
+  <property name="scheme"
+            value="Latin-Greek"/>
+
+  <target name="transliterate"
+          depends="jar">
+    <java classname="com.lingpipe.book.chars.Transliterate"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${text}"/>
+      <arg value="${scheme}"/>
+    </java>
+  </target>
+
   <target name="run"
           depends="available-charsets,
                    byte-to-string,
                    detect-encoding,
-                   normalize-unicode"/>
+                   normalize-unicode,
+                   show-transliterations,
+                   transliterate"/>
 
 </project>

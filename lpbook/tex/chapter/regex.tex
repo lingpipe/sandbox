@@ -1,3 +1,66 @@
 \chapter{Regular Expressions}\label{chapter:regex}
 
-Foo.
+Generalized regular expressions, as implemented in Java and all the
+scripting languages like Perl and Python, provide a general means for
+describing spans of Unicode text.  Given a regular expression (regex)
+and some text, basic regex functionality allows us to test whether a
+string matches the regex or find non-overlapping substrings of a
+string matching the regex.
+
+\section{Matching Whole Texts}
+
+Despite the rich functionality of regexes, Java's
+\code{java.util.regex} package contains only two classes,
+\code{Pattern} and \code{Matcher}.  An instance of \code{Pattern}
+provides a stateless representation of a regular expression.  An
+instance of \code{Matcher} represents the state of the matching
+of a regular expression against a string.
+
+It's easiest to start with an example of using a regular expression
+for matching, which we wrote as a
+\code{main()} method in the class \code{RegexMatch}, the work of
+which is done by
+%
+\codeblock{RegexMatch.1}
+%
+First, we read the regex from the first command-line argument, then
+the text from the second argument.  We then use the regular expression
+to compile a pattern, using the static factory method
+\code{pattern.compile()}.  This pattern is reusable.  We next
+create a matcher instance, using the method \code{matcher()} on the
+pattern we just created.  Finally, we assign a boolean variable
+\code{matches} the value of calling the method \code{matches()} 
+on the matcher.  And then we print out the result.
+
+
+Regular expressions may consist of strings, in which case they
+simply carry out exact string matching.  For example, the regex
+\code{aab} does not match the string \stringmention{aabb}.  
+There is an Ant target \code{regex-match} which feeds the command-line
+arguments to our program.  For the example at hand, we have
+%
+\commandlinefollow{ant -Dregex="aab" -Dtext="aabb" regex-match}
+\begin{verbatim}
+Matches=false
+\end{verbatim}
+%
+On the other hand, the regex \code{abc} does match
+the string \stringmention{abc}.
+%
+\commandlinefollow{ant -Dregex="abc" -Dtext="abc" regex-match}
+\begin{verbatim}
+Matches=true
+\end{verbatim}
+
+
+\section{Finding Substrings}
+
+The second main application of regular expressions is to find
+substrings of a string that match the regular expression.  The
+main method in our class \code{RegexFind} illustrates this.
+%
+\codeblock{RegexFind.1}
+%
+
+
+

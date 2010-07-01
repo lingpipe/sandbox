@@ -1670,13 +1670,28 @@ supported.
 \section{International Components for Unicode}
 
 The International Components for Unicode (ICU) provide a range of
-useful open source tools for dealing with Unicode and
+useful open source tools, licensed under the X license
+(see\refsec{x-license}), for dealing with Unicode and
 internationalization (I18N).  Mark Davis, the co-developer of Unicode
 and president of the Unicode Consortium, designed most of ICU
 including the Java implementation, and is still active on its project
 management committee.  The original implementation was from IBM, so
 the class paths still reflect that for backward compatibility, though
 it is now managed independently.
+
+The home page for the package is
+%
+\urldisplay{http://icu-project.org/}
+%
+The package has been implemented in both Java and C, with ICU4J
+being the Java version.  There is javadoc, and the user guide
+section of the site contains extensive tutorial material that goes
+far beyond what we cover in this section.  It is distributed
+as a Java archive (jar) file, \code{icu4j-}\codeVar{Version}\code{.jar},
+which we include in the \relpath{lib}
+directory of this book's distribution.  There are additional jar
+files available on the site to deal with even more character
+encodings and locale implementations.
 
 We are primarily interested in the Unicode utilities for normalization
 of character sequences to canonical representations and for
@@ -1827,6 +1842,200 @@ Confidence is fairly low all around other than UTF-16BE, but
 this is mainly because we have a short string.  In part, the
 character set detector is operating statistically by weighing how
 much evidence it has for a decision.
+
+
+
+\subsection{General Transliterations}
+
+ICU provides a wide range of transforms over character sequences.  For
+instance, it's possible to transliterate Latin to Greek, translate
+unicode to hexadecimal, and to remove accents from outputs.  Many of
+the transforms are reversible.  Because transforms are mappings from
+strings to strings, they may be composed.  So we can convert Greek to
+Latin, then then remove the accents, then convert to hexadecimal
+escapes.  It's also possible to implement and load your own transforms.
+
+Using transliteration on strings is as easy as the other interfaces in
+ICU.  Just create the transliterator and apply it to a string.  
+
+\subsubsection{Built-In Transliterations}
+
+We first need to know the available transliterations, the identifiers
+of which are avaialble programatically.  We implement a \code{main()}
+method in \code{ShowTransliterations} as follows
+%
+\codeblock{ShowTransliterations.1}
+%
+The ICU \code{Transliterator} class is imported from the package.
+\code{com.ibm.icu.text}.  We use its static method \code{getAvailableIDs()}
+to produce an enumeration of strings, which we then iterate through
+and print out.%
+%
+\footnote{The \code{Enumeration} interface in the package \code{java.util} 
+from Java 1.0 has been all but deprecated in favor of the
+\code{Iterator} interface in the same package, which adds a remove
+method and shortens the method names, but is otherwise identical.}
+%
+An abbreviated list of outputs (converted to two columns) is
+%
+\commandlinefollow{ant show-transliterations}
+\begin{trivlist}
+\item
+\begin{minipage}[t]{0.45\textwidth}
+\begin{verbatim}
+Accents-Any
+Amharic-Latin/BGN
+Any-Accents
+Any-Publishing
+Arabic-Latin
+...
+Latin-Cyrillic
+Latin-Devanagari
+Latin-Georgian
+Latin-Greek
+...
+Han-Latin
+Hangul-Latin
+Hebrew-Latin
+Hebrew-Latin/BGN
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}[t]{0.45\textwidth}
+\begin{verbatim}
+Hiragana-Katakana
+Hiragana-Latin
+...
+Persian-Latin/BGN
+Pinyin-NumericPinyin
+...
+Any-Null
+Any-Remove
+Any-Hex/Unicode
+Any-Hex/Java
+...
+Any-NFC
+Any-NFD
+Any-NFKC
+...
+\end{verbatim}
+\end{minipage}
+\end{trivlist}
+%
+The transliterations are indexed by script, not by language.  Thus
+there is no French or English, just Latin, because that's the script.
+There is only so much that can be done at the script level, but the
+transliterations provided by ICU are surprisingly good.  
+
+In addition to the transliteration among scripts like Arabic and
+Hiragana, there are also transforms based on Unicode itself.  For
+instance, the \code{Any-Remove} transliteration removes combining
+characters, and thus may be used to convert accented characters to
+their deaccented forms across all the scripts in Unicode.  There
+areal so conversions to hexadecimal representation; for instance
+\code{Any-Hex/Java} converts to hexadecimal \code{char} escapes
+suitable for inclusion in a Java program.  The normalizations are
+also avaialble through \code{Any-NFC} and so on. 
+
+\subsubsection{Transliterating}
+
+The second demo class is \code{Transliterate}, which takes two command
+line arguments, a string to transliterate and a transliteration
+scheme, and prints the output as a string and as a list of \code{char}
+values.  The body of the \code{main()} method performs the
+transliteration as follows.
+%
+\codeblock{Transliterate.1}
+%
+First we collect the text and transliteration scheme from the two
+command-line arguments.  Then, we create a transliterator with the
+specified scheme using the static factory method \code{getInstance()}.
+Finally, we apply the newly created transliterator's
+\code{transliterate()} method to the input to produce the output.
+
+We use the Ant target \code{transliterate} which uses the properties
+\code{text} and \code{scheme} for the text to transliterate and coding
+scheme respectively.  
+%
+\commandlinefollow{ant -Dtext="taxi cab" -Dscheme=Latin-Greek transliterate}
+\begin{verbatim}
+Scheme=Latin-Greek
+Input=taxi cab
+Output=???? ???
+Output char values
+  3c4  3b1  3be  3b9   20  3ba  3b1  3b2
+\end{verbatim}
+%
+The reason the output looks like \code{????~???} is that it was cut
+and pasted from the Windows DOS shell, which uses the Windows default
+Java character encoding, Windows-1252, which cannot represent the
+Greek letters (see \refsec{stdin-stdout} for information on how to
+change the encoding for the standard output).  For convenience, we
+have thus dumped the hexadecimal representations of the characters.
+For instance, \unicode{03c4},
+\unicodedesc{greek small letter tau}, is the 
+character $\tau$ and \unicode{03b1}, \unicodedesc{greek small letter
+alpha}, is $\alpha$.  The entire string is $\tau\alpha\xi\iota \ \
+\kappa\alpha\beta$, which if you sound it out, is roughly
+the same as \stringmention{taxi cab} in Latin.
+
+To see how transliteration can be used for dumping out
+hex character values, consider
+%
+\commandlinefollow{ant -Dtext=abe -Dscheme=Any-Hex/Java transliterate}
+\begin{verbatim}
+Input=abe
+Output=\u0061\u0062\u0065
+\end{verbatim}
+%
+The output may be quoted as a string and fed into Java.  Translations
+are also reversible, so we can also do it the other way around,
+%
+\commandlinefollow{ant~-Dtext={\bk}u0061{\bk}u0062{\bk}u0065~-Dscheme=Hex/Java-Any~transliterate}
+\begin{verbatim}
+Input=\u0061\u0062\u0065
+Output=abe
+\end{verbatim}
+
+\subsubsection{Filtering and Composing Transliterations}
+
+The scope of transforms may be filtered. For instance, if we write
+\code{[aeiou] Upper}, the lower-case ASCII letters are transformed
+to upper case.  For example,
+using our demo program, we have
+%
+\commandlinefollow{ant -Dtext="abe" -Dscheme="[aeiou] Upper" transliterate}
+\begin{verbatim}
+Scheme=[aeiou] Upper
+Input=abe
+Output=AbE
+\end{verbatim}
+%
+
+Transforms may also be composed.  For any transforms \code{A} 
+and \code{B}, the transform \code{A;~B} first applies the transform
+\code{A}, then the transform \code{B}.  
+Filters are especially useful when combined with composition.  For
+example, the transform
+\code{NFD;\ [:Nonspacing Mark:]\ Remove;\ NFC}
+composes three transforms, \code{NFD}, \code{[:Nonspacing Mark:]\
+Remove}, and \code{NFC}.  The first transform performs canonical
+character decomposition (NFD), the second removes the non-spacing
+marks, such as combining characters, and the third performs a
+canonical composition (NFC).  We can demo this with the string
+\code{d\'ej\`a}, which we encode using Java escapes as
+\code{{\bk}u0064{\bk}u00E9{\bk}u006a{\bk}u00E0}, by first prefixing
+the transform with \code{Hex/Java-Any} to convert the escapes to Unicode.
+The output is
+%
+\begin{verbatim}
+Scheme=Hex/Java-Any; NFD; [:Nonspacing Mark:] Remove; NFC
+Input=\u0064\u00E9\u006a\u00E0
+Output=deja
+\end{verbatim}
+
+
+
+
 
 
 
