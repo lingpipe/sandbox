@@ -33,9 +33,9 @@
   </target>
 
   <property name="regex"
-            value="a*b"/>
+            value="aa"/>
   <property name="text"
-            value="aaaaabb"/>
+            value="aaaabbaab"/>
 
   <target name="regex-match"
           depends="jar">
