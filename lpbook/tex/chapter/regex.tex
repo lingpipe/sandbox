@@ -7,7 +7,7 @@ and some text, basic regex functionality allows us to test whether a
 string matches the regex or find non-overlapping substrings of a
 string matching the regex.
 
-\section{Matching Whole Texts}
+\section{Matching Complete Strings}
 
 Despite the rich functionality of regexes, Java's
 \code{java.util.regex} package contains only two classes,
@@ -32,7 +32,6 @@ pattern we just created.  Finally, we assign a boolean variable
 \code{matches} the value of calling the method \code{matches()} 
 on the matcher.  And then we print out the result.
 
-
 Regular expressions may consist of strings, in which case they
 simply carry out exact string matching.  For example, the regex
 \code{aab} does not match the string \stringmention{aabb}.  
@@ -52,15 +51,263 @@ the string \stringmention{abc}.
 Matches=true
 \end{verbatim}
 
-
-\section{Finding Substrings}
+\section{Finding Matching Substrings}
 
 The second main application of regular expressions is to find
-substrings of a string that match the regular expression.  The
-main method in our class \code{RegexFind} illustrates this.
+substrings of a string that match the regular expression.  The main
+method in our class \code{RegexFind} illustrates this.  We read in two
+command-line aguments into string variables \code{regex} and \code{text}
+as we did for \code{RegexMatch} in the previous section.  We begin
+by compling the pattern and creating a matcher for the text just
+as in \code{RegexFind}.
 %
 \codeblock{RegexFind.1}
 %
+The first call of the \code{find()} method on a matcher returns
+\code{true} if there is a substring of the text that matches the
+pattern.  If \code{find()} returned \code{true}, then the are method
+\code{group()} returns the substring that matched, and the methods
+\code{start()} and \code{end()} return the span of the match, which is
+from the start (inclusive) to the end (exclusive).
+
+Subsequent calls to \code{find()} return \code{true} if there is a
+match starting on or after the end position of the previous calls.
+Thus the loop structure in the program above is the standard idiom
+for enumerating all the matches.  
+
+As an example, we use the Ant target \code{regex-find}, which takes
+the same arguments as \code{regex-match}.
+%
+\commandlinefollow{ant -Dregex=aa -Dtext=aaaaab regex-find}
+\begin{verbatim}
+Found |aa| at (0,2)
+Found |aa| at (2,4)
+\end{verbatim}
+%
+As in other locations, we use vertical bars to denotes string
+boundaries in program output.  The string \stringmention{aa} actually
+shows up in four distinct locations in \stringmention{aaaaab}, at
+spans (0,2), (1,3), (2,4), and (3,5).  Running find only returns two
+of them.  The matcher works from the start to the end of the string,
+returning the first match it finds after the first call to
+\code{find()}.  In this case, that's the substring of
+\stringmention{aaaaab} spanning (0,2).  The second call to
+\code{find()} starts looking for a match at position 2, succeeding
+with the span (2,4).  Next, it starts looking at position 4, but there
+is no substring starting on or after position 4 that matches
+\stringmention{aa}.
+
+Matchers may be reused.  The method \code{reset()} may be called on a
+matcher to reset it to behave as if it had just been constructed with
+its given pattern and character sequence.  The character sequence may
+be changed.  The patesequence may also be changed on the fly.  Although
+matchers may be reused, the typical usage pattern is to construct them
+for a text, use them once, then discard them.
+
+
+\section{Regular Expression Syntax}
+
+Regular expressions are constructed from basic regular expressions
+using a few simple operations.  
+
+\subsection{Empty Regex}
+
+The simplest regular expression is the empty regular expression.  It
+only matches the empty string.  For example, the expression
+\code{Pattern.compile("").matcher("").matches()} would evaluate to
+\code{true}.
+
+\subsection{Characters}
+
+A regular expression may consist of a single character.  A regular
+expression consisting of a single character only matches that single
+character.  For instance,
+\code{Pattern.compile("a").matcher("a").matches()} would evaluate to
+\code{true}.
+
+\subsubsection{Unicode Escapes}
+
+Arbitrary unicode characters may be escaped in the same way as in
+Java, using \code{{\bk}u}\codeVar{hhhh} for the character with Unicode
+code point \unicode{\codeVar{hhhh}}.  This is confusing because
+Unicode characters may also be included in Java programs using the
+same syntax.  For instance, the expressions
+\code{Pattern.compile("{\bk}u004E")} and \code{Pattern.compile("N")}
+are the same, because Java replaces the Unicode escape
+\code{{\bk}u004E} with \code{N} in the literal.  In order to compile
+the regular expression \code{{\bk}u004E}, we need to escape the
+backslash in Java, using \code{Pattern.compile("{\bk}{\bk}u004E")},
+which is not the same as \code{Pattern.compile("N")}.
+
+\subsubsection{Other Escapes}
+
+There are also other built-in escapes, such as \code{{\bk}n} for
+newline and \code{{\bk}{\bk}} for a backslash character.  The expression
+\code{Pattern.compile("{\bk}{\bk}")} will throw an exception, because
+it is attempting to compile the regular expression \code{{\bk}}.  To
+compile the regular expression \code{{\bk}{\bk}}, we need to write
+\code{Pattern.compile("{\bk}{\bk}{\bk}{\bk}")}.  
+
+This is all further confused by the command-line shell, which has its
+own escape sequence.  The DOS The general principle is that you need to encode
+the string at each level in such a way that the string you need at the
+next level passes through.  For instance, consider this puzzler,
+%
+\commandlinefollow{ant -Dregex="\bk\bk\bk\bk" -Dtext="\bk\bk" regex-match}
+\begin{verbatim}
+Regex=|\\|    Text=|\|    Matches=true
+\end{verbatim}
+%
+We had to escape the backslashes on the command-line with another
+backslash.  The regex that actually gets passed to \code{compile()}
+is a pair of backslash characters, \code{\bk\bk}.  The text that
+is matched is a single backslash, \code{\bk}.  The match succeeds
+because the regex \code{\bk\bk} is the escaped backslash character
+matcher.
+
+\subsection{Concatenation}
+
+Two regular expressions \codeVar{x} and \codeVar{y} may be
+concatenated to produce a compound regular expression \codeVar{xy}.
+The regex \codeVar{xy} matches any string that can be decomposed into
+a string that matches \codeVar{x} followed by a string that matches
+\codeVar{y}.
+
+In the simplest case, we have a concatenation of characters, which
+matches any string consisting of the exact same characters.  
+
+\subsection{WildCards}
+
+A singe period (\code{.}) is a regular expression that matches a
+single characer.  Whether or not it matches an end-of-line sequence
+depends on whether or not the \code{DOTALL} flag is set (see
+\refsec{pattern-modes}); if it is set, the wildcard matches
+end-of-line sequences.  The following two expressions evaluate to
+\code{true},
+%
+\begin{verbatim}
+Pattern.compile(".").matcher("A").matches()
+Pattern.compile(".",DOTALL).matcher("\n").matches()
+\end{verbatim}
+%
+whereas the following expression evaluates to \code{false},
+%
+\begin{verbatim}
+Pattern.compile(".").matcher("\n").matches()
+\end{verbatim}
+
+
+\subsection{Disjunction}
+
+Two regular expressions \codeVar{x} and \codeVar{y} may be disjoined
+to produce a compound regular expression
+\codeVar{x}\code{|}\codeVar{y}.  The regex
+\codeVar{x}\code{|}\codeVar{y} matches any string that matches either
+\codeVar{x} or \codeVar{y} (or both).
+
+
+\subsection{Kleene Star}
+
+A regular expression may be followed by an asterisk (\code{*}),
+pronounced Kleene-star (after Stephen Kleene, the mathematician who
+devised regular languages).
+
+
+
+
+
+
+\subsection{Parentheses and Groups}
+
+In all cases, parentheses may be used around a regular expression to
+clarify how the operations attach.
+
+
+
+
+There is a rich syntax for constants denoting classes of char
+constructing regular expressions out of
+simpler regular expressions.
+
+\subsection{Pattern Match Flags}\label{section:pattern-modes}
+
+There are a set of flags, all represented as static integer constants
+in \code{Pattern}, which may be supplied to the pattern compiler to
+control the matching behavior of the compiled pattern.  The most
+important of these for our purposes are the following.
+%
+\begin{center}
+\begin{tabular}{lp{0.65\textwidth}}
+\tblhead{Constant Flag} & \tblhead{Description} 
+\\ \hline { } \\[-6pt]
+\code{DOTALL}
+& Allows the wild card (\code{.}) expression to match any
+character, including line terminators.  If this mode is not
+set, the wild card does not match line terminators.
+\\[4pt]
+\code{MULTLINE}
+& Allows the begin-of-line (\code{\^{}}) and end-of-line (\code{\$}) to
+match internal line terminators.  If this is not set, they only
+match before the first and after the last character.  The full Java
+notion of newline is used unless the flag \code{UNIX\_LINES} is also set.
+\\[4pt]
+\code{UNIX\_LINES}
+& Treat newlines as in Unix, with a single \unicode{000A},
+\unicodedesc{line feed}, Java string escape \code{{\bk}n},
+representing a new line.  This affects the behavior of wildcard
+(\code{.}) and begin-of-line (\code{\^{}}) and end-of-line 
+(\code{\$}) expressions. 
+\\[4pt] 
+\code{CASE\_INSENSITIVE} 
+& Matching is insensitive to case.  Case folding is only for
+the ASCII charset (\unicode{0000} to \unicode{007F}) unless
+the flag \code{UNICODE\_CASE} is also set, which uses the Unicode
+definitions of case folding.
+\\[4pt]
+\code{UNICODE\_CASE}
+& If this flag and the \code{CASE\_INSENSITIVE} flag is set,
+matching ignores case distinctions as defined by Unicode
+case folding rules.
+\\[4pt]
+\code{CANON\_EQ} 
+& Matches are based on canonical equivalence in Unicode 
+(see \refsec{unicode-normalization-forms}).
+\end{tabular}
+\end{center}
+
+The flags are defined using a bit-mask pattern whereby multiple
+flags are set by taking their bitwise or value.  For instance,
+the expression \code{DOTALL~|~MULTILINE} allows the wildcard
+to match anything and the line-terminator expressions to match
+internal newlines.  More than two flags may be set this way,
+so we could further restrict to Unix newlines with
+\code{DOTALL~|~MULTILINE~|~UNIX\_LINES}.
+
+Even stronger matching than canonical equivalence with unicode case
+folding can be achieved by writinger the regular expression using
+compatibility normal forms and using the ICU package to perform a
+compatibility decomposition on the input (see
+\refsec{unicode-normalization-forms}).
+
+
+\subsection{Pattern Construction Exceptions}
+
+Attempting to compile a regular expression with a syntax error raises
+a runtime exception, \code{PatternSyntaxException} from the
+\code{java.util.regex} package.  The parser tries to provide a helpful
+warning message.  For instance, here's what we see if we inadvertently
+add a right parenthesis to our regex.
+%
+\commandlinefollow{ant -Dregex=aa) -Dtext=aaab regex-find}
+\begin{verbatim}
+Exception in thread "main" 
+    java.util.regex.PatternSyntaxException:  
+    Unmatched closing ')' near index 1
+\end{verbatim}
+
+
+
+
 
 
 

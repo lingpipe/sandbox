@@ -12,14 +12,13 @@ public class RegexFind {
         String regex = args[0];
         String text = args[1];
 
-
         /*x RegexFind.1 */
         Pattern pattern = Pattern.compile(regex);
-        Matcher finder = pattern.matcher(text);
-        while (finder.find()) {
-            String found = finder.group();
-            int start = finder.start();
-            int end = finder.end();
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            String found = matcher.group();
+            int start = matcher.start();
+            int end = matcher.end();
         /*x*/
             System.out.println("Found |" + found + "|"
                                + " at (" + start + "," + end + ")");
