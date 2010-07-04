@@ -12,9 +12,10 @@ string matching the regex.
 Despite the rich functionality of regexes, Java's
 \code{java.util.regex} package contains only two classes,
 \code{Pattern} and \code{Matcher}.  An instance of \code{Pattern}
-provides a stateless representation of a regular expression.  An
-instance of \code{Matcher} represents the state of the matching
-of a regular expression against a string.
+provides an immutable representation of a regular expression.  
+
+An instance of \code{Matcher} represents the
+state of the matching of a regular expression against a string.  
 
 It's easiest to start with an example of using a regular expression
 for matching, which we wrote as a
@@ -40,7 +41,7 @@ arguments to our program.  For the example at hand, we have
 %
 \commandlinefollow{ant -Dregex="aab" -Dtext="aabb" regex-match}
 \begin{verbatim}
-Matches=false
+Regex=|aab|    Text=|aabb|    Matches=false
 \end{verbatim}
 %
 On the other hand, the regex \code{abc} does match
@@ -48,8 +49,15 @@ the string \stringmention{abc}.
 %
 \commandlinefollow{ant -Dregex="abc" -Dtext="abc" regex-match}
 \begin{verbatim}
-Matches=true
+Regex=|abc|    Text=|abc|    Matches=true
 \end{verbatim}
+%
+Note that we have used the vertical bar to mark the boundaries of the
+regular expression and text in our output.  These vertical bars are
+not part of the regular expression or the text.  This is a useful
+trick in situations where space may appear as the prefix or suffix of
+a string.  It may get confusing if there is a vertical bar within the
+string, but the outer vertical bars are always the ones dropped.
 
 \section{Finding Matching Substrings}
 
@@ -81,63 +89,36 @@ the same arguments as \code{regex-match}.
 \commandlinefollow{ant -Dregex=aa -Dtext=aaaaab regex-find}
 %
 \begin{verbatim}
-Found |aa| at (0,2)
-Found |aa| at (2,4)
+Found |aa| at (0,2)    Found |aa| at (2,4)
 \end{verbatim}
 %
-As in other locations, we use vertical bars to denotes string
-boundaries in program output.  The string \stringmention{aa} actually
-shows up in four distinct locations in \stringmention{aaaaab}, at
-spans (0,2), (1,3), (2,4), and (3,5).  Running find only returns two
-of them.  The matcher works from the start to the end of the string,
-returning the first match it finds after the first call to
-\code{find()}.  In this case, that's the substring of
-\stringmention{aaaaab} spanning (0,2).  The second call to
-\code{find()} starts looking for a match at position 2, succeeding
-with the span (2,4).  Next, it starts looking at position 4, but there
-is no substring starting on or after position 4 that matches
-\stringmention{aa}.
-
-Matchers may be reused.  The method \code{reset()} may be called on a
-matcher to reset it to behave as if it had just been constructed with
-its given pattern and character sequence.  The character sequence may
-be changed.  The patesequence may also be changed on the fly.  Although
-matchers may be reused, the typical usage pattern is to construct them
-for a text, use them once, then discard them.
+As before, the vertical bars are delimeters, not part of the matching
+substring.  The string \stringmention{aa} actually shows up in four
+distinct locations in \stringmention{aaaaab}, at spans (0,2), (1,3),
+(2,4), and (3,5).  Running find only returns two of them.  The matcher
+works from the start to the end of the string, returning the first
+match it finds after the first call to \code{find()}.  In this case,
+that's the substring of \stringmention{aaaaab} spanning (0,2).  The
+second call to \code{find()} starts looking for a match at position 2,
+succeeding with the span (2,4).  Next, it starts looking at position
+4, but there is no substring starting on or after position 4 that
+matches \stringmention{aa}.
 
 
-\section{Regular Expression Syntax}
 
-Regular expressions are constructed from basic regular expressions
-using a few simple operations.  
+\section{Characters and Character Classes}
 
-\subsection{Empty Regex}
+The most basic regular expressions describe either characters
+or character classes.  Some characters are reserved and need
+to be escaped for use in regular expresions.  
 
-The simplest regular expression is the empty regular expression.  It
-only matches the empty string.  For example, the expression
-\code{Pattern.compile("").matcher("").matches()} would evaluate to
-\code{true}.  Using our test code from the command-line proves tricky,
-because we have to escape the quotes if we want to assign environment
-variables, as in 
-%
-\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext={\bk}"{\bk}"  regex-match}
-\begin{verbatim}
-Regex=||    Text=||    Matches=true
-\end{verbatim}
-%
-\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext=a regex-match}
-\begin{verbatim}
-Regex=||    Text=|a|    Matches=false
-\end{verbatim}
+\subsection{Literal Characters}
 
-
-\subsection{Characters}
-
-A regular expression may consist of a single character.  A regular
+A single character may be used a regular expression.  A regular
 expression consisting of a single character only matches that single
 character.  For instance,
 \code{Pattern.compile("a").matcher("a").matches()} would evaluate to
-\code{true}.  In code, 
+\code{true}.  Using our Ant match target, 
 %
 \commandlinefollow{ant -Dregex=b -Dtext=b regex-match}
 \begin{verbatim}
@@ -148,26 +129,31 @@ Regex=|b|    Text=|b|    Matches=true
 \begin{verbatim}
 Regex=|b|    Text=|c|    Matches=false
 \end{verbatim}
+%
+Within a Java program, Java character literals may be used within the
+string denoting the regex.  For instance, we may write
+\code{Pattern.compile("{\bk}u00E9")} to compile the regular expression
+that matches the character \unicode{00E9}, \unicodedesc{latin small e
+  with acute}, which would be written as \charmention{\'e}.
 
-\subsubsection{Unicode Escapes}
+\subsection{Unicode Escapes}
 
 Arbitrary unicode characters may be escaped in the same way as in
-Java, using \code{{\bk}u}\codeVar{hhhh} for the character with Unicode
-code point \unicode{\codeVar{hhhh}}.  This is confusing because
-Unicode characters may also be included in Java programs using the
-same syntax.  For instance, the expressions
-\code{Pattern.compile("{\bk}u004E")} and \code{Pattern.compile("N")}
-are the same, because Java replaces the Unicode escape
-\code{{\bk}u004E} with \code{N} in the literal.  In order to compile
-the regular expression \code{{\bk}u004E}, we need to escape the
-backslash in Java, using \code{Pattern.compile("{\bk}{\bk}u004E")},
-which is not the same as \code{Pattern.compile("N")}.
-
-One important use of Unicode escapes is to match the period character,
-which is a reserved character representing wildcards (see
-\refsec{regex-wildcard}).  The period character is \unicode{002E}, 
-so the regex \code{{\bk}u002E} matches it. 
-
+Java.  That is, \code{{\bk}u}\codeVar{hhhh} is a regular expression
+matching the character with Unicode code point
+\unicode{\codeVar{hhhh}}.  For example,
+%
+\commandlinefollow{ant -Dregex={\bk}u0041 -Dtext=A regex-match}
+%
+\begin{verbatim}
+Regex=|\u002E|     Text=|.|     Matches=true
+\end{verbatim}
+%
+Note that we did not have to escape the backslash for the shell
+because the following character, \code{u}, is not an escape.  Unicode
+escapes are useful for for matching the period character,
+\unicode{002E}, \unicodedesc{full stop}, which is a reserved character
+in regexes representing wildcards (see \refsec{regex-wildcard}).
 %
 \commandlinefollow{ant -Dregex="{\bk}u002E" -Dtext="." regex-match}
 %
@@ -175,13 +161,21 @@ so the regex \code{{\bk}u002E} matches it.
 Regex=|\u002E|     Text=|.|     Matches=true
 \end{verbatim}
 %
-Note that we did not have to escape the backslash because it is not a
-Java literal nor is it in a context where the shell interprets it as
-an escape.  The actual regex is printed as output.  In a Java program,
-we'd still have to write \code{Pattern.compile("{\bk}{\bk}u002E")}.
 
+In a Java program, we'd still have to write
+\code{Pattern.compile("{\bk}{\bk}u002E")}.  
 
-\subsubsection{Other Escapes}
+Unicode escapes in regexes are confusing, because they use the same
+syntax as Java unicode literals.  Further complicating matters, the
+literal for backslashes in Java programs is itself an escape sequence,
+\code{{\bk}{\bk}}.  There is a world of difference between the
+patterns produced by \code{Pattern.compile("{\bk}u002E")} and
+\code{Pattern.compile("{\bk}{\bk}u002E")}.  The former is the same
+as \code{Patten.compile(".")}, and matches any character, whereas
+the latter uses a regex escape, and only matches the period
+character.
+
+\subsection{Other Escapes}
 
 There are also other built-in escapes, such as \code{{\bk}n} for
 newline and \code{{\bk}{\bk}} for a backslash character.  The expression
@@ -210,6 +204,30 @@ backslash characters, \code{\bk\bk}.  The text that is matched is a
 single backslash, \code{\bk}.  The match succeeds because the regex
 \code{\bk\bk} is the escaped backslash character matcher.
 
+
+
+\section{Concatenation}
+
+\subsection{Empty Regex}
+
+The simplest regular expression is the empty regular expression.  It
+only matches the empty string.  For example, the expression
+\code{Pattern.compile("").matcher("").matches()} would evaluate to
+\code{true}.  Using our test code from the command-line proves tricky,
+because we have to escape the quotes if we want to assign environment
+variables, as in 
+%
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext={\bk}"{\bk}"  regex-match}
+\begin{verbatim}
+Regex=||    Text=||    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext=a regex-match}
+\begin{verbatim}
+Regex=||    Text=|a|    Matches=false
+\end{verbatim}
+
+
 \subsection{Concatenation}
 
 Two regular expressions \codeVar{x} and \codeVar{y} may be
@@ -220,6 +238,11 @@ a string that matches \codeVar{x} followed by a string that matches
 
 In the simplest case, we have a concatenation of characters, which
 matches any string consisting of the exact same characters.  
+
+
+
+
+
 
 \subsection{Begin and End of Line}
 
@@ -333,43 +356,93 @@ disjunctions that have to explore many branches can quickly lead to
 inefficient regular expressions.
 
 Combinatorics can quickly spiral out of control with disjunctions.
-Even a regex as short as \code{(a|b)(c|d)(e|f)} has $2^3 = 8$
-possible paths.  
+Even a regex as short as \code{(a|b)(c|d)(e|f)} has $2^3 = 8$ possible
+search paths to explore.  Although each disjunction tacked on doubles
+the size of the search space in theory, in practice disjunctions often
+fail earlier.  If there is no match for \code{a|b}, the further
+disjunctions are not explored.
 
 \subsection{Kleene Star and Other Quantifiers}
 
-A regular expression \codeVar{x} may have the Kleene-star operator
+A regular expression \codeVar{x} may have the Kleene-star operator%
+%
+\footnote{Named after Stephen Kleene, who invented regular expressionsn
+as a notation for his characterization of regular languages.}
+%
 applied to it to produce the regular expression \codeVar{x}\code{*}.
 The regex \codeVar{x}\code{*} matches a string if the string is
-composed of a sequence of zero or more matches of \codeVar{x}.
+composed of a sequence of zero or more matches of \codeVar{x}.  In
+terms of execution, \codeVar{x}\code{*} behaves like a disjunction
+with a recursive definition,
+%
+\displ{\code{\codeVar{x}*} {::=} \code{(\codeVar{x}(\codeVar{x}*))|}}
+%
+A matcher for \code{\codeVar{x}*} first tries to find a
+match for \codeVar{x} followed by a match of \code{\codeVar{x}*}, and
+failing that, matches the empty string.
+The second disjunct is the empty string, a regex that matches the
+empty string.  
 
-A regular expression may be followed by an asterisk (\code{*}),
-pronounced Kleene-star (after Stephen Kleene, the mathematician who
-devised regular languages).
+\subsection{Character Classes}
+
+As described in the Javadoc for \code{Pattern}, the order of
+attachment for character oprations is
+%
+\begin{center}
+\begin{tabular}{rll}
+\tblhead{Order} & \tblhead{Expression} & \tblhead{Example} 
+\\ \hline
+1 & Literal Escape & \code{{\bk}x}
+\\
+2 & Grouping & \code{[...]} 
+\\
+3 & Range & \code{0-9}
+\\
+4 & Concaenation & \code{[0-9][ab]}, \code{ab}
+\\
+5 & Intersection & \code{[a-z\&\&[aeiou]]}
+\\
+5.5 & Negation & \code{[\^{}aeiou]}
+\end{tabular}
+\end{center}
+%
 
 
+\subsection{Line Terminators and Unix Lines}
 
-
+\begin{center}
+\begin{tabular}{lll}
+\tblhead{Code Point(s)} & \tblhead{Description} & \tblhead{Java} 
+\\ \hline
+\unicode{000A} & \unicodedesc{line feed} & \code{{\bk}n}
+\\
+\unicode{000D} & \unicodedesc{carriage return} & \code{{\bk}r}
+\\
+\unicode{000D}, \unicode{000A} & \unicodedesc{carriage return},
+\unicodedesc{line feed} & \code{{\bk}r{\bk}n}
+\\
+\unicode{0085} & \unicodedesc{next line} & \code{{\bk}u0085} 
+\\
+\unicode{2028} & \unicodedesc{line separator} & \code{{\bk}u2028}
+\\
+\unicode{2029} & \unicodedesc{paragraph separator} & \code{{\bk}u2029}
+\end{tabular}
+\end{center}
 
 
 \subsection{Parentheses and Groups}
 
 In all cases, parentheses may be used around a regular expression to
-clarify how the operations attach.
+clarify how the operations attach.  
 
-
-
-
-There is a rich syntax for constants denoting classes of char
-constructing regular expressions out of
-simpler regular expressions.
 
 \subsection{Pattern Match Flags}\label{section:pattern-modes}
 
 There are a set of flags, all represented as static integer constants
-in \code{Pattern}, which may be supplied to the pattern compiler to
-control the matching behavior of the compiled pattern.  The most
-important of these for our purposes are the following.
+in \code{Pattern}, which may be supplied to the pattern compiler
+factory method \code{Pattern.compile(String,int)} to control the
+matching behavior of the compiled pattern.  The most important of
+these for our purposes are the following.
 %
 \begin{center}
 \begin{tabular}{lp{0.65\textwidth}}
@@ -440,6 +513,37 @@ Exception in thread "main"
     Unmatched closing ')' near index 1
 \end{verbatim}
 
+
+
+
+\section{Thread Safety, Serialization, and Reuse}
+
+\subsection{Thread Safety}
+
+Because instances of \code{Pattern} are immutable, it is safe to use
+them concurrently in multiple threads.  Because instances of
+\code{Matcher} contain the state of the current match, it is not
+thread safe to use matchers concurrently without synchronization.
+
+\subsection{Reusing Matchers}
+
+Matchers may be reused.  The method \code{reset()} may be called on a
+matcher to reset it to behave as if it had just been constructed with
+its given pattern and character sequence.  The character sequence may
+be changed.  The pattern may also be changed on the fly, without
+changing the current position.  This may be useful if you alternately
+match first one pattern then another.  Although matchers may be
+reused, the typical usage pattern is to construct them for a text, use
+them once, then discard them.
+
+
+\subsection{Serialization}
+
+Patterns are serializable.  The string representing the pattern and
+the compilation flags are stored and the version read back in is an
+instance of \code{Pattern} behaving just like the original.  Often
+patterns do not need to be serialized because they're effectively
+singletons \ie{constants}.
 
 
 
