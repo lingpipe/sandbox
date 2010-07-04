@@ -79,6 +79,7 @@ As an example, we use the Ant target \code{regex-find}, which takes
 the same arguments as \code{regex-match}.
 %
 \commandlinefollow{ant -Dregex=aa -Dtext=aaaaab regex-find}
+%
 \begin{verbatim}
 Found |aa| at (0,2)
 Found |aa| at (2,4)
@@ -115,7 +116,20 @@ using a few simple operations.
 The simplest regular expression is the empty regular expression.  It
 only matches the empty string.  For example, the expression
 \code{Pattern.compile("").matcher("").matches()} would evaluate to
-\code{true}.
+\code{true}.  Using our test code from the command-line proves tricky,
+because we have to escape the quotes if we want to assign environment
+variables, as in 
+%
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext={\bk}"{\bk}"  regex-match}
+\begin{verbatim}
+Regex=||    Text=||    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext=a regex-match}
+\begin{verbatim}
+Regex=||    Text=|a|    Matches=false
+\end{verbatim}
+
 
 \subsection{Characters}
 
@@ -123,7 +137,17 @@ A regular expression may consist of a single character.  A regular
 expression consisting of a single character only matches that single
 character.  For instance,
 \code{Pattern.compile("a").matcher("a").matches()} would evaluate to
-\code{true}.
+\code{true}.  In code, 
+%
+\commandlinefollow{ant -Dregex=b -Dtext=b regex-match}
+\begin{verbatim}
+Regex=|b|    Text=|b|    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex=b -Dtext=c regex-match}
+\begin{verbatim}
+Regex=|b|    Text=|c|    Matches=false
+\end{verbatim}
 
 \subsubsection{Unicode Escapes}
 
@@ -138,6 +162,24 @@ are the same, because Java replaces the Unicode escape
 the regular expression \code{{\bk}u004E}, we need to escape the
 backslash in Java, using \code{Pattern.compile("{\bk}{\bk}u004E")},
 which is not the same as \code{Pattern.compile("N")}.
+
+One important use of Unicode escapes is to match the period character,
+which is a reserved character representing wildcards (see
+\refsec{regex-wildcard}).  The period character is \unicode{002E}, 
+so the regex \code{{\bk}u002E} matches it. 
+
+%
+\commandlinefollow{ant -Dregex="{\bk}u002E" -Dtext="." regex-match}
+%
+\begin{verbatim}
+Regex=|\u002E|     Text=|.|     Matches=true
+\end{verbatim}
+%
+Note that we did not have to escape the backslash because it is not a
+Java literal nor is it in a context where the shell interprets it as
+an escape.  The actual regex is printed as output.  In a Java program,
+we'd still have to write \code{Pattern.compile("{\bk}{\bk}u002E")}.
+
 
 \subsubsection{Other Escapes}
 
@@ -154,16 +196,19 @@ the string at each level in such a way that the string you need at the
 next level passes through.  For instance, consider this puzzler,
 %
 \commandlinefollow{ant -Dregex="\bk\bk\bk\bk" -Dtext="\bk\bk" regex-match}
+%
 \begin{verbatim}
 Regex=|\\|    Text=|\|    Matches=true
 \end{verbatim}
 %
 We had to escape the backslashes on the command-line with another
-backslash.  The regex that actually gets passed to \code{compile()}
-is a pair of backslash characters, \code{\bk\bk}.  The text that
-is matched is a single backslash, \code{\bk}.  The match succeeds
-because the regex \code{\bk\bk} is the escaped backslash character
-matcher.
+backslash because backspace-quote (\code{{\bk}"}) is an escape
+sequence for the quote character.  Double backslashes are an escape
+for backslash, which itself doesn't normally need an escape.  The
+regex that actually gets passed to \code{compile()} is a pair of
+backslash characters, \code{\bk\bk}.  The text that is matched is a
+single backslash, \code{\bk}.  The match succeeds because the regex
+\code{\bk\bk} is the escaped backslash character matcher.
 
 \subsection{Concatenation}
 
@@ -176,11 +221,48 @@ a string that matches \codeVar{x} followed by a string that matches
 In the simplest case, we have a concatenation of characters, which
 matches any string consisting of the exact same characters.  
 
-\subsection{WildCards}
+\subsection{Begin and End of Line}
+
+
+The caret (\code{\^{}}) is a regular expression that matches the end
+of a line and the dollar sign (\code{\$}) a regular expression
+matching the beginning of a line.  For example, 
+%
+\commandlinefollow{ant -Dregex="\^{}abc\$" -Dtext=abc regex-match}
+\begin{verbatim}
+Regex=|^abc$|    Text=|abc|    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex=ab\$c -Dtext=abc regex-match}
+\begin{verbatim}
+Regex=|ab$c|    Text=|abc|    Matches=false
+\end{verbatim}
+%
+The begin- and end-of-line regexes do not themselves consume any
+characters.
+
+These begin-of-line and end-of-line regexes do not match new lines
+inside of strings unless the \code{MULTILINE} flag is set (see
+\refsec{pattern-modes}).  By default, these regexes match new-line
+sequences for any platform (Unix, Macintosh, or Windows).  If the
+\code{UNIX\_LINES} flag is set, they only match Unix newlines (see
+\refsec{pattern-modes}).
+
+
+\subsection{WildCards}\label{section:regex-wildcard}
 
 A singe period (\code{.}) is a regular expression that matches a
-single characer.  Whether or not it matches an end-of-line sequence
-depends on whether or not the \code{DOTALL} flag is set (see
+single characer.  For instance, the regex \code{.} matches the string
+\stringmention{a}, and \code{a.c} matches \stringmention{abc}.%
+%
+\commandlinefollow{ant -Dregex=a.c -Dtext=abc regex-match}
+\begin{verbatim}
+Regex=|a.c|    Text=|abc|    Matches=true
+\end{verbatim}
+%
+
+Whether or not a wildcard matches an end-of-line sequence depends on
+whether or not the \code{DOTALL} flag is set (see
 \refsec{pattern-modes}); if it is set, the wildcard matches
 end-of-line sequences.  The following two expressions evaluate to
 \code{true},
@@ -195,6 +277,9 @@ whereas the following expression evaluates to \code{false},
 \begin{verbatim}
 Pattern.compile(".").matcher("\n").matches()
 \end{verbatim}
+%
+
+
 
 
 \subsection{Disjunction}
@@ -203,10 +288,60 @@ Two regular expressions \codeVar{x} and \codeVar{y} may be disjoined
 to produce a compound regular expression
 \codeVar{x}\code{|}\codeVar{y}.  The regex
 \codeVar{x}\code{|}\codeVar{y} matches any string that matches either
-\codeVar{x} or \codeVar{y} (or both).
+\codeVar{x} or \codeVar{y} (or both).  For example,
+%
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext=ab regex-match}
+\begin{verbatim}
+Regex=|ab|cd|
+Text=|ab|
+Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext=cd regex-match}
+\begin{verbatim}
+Regex=|ab|cd|    Text=|cd|    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext=bc regex-match}
+\begin{verbatim}
+Regex=|ab|cd|    Text=|bc|    Matches=false
+\end{verbatim}
+%
+The vertical bars used to display the regex are not part of it; thus
+the regular expression is \code{ab|cd}, not \code{|ab|cd|}.  The regex
+itself needs to be quoted on the command line so the vertical bar is
+not interpreted as a Unix pipe.
 
+Even though the order of disjunctions doesn't matter in a logical
+expression.  And as far as matching whole strings, the order of
+disjunctions doesn't matter.  But for finds, disjunctions are
+evaluated left-to-right and the first match returned.
+%
+\commandlinefollow{ant -Dregex="ab|abc" -Dtext=abc regex-find}
+\begin{verbatim}
+Found |ab| at (0,2)
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="abc|ab" -Dtext=abc regex-find}
+\begin{verbatim}
+Found |abc| at (0,3)
+\end{verbatim}
+%
 
-\subsection{Kleene Star}
+Because complex disjunctions are executed through backtracking,
+disjunctions that have to explore many branches can quickly lead to
+inefficient regular expressions.
+
+Combinatorics can quickly spiral out of control with disjunctions.
+Even a regex as short as \code{(a|b)(c|d)(e|f)} has $2^3 = 8$
+possible paths.  
+
+\subsection{Kleene Star and Other Quantifiers}
+
+A regular expression \codeVar{x} may have the Kleene-star operator
+applied to it to produce the regular expression \codeVar{x}\code{*}.
+The regex \codeVar{x}\code{*} matches a string if the string is
+composed of a sequence of zero or more matches of \codeVar{x}.
 
 A regular expression may be followed by an asterisk (\code{*}),
 pronounced Kleene-star (after Stephen Kleene, the mathematician who
