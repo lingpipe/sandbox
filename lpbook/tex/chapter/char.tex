@@ -420,7 +420,7 @@ Any text processor dealing with Unicode needs to handle the byte order
 marks.  Some text editing packages automatically insert byte-order
 marks for UTF encodings and some don't.
 
-\subsubsection{Character Types and Categories}
+\subsubsection{Character Types and Categories}\label{section:unicode-categories}
 
 The Unicode specification defines a number of character types and
 general categories of character.  These are useful in Java
@@ -438,6 +438,9 @@ case, with the category ``Lu'' used for uppercase characters and
 Unicode marks the directionality in which characters are typically
 wirtten using character types like ``R'' for right-to-left
 and ``L'' for left-to-right.
+
+The full set of character categories recognized by Java is detailed in
+the constant documentation for \code{java.lang.Character}.
 
 \subsubsection{Normalization Forms}\label{section:unicode-normalization-forms}
 
