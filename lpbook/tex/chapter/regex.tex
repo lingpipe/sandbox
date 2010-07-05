@@ -7,15 +7,16 @@ and some text, basic regex functionality allows us to test whether a
 string matches the regex or find non-overlapping substrings of a
 string matching the regex.
 
-\section{Matching Complete Strings}
+\section{Matching and Finding}
 
 Despite the rich functionality of regexes, Java's
 \code{java.util.regex} package contains only two classes,
 \code{Pattern} and \code{Matcher}.  An instance of \code{Pattern}
-provides an immutable representation of a regular expression.  
+provides an immutable representation of a regular expression.  An
+instance of \code{Matcher} represents the state of the matching of a
+regular expression against a string.
 
-An instance of \code{Matcher} represents the
-state of the matching of a regular expression against a string.  
+\subsection{Matching Entire Strings}
 
 It's easiest to start with an example of using a regular expression
 for matching, which we wrote as a
@@ -59,7 +60,7 @@ trick in situations where space may appear as the prefix or suffix of
 a string.  It may get confusing if there is a vertical bar within the
 string, but the outer vertical bars are always the ones dropped.
 
-\section{Finding Matching Substrings}
+\subsection{Finding Matching Substrings}
 
 The second main application of regular expressions is to find
 substrings of a string that match the regular expression.  The main
@@ -105,14 +106,13 @@ succeeding with the span (2,4).  Next, it starts looking at position
 matches \stringmention{aa}.
 
 
+\section{Character Regexes}
 
-\section{Characters and Character Classes}
+The most basic regular expressions describe single characters.  Some
+characters have special meanings in regexes and thus need to be
+escaped for use in regular expresions.
 
-The most basic regular expressions describe either characters
-or character classes.  Some characters are reserved and need
-to be escaped for use in regular expresions.  
-
-\subsection{Literal Characters}
+\subsection{Characters as Regexes}
 
 A single character may be used a regular expression.  A regular
 expression consisting of a single character only matches that single
@@ -146,7 +146,7 @@ matching the character with Unicode code point
 \commandlinefollow{ant -Dregex={\bk}u0041 -Dtext=A regex-match}
 %
 \begin{verbatim}
-Regex=|\u002E|     Text=|.|     Matches=true
+Regex=|\u002E|    Text=|.|    Matches=true
 \end{verbatim}
 %
 Note that we did not have to escape the backslash for the shell
@@ -158,7 +158,7 @@ in regexes representing wildcards (see \refsec{regex-wildcard}).
 \commandlinefollow{ant -Dregex="{\bk}u002E" -Dtext="." regex-match}
 %
 \begin{verbatim}
-Regex=|\u002E|     Text=|.|     Matches=true
+Regex=|\u002E|    Text=|.|    Matches=true
 \end{verbatim}
 %
 
@@ -178,16 +178,18 @@ character.
 \subsection{Other Escapes}
 
 There are also other built-in escapes, such as \code{{\bk}n} for
-newline and \code{{\bk}{\bk}} for a backslash character.  The expression
-\code{Pattern.compile("{\bk}{\bk}")} will throw an exception, because
-it is attempting to compile the regular expression \code{{\bk}}.  To
-compile the regular expression \code{{\bk}{\bk}}, we need to write
-\code{Pattern.compile("{\bk}{\bk}{\bk}{\bk}")}.  
+newline and \code{\bk\bk} for a backslash character.  Again, we have
+to be careful about distinguishing Java string escapes, which are used
+to create a regex, which itself may contain regex escapes.  For
+instance, to create the regex \code{\bk\bk}, we need to use
+\code{Pattern.compile("\bk\bk\bk\bk")}.  Each pair of backslashes
+is a Java escape for the backslash; thus a string of two backslashes
+is compiled, resulting in the regex \code{\bk\bk}.
 
 This is all further confused by the command-line shell, which has its
-own escape sequence.  The DOS The general principle is that you need to encode
-the string at each level in such a way that the string you need at the
-next level passes through.  For instance, consider this puzzler,
+own escape sequence.  Our sample program reads a command from the
+command line, which is being supplied by Ant and set as a property on
+the command-line call to Ant.  For instance, consider this puzzler,
 %
 \commandlinefollow{ant -Dregex="\bk\bk\bk\bk" -Dtext="\bk\bk" regex-match}
 %
@@ -195,18 +197,134 @@ next level passes through.  For instance, consider this puzzler,
 Regex=|\\|    Text=|\|    Matches=true
 \end{verbatim}
 %
-We had to escape the backslashes on the command-line with another
-backslash because backspace-quote (\code{{\bk}"}) is an escape
-sequence for the quote character.  Double backslashes are an escape
-for backslash, which itself doesn't normally need an escape.  The
-regex that actually gets passed to \code{compile()} is a pair of
-backslash characters, \code{\bk\bk}.  The text that is matched is a
-single backslash, \code{\bk}.  The match succeeds because the regex
-\code{\bk\bk} is the escaped backslash character matcher.
+On the command line, backslash is escaped as \code{\bk\bk}.%
+%
+\footnote{Usually backslash doesn't need to be escaped because the
+following character isn't a valid escape; here, the following
+character is a quote (\code{"}), and \code{\bk"} is a valid escape
+sequence for the shell.}
+%
+Our Java program gets two backslashes for a first argument and one for
+the second, as shown in the output.  The match succeeds because the
+regex \code{\bk\bk} is the escaped backslash character, which
+matches a single backslash.
+
+
+\section{Character Classes}
+
+Regular expressions provide a range of built-in character classes
+based on ASCII or Unicode, as well as the ability to define new
+classes.  Each character class matches a set of characters.  The
+reason to use classes rather than disjunctions is that they have
+
+
+\subsection{WildCards}\label{section:regex-wildcard}
+
+A singe period (\code{.}) is a regular expression that matches any
+single characer.  We may think of it as the universal character class.
+For instance, the regex \code{.} matches the string \stringmention{a},
+and \code{a.c} matches \stringmention{abc}.%
+%
+\commandlinefollow{ant -Dregex=a.c -Dtext=abc regex-match}
+\begin{verbatim}
+Regex=|a.c|    Text=|abc|    Matches=true
+\end{verbatim}
+%
+
+Whether or not a wildcard matches an end-of-line sequence depends on
+whether or not the \code{DOTALL} flag is set (see
+\refsec{pattern-modes}); if it is set, the wildcard matches
+end-of-line sequences.  The following two expressions evaluate to
+\code{true},
+%
+\begin{verbatim}
+Pattern.compile(".").matcher("A").matches()
+Pattern.compile(".",DOTALL).matcher("\n").matches()
+\end{verbatim}
+%
+whereas the following expression evaluates to \code{false},
+%
+\begin{verbatim}
+Pattern.compile(".").matcher("\n").matches()
+\end{verbatim}
+
+\subsection{Unicode Classes}
+
+Unicode defines a range of categories for characters, such as the
+category \code{Lu} of uppercase letters (see
+\refsec{unicode-categories} for more information).  The regular
+expression \code{p\{\codeVar{X}\}} matches any unicode character
+belonging to the Unicode category \codeVar{X}.  For example,
+%
+\commandlinefollow{ant -Dregex={\bk}p{Lu} -Dtext=A regex-match}
+\begin{verbatim}
+Regex=|\p{Lu}|    Text=|A|    Matches=true
+\end{verbatim}
+%
+
+\subsection{ASCII Classes}
+
+There are character classes built in for ASCII characters.  For
+instance, \code{{\bk}d} is for digits, \code{{\bk}s} for whitespace,
+and \code{{\bk}w} for alphanumeric characters.  For example,
+%
+\commandlinefollow{ant -Dregex={\bk}d -Dtext=7 regex-match}
+\begin{verbatim}
+Regex=|\d|    Text=|7|    Matches=true
+\end{verbatim}
+%
+Their capital forms match ASCII characters that don't match the
+lowercase form, with \code{{\bk}D} for ASCII non-digits, and so on.
+Like the Unicode classes described in the previous section, there are
+a range of built-in ASCII classes from th POSIX standard built in,
+such as \code{{\bk}p\{ASCII\}} for any ASCII character and
+\code{{\bk}p\{Punct\}} for ASCII punctuation characters.
+
+The ASCII characters must be used with care, because they will not
+have their described behavior when interpreted over all of Unicode.
+For example, there are whitespaces in Unicode that don't match
+\code{{\bk}s} and digits that don't match \code{{\bk}d}.
+
+\subsection{Compound Character Classes}
+
+
+
+
+As described in the Javadoc for \code{Pattern},%
+%
+\footnote{We've added the negation operator at the end, which
+is not in the Javadoc's lineup.}
+%
+the order of
+attachment for character class operations is
+%
+\begin{center}
+\begin{tabular}{rll}
+\tblhead{Order} & \tblhead{Expression} & \tblhead{Example} 
+\\ \hline
+1 & Literal Escape & \code{{\bk}x}
+\\
+2 & Grouping & \code{[...]} 
+\\
+3 & Range & \code{0-9}
+\\
+4 & Concatenation & \code{ab}, \code{[0-9][ab]}, 
+\\
+5 & Intersection & \code{[a-z\&\&[aeiou]]}
+\\
+6 & Negation & \code{[\^{}aeiou]}
+\end{tabular}
+\end{center}
+%
+
+
 
 
 
 \section{Concatenation}
+
+As we saw in our early examples, characters may be concatenated
+together to form a regular expression that matches the string.
 
 \subsection{Empty Regex}
 
@@ -236,13 +354,17 @@ The regex \codeVar{xy} matches any string that can be decomposed into
 a string that matches \codeVar{x} followed by a string that matches
 \codeVar{y}.
 
-In the simplest case, we have a concatenation of characters, which
-matches any string consisting of the exact same characters.  
+Concatenation is associative, meaning that if we have three regexes
+\codeVar{x}, \codeVar{y}, and \codeVar{z}, the regexes
+\code{(\codeVar{x}\codeVar{y})\codeVar{z}} and
+\code{\codeVar{x}(\codeVar{y}\codeVar{z})} match exactly the same set
+of strings.  Because parentheses may be used for groups (\see
+\refsec{regex-groups}), the two regexes do not always behave exactly
+the same way.
 
 
 
-
-
+\section{Non-Capturing Regexes}
 
 \subsection{Begin and End of Line}
 
@@ -271,36 +393,6 @@ sequences for any platform (Unix, Macintosh, or Windows).  If the
 \code{UNIX\_LINES} flag is set, they only match Unix newlines (see
 \refsec{pattern-modes}).
 
-
-\subsection{WildCards}\label{section:regex-wildcard}
-
-A singe period (\code{.}) is a regular expression that matches a
-single characer.  For instance, the regex \code{.} matches the string
-\stringmention{a}, and \code{a.c} matches \stringmention{abc}.%
-%
-\commandlinefollow{ant -Dregex=a.c -Dtext=abc regex-match}
-\begin{verbatim}
-Regex=|a.c|    Text=|abc|    Matches=true
-\end{verbatim}
-%
-
-Whether or not a wildcard matches an end-of-line sequence depends on
-whether or not the \code{DOTALL} flag is set (see
-\refsec{pattern-modes}); if it is set, the wildcard matches
-end-of-line sequences.  The following two expressions evaluate to
-\code{true},
-%
-\begin{verbatim}
-Pattern.compile(".").matcher("A").matches()
-Pattern.compile(".",DOTALL).matcher("\n").matches()
-\end{verbatim}
-%
-whereas the following expression evaluates to \code{false},
-%
-\begin{verbatim}
-Pattern.compile(".").matcher("\n").matches()
-\end{verbatim}
-%
 
 
 
@@ -383,29 +475,6 @@ failing that, matches the empty string.
 The second disjunct is the empty string, a regex that matches the
 empty string.  
 
-\subsection{Character Classes}
-
-As described in the Javadoc for \code{Pattern}, the order of
-attachment for character oprations is
-%
-\begin{center}
-\begin{tabular}{rll}
-\tblhead{Order} & \tblhead{Expression} & \tblhead{Example} 
-\\ \hline
-1 & Literal Escape & \code{{\bk}x}
-\\
-2 & Grouping & \code{[...]} 
-\\
-3 & Range & \code{0-9}
-\\
-4 & Concaenation & \code{[0-9][ab]}, \code{ab}
-\\
-5 & Intersection & \code{[a-z\&\&[aeiou]]}
-\\
-5.5 & Negation & \code{[\^{}aeiou]}
-\end{tabular}
-\end{center}
-%
 
 
 \subsection{Line Terminators and Unix Lines}
@@ -430,7 +499,7 @@ attachment for character oprations is
 \end{center}
 
 
-\subsection{Parentheses and Groups}
+\subsection{Parentheses for Grouping}\label{section:regex-groups}
 
 In all cases, parentheses may be used around a regular expression to
 clarify how the operations attach.  
