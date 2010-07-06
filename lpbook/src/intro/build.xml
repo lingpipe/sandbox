@@ -33,7 +33,18 @@
     </java>
   </target>
 
+  <target name="hello-name"
+          depends="jar">
+    <java classname="com.lingpipe.book.intro.HelloName"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${first}"/>
+      <arg value="${last}"/>
+    </java>
+  </target>
+
   <target name="run"
-          depends="hello"/>
+          depends="hello,
+                   hello-name"/>
 
 </project>
