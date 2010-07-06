@@ -255,12 +255,14 @@ category \code{Lu} of uppercase letters (see
 \refsec{unicode-categories} for more information).  The regular
 expression \code{p\{\codeVar{X}\}} matches any unicode character
 belonging to the Unicode category \codeVar{X}.  For example,
+the class \code{Lu} picks out uppercase letters, so we have
 %
-\commandlinefollow{ant -Dregex={\bk}p{Lu} -Dtext=A regex-match}
+\commandlinefollow{ant -Dregex={\bk}p\{Lu\} -Dtext=A regex-match}
 \begin{verbatim}
 Regex=|\p{Lu}|    Text=|A|    Matches=true
 \end{verbatim}
 %
+
 
 \subsection{ASCII Classes}
 
@@ -273,12 +275,16 @@ and \code{{\bk}w} for alphanumeric characters.  For example,
 Regex=|\d|    Text=|7|    Matches=true
 \end{verbatim}
 %
-Their capital forms match ASCII characters that don't match the
-lowercase form, with \code{{\bk}D} for ASCII non-digits, and so on.
-Like the Unicode classes described in the previous section, there are
-a range of built-in ASCII classes from th POSIX standard built in,
-such as \code{{\bk}p\{ASCII\}} for any ASCII character and
-\code{{\bk}p\{Punct\}} for ASCII punctuation characters.
+For these three ASCII classes, the capitalized forms match
+ASCII characters that don't match the lowercase forms.  So
+\code{{\bk}D} matches non-digits, \code{{\bk}S} non whitespace,
+and \code{{\bk}W} non-alphanumeric characters.
+
+There are a range of built-in ASCII classes from the POSIX standard
+built in.  They use the same syntax as the Unicode classes described
+in the previous section.  For example, \code{{\bk}p\{ASCII\}} matches
+any ASCII character and \code{{\bk}p\{Punct\}} for ASCII punctuation
+characters.
 
 The ASCII characters must be used with care, because they will not
 have their described behavior when interpreted over all of Unicode.
@@ -287,15 +293,74 @@ For example, there are whitespaces in Unicode that don't match
 
 \subsection{Compound Character Classes}
 
+Character classes may be built up from single characters and/or other
+character classes using set operations like union, intersection, and
+negation.
+
+The syntax for compound character classes uses brackets around a
+character class expression.  The atomic character class expressions
+are single characters like \code{a}, and the character class escapes
+like \code{{\bk}p\{Lu\}} for is any uppercase Unicode character.
+Compound character classes may also be nested.  For example,
 
 
-
-As described in the Javadoc for \code{Pattern},%
+Character classes may be unioned, which confusingly uses a
+concatenation syntax.  For instance, \code{[aeiou]} is the character
+class picking out the ASCII vowels.  It is composed of the union of
+character class expressions \code{a}, \code{e}, \ldots, \code{u}.  
 %
-\footnote{We've added the negation operator at the end, which
-is not in the Javadoc's lineup.}
+\commandlinefollow{ant -Dregex="[aeiou]" -Dtext=i regex-match}
+\begin{verbatim}
+Regex=|[abc]|    Text=|i|    Matches=true
+\end{verbatim}
 %
-the order of
+Class escapes may be used, so that \code{[{\bk}p\{Lu\}{\bk}p\{N\}]}
+picks out upper case letters and numbers.
+
+The use of range notation may be used as shorthand for unions.
+For instance, \code{[0-9]} picks out the ASCII digits \charmention{0},
+\charmention{1}, \ldots, \charmention{9}.  For example,
+%
+\commandlinefollow{ant -Dregex="[I-P]" -Dtext=J regex-match}
+\begin{verbatim}
+Regex=|[I-P]|    Text=|J|    Matches=true
+\end{verbatim}
+
+Character classes may be complemented.  The syntax involves a caret,
+with \code{[\^{}\codeVar{A}]} picking out the class of characters not
+in class \codeVar{A}.  The expression \codeVar{A} must be either a
+range or a sequence of character class primitives.  For instance,
+\code{[\^{}z]} represents the class of every character other than
+\charmention{z}.  
+%
+\commandlinefollow{ant -Dregex="[\^{}z]" -Dtext=z regex-match}
+\begin{verbatim}
+Regex=|[^z]|    Text=|z|    Matches=false
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="[\^{}z]" -Dtext=a regex-match}
+\begin{verbatim}
+Regex=|[^z]|    Text=|a|    Matches=true
+\end{verbatim}
+%
+Unlike the usual rules governing the logical operations disjunction,
+conjunction, and negation, the character class complementation
+operator binds more weakly than union.  Thus \code{[\^{}aeiou]} picks
+out every character that is not an ASCII vowel.
+
+Character classes may also be intersected.  The syntax is the same as
+for logical conjunction, with \code{[\codeVar{A}\&\&\codeVar{B}]}
+picking out the characters that are in the classes denoted by both
+\codeVar{A} and \codeVar{B}.  For instance, we could write
+\code{[[a-z]\&\&[\^{}aeiou]]} to pick out all ASCII characters other
+than the vowels,
+%
+\commandlinefollow{ant -Dregex="[[a-z]\&\&[\^{}aeiou]]" -Dtext=i regex-match}
+\begin{verbatim}
+Regex=|[[a-z]&&[^aeiou]]|    Text=|i|    Matches=false
+\end{verbatim}
+
+As described in the Javadoc for \code{Pattern}, the order of
 attachment for character class operations is
 %
 \begin{center}
@@ -308,23 +373,31 @@ attachment for character class operations is
 \\
 3 & Range & \code{0-9}
 \\
-4 & Concatenation & \code{ab}, \code{[0-9][ab]}, 
+4 & Union & \code{ab}, \code{[0-9][ab]}, 
 \\
 5 & Intersection & \code{[a-z\&\&[aeiou]]}
-\\
-6 & Negation & \code{[\^{}aeiou]}
 \end{tabular}
 \end{center}
 %
-
-
-
+Thus the square brackets act like grouping parentheses for character
+classes.  Complementaton must be treated separately.  Complementation
+only applies to character groups or ranges, and must be closed within
+brackets before being combined with union or intersection or the scope
+may not be what you expect.  For instance, \code{[\^{}a[b-c]]} is
+not equivalent to \code{[\^{}abc]}, but rather is equivalent to
+\code{[[\^{}a][b-c]]}.
 
 
 \section{Concatenation}
 
 As we saw in our early examples, characters may be concatenated
-together to form a regular expression that matches the string.
+together to form a regular expression that matches the string.  This
+is not the same operation as character classes, which confusingly
+uses the same notation.  
+
+With a list of objects being concatenated, the boundary condition is
+an empty list, which is why we start this section with a discussion of
+the empty regex.
 
 \subsection{Empty Regex}
 
@@ -352,19 +425,309 @@ Two regular expressions \codeVar{x} and \codeVar{y} may be
 concatenated to produce a compound regular expression \codeVar{xy}.
 The regex \codeVar{xy} matches any string that can be decomposed into
 a string that matches \codeVar{x} followed by a string that matches
-\codeVar{y}.
+\codeVar{y}.  For example, if we have a regex \code{[aeiou]} that
+matches vowels and a regex \code{0-9} that matches digits, we can put
+them together to produce a regex that matches a vowel followed by a
+digit.
+%
+\commandlinefollow{ant -Dregex=[aeiou][0-9] -Dtext=i7 regex-match}
+\begin{verbatim}
+Regex=|[aeiou][0-9]|    Text=|i7|    Matches=true
+\end{verbatim}
 
 Concatenation is associative, meaning that if we have three regexes
 \codeVar{x}, \codeVar{y}, and \codeVar{z}, the regexes
 \code{(\codeVar{x}\codeVar{y})\codeVar{z}} and
 \code{\codeVar{x}(\codeVar{y}\codeVar{z})} match exactly the same set
-of strings.  Because parentheses may be used for groups (\see
+of strings.  Because parentheses may be used for groups (see
 \refsec{regex-groups}), the two regexes do not always behave exactly
-the same way.
+the same way.  
 
+
+\section{Disjunction}
+
+If \codeVar{X} and \codeVar{Y} are regular expressions, the regular
+expression \codeVar{x}\code{|}\codeVar{y} matches any string that
+matches either \codeVar{X} or \codeVar{Y} (or both).  For example,
+%
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext=ab regex-match}
+\begin{verbatim}
+Regex=|ab|cd|
+Text=|ab|
+Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext=cd regex-match}
+\begin{verbatim}
+Regex=|ab|cd|    Text=|cd|    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext=bc regex-match}
+\begin{verbatim}
+Regex=|ab|cd|    Text=|bc|    Matches=false
+\end{verbatim}
+%
+Concatenation takes precedence over disjunction, so that \code{ab|cd}
+is read as \code{(ab)|(cd)}, not \code{a(b|c)d}.  
+
+The order of disjunctions doesn't matter for matching (other than for
+efficiency), but it matters for the find operation.  For finds,
+disjunctions are evaluated left-to-right and the first match returned.
+%
+\commandlinefollow{ant -Dregex="ab|abc" -Dtext=abc regex-find}
+\begin{verbatim}
+Found |ab| at (0,2)
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="abc|ab" -Dtext=abc regex-find}
+\begin{verbatim}
+Found |abc| at (0,3)
+\end{verbatim}
+%
+
+Because complex disjunctions are executed through backtracking,
+disjunctions that have to explore many branches can quickly lead to
+inefficient regular expressions.  Even a regex as short as
+\code{(a|b)(c|d)(e|f)} has $2^3 = 8$ possible search paths to explore.
+Each disjunction doubles the size of the search space, leading to
+exponential growth in the search space in the number of interacting
+disjunctions.  In practice, disjunctions often fail earlier.  For
+instance, if there is no match for \code{a|b}, further
+disjunctions are not explored.  
+
+A simple pathological case can be created by concatenating instances
+of the regex \code{(|a)} and then matching a long string of \code{a}
+characters.  You can try it out yourself with
+%
+\commandline{ant -Dregex="(|a)(|a)...(|a)(|a)" -Dtext=aa...aa regex-find}
+%
+where the elipses are meant to indicate further copies of \code{a}.
+This expression will explore every branch of every disjunction.
+Around 25 or 26 copies of \code{(|a)} there are tens of millions of
+paths to explore, and with 30, there's over a billion.  You'll be
+waiting a while for an answer.  But if the building block is
+\code{(a|b)}, there's no problem, because each disjunction has to
+match \code{a}.
+%
+\commandline{ant -Dregex="(b|a)(b|a)...(b|a)(b|a)" -Dtext=aa...aa regex-find}
+
+\section{Kleene Star and Other Quantifiers}
+
+There are a number of quantifiers that match a bounded or
+unbounded number of copies of a pattern.
+
+\section{Greedy Quantifiers}
+
+There are operators for optionality or multiple instances that go
+under the general heading of ``greedy'' because of they match as
+many times as they can.  In the next section, we consider their
+``reluctant'' counterparts that do the opposite.
+
+\subsection{Optionality}
+
+The simplest greedy quantifier is the optionality marker.  The regex
+\code{\codeVar{A}?} matches a string that matches \codeVar{A} or the
+empty string.  For example,
+%
+\commandlinefollow{ant -Dregex=a? -Dtext=a regex-match}
+\begin{verbatim}
+Regex=|a?|    Text=|a|    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex=a? -Dtext={\bk}"{\bk}" regex-match}
+\begin{verbatim}
+Regex=|a?|    Text=||    Matches=true
+\end{verbatim}
+
+The greediness of the basic optionality marker, which tries to match
+before trying to match the empty string, is illustrated using
+\code{find()},
+%
+\commandlinefollow{ant -Dregex=a? -Dtext=aa regex-find}
+\begin{verbatim}
+Found |a| at (0,1)    Found |a| at (1,2)    Found || at (2,2)
+\end{verbatim}
+%
+The first two substrings found match \code{a} rather than
+the empty string.  Only when we are at position 2, at the
+end of the string, do we match the empty string because we
+can no longer match \code{a}.
+
+The greediness of optionality means that the \code{\codeVar{A}?}
+behaves like the disjunction \code{(\codeVar{A}|)} of \codeVar{A} and
+the empty string.  Because it is the first disjunct, a match
+against \codeVar{A} is tried first.
+
+
+\subsection{Kleene Star}
+
+A regular expression \codeVar{x} may have the Kleene-star operator%
+%
+\footnote{Named after Stephen Kleene, who invented regular expressionsn
+as a notation for his characterization of regular languages.}
+%
+applied to it to produce the regular expression \codeVar{A}\code{*}.
+The regex \codeVar{A}\code{*} matches a string if the string is
+composed of a sequence of zero or more matches of \codeVar{A}.  For
+example, \code{[01]*} matches any sequence composed only of \code{0}
+and \code{1} characters,
+%
+\commandlinefollow{ant -Dregex="[01]*" -Dtext=00100100 regex-match}
+\begin{verbatim}
+Regex=|[01]*|    Text=|00100100|    Matches=true
+\end{verbatim}
+%
+It will also match the empty string, but will not match a string with
+any other character.
+
+Using find, the standard Kleene-star operation is greedy in that it
+consumes as much as it can during a \code{find()} operation.  For
+example, consider
+%
+\commandlinefollow{ant -Dregex="[01]*" -Dtext=001a0100 regex-find}
+\begin{verbatim}
+Found |001| at (0,3)    Found || at (3,3)    Found |0100| at (4,8)
+Found || at (8,8)
+\end{verbatim}
+%
+The first result of calling \code{find()} consumes the expression
+\code{[01]} as many times as possible, consuming the first three
+characters, \code{001}.  After that, the expression matches the empty
+string spanning from 3 to 3.  It then starts at position 4, finding
+\code{0100} and then the empty string again after that.  Luckily,
+\code{find()} is implemented cleverly enough that it only returns the
+empty string once.  
+
+Kleene star may also be understood in terms of disjunction, though
+recursion is required.  The greedy Kleene star regex
+\code{\codeVar{A}*} behaves like \code{(\codeVar{A}(\codeVar{A}*))|}.
+Thus it first tries to match \codeVar{A} followed by another match of
+\code{\codeVar{A}*}, and only failing that tries to match the
+empty string.
+
+Kleene star interacts with disjunction in the expected way.  For
+example, matching may match an entire string, as with
+%
+\commandlinefollow{ant -Dregex="(ab|abc)*" -Dtext=abcab regex-match}
+\begin{verbatim}
+Regex=|(ab|abc)*|    Text=|abcab|    Matches=true
+\end{verbatim}
+%
+while finding returns only an initial match, 
+%
+\commandlinefollow{ant -Dregex="(ab|abc)*" -Dtext=abcab regex-find}
+\begin{verbatim}
+Found |ab| at (0,2)    Found || at (2,2)    Found |ab| at (3,5)
+Found || at (5,5)
+\end{verbatim}
+%
+This is a result of the greediness of the Kleene-star operator
+and the evaluation order of disjunctions.  If we reorder, we 
+get the whole string,
+%
+\commandlinefollow{ant -Dregex="(abc|ab)*" -Dtext=abcab regex-find}
+\begin{verbatim}
+Found |abcab| at (0,5)    Found || at (5,5)
+\end{verbatim}
+%
+because we first match \code{abc} against the disjunct, then continue
+trying to match \code{(abc|ab)*}, which matches \code{ab}.
+
+\subsection{Kleene Plus}
+
+The Kleene-plus operator is like the Kleene star, but requires at
+least one match.  Thus \codeVar{A}\code{+} matches a string if the
+string is composed of a sequence of one or more matches of
+\codeVar{A}.  The Kleene-plus operator may be defined in terms
+of Kleene star and concatenation, with \code{\codeVar{A}+} behaving
+just like \code{\codeVar{A}\codeVar{A}*}.  
+
+Use Kleene plus instead
+of star to remove those pesky empty string matches.  For instance, 
+%
+\commandlinefollow{ant -Dregex="(abc|ab)+" -Dtext=abcab regex-find}
+\begin{verbatim}
+Found |abcab| at (0,5)
+\end{verbatim}
+
+\subsection{Match Count Ranges}
+
+We can specify an exact number or a range of possible number of
+matches.  The regular expression \code{\codeVar{A}\{\codeVar{m}\}}
+matches any string that that may be decomposed into a sequence of
+\codeVar{m} strings, each of which matches \codeVar{A}.
+%
+\commandlinefollow{ant -Dregex="a\{3\}" -Dtext=aaa regex-match}
+\begin{verbatim}
+Regex=|a{3}|    Text=|aaa|    Matches=true
+\end{verbatim}
+%
+
+There is similar notation for spans of counts.  The regex
+\code{\codeVar{A}\{\codeVar{m},\codeVar{n}\}} matches any string that
+may be decomposed into a sequence of between \codeVar{m} (inclusive)
+and \codeVar{n} (inclusive) matches of \codeVar{A}.  The greediness
+comes in because it prefers to match as many instances as possible.
+For example,
+%
+\commandlinefollow{ant -Dregex="a\{2,3\}" -Dtext=aaaaa regex-find}
+\begin{verbatim}
+Found |aaa| at (0,3)    Found |aa| at (3,5)
+\end{verbatim}
+%
+The first result found matches the regex \code{a} three times
+rather than twice.  
+
+There is also an open-ended variant.  The regex
+\code{\codeVar{A}\{\codeVar{m},\}} matches any string that can be
+decomposed into \codeVar{m} or more strings each of which matches
+\codeVar{A}.
+
+\section{Reluctant Quantifiers}
+
+There are a range of reluctant quantifiers that parallel the more
+typical greedy quantifiers.  For matching, the relunctant quantifiers
+behave just like their greedy counterparts, whereas for find
+operations, reluctant quantifiers try to match as little as possible.
+
+The reluctant quantifiers are written like the greedy quantifiers
+followed by a question mark.  For instance, \code{\codeVar{A}*?}  is
+the reluctant version of the Kleene star regex \code{\codeVar{A}*},
+\code{\codeVar{A}\{m,n\}?} is the reluctant variant of the range egex
+\code{\codeVar{A}\{m,n\}}, and \code{\codeVar{A}??} is the reluctant
+variant of the optionality regex \code{\codeVar{A}?}.
+
+Reluctant quantifiers may be understood by reversing all the disjuncts
+in the definitions of the greedy quantifier equivalents.  For
+instance, we can think of \code{\codeVar{A}??} as
+\code{\codeVar{(|\codeVar{A})}} and \code{\codeVar{A}*?} as
+\code{(|\codeVar{A}\codeVar{A}*?)}. 
+
+Here we repeat some key examples of the previous section using reluctant
+quantifiers.
+%
+\commandlinefollow{ant -Dregex=a?? -Dtext=aa regex-find}
+\begin{verbatim}
+Found || at (0,0)    Found || at (1,1)    Found || at (2,2)
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="(abc|ab)+?" -Dtext=abcab regex-find}
+\begin{verbatim}
+Found |abc| at (0,3)    Found |ab| at (3,5)
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex="a\{2,3\}?" -Dtext=aaaaa regex-find}
+\begin{verbatim}
+Found |aa| at (0,2)    Found |aa| at (2,4)
+\end{verbatim}
+%
 
 
 \section{Non-Capturing Regexes}
+
+Some regexes match virtual positions in an input without consuming any
+text themselves.
+
 
 \subsection{Begin and End of Line}
 
@@ -394,90 +757,7 @@ sequences for any platform (Unix, Macintosh, or Windows).  If the
 \refsec{pattern-modes}).
 
 
-
-
-
-\subsection{Disjunction}
-
-Two regular expressions \codeVar{x} and \codeVar{y} may be disjoined
-to produce a compound regular expression
-\codeVar{x}\code{|}\codeVar{y}.  The regex
-\codeVar{x}\code{|}\codeVar{y} matches any string that matches either
-\codeVar{x} or \codeVar{y} (or both).  For example,
-%
-\commandlinefollow{ant -Dregex="ab|cd" -Dtext=ab regex-match}
-\begin{verbatim}
-Regex=|ab|cd|
-Text=|ab|
-Matches=true
-\end{verbatim}
-%
-\commandlinefollow{ant -Dregex="ab|cd" -Dtext=cd regex-match}
-\begin{verbatim}
-Regex=|ab|cd|    Text=|cd|    Matches=true
-\end{verbatim}
-%
-\commandlinefollow{ant -Dregex="ab|cd" -Dtext=bc regex-match}
-\begin{verbatim}
-Regex=|ab|cd|    Text=|bc|    Matches=false
-\end{verbatim}
-%
-The vertical bars used to display the regex are not part of it; thus
-the regular expression is \code{ab|cd}, not \code{|ab|cd|}.  The regex
-itself needs to be quoted on the command line so the vertical bar is
-not interpreted as a Unix pipe.
-
-Even though the order of disjunctions doesn't matter in a logical
-expression.  And as far as matching whole strings, the order of
-disjunctions doesn't matter.  But for finds, disjunctions are
-evaluated left-to-right and the first match returned.
-%
-\commandlinefollow{ant -Dregex="ab|abc" -Dtext=abc regex-find}
-\begin{verbatim}
-Found |ab| at (0,2)
-\end{verbatim}
-%
-\commandlinefollow{ant -Dregex="abc|ab" -Dtext=abc regex-find}
-\begin{verbatim}
-Found |abc| at (0,3)
-\end{verbatim}
-%
-
-Because complex disjunctions are executed through backtracking,
-disjunctions that have to explore many branches can quickly lead to
-inefficient regular expressions.
-
-Combinatorics can quickly spiral out of control with disjunctions.
-Even a regex as short as \code{(a|b)(c|d)(e|f)} has $2^3 = 8$ possible
-search paths to explore.  Although each disjunction tacked on doubles
-the size of the search space in theory, in practice disjunctions often
-fail earlier.  If there is no match for \code{a|b}, the further
-disjunctions are not explored.
-
-\subsection{Kleene Star and Other Quantifiers}
-
-A regular expression \codeVar{x} may have the Kleene-star operator%
-%
-\footnote{Named after Stephen Kleene, who invented regular expressionsn
-as a notation for his characterization of regular languages.}
-%
-applied to it to produce the regular expression \codeVar{x}\code{*}.
-The regex \codeVar{x}\code{*} matches a string if the string is
-composed of a sequence of zero or more matches of \codeVar{x}.  In
-terms of execution, \codeVar{x}\code{*} behaves like a disjunction
-with a recursive definition,
-%
-\displ{\code{\codeVar{x}*} {::=} \code{(\codeVar{x}(\codeVar{x}*))|}}
-%
-A matcher for \code{\codeVar{x}*} first tries to find a
-match for \codeVar{x} followed by a match of \code{\codeVar{x}*}, and
-failing that, matches the empty string.
-The second disjunct is the empty string, a regex that matches the
-empty string.  
-
-
-
-\subsection{Line Terminators and Unix Lines}
+\subsection{Line Terminators and Unix Lines}\label{section:regex-lines}
 
 \begin{center}
 \begin{tabular}{lll}
@@ -499,7 +779,7 @@ empty string.
 \end{center}
 
 
-\subsection{Parentheses for Grouping}\label{section:regex-groups}
+\section{Parentheses for Grouping}\label{section:regex-groups}
 
 In all cases, parentheses may be used around a regular expression to
 clarify how the operations attach.  

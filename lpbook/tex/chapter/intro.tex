@@ -468,8 +468,68 @@ target invocation would be displayed in this book as
 Hello World
 \end{verbatim}
 
+\subsection{Hello with Arguments}
 
-\subsection{A Quick Introduction to Ant}
+Often we need to supply arguments to programs from the command
+line.  The easiest way to do this with Ant is by setting the
+properties on the command line.  Our second demo uses this facility
+to provide a customized greeting.
+%
+\commandlinefollow{ant -Dfirst=Bobby -Dlast=C hello-name}
+\begin{verbatim}
+Hello, Bobby C.
+\end{verbatim}
+%
+Each argument to a program corresponds to a named property, here
+\code{first} and \code{last}.  In general, properties are specified
+\code{-D\codeVar{key}=\codeVar{val}}.
+
+
+\subsection{Code Walkthrough}\label{section-intro-hello-code}
+
+The code for the hello world program can be found in
+\relpath{src/intro/src/com/lingpipe/book/intro/HelloWorld.java}.
+Throughout the book, the files are organized this way, under the
+top-level \filepath{src} directory, then the name of the chapter (here
+\filepath{intro}), followed by \filepath{src}, followed by the path to
+the actual program.  We follow the Java convention of placing files in
+a directory structure that mirrors their package structure, so the
+remaining part of the path is
+\filepath{com/lingpipe/book/intro/HelloWorld.java}.  The contents of
+the \filepath{HelloWorld.java} program file is as follows.
+%
+\codeblock{HelloWorld.1}
+%
+As usual for Java programs, the first thing in the file is the package
+declaration, here \code{com.lingpipe.book.intro}; note how it matches
+the end of the path to the file, \filepath{com/lingpipe/book/intro}.
+Next is the class definition, \code{HelloWorld}, which matches the
+name of the file, \filepath{HelloWorld.java}.
+
+When a Java class is invoked from the command line (or equivalently
+through Ant), it must implement a static method with a signature like
+the one shown.  Specifically, the method must be named \code{main},
+must take a single string array argument of type \code{String[]}, must
+not have a return value \ie{return type \code{void}}, and must be
+declared to be both public and static using the
+\code{public} and \code{static} modifiers.  The method may optionally throw
+any kind of exception.
+
+The body of the program here just prints \code{Hello World} to the
+system output.  As usual, Java provides a handle to the system output
+through the public static variable \code{out} of type
+\code{java.io.PrintStream} in the \code{java.lang.System} class.
+
+The more complex program \code{HelloName} that takes two
+command-line arguments varies in the body of its \code{main()} method, 
+%
+\codeblock{HelloName.1}
+%
+As a convention, we assign the command-line arguments read
+from the array \code{args} to a sequence of named variables.  
+We then use these same names in the Ant properties (see \refsec{intro-ant-properties}).
+
+\section{Introduction to Ant}
 
 Although we will typically skip discussing the Ant build files,
 as they're almost all the same, we will go over the one for the
@@ -482,7 +542,7 @@ build files will be broken out by chapter and/or section.  The goal is
 to make each of them relatively self contained so that they may be
 used as a minimal basis for further development.
 
-\subsubsection{XML Declaration}
+\subsection{XML Declaration}
 
 The first thing in any Ant build file is the XML declaration, here
 %
@@ -504,7 +564,7 @@ it explicit.
 The ellipses (\code{...}) indicate ellided material that will be
 filled in (or not) in continuing discussion.  
 
-\subsubsection{Top-Level Project Element} 
+\subsection{Top-Level Project Element} 
 
 The top-level element in the XML file is the project declaration,
 which is just
@@ -536,7 +596,7 @@ everything up to run from.  We will not need a default target as we
 will specify all targets explicitly for clarity.  The name doesn't
 really have a function.
 
-\subsubsection{Ant Properties}
+\subsection{Ant Properties}\label{section:intro-ant-properties}
 
 We organize Ant build files in the conventional way starting with
 properties, which are declared first in the project element's content.
@@ -569,11 +629,8 @@ archive called \code{foo.jar}).  The value of a property in Ant is
 always the first value to which it is set; further attempts to set it
 (as in the body of the Ant file) will be ignored.
 
-Properties may also be specified in an external Java properties file,
-which is very helpful for setting local variables that vary by
-install, but we will not need that option for this book.
 
-\subsubsection{Ant Targets}
+\subsection{Ant Targets}
 
 Next, we have a sequence of targets, each of which groups together
 a sequence of tasks.  The order of targets is not important.  The
@@ -734,49 +791,84 @@ Finally, there is a flag indicated by attribute \code{fork} being
 set to value \code{true}, which tells Ant to fork a new process with
 a new JVM in which to run the indicated class.  
 
+The target \code{hello-name} that we used for the hello program with
+two arguments consists of the following Java task.
+%
+\begin{verbatim}
+    <java classname="com.lingpipe.book.intro.HelloName"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${first}"/>
+      <arg value="${last}"/>
+    </java>
+\end{verbatim}
+%
+This time, the element tagged \code{java} for the Java task has
+content, specifically two argument elements.  Each argument element is
+tagged \code{arg} and has a single attribute \code{value}, the value
+of which is passed to the named Java programs \code{main()} program as
+arguments.  As a convention, our programs will all create string
+variables of the same name as their first action, just as in our
+hello program with arguments. 
+
+
+
 In more elaborate uses of the \code{java} task, we can also specify
-command-line arguments and other arguments to the Java virtual machine
-(JVM).  
+arguments to the Java virtual machine such as the maximum amount of
+memory to use or to use ordinary object pointer compression, set Java
+system properties, and so on.
 
 
-\subsection{Code Walkthrough}
+\subsection{Property Files}
 
-The code for the hello world program can be found in
-\relpath{src/intro/src/com/lingpipe/book/intro/HelloWorld.java}.
-Throughout the book, the files are organized this way, under the
-top-level \filepath{src} directory, then the name of the chapter (here
-\filepath{intro}), followed by \filepath{src}, followed by the path to
-the actual program.  We follow the Java convention of placing files in
-a directory structure that mirrors their package structure, so the
-remaining part of the path is
-\filepath{com/lingpipe/book/intro/HelloWorld.java}.  The contents of
-the \filepath{HelloWorld.java} program file is as follows.
+Properties accessed in an Ant build file may also be specified in an
+external Java properties file.  This is particular useful in a setting
+where many users access the same build file in different environments.
+Typically, the build file itself is checked into version control.  If
+the build file specifies a properties file, each user may have their
+own version of the properties file.
+
+Properties may be loaded directly from the build file, or they may be
+specified on the command line.  From within an Ant build file, the
+\code{file} attribute in the \code{property} element may be used to
+load properties.  For example,
 %
-\codeblock{HelloWorld.1}
+\begin{verbatim}
+<property file="build.properties"/>
+\end{verbatim}
 %
-As usual for Java programs, the first thing in the file is the package
-declaration, here \code{com.lingpipe.book.intro}; note how it matches
-the end of the path to the file, \filepath{com/lingpipe/book/intro}.
-Next is the class definition, \code{HelloWorld}, which matches the
-name of the file, \filepath{HelloWorld.java}.
+From the command line, a properties file may be specified with
+%
+\commandline{ant -propertyfile build.properties ...}
 
-When a Java class is invoked from the command line (or equivalently
-through Ant), it must implement a static method with a signature like
-the one shown.  Specifically, the method must be named \code{main},
-must take a single string array argument of type \code{String[]}, must
-not have a return value \ie{return type \code{void}}, and must be
-declared to be both public and static using the
-\code{public} and \code{static} modifiers.  The method may optionally throw
-any kind of exception.
+The properties file is interpreted as a Java properties file.  The
+parser for properties file is line oriented, allowing the Unix
+(\code{{\bk}n}), Macintosh (\code{{\bk}r{\bk}n} Windows
+(\code{\bk{r}}) line-termination sequences.  Lines may be continued
+like on the shell with a backslash character.  
 
-When a Java program is invoked from the command line, a call is made
-to the main program with arguments set to the command-line arguments.  
-Here, we are not considering any arguments.
+Lines beginning with the hash sign \code{\#} or exclamation point
+(\code{!}) are taken to be comments and ignored.  Blank lines are also
+ignored.
 
-The body of the program here just prints \code{Hello World} to the
-system output.  As usual, Java provides a handle to the system output
-through the public static variable \code{out} of type
-\code{java.io.PrintStream} in the \code{java.lang.System} class.
+Each line is interpreted as a key followed by a value.  The characters
+equal sign (\code{=}), colon (\code{:}) or a whitespace character
+(there are no line terminators within lines; line parsing has already
+been done).
+
+Character escapes, including Unicode escapes, are parsed pretty much
+as in Java string literals (see \refsec{char-unicode-java}) with a bit
+more liberal syntax, a few additional escapes (notably for the colon
+and equals sign) and some excluded characters (notably backspace).
+
+
+\subsection{Precedence of Properties}
+
+In Ant, whichever property is read first survives.  The command
+line properties precede any other properties, followed by properties
+read in from a command-line properties file, followed by the
+properties read in from Ant build files in the order they appear.
+
 
 \section{Escapes All The Way Down}
 
