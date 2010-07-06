@@ -841,11 +841,39 @@ From the command line, a properties file may be specified with
 %
 \commandline{ant -propertyfile build.properties ...}
 
-The properties file is interpreted as a Java properties file.  The
-parser for properties file is line oriented, allowing the Unix
+The properties file is interpreted as a Java properties file.  For
+instance, we have supplied a demo properties file
+\code{demo.properties} in this chapter's directory we can use with
+the named greeting program.  The contents of this file is
+%
+\begin{verbatim}
+first: Jacky
+last: R
+\end{verbatim}
+%
+We invoke the Ant target \code{hello-name} to run the demo,
+specifying that the properties from teh file \code{demo.properties}
+be read in.
+%
+\commandlinefollow{ant -propertyfile demo.properties hello-name}
+\begin{verbatim}
+Hello, Jacky R.
+\end{verbatim}
+%
+Any command-line specifications using \code{-D} override properties.
+For example, we can override the value of \code{first},
+%
+\commandlinefollow{ant -Dfirst=Brooks -propertyfile demo.properties hello-name}
+\begin{verbatim}
+Hello, Brooks R.
+\end{verbatim}
+
+\subsubsection{Parsing Properties Files}
+
+The parser for properties file is line oriented, allowing the Unix
 (\code{{\bk}n}), Macintosh (\code{{\bk}r{\bk}n} Windows
 (\code{\bk{r}}) line-termination sequences.  Lines may be continued
-like on the shell with a backslash character.  
+like on the shell with a backslash character.
 
 Lines beginning with the hash sign \code{\#} or exclamation point
 (\code{!}) are taken to be comments and ignored.  Blank lines are also
