@@ -8,7 +8,11 @@ public class ByteToString {
     public static void main(String[] args) 
         throws UnsupportedEncodingException {
 
+        System.setOut(new java.io.PrintStream(System.out,true,"UTF-8"));
+
         String s = "D\u00E9j\u00E0 vu";
+        System.out.println(s);
+
         String encode = args[0];
         String decode = args[1];
 

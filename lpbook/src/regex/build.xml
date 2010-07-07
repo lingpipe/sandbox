@@ -57,8 +57,19 @@
     </java>
   </target>
 
+  <target name="regex-group"
+          depends="jar">
+    <java classname="com.lingpipe.book.regex.RegexGroup"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${regex}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+
   <target name="run"
           depends="regex-match,
-                   regex-find"/>
+                   regex-find,
+                   regex-group"/>
 
 </project>

@@ -180,14 +180,17 @@ character.
 There are also other built-in escapes, such as \code{{\bk}n} for
 newline and \code{\bk\bk} for a backslash character.  Again, we have
 to be careful about distinguishing Java string escapes, which are used
-to create a regex, which itself may contain regex escapes.  For
-instance, to create the regex \code{\bk\bk}, we need to use
-\code{Pattern.compile("\bk\bk\bk\bk")}.  Each pair of backslashes
-is a Java escape for the backslash; thus a string of two backslashes
-is compiled, resulting in the regex \code{\bk\bk}.
+to create a regex, which itself may contain regex escapes.  
+
+To confuse matters, Java itself also uses a backslash for escapes, so
+that the character for backslash is written \code{'\bk\bk'} and so the
+regex \code{{\bk}n} must be written as the string literal
+\code{"\bk{\bk}n"}.  To create the regex \code{\bk\bk}, we need to use
+two backslash escapes in our string literal, writing
+\code{Pattern.compile("\bk\bk\bk\bk")}.  
 
 This is all further confused by the command-line shell, which has its
-own escape sequence.  Our sample program reads a command from the
+own escape sequences.  Our sample program reads a command from the
 command line, which is being supplied by Ant and set as a property on
 the command-line call to Ant.  For instance, consider this puzzler,
 %
@@ -204,10 +207,11 @@ following character isn't a valid escape; here, the following
 character is a quote (\code{"}), and \code{\bk"} is a valid escape
 sequence for the shell.}
 %
-Our Java program gets two backslashes for a first argument and one for
-the second, as shown in the output.  The match succeeds because the
-regex \code{\bk\bk} is the escaped backslash character, which
-matches a single backslash.
+Our Java program gets a value for \code{regex} consisting of a
+length-two string made up of two backslashes, and value for text
+consisting of a single backslash.  The match succeeds because the
+regex \code{\bk\bk} is the escaped backslash character, which matches
+a single backslash.
 
 
 \section{Character Classes}
@@ -511,11 +515,6 @@ match \code{a}.
 %
 \commandline{ant -Dregex="(b|a)(b|a)...(b|a)(b|a)" -Dtext=aa...aa regex-find}
 
-\section{Kleene Star and Other Quantifiers}
-
-There are a number of quantifiers that match a bounded or
-unbounded number of copies of a pattern.
-
 \section{Greedy Quantifiers}
 
 There are operators for optionality or multiple instances that go
@@ -723,6 +722,37 @@ Found |aa| at (0,2)    Found |aa| at (2,4)
 %
 
 
+\section{Possessive Quantifiers}
+
+The third class of quantified expression is the possessive quantifier.
+Possessive quantifiers will not match a fewer number of instances of
+their pattern if they can match more.  Procedurally, they commit to
+a match once they've made it and do not allow backtracking.
+
+The syntax for a possessive quantifier follows the quantifier symbol
+with a plus sign (\code{+}); for instance, \code{?+} is possessive
+optionality and \code{*+} is greedy Kleene star.
+
+Consider the difference between a greedy Kleene star
+%
+\commandlinefollow{ant "-Dregex=[0-9]*1" -Dtext=1231 regex-match}
+\begin{verbatim}
+Regex=|[0-9]*1|    Text=|1231|    Matches=true
+\end{verbatim}
+%
+which matches, and a possessive Kleene star,
+%
+\commandlinefollow{ant "-Dregex=[0-9]*+1" -Dtext=1231 regex-match}
+\begin{verbatim}
+Regex=|[0-9]*+1|    Text=|1231|    Matches=false
+\end{verbatim}
+%
+which does not match.  Even though \code{[0-9]*} indicates a greedy
+match, it is able to back off and only match the first three
+characters of the input, \code{123}.  The possessive quantifier, once
+it has matched \code{1231}, does not let it go, and the overall match
+fails.
+
 \section{Non-Capturing Regexes}
 
 Some regexes match virtual positions in an input without consuming any
@@ -781,11 +811,66 @@ sequences for any platform (Unix, Macintosh, or Windows).  If the
 
 \section{Parentheses for Grouping}\label{section:regex-groups}
 
-In all cases, parentheses may be used around a regular expression to
-clarify how the operations attach.  
+Parentheses play the usual role of grouping in regular expressions,
+and may be used to disambiguate what would otherwise be misparsed.
+For instance, the expression \code{(a|b)c} is very different than
+\code{a|(bc)}.
+
+Parentheses also play the role of identifying the subexpressions
+they wrap.  
+
+If \codeVar{A} is a regular expression, \code{(\codeVar{A})} is a
+regular expression that matches exactly the same strings as
+\codeVar{A}.  Note that parentheses come in matched pairs, and
+each picks out the unique subexpression \codeVar{A} it wraps.
+
+The pairs of parentheses in a regular expression are numbered
+from left to right, beginning with 1.  For example, we've written
+a very simple regex with the identifier of each parentheses group
+on the next line
+%
+\begin{verbatim}
+(a(b(cd)(e)))
+1 2 3   4
+\end{verbatim}
+%
+Group 1 is \code{a(b(cd)(e))}, group 2 is \code{b(cd)(e)},
+group 3 is \code{cd}, and group 4 is \code{e}.
+
+After a match or a find operation, the substring of the match that
+matched each group is available from the matcher with a method
+\code{group(int)}, where the argument indicates which group's match
+is returned.  
+
+There is an implicit pair of parentheses around the entire pattern,
+with group number 0.  The method \code{group()} we used earlier to
+retrieve the match of the entire string is just shorthand for
+\code{group(0)}.
+
+The total number of groups in the regex is available through
+the method \code{groupCount()}.  
+
+We provide a simple class \code{RegexGroup} to illustrate the workings
+of group extraction.  The work is done in the \code{main()} method
+by the code
+%
+\codeblock{RegexGroup.1}
+
+The identity of the groups are useful for back references (see
+\refsec{regex-back-references}) and replace operations (see
+\refsec{regex-replace}).
 
 
-\subsection{Pattern Match Flags}\label{section:pattern-modes}
+
+\section{Back References}\label{section:regex-back-references}
+
+The regex \code{\bk\codeVar{n}} is a back reference to the match of
+the \codeVar{n}-th capturing group before it.  
+
+
+
+
+\section{Pattern Match Flags}\label{section:pattern-modes}
 
 There are a set of flags, all represented as static integer constants
 in \code{Pattern}, which may be supplied to the pattern compiler
@@ -847,7 +932,7 @@ compatibility decomposition on the input (see
 \refsec{unicode-normalization-forms}).
 
 
-\subsection{Pattern Construction Exceptions}
+\section{Pattern Construction Exceptions}
 
 Attempting to compile a regular expression with a syntax error raises
 a runtime exception, \code{PatternSyntaxException} from the
@@ -862,6 +947,8 @@ Exception in thread "main"
     Unmatched closing ')' near index 1
 \end{verbatim}
 
+
+\section{Replace Operations}
 
 
 
