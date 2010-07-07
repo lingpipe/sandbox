@@ -753,14 +753,47 @@ characters of the input, \code{123}.  The possessive quantifier, once
 it has matched \code{1231}, does not let it go, and the overall match
 fails.
 
+\subsection{Independent Group Possessive Marker}
+
+If \codeVar{A} is a regex, then \code{(?>\codeVar{A})} is a regex that
+matches the same thing as \codeVar{A}, but groups the first match
+possessively.  That is, once \code{(?>\codeVar{A})} finds a match
+for \codeVar{A}, it does not allow backtracking.   We can see this
+with a pair of examples.
+%
+\commandlinefollow{ant -Dregex="(?>x+)xy" -Dtext=xxy regex-match}
+\begin{verbatim}
+Regex=|(?>x+)xy|    Text=|xxy|    Matches=false
+\end{verbatim}
+%
+This doesn't match, because the \code{x+} matches both
+instances of \charmention{x} in the text being matched and doesn't
+allow backtracking.  Contrast this with
+%
+\commandlinefollow{ant -Dregex="(?>x+)y" -Dtext=xxy regex-match}
+\begin{verbatim}
+Regex=|(?>x+)y|    Text=|xxy|    Matches=true
+\end{verbatim}
+
+The parentheses in this construction do not count for grouping
+(see \refsec{regex-groups}).  There is a similar construction
+\code{(?:\codeVar{A})} which is not possessive, and also does
+not count the parentheses for grouping.  
+
+
+
+
 \section{Non-Capturing Regexes}
 
 Some regexes match virtual positions in an input without consuming any
-text themselves.
+text themselves.  
 
+\subsection{Boundary Matchers}
 
-\subsection{Begin and End of Line}
+Boundary matchers match specific sequences, but do not consume any
+input themselves.  
 
+\subsubsection{Begin- and End-of-Line Matchers}
 
 The caret (\code{\^{}}) is a regular expression that matches the end
 of a line and the dollar sign (\code{\$}) a regular expression
@@ -786,6 +819,81 @@ sequences for any platform (Unix, Macintosh, or Windows).  If the
 \code{UNIX\_LINES} flag is set, they only match Unix newlines (see
 \refsec{pattern-modes}).
 
+\subsubsection{Begin and End of Input}
+
+Because begin-of-line and end-of-line have variable behavior, there
+are regexes \code{{\bk}A} for the beginning of the input and
+\code{{\bk}z} for the end of the input.  These will match the begin
+and end of the input no matter what the match mode is.  For
+instance,
+%
+\commandlinefollow{ant -Dregex={\bk}A(xyz){\bk}z -Dtext=xyz regex-group}
+\begin{verbatim}
+regex=|\A(xyz)\z|    text=|xyz|
+Group  0=|xyz| at (0,3)    Group  1=|xyz| at (0,3)
+\end{verbatim}
+%
+
+\subsubsection{Word Boundaries}
+
+The regex \code{{\bk}b} matches a word boundary and \code{{\bk}B} a
+non-word boundary, both without consuming any input.  Word boundaries
+are the usual punctuation and spaces and the begin and end of input.
+For example,
+%
+\commandlinefollow{ant -Dregex={\bk}b{\bk}w+{\bk}b -Dtext="John ran quickly." regex-find}
+\begin{verbatim}
+Found |John| at (0,4)        Found |ran| at (5,8)    
+Found |quickly| at (9,16)
+\end{verbatim}
+
+
+\subsection{Positive and Negative Lookahead}
+
+Often you want to match something only if it occurs in a given
+context.  If \codeVar{A} is a regex, then \code{(?=\codeVar{A})} is
+the positive lookahead and \code{(?!\codeVar{A})} the negative
+lookahead regular expression.  These match a context that either
+matches or doesn't match the specified regular expression.  They
+must be used following other regular expressions.  For instance,
+to find the instances of numbers preceding periods, we could
+use 
+%
+\commandlinefollow{ant -Dregex="{\bk}d+(?={\bk}.)" -Dtext=12.2 regex-find}
+\begin{verbatim}
+Found |12| at (0,2)
+\end{verbatim}
+%
+and to find those not preceding periods, 
+%
+\commandlinefollow{ant -Dregex="{\bk}d+(?!{\bk}.)" -Dtext=12.2 regex-find}
+\begin{verbatim}
+Found |1| at (0,1)    Found |2| at (3,4)
+\end{verbatim}
+%
+In a real application, we would probably exclude numbers and periods
+in the negative lookahead, with a regex such as
+\code{{\bk}d+(?![{\bk}.{\bk}d])}.
+
+One reason the lookahead is nice is that further finds can match
+the material that the lookahead matched.
+
+\subsection{Positive and Negative Lookbehind}
+
+There are backward-facing variants of the positive and negative
+lookahead constructs, \code{(?<=\codeVar{X})} and 
+\code{(?<!\codeVar{X})}.  These are more limited in that the
+regular expression \codeVar{X} must expand to a simple sequence, and
+thus may not contain the Kleene-star or Kleene-plus operations.
+
+For example, the following example finds sequences of digits that do
+not follow periods or other digits
+%
+\commandlinefollow{ant -Dregex="(?<![{\bk}.{\bk}d]){\bk}d+" -Dtext=12.32 regex-find}
+\begin{verbatim}
+Found |12| at (0,2)
+\end{verbatim}
+%
 
 \subsection{Line Terminators and Unix Lines}\label{section:regex-lines}
 
@@ -830,44 +938,95 @@ a very simple regex with the identifier of each parentheses group
 on the next line
 %
 \begin{verbatim}
-(a(b(cd)(e)))
-1 2 3   4
+ a(b(cd)(e))
+0 1 2   3
 \end{verbatim}
 %
-Group 1 is \code{a(b(cd)(e))}, group 2 is \code{b(cd)(e)},
-group 3 is \code{cd}, and group 4 is \code{e}.
+There is an implicit pair of parentheses around the entire pattern,
+with group number 0.  Group 1 is \code{b(cd)(e)},
+group 2 is \code{cd}, and group 3 is \code{e}.  
+
+The identities of the groups are useful for pulling out substring
+matches (this section), using back references in regexes (see
+\refsec{regex-back-references}) and replace operations based on regexes (see
+\refsec{regex-replace}). 
 
 After a match or a find operation, the substring of the match that
 matched each group is available from the matcher with a method
 \code{group(int)}, where the argument indicates which group's match
-is returned.  
-
-There is an implicit pair of parentheses around the entire pattern,
-with group number 0.  The method \code{group()} we used earlier to
-retrieve the match of the entire string is just shorthand for
-\code{group(0)}.
-
-The total number of groups in the regex is available through
-the method \code{groupCount()}.  
+is returned.  The start and end position of a group may also be
+retrieved, using \code{start(int)} and \code{end(int)}.  The total
+number of groups in the regex is available through the method
+\code{groupCount()}.  The methods
+\code{group()}, \code{start()}, and \code{end()} we used earlier to
+retrieve the match of the entire string are just shorthand for
+\code{group(0)}, \code{start(0)}, and \code{end(0)}.  If there hasn't
+been a match or the last find did not succeed, attempting to retrieve
+groups or positions raises an illegal state exception.
 
 We provide a simple class \code{RegexGroup} to illustrate the workings
 of group extraction.  The work is done in the \code{main()} method
 by the code
 %
 \codeblock{RegexGroup.1}
+%
+Here we call \code{matcher.match()}, which requires a match of the
+entire text.  
 
-The identity of the groups are useful for back references (see
-\refsec{regex-back-references}) and replace operations (see
-\refsec{regex-replace}).
+We set up the Ant target \code{regex-group} to call it, and test
+it in the usual way, using the example whose groups are numbered
+above.
+%
+\commandlinefollow{ant -Dregex=a(b(cd)(e)) -Dtext=abcde regex-group}
+\begin{verbatim}
+regex=|a(b(cd)(e))|    text=|abcde|
+Group  0=|abcde| at (0,5)    Group  1=|bcde| at (1,5)
+Group  2=|cd| at (2,4)       Group  3=|e| at (4,5)
+\end{verbatim}
+%
+A more typical linguistic example would be to pull out names
+after the word \stringmention{Mr}, as in
+%
+\commandlinefollow{ant -Dregex=Mr(({\bk}s({\bk}p\{Lu\}{\bk}p\{L\}*))+) -Dtext="Mr J Smith" regex-group}
+\begin{verbatim}
+Group  0=|Mr J Smith| at (0,10)    Group  1=| J Smith| at (2,10)
+Group  2=| Smith| at (4,10)        Group  3=|Smith| at (5,10)
+\end{verbatim}
+%
+Group 1 corresponds to the name, but note that we have an extra
+leading space.  We can get rid of that with a more complex regex, and
+we could also allow optional periods after \stringmention{Mr} with the
+appropriate escape, and also deal with periods in names.  Matching
+complicated patterns with regexes is a tricky business.
 
+\subsection{Non-Capturing Group}
+
+It is possible to use parentheses without capturing.  If \codeVar{X}
+is a regex, then \code{(?:\codeVar{X})} matches the same things as
+\codeVar{X}, but the parentheses are not treated as capturing.
 
 
 \section{Back References}\label{section:regex-back-references}
 
 The regex \code{\bk\codeVar{n}} is a back reference to the match of
-the \codeVar{n}-th capturing group before it.  
+the \codeVar{n}-th capturing group before it.  We can use matching
+references to find pairs of duplicate words in text.  For instance,
+consider
+%
+\commandlinefollow{ant -Dregex="(\d+).*({\bk}1)" -Dtext="12 over 12" regex-group}
+\begin{verbatim}
+Group  0=|12 over 12| at (0,10)    Group  1=|12| at (0,2)
+Group  2=|12| at (8,10)
+\end{verbatim}
+%
+The regex \code{{\bk}1} will match whatever matched group 1.  
+Group 1 is \code{({\bk}d+)} and group 2 is \code{({\bk}1)}; both
+match the expression \stringmention{12}, only at different places.
+You can see that the text \stringmention{12 over 13} would not
+have matched.  
 
-
+If the match index is out of bound, matching fails without raising an
+exception.
 
 
 \section{Pattern Match Flags}\label{section:pattern-modes}
@@ -948,9 +1107,75 @@ Exception in thread "main"
 \end{verbatim}
 
 
-\section{Replace Operations}
+\section{Find-and-Replace Operations}\label{section:regex-replace}
 
+A common usage pattern for regular expressions is to find instances of
+one pattern and replace them with another.  We provide a sample
+program \code{RegexReplace}, which illustrates replacement in
+its \code{main()} method,
+%
+\codeblock{RegexReplace.1}
+%
+The pattern and matcher are created as usual.  Then, we create
+a string by replacing all the matches of the pattern in the text
+provided to the matcher with the specified replacement.  We could
+also use \code{replaceFirst()} to return the result of only replacing
+the first match.
 
+With the Ant target \code{regex-replace}, we can see this in action.
+%
+\commandlinefollow{ant -Dregex=\d+ -Dreplacement=0 -Dtext="+1 (718) 290-9170" regex-replace}
+\begin{verbatim}
+regex=|\d+|    replacement=|0|    
+text=|+1 (718) 290-9170|    result=|+0 (0) 0-0|
+\end{verbatim}
+%
+We've replaced every sequence of digits with a zero.  
+
+A nice feature of replace operations is that they may reference
+pieces of the match by group number and use them in the replacement.
+An occurrence of \code{\$\codeVar{n}} in the replacement string
+represents whatever matched group \codeVar{n} in the match.
+
+For instance, we can extract the version number from a jar and
+redisplay it using
+%
+\commandlinefollow{ant -Dregex=({\bk}w+){\bk}-([{\bk}d{\bk}.]+){\bk}.jar -Dreplacement="\$1.jar v\$2" -Dtext="foo-7.6.jar" regex-replace}
+\begin{verbatim}
+regex=|(\w+)\-([\d\.]+)\.jar|    replacement=|$1.jar v$2|
+text=|foo-7.6.jar|               result=|foo.jar v7.6|
+\end{verbatim}
+%
+Note that we had to escape the literal hyphen and period characters in
+the regex.  The class \code{{\bk}w} is for word characters, which are
+alphanumerics and the underscore.  The example regexes are very
+fragile, and it is quite difficult to write more robust regexes.
+
+\section{String Regex Utilities}
+
+There are many utility methods in the \code{String} class that
+are based on regular expressions.  
+
+The method \code{matches(String)} returns \code{true} if the string
+matches the regex specified by the argument.  Given a regex \code{r},
+\code{matches(r)} is just shorthand for
+\code{Pattern.compile(r).matcher(this).matches()}.
+
+The method \code{replaceAll(String,String)}, which takes a string
+representing a regex and a replacement string, returns the result
+of replacing all the substrings in the string matching the regex
+with the replacement string.  Given a regex \code{r} and replacement
+\code{s}, \code{replaceAll(r,s)} is just shorthand for
+\code{Pattern.compile(r).matcher(this).replaceAll(s)}.  As such,
+the replacement may contain references to match groups.  There is also
+a corresponding \code{replaceFirst()} method.
+
+One of the more useful utilities is
+\code{split(String)}, which splits a string around the matches of
+a regular expression, returning an array as a result.  For instance,
+\code{"foo12bar177baz\".split({\bk}d+)} splits on digits, returning
+the string array \code{\{~"foo", "bar", "baz"~\}}.  Note that the
+matching numbers are removed.
 
 \section{Thread Safety, Serialization, and Reuse}
 

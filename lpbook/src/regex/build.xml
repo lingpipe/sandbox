@@ -67,9 +67,22 @@
     </java>
   </target>
 
+  <target name="regex-replace"
+          depends="jar">
+    <java classname="com.lingpipe.book.regex.RegexReplace"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${regex}"/>
+      <arg value="${replacement}"/>
+      <arg value="${text}"/>
+    
+    </java>
+  </target>
+
   <target name="run"
           depends="regex-match,
                    regex-find,
-                   regex-group"/>
+                   regex-group,
+                   regex-replace"/>
 
 </project>
