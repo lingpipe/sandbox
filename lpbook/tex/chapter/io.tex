@@ -1,21 +1,221 @@
 \chapter{Input and Output}\label{chap:io}
 
-\firstchar{J}ava provides a rich array of classes and interfaces to
-deal with inputting and outputting data.  Data in this context
-consists of a stream of bytes. These bytes may encode anything, but
-we are particularly interested in the case of natural language text
-data, with or without document structure.  To support streams of
-\code{char} values, Java provides character stream interfaces
-and implementations as well as byte streams.  
+\firstchar{J}ava provides a rich array of classes for dealing with
+input and output.  At the basic level, input and output streams
+provide a means to transfer data consisting of a sequence of bytes.
+Data may be transferred among memory with memory-backed streams, the
+file system via file streams or memory mapped files, the terminal via
+standard input and output streams, and remote servers via sockets.
+Stream filters may be put in place to compress or decompress data.
+Streams that block awaiting input or output may be dealt with in
+threads.
 
-In this chapter, we consider Java byte streams and
-character streams as well as identifiers for local content in
-the form of files and arbitrary content in the form of URLs.  We
-will also consider reading to or from arrays, and 
-the use of compression.
+Bytes may encode anything, but we are particularly interested in the
+case of natural language text data, with or without document
+structure.  To support streams of \code{char} values, Java provides
+\code{char} streams as byte streams.  In order to crete a character
+stream from byte stream, the character encoding must be known.
+
+We are also interested in sequences of bytes that encode Java objects
+through serialization.  We use serialized objects to represent models
+and their components, such as tokenizers.  
+
+\section{I/O Exceptions}
+
+Almost all of the I/O operations are declared to throw
+\code{IOException}, a checked exception in the \code{java.io} package.
+Like all exceptions, I/O exceptions should not be ignored.  In most
+cases, methods should simply pass on exceptions raised by methods they
+call.  Thus most methods using I/O operations will themselves be
+declared to throw \code{IOException}.  
+
+At some point, a method will have to step up and do something with an
+exception.  In a server, this may mean logging an error and continuing
+on.  In a short-lived command-line program, it may mean terminating
+the program and printing an informative error message.  
+
+It is important to clean up system resources in a long-running
+program.  Thus it is not uncommon to see code in a \code{try} with a
+\code{finally} block to clean up even if an I/O exception is raised.
 
 
-\section{Standard Input and Output}\label{section:stdin-stdout}
+\section{Closing Streams}\label{section:io-closeable}
+
+Because most streams impose local or system overhead on open I/O
+streams, it is good practice to close a stream as soon as you are done
+with it.  Conveniently, all the streams implement the handy
+\code{Closeable} interface in the package \code{java.io}.  The
+\code{Closeable} interface specifies a single method, \code{close()},
+which closes a stream and releases any resources it may be
+maintaining.  
+
+Care must be taken in closing streams, as the \code{close()} method
+itself may throw an \code{IOException}.  Furthermore, if the stream
+wasn't successfully created, the variable to which it was being
+assigned may be null.
+
+The typical idiom for closing a \code{Closeable} may be illustrated
+with an input stream
+%
+\begin{verbatim}
+InputStream in = null;
+try {
+    in = new FileInputStream(file);
+    ...
+} finally {
+    if (in != null) {
+        in.close();
+    }
+}
+\end{verbatim}
+%
+Sometimes, the close method itself is wrapped to suppress
+warnings, as in
+%
+\begin{verbatim}
+try {
+    in.close();
+} catch (IOException e) {
+    /* ignore exception */
+}
+\end{verbatim}
+%
+Note that even if the close method is wrapped, the operations in the
+try block may throw I/O exceptions.  To remove these, I/O exceptions
+may be caught in a block parallel to the \code{try} and
+\code{finally}.
+
+\subsubsection{LingPipe Close Utility}
+
+If a sequence of streams need to be closed, things get ugly quickly.
+LingPipe provides a utility method \code{Streams.close(Closeable)} in
+\code{com.aliasi.util} that tests for null and swallows I/O exceptions
+for close operations.  Basically, it's defined as follows.
+%
+\begin{verbatim}
+static void close(Closeable c) {
+    if (c == null) return;
+    try {
+        c.close();
+    } catch (IOException e) {
+        /* ignore exception */
+    }
+}
+\end{verbatim}
+%
+If you need to log stream closing exceptions, a similar method may
+be implemented with logging in the catch operation and a message to
+pass as an argument in the case of errors.
+
+
+\section{Input Streams}
+
+The abstract class \code{InputStream} in \code{java.io} provides the
+basic operations available to all byte input streams.  Concrete
+input streams may be constructed in many ways, but they are all closed
+through the \code{Closeable} interface.
+
+\subsection{Single Byte Reads}
+
+A concrete extension of the \code{InputStream} class need only
+implement the top-level \code{read()} method.  The \code{read()}
+method uses the C programming language pattern of returning an integer
+representing an unsigned byte value between 0 (inclusive) and 255
+(inclusive) as the value read, or -1 if the end of stream has been
+reached.
+
+\subsection{Byte Array Reads}
+
+It is usually too inefficient to access data one byte at a time.
+Instead, it is usually accessed in blocks through an array.  The
+\code{read(byte[])} method reads data into the specified byte array
+and returns the number of bytes that have been read.  If the return
+value is -1, the end of the input stream has been reached.  There is a
+similar method that reads into a slice of an array given an offset
+and length.
+
+\subsection{Available Bytes}
+
+The method \code{available()} returns an integer representing the
+number of bytes available for reading without blocking.  This is not
+the same as the number of bytes available.  For one thing, streams may
+represent terabytes of data, and \code{available()} only returns an
+integer.  More importantly, some streams may block waiting for more
+input.  For instance, the standard input (see \refsec{io-stdin-stdout} may
+block while waiting for user input and show no avaialable bytes, even
+if bytes may later become available.  
+
+Because no bytes may be available without blocking, it's possible for
+the block read method to return after reading no bytes.  This does not
+mean there won't be more bytes to read later.  The \code{read()}
+methods will return -1 when there are truly no more bytes to be read.
+
+\subsection{Mark and Reset}
+
+The method \code{markSupported()} returns \code{true} for markable
+input streams.  If a stream is markable, calling \code{mark()} sets
+the mark at the current position in the stream.  A later call to
+\code{reset()} resets the stream back to the marked position.
+
+
+\section{Output Streams}
+
+The \code{OutputStream} abstract class in the package \code{java.io}
+provides a general interface for writing bytes.  It is thus the
+complement to \code{InputStream}.  Output streams implement the
+\code{Closeable} interface, and should be closed in the same way
+as other closeable objects (see \refsec{io-closeable}).
+
+\code{OutputStream} itself implements the array writers in terms of
+single byte writes, with the close and flush operations doing nothing.
+Subclasses override some or all of these methods for additional
+functionality or increased efficiency.
+
+
+\subsection{Single Byte Writes}
+
+A single abstract method needs to be implemented by concrete
+subclasses, \code{write(int)}, which writes a byte in unsigned
+notation to the output stream.  The low-order byte in the integer is
+written and the three high-order bytes are simply ignored (see
+\refsec{java-bytes} for more on the byte organization of integers).
+Thus the value should be an unsigned representation of a byte between
+0 (inclusive) and 255 (inclusive).
+
+\subsection{Byte Array Writes}
+
+Arrays of bytes may be written using the method \code{write(byte[])},
+and a slice variant taking a byte array with a start position and
+length.
+
+The behavior is slightly different than for reads.  When a write
+method returns, all of the bytes in the array (or specified slice
+thereof) will have been written.  Thus it is not uncommon for array
+writes to block if they need to wait for a resource such as a network,
+file system, or user console input.
+
+\subsection{Flushing Writes}
+
+The method \code{flush()} writes any bytes that may be buffered
+to their final destination.  As noted in the documentation, the
+operating system may provide further buffering, for instance to
+the network or to disk operations.  
+
+The \code{OutputStream} class is defined to implement
+\code{Flushable}, the interface in \code{java.io} for flushable
+objects.  Like the general \code{close} method from the
+\code{Closeable} interface, it may raise an \code{IOException}.
+
+Most streams call the \code{flush()} method from their \code{close()}
+method so that no data is left in the buffer as a result of closing
+an object.
+
+
+\section{File Input and Output Streams}
+
+
+
+\section{Standard Input and Output}\label{section:io-stdin-stdout}
 
 Java provides two streams corresponding to the Unix notion of standard
 input and standard output.

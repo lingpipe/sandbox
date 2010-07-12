@@ -1124,7 +1124,7 @@ the first match.
 
 With the Ant target \code{regex-replace}, we can see this in action.
 %
-\commandlinefollow{ant -Dregex=\d+ -Dreplacement=0 -Dtext="+1 (718) 290-9170" regex-replace}
+\commandlinefollow{ant -Dregex={\bk}d+ -Dreplacement=0 -Dtext="+1 (718) 290-9170" regex-replace}
 \begin{verbatim}
 regex=|\d+|    replacement=|0|    
 text=|+1 (718) 290-9170|    result=|+0 (0) 0-0|
