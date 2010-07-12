@@ -25,7 +25,27 @@
     </jar>
   </target>
 
+  <property name="file.in" value="src/com/lingpipe/book/io/FileByteCount.java"/>
+  <target name="file-byte-count"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileByteCount"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${file.in}"/>
+    </java>
+  </target>
+
+  <target name="file-dump"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileDump"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${file.in}"/>
+    </java>
+  </target>
+
   <target name="run"
-          depends=""/>
+          depends="file-byte-count,
+                   file-dump"/>
 
 </project>
