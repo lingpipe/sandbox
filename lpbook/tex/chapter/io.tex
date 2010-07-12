@@ -29,10 +29,6 @@ Underlyingly, an instance of \code{File} is nothing more than a string
 representing a path coupled with a convenient set of utility methods,
 some of which access the underlying file system.  
 
-\subsection{Comparison, Equality, and Hash Codes}
-
-Files are compared 
-
 \subsection{Relative vs.\ Absolute Paths}
 
 Files may be either relative or absolute.  An absolute path name
@@ -46,6 +42,12 @@ which Java was called.  The same goes for Ant, except when a \code{basedir}
 attribute is set on the top-level \code{project} element. 
 
 \subsection{Windows vs.\ UNIX File Conventions}
+
+Due to the differing setup of the operating systems, \code{File}
+objects behave differently on different platforms.  In all cases, they
+respect the conventions of the file system on which they are run, but
+it requires some care to create portable code or Ant tasks that involve
+files.
 
 On either Windows or UNIX, files are organized hierarchically into
 directories under one or more root directories.  Each file other
@@ -81,6 +83,15 @@ There are four \code{File} constructors.  The simplest,
 \code{File(String)}, simply takes a path name to construct
 a file object.  The string may be anything, but separator
 characters will be parsed.
+
+
+\subsection{Comparison, Equality, and Hash Codes}
+
+Equality of \code{File} objects is based on the underlying platform's
+notion of equality.  For instance, on Windows, a file created with
+\code{new File("Foo")} creates a file that is equal to \code{new
+File("foo")}.
+
 
 
 
