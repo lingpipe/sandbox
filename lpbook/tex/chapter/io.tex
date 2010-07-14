@@ -21,6 +21,36 @@ through serialization.  We use serialized objects to represent models
 and their components, such as tokenizers.  
 
 
+\section{URIs, URLs and URNs}\label{section:uri-url-urn}
+
+A uniform resource identifier (URI) picks out something on the web by
+name.  This is a very general notion, but we will only need a few
+instances in this book.  There are two (overlapping) subtypes of URIs,
+based on function.
+
+A uniform resource name (URN) is a URI that provides a name for
+something on the web, but may not say how or where to get it.  A
+typical instance of a URN is the Digital Object Identifier (DOI)
+system, which is becoming more and more widely used to identify text
+resources such as journal articles.  For example, the DOI
+\code{doi:10.1016/j.jbi.2003.10.001} picks out a paper on which
+my wife was a co-author.  An alternative URN for the same paper is
+\code{PMID:15016385}, which uses the PubMed identifier (PMID) for
+the paper.  
+
+A uniform resource locator (URL) provides a means of locating (a
+concrete instance of) an item on the web.  A URL indicates how to get
+something by providing a scheme name, such as \code{file://} for files
+or \code{http://} for the hypertext transport protocol (HTTP).  For
+example, the URL
+\code{http://dx.doi.org/10.1016/j.jbi.2003.10.001} is for the same
+paper as above, but specifies a web protocol, HTTP, and host,
+\code{dx.doi.org} from which to fetch the resource.  There may be
+many URLs that point to the same object.  For instance,
+\code{http://linkinghub.elsevier.com/retrieve/pii/S1532046403001126}
+is a URL for the same paper, which links to the publisher's site.
+
+
 \section{Files}
 
 Java provides the class \code{File} in the \code{java.io} package for
@@ -34,12 +64,39 @@ some of which access the underlying file system.
 Files may be either relative or absolute.  An absolute path name
 provides a full description of where to find a file on the system in
 question.  A relative path picks out a file or directory starting from
-a base directory.  Relative paths may pick out different resources in
-different situations depending on the base directory.  
+a root directory (the form of which will be operating system
+specific).  Relative paths may pick out different resources in
+different situations depending on the base directory.
+
+The static method \code{File.listRoots()} provides an array of all of
+the available root directories.  We wrote a simple demo in the
+class \code{ListRoots}, the heart of which is
+%
+\codeblock{ListRoots.1}
+%
+Running it on my Windows machine returns
+%
+\commandlinefollow{ant list-roots}
+\begin{verbatim}
+Root Directories
+     C:\
+     E:\
+\end{verbatim}
+%
+The root directories \code{C:\bk} and \code{E:\bk} correspond to my
+two drives, but they could also correspond to partitions of a single
+drive or a redundant array of independent disks (RAID), or even a
+section of memory acting like a disk drive.
+
+\subsubsection{Root of Relative Paths}
 
 In Java, relative paths are interpreted relative to the directory from
 which Java was called.  The same goes for Ant, except when a \code{basedir}
-attribute is set on the top-level \code{project} element. 
+attribute is set on the top-level \code{project} element.  
+
+A consequence of this behavior is that the empty string (\code{""}) is
+a path that picks out the directory from which Java was called.
+
 
 \subsection{Windows vs.\ UNIX File Conventions}
 
@@ -81,8 +138,64 @@ out the same file.
 
 There are four \code{File} constructors.  The simplest,
 \code{File(String)}, simply takes a path name to construct
-a file object.  The string may be anything, but separator
-characters will be parsed.
+a file object.  The string may be anything, but separator characters
+will be parsed and normalized.
+
+Conveniently, Java lets you use either forward (Unix)
+or backward (Windows) slashes interchangeably, as does Ant.  Thus in
+Windows, I can use Unix-style forward slashes with the same effect as
+backward slashes.  For example, \code{new File("c:/foo")}, constructs
+the same object as \code{new File("c:{\bk}foo")}.  
+
+There are also two-argument constructors taking a parent directory and
+a file name.  The parent may be specified as a string using the constructor
+\code{File(String,String)} or as a file itself, using the constructor
+\code{File(File,String)}.
+
+\subsubsection{URI/URL to File Conversion}
+
+There is a fourth \code{File} constructor that takes a uniform
+resource identifier (URI) argument, \code{File(URI)} (see
+\refsec{uri-url-urn} for more information on URIs and URLs).  The
+\code{URI} class is in the \code{java.net} package, which comes
+standard with Java.
+
+URIs for files have the form
+\code{file://}\codeVar{host}\code{/}\codeVar{path}, where the
+(optional) \codeVar{host} picks out a domain name and \codeVar{path} a
+file path.  If the \codeVar{host} is not specified, the form devolves
+to \code{file:///}\codeVar{path}, and the host is assumed to be the
+the so-called localhost, the machine on which Java is running.
+
+It is also possible to convert an instance of \code{File} to a URI,
+using the method \code{toURI()} in \code{File}.  
+
+It is also possible to get a uniform resource locator (URL) from a
+file, by first converting to a URI and then calling the \code{URI}
+method \code{toURL()}, which returns an instance of \code{URL}, also
+in \code{java.net}.
+
+
+
+\subsection{Getting a File's Canonical Path}
+
+The method \code{getCanonicalFile()} returns a \code{File} based on an
+absolute path with a conventionalized name.  For instance, if I happen
+to be running in directory \code{c:{\bk}lpb} (on Windows), then the
+following two expressions return equivalent files
+%
+\begin{verbatim}
+new File("c:\lpb\Foo").getCanonicalPath()
+\end{verbatim}
+%
+%
+\begin{verbatim}
+new File("foo").getCanonicalPath();
+\end{verbatim}
+%
+Note that this is not truly a unique normal form.  The resulting files
+will have different capitalizations for \code{foo} in this case, but
+will be equivalent running under Windows.
 
 
 \subsection{Comparison, Equality, and Hash Codes}
@@ -90,7 +203,13 @@ characters will be parsed.
 Equality of \code{File} objects is based on the underlying platform's
 notion of equality.  For instance, on Windows, a file created with
 \code{new File("Foo")} creates a file that is equal to \code{new
-File("foo")}.
+File("foo")}.  For better or worse, this comparison is based on the
+platform's convention for file comparison, not by constructing a
+canonical path and comparing that.  For instance, if I happen to
+be running from directory \code{c:{\bk}lpb}, then 
+\code{new File("foo")} is not equal to 
+\code{c:{\bk}lpb{\bk}foo}, even though their canonical paths are
+the same.
 
 
 
