@@ -44,8 +44,18 @@
     </java>
   </target>
 
+  <target name="list-roots"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.ListRoots"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+
+
   <target name="run"
           depends="file-byte-count,
-                   file-dump"/>
+                   file-dump,
+                   list-roots"/>
 
 </project>
