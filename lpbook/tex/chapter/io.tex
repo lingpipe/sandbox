@@ -45,9 +45,9 @@ or \code{http://} for the hypertext transport protocol (HTTP).  For
 example, the URL
 \code{http://dx.doi.org/10.1016/j.jbi.2003.10.001} is for the same
 paper as above, but specifies a web protocol, HTTP, and host,
-\code{dx.doi.org} from which to fetch the resource.  There may be
-many URLs that point to the same object.  For instance,
-\code{http://linkinghub.elsevier.com/retrieve/pii/S1532046403001126}
+\code{dx.doi.org} from which to fetch a specific embodiment of
+the resource.  There may be many URLs that point to the same object.
+For instance, \code{http://linkinghub.elsevier.com/retrieve/pii/S1532046403001126}
 is a URL for the same paper, which links to the publisher's site.
 
 
@@ -122,10 +122,11 @@ directory is written as a drive letter followed by a colon-backslash
 (\code{:\bk}), as in \code{C:\bk} for the root directory on the drive
 named \code{C}.  
 
-Windows also allows (UNC) network paths, which begin with two
-backslashes (\code{\bk\bk}) followed by the name of the computer
-or device on the network.  For instance, \code{{\bk\bk}MONTAGUE}
-is the root of the shared files on the network computer named
+Windows also allows Universal Naming Convention (UNC) network paths,
+which begin with two backslashes (\code{\bk\bk}) followed by the name
+of the computer or device on the network.  For instance,
+\code{{\bk\bk}MONTAGUE} is the root of the shared files on the network
+computer named
 \code{MONTAGUE}.  Each networked Windows computer makes visible its 
 top-level shared files.  
 
@@ -195,10 +196,102 @@ new File("foo").getCanonicalPath();
 %
 Note that this is not truly a unique normal form.  The resulting files
 will have different capitalizations for \code{foo} in this case, but
-will be equivalent running under Windows.
+will be equivalent running under Windows.  Further note that the
+canonical path is not used for equality (see \refsec{io-files-equality}).
 
 
-\subsection{Comparison, Equality, and Hash Codes}
+\subsection{Exploring File Properties}
+
+There are many methods on \code{File} objects which explore the type
+of a file.  The method \code{exists()} tests whehter it exists,
+\code{isAbsolute()} tests whether it
+denotes an absolute path, \code{isDirectory()} whether it's directory,
+\code{isFile()} whether it's an ordinary file, and
+\code{isHidden()} tests whether it's hidden (starts with a period (\code{.}) in
+Unix or is so marked by the operating system in Windows).
+
+What permissions an application has for a file can be probed with
+\code{canExecute()},\code{canRead()}, and \code{canWrite()}, all of
+which return boolean values.
+
+The time it was last modified, available through
+\code{lastModified()}, returns the time as a \code{long} denoting
+milliseconds since the epoch (the standard measure of time on
+computers, and the basis of Java's date and calendar representations).
+
+The number of bytes in a file is returned as a \code{long} by
+\code{length()}.
+
+The name of the file itself (everything but the parent), is returned
+by \code{getName()}.  The methods \code{getParent()} and
+\code{getParentFile()} return the parent directory as a string or as a
+file, returning \code{null} if no parent was specified.
+
+\subsection{Listing the Files in a Directory}
+
+If a file is a directory, the method \code{listFiles()} returns an
+array of files that the directory contains; it returns \code{null}
+if the file's not a directory.  The files may also be listed
+by name using \code{list()}. 
+
+File listings may be filtered with an implementation of
+\code{FileFilter}, an interface in \code{java.io} specifying a single
+method \code{accept(File)} returning \code{true} if the file is
+acceptable.  An older interface, \code{FilenameFilter}, is also
+available for file name listings.
+
+
+\subsubsection{LingPipe's \code{FileExtensionFilter}}
+
+LingPipe provides a convenience class \code{FileExtensionFilter}, which
+implements a \code{FileFilter} based on the extension of a file.  A
+file's extension is here defined to mean the string after the final
+period (\code{.}) in the file's name.  This is purely a convention for
+naming files, which is especially useful in Windows or web browsers,
+where each extension may be associated with a program to open or view
+files with that extesnion.
+
+A file extension filter takes a single or multiple strings
+specified as an array.
+
+A file extension filter is configured with a flag indicating
+whether it should automatically accept directories or not, which
+is convenient for recursive descents through a file system.  The
+default for the unmarked constructors is to accept directories.
+
+File extension filters would implement \code{FilenameFilter}
+directly if they could, but it causes a conflict with the
+polymorphic file method \code{listFiles(FilenameFilter)} and
+\code{listFiles(FileFilter)}.  Instead, a file extension filter
+provides a method \code{fileNameFilter()} which returns the
+corresponding file name filter.  This is only necessary if you want to
+test or list files by name rather than as files.
+
+There are two static utility methods in the class \code{Files} in
+\code{com.aliasi.util} that break file names apart into their suffix
+and their base name.  The method \code{Files.extension(File)} returns
+the extesnion of a file, consisting of the text after the final
+period (\code{.}), or \code{null} if there is no period.  The method
+\code{baseName(File)} returns the base name of a file, which excludes
+the last period and extension.  For instance, a file named \code{io.tex}
+has extension \code{tex} and base name \code{io}, whereas \code{foo.bar.baz}
+has extension \code{baz} and base name \code{foo.bar}.
+
+
+\subsection{Exploring Partitions}
+
+Each file in an operating system exists in a partition, which is a
+top-level root directory.  This is of interest because a file can't be
+created in a partition that's larger than the available space in that
+partition.
+
+There are methods in \code{File} for exploring partitions.  The
+methods \code{getFreeSpace()}, \code{getTotalSpace()}, and
+\code{getUsableSpace()} return the respective amounts of space on the
+partition as a \code{long} value.
+
+
+\subsection{Comparison, Equality, and Hash Codes}\label{section:io-files-equality}
 
 Equality of \code{File} objects is based on the underlying platform's
 notion of equality.  For instance, on Windows, a file created with
@@ -212,9 +305,112 @@ be running from directory \code{c:{\bk}lpb}, then
 the same.
 
 
+\subsection{Example Program Listing File Properties}
+
+We wrote a simple program \code{FileProperties}, which given the name
+of a file as an argument, lists all of its properties, its canonical
+path, its URI form, and provides a listing if it is a directory.  The
+code is just a litany of prints for all of the methods described above.
+
+Calling it with the Ant target \code{file-properties}, it uses the
+\code{file.in} Ant property to specify an argument.  We can call it
+on its own source file using a relative path,
+%
+\commandlinefollow{ant -Dfile.in=src/com/lingpipe/book/io/FileProperties.java file-properties}
+%
+\begin{verbatim}
+arg=|src/com/lingpipe/book/io/FileProperties.java|
+toString()=src\com\lingpipe\book\io\FileProperties.java
+getcanonicalFile()=C:\lpb\src\io\src\com\lingpipe\book\
+     io\FileProperties.java
+getName()=FileProperties.java
+getParent()=src\com\lingpipe\book\io
+toURI()=file:/c:/lpb/src/io/src/com/lingpipe/book/
+     io/FileProperties.java
+toURI().toURL()=file:/c:/lpb/src/io/src/com/lingpipe/
+     book/io/FileProperties.java
+exists()=true
+isAbsolute()=false
+isDirectory()=false
+isFile()=true
+isHidden()=false
+hashCode()=-72025272
+lastModified()=1279224002134
+new Date(lastModified())=Thu Jul 15 16:00:02 EDT 2010
+length()=2141
+canRead()=true
+canExecute()=true
+canWrite()=true
+getFreeSpace()=320493494272
+getTotalSpace()=500105736192
+getUsableSpace()=320493494272
+listFiles()={    }
+\end{verbatim}
+%
+The line breaks plus indents were inserted by hand so it'd fit in the
+book.
+
+\subsection{Creating, Deleting, and Modifying Files and Directories}
+
+In addition to inspecting files, the \code{File} class lets you modify
+files, too.  
+
+Calling \code{createNewFile()} creates an empty file for the path
+specified by the \code{File} on which it is called, returning
+\code{true} if a new file was created and \code{false} if it already
+existed.
+
+The \code{delete()} method attempts to delete a file, returning
+\code{true} if it's successful.  If applied to a directory, \code{delete()}
+will only succeed if the directory is empty.  To get around this
+limitation, LingPipe includes a static utility method \code{removeRecursive(File)} 
+in the class \code{File} in package \code{com.aliasi.util}, which attempts
+to remove a file and all of its descendants.
+
+The properties of a file may be modified using, for example,
+\code{setExecutable(boolean, boolean)} which attempts to make a file executable
+for everyone or just the owner of the file.  Similar methods
+are available for readability, writability and last modification date.
+
+Files may be ranemd using \code{renameTo(File)}, which returns \code{true}
+if it succeeds.  
+
+The method \code{mkdir()} creates the directory corresponding to the file.
+This method only creates the directory itself, so the parent must exist.
+The method \code{mkdirs()} recursively creates the directory and all of its
+parent directories.
 
 
-\section{I/O Exceptions}
+\subsection{Temporary Files}
+
+It is sometimes useful to create a temporary file.  One of the
+properties used to create the Java virtual machine is a directory for
+``temporary'' files.  
+
+This is typically a platform default directory, like
+\code{/tmp} in UNIX or \code{C:{\bk}WINNT{\bk}TEMP} on Windows, but it
+may be configured when the JVM starts up.
+
+The static \code{File} method \code{createTempFile(String,String)}
+attempts to create a temporary file in the default temporary file with
+the specified prefix and suffix, and it returns the file that's
+created.  After the file is created, it will exist, but have length
+zero.
+
+The temporariness of the file doesn't mean it'll
+be guaranteed to disappear.  It is a matter of whether you delete the
+file yourself or whether the operating system occassionally cleans out
+the temp directory.
+
+Invoking the method \code{deleteOnExit()} on a file tells the
+operating system that the file should be deleted when the JVM exits.
+Unfortunately, this method is buggy on Windows, so should not be taken
+as provided strong cross-platform guarantees.  It's always a good idea
+to make sure to use a \code{finally} block to clear out temporary
+files.  
+
+
+\section{I/O Exceptions}\label{section:io-ioexception}
 
 Almost all of the I/O operations are declared to throw
 \code{IOException}, a checked exception in the \code{java.io} package.
@@ -231,6 +427,169 @@ the program and printing an informative error message.
 It is important to clean up system resources in a long-running
 program.  Thus it is not uncommon to see code in a \code{try} with a
 \code{finally} block to clean up even if an I/O exception is raised.
+
+\subsection{Catching Subclass Exceptions} 
+
+Some methods are declared to throw exceptions that are instances
+of subclasses of \code{IOException}.  For instance, the constructor
+\code{FileInputStream(File)} may throw a \code{FileNotFoundException}.
+
+If you are passing on exceptions, don't fall into the trap of
+passing just a general \code{IOException}.  Declare your method
+to throw \code{FileNotFoundException} and to throw \code{IOException}.
+This provides more information to clients of the method, who then have
+the option to handle the exceptions generically at the \code{IOException}
+level, or more specifically, such as for a \code{FileNotFoundException}.
+It also helps readers of your Javadoc understand what specifically could
+go wrong with their method calls.
+
+In general, it's a good idea to catch subclasses of exceptions
+separately so that error handling and error messages may be as
+specific as possible.  If the methods called in the \code{try} block
+are declared to throw the more general \code{IOException}, you'll
+
+To do so, you need to declare the more specific catches first.  For
+example, it's legal to write
+%
+\begin{verbatim}
+try {
+    in = new FileInputStream(file);
+} catch (FileNotFoundException e) { 
+    ...
+} catch (IOException e) {
+    ...
+}
+\end{verbatim}
+%
+but if you try to catch the I/O exception first, the compiler will gripe that the
+\code{FileNotFoundException} has already been caught.
+
+
+
+\section{Security and Security Exceptions}
+
+Almost all of the I/O operations that attempt to read or modify a file
+may also throw an unchecked \code{SecurityException} from the base
+package \code{java.lang}. Typically, such exceptions are thrown when
+a program attempts to overstep its permissions.
+
+File security is managed through an instance of
+\code{SecurityManager}, also in \code{java.lang}.  This is a very
+flexible interface that is beyond the scope of this book.
+
+
+
+
+\section{Input Streams}
+
+The abstract class \code{InputStream} in \code{java.io} provides the
+basic operations available to all byte input streams.  Concrete
+input streams may be constructed in many ways, but they are all closed
+through the \code{Closeable} interface (see \refsec{io-closeable}).
+
+\subsection{Single Byte Reads}
+
+A concrete extension of the \code{InputStream} class need only
+implement the top-level \code{read()} method.  The \code{read()}
+method uses the C programming language pattern of returning an integer
+representing an unsigned byte value between 0 (inclusive) and 255
+(inclusive) as the value read, or -1 if the end of stream has been
+reached.
+
+\subsection{Byte Array Reads}
+
+It is usually too inefficient to access data one byte at a time.
+Instead, it is usually accessed in blocks through an array.  The
+\code{read(byte[])} method reads data into the specified byte array
+and returns the number of bytes that have been read.  If the return
+value is -1, the end of the input stream has been reached.  There is a
+similar method that reads into a slice of an array given an offset
+and length.
+
+\subsection{Available Bytes}
+
+The method \code{available()} returns an integer representing the
+number of bytes available for reading without blocking.  This is not
+the same as the number of bytes available.  For one thing, streams may
+represent terabytes of data, and \code{available()} only returns an
+integer.  More importantly, some streams may block waiting for more
+input.  For instance, the standard input (see \refsec{io-stdin-stdout} may
+block while waiting for user input and show no avaialable bytes, even
+if bytes may later become available.  
+
+Because no bytes may be available without blocking, it's possible for
+the block read method to return after reading no bytes.  This does not
+mean there won't be more bytes to read later.  The \code{read()}
+methods will return -1 when there are truly no more bytes to be read.
+
+\subsection{Mark and Reset}
+
+The method \code{markSupported()} returns \code{true} for markable
+input streams.  If a stream is markable, calling \code{mark()} sets
+the mark at the current position in the stream.  A later call to
+\code{reset()} resets the stream back to the marked position.
+
+\subsection{Skipping}
+
+There is also a method \code{skip(long)}, which attempts to skip past
+the specified number of bytes, returning the number of bytes it
+actually skipped.  The only reason to use this method is that it is
+often faster than actually reading the bytes and then throwing them
+away, because it skipping bypasses all the byte assignments that
+would otherwise be required for a read.
+
+
+\section{Output Streams}
+
+The \code{OutputStream} abstract class in the package \code{java.io}
+provides a general interface for writing bytes.  It is thus the
+complement to \code{InputStream}.  Output streams implement the
+\code{Closeable} interface, and should be closed in the same way
+as other closeable objects (see \refsec{io-closeable}).
+
+\code{OutputStream} itself implements the array writers in terms of
+single byte writes, with the close and flush operations doing nothing.
+Subclasses override some or all of these methods for additional
+functionality or increased efficiency.
+
+
+\subsection{Single Byte Writes}
+
+A single abstract method needs to be implemented by concrete
+subclasses, \code{write(int)}, which writes a byte in unsigned
+notation to the output stream.  The low-order byte in the integer is
+written and the three high-order bytes are simply ignored (see
+\refsec{java-bytes} for more on the byte organization of integers).
+Thus the value should be an unsigned representation of a byte between
+0 (inclusive) and 255 (inclusive).
+
+\subsection{Byte Array Writes}
+
+Arrays of bytes may be written using the method \code{write(byte[])},
+and a slice variant taking a byte array with a start position and
+length.
+
+The behavior is slightly different than for reads.  When a write
+method returns, all of the bytes in the array (or specified slice
+thereof) will have been written.  Thus it is not uncommon for array
+writes to block if they need to wait for a resource such as a network,
+file system, or user console input.
+
+\subsection{Flushing Writes}
+
+The method \code{flush()} writes any bytes that may be buffered
+to their final destination.  As noted in the documentation, the
+operating system may provide further buffering, for instance to
+the network or to disk operations.  
+
+The \code{OutputStream} class is defined to implement
+\code{Flushable}, the interface in \code{java.io} for flushable
+objects.  Like the general \code{close} method from the
+\code{Closeable} interface, it may raise an \code{IOException}.
+
+Most streams call the \code{flush()} method from their \code{close()}
+method so that no data is left in the buffer as a result of closing
+an object.
 
 
 \section{Closing Streams}\label{section:io-closeable}
@@ -302,110 +661,181 @@ be implemented with logging in the catch operation and a message to
 pass as an argument in the case of errors.
 
 
-\section{Input Streams}
-
-The abstract class \code{InputStream} in \code{java.io} provides the
-basic operations available to all byte input streams.  Concrete
-input streams may be constructed in many ways, but they are all closed
-through the \code{Closeable} interface.
-
-\subsection{Single Byte Reads}
-
-A concrete extension of the \code{InputStream} class need only
-implement the top-level \code{read()} method.  The \code{read()}
-method uses the C programming language pattern of returning an integer
-representing an unsigned byte value between 0 (inclusive) and 255
-(inclusive) as the value read, or -1 if the end of stream has been
-reached.
-
-\subsection{Byte Array Reads}
-
-It is usually too inefficient to access data one byte at a time.
-Instead, it is usually accessed in blocks through an array.  The
-\code{read(byte[])} method reads data into the specified byte array
-and returns the number of bytes that have been read.  If the return
-value is -1, the end of the input stream has been reached.  There is a
-similar method that reads into a slice of an array given an offset
-and length.
-
-\subsection{Available Bytes}
-
-The method \code{available()} returns an integer representing the
-number of bytes available for reading without blocking.  This is not
-the same as the number of bytes available.  For one thing, streams may
-represent terabytes of data, and \code{available()} only returns an
-integer.  More importantly, some streams may block waiting for more
-input.  For instance, the standard input (see \refsec{io-stdin-stdout} may
-block while waiting for user input and show no avaialable bytes, even
-if bytes may later become available.  
-
-Because no bytes may be available without blocking, it's possible for
-the block read method to return after reading no bytes.  This does not
-mean there won't be more bytes to read later.  The \code{read()}
-methods will return -1 when there are truly no more bytes to be read.
-
-\subsection{Mark and Reset}
-
-The method \code{markSupported()} returns \code{true} for markable
-input streams.  If a stream is markable, calling \code{mark()} sets
-the mark at the current position in the stream.  A later call to
-\code{reset()} resets the stream back to the marked position.
-
-
-\section{Output Streams}
-
-The \code{OutputStream} abstract class in the package \code{java.io}
-provides a general interface for writing bytes.  It is thus the
-complement to \code{InputStream}.  Output streams implement the
-\code{Closeable} interface, and should be closed in the same way
-as other closeable objects (see \refsec{io-closeable}).
-
-\code{OutputStream} itself implements the array writers in terms of
-single byte writes, with the close and flush operations doing nothing.
-Subclasses override some or all of these methods for additional
-functionality or increased efficiency.
-
-
-\subsection{Single Byte Writes}
-
-A single abstract method needs to be implemented by concrete
-subclasses, \code{write(int)}, which writes a byte in unsigned
-notation to the output stream.  The low-order byte in the integer is
-written and the three high-order bytes are simply ignored (see
-\refsec{java-bytes} for more on the byte organization of integers).
-Thus the value should be an unsigned representation of a byte between
-0 (inclusive) and 255 (inclusive).
-
-\subsection{Byte Array Writes}
-
-Arrays of bytes may be written using the method \code{write(byte[])},
-and a slice variant taking a byte array with a start position and
-length.
-
-The behavior is slightly different than for reads.  When a write
-method returns, all of the bytes in the array (or specified slice
-thereof) will have been written.  Thus it is not uncommon for array
-writes to block if they need to wait for a resource such as a network,
-file system, or user console input.
-
-\subsection{Flushing Writes}
-
-The method \code{flush()} writes any bytes that may be buffered
-to their final destination.  As noted in the documentation, the
-operating system may provide further buffering, for instance to
-the network or to disk operations.  
-
-The \code{OutputStream} class is defined to implement
-\code{Flushable}, the interface in \code{java.io} for flushable
-objects.  Like the general \code{close} method from the
-\code{Closeable} interface, it may raise an \code{IOException}.
-
-Most streams call the \code{flush()} method from their \code{close()}
-method so that no data is left in the buffer as a result of closing
-an object.
-
-
 \section{File Input and Output Streams}
+
+Streaming access to files is handled by the subclasses
+\code{FileInputStream} and \code{FileOutputStream}, which
+extned the obvious base classes.  
+
+\subsection{Constructing File Streams}
+
+A file input stream may be constructed with either a file using the
+constructor \code{FileInputStream(File)} or the name of a file, using
+\code{FileInputStream(String)}.  
+
+Similarly, output streams may be constructed using
+\code{FileOuptutStream(File)} and \code{FileOuptutStream(String)}.
+If constructed this way, if the file exists, it will be overwritten
+and resized to the output produced by the output stream.  To append
+to a file, construct an output stream using
+\code{FileOuptutStream(File,boolean)}, where the boolean flag
+specifies whether or not to append.
+
+The constructors are declared to throw the checked exception
+\code{FileNotFoundException}, in package \code{java.io}, which is a
+subcclass of \code{IOException}.  
+
+\subsection{Finalizers}
+
+Both the input and output file streams declare finalizer methods which
+may release any system resources when the related stream is no longer
+in scope.  The problem with finalization is that it's not guaranteed
+to happen until the JVM on which the code was running is terminated.
+In any case, whether it exits normally or not, the operating system
+will recover any process-specific file handles.
+
+
+
+\subsection{File Descriptors}\label{section:io-file-descriptors}
+
+The \code{FileDescriptor} class in \code{java.io} provides an
+encapsulation of a file input or output stream.  Every time a file
+input or output stream is created, it has an associated file
+descriptor.  The file descriptor may be retrieved from a file input
+stream or file output stream using the method \code{getFD()}.  A new
+input or output stream may be constructed based on a file descriptor.
+
+\subsection{Examples of File Streams}
+
+
+\subsubsection{Counting the Bytes in a File}
+
+We wrote a demo program \code{FileByteCount} that opens a file input
+stream and then reads all of its content, counting the number of
+instances of each byte.  The work is done with
+%
+\codeblock{FileByteCount.1}
+%
+Note that the \code{main()} method is declared to throw both
+a \code{FileNotFoundException} and its superclass
+\code{IOException} (see \refsec{io-ioexception} for more information
+on I/O exceptions and their handling).  
+
+The body of the method creates an instance of \code{File} using the
+command-line argument, then an input stream, based on the file.  It
+then allocates an array of \code{long} values the size of the number
+of bytes, which is used to store the counts (recall that primitive
+numbers are always initialized to 0 in Java, including in arrays).
+Then we use the C-style read method to read each bye into the integer
+variable \code{b}.  If the value is -1, indicating the end of stream
+(end of file here), the loop is exited.  In the body of the read loop,
+the count for the byte just read is incremented.
+
+We call the method using the Ant target \code{file-byte-count}, 
+specifying the \code{file.in} property for the file to be counted. 
+Here we call it on its own source code,
+%
+\commandlinefollow{ant -Dfile.in=src/com/lingpipe/book/io/FileByteCount.java file-byte-count}
+\begin{verbatim}
+Dec  Hex      Count
+ 10    a         33
+ 32   20        189
+ 33   21          1
+ 34   22         12
+ 37   25          6
+ 40   28         12
+ 41   29         12
+...
+120   78          7
+121   79          5
+123   7b          2
+125   7d          2
+\end{verbatim}
+%
+Because the file is encoded in ASCII, these bytes can be read as
+characters.  For instance, character hexadecimal value 0A is the
+linefeed, 20 is a newline, 32 is the digit 2, up through 7D, which is
+the right curly bracket (\code{\}}).  We can infer that the file has
+34 lines, because there are 33 line feeds.  
+
+\subsubsection{Copying from One File to Another}
+
+Our next sample program, \code{CopyFile}, copies the bytes in one file
+into another file and illustrates the use of array-based reads and
+writes.%
+%
+\footnote{The same functionality is available through the LingPipe
+static utility method \code{copyFile(File,File)} from the \code{Files}
+class in \code{com.aliasi.util}.}
+%
+After reading in the command-line arguments, the work is carried out by
+%
+\codeblock{CopyFile.1}
+%
+We first create the file input and output streams.  We've assigned
+them to variables of type \code{InputStream} and \code{OutputStream}
+rather than to their specific subclasses because we do not need any of
+the functionality specific to file streams.  We then allocate an array
+\code{buf} of bytes to act as a buffer and declare a variable \code{n} to hold
+the count of the number of bytes read.  The loop continually reads
+from the input stream into the buffer, assigning the number of bytes
+read to \code{n}, and exiting the loop if the number of bytes read is
+less than zero (signaling end of stream).  In the body of the loop, we
+write the bytes in the buffer to the output stream, being careful to
+specify that we only want to write \code{n} bytes.  Unlike reads,
+writes either succeed in writing all their bytes (perhaps having to
+block), or throw an exception.  When we're done, we close both streams.%
+%
+\footnote{We don't need elaborate try-finally logic to close
+the file streams because they are closed automatically when the
+command-line program exits.  We could get into trouble if another
+program were to call this \code{main()} without exiting the JVM after
+the call.  A more robust version of this program might catch I/O
+exceptions thrown by the write method and delete the output stream
+rather than leaving a partial copy.  We've shown what this would look
+like in the source file for \code{CopyFile} in a parallel method
+named \code{main2()}.}
+
+
+
+
+
+\section{File Channels and Memory Mapped Files}
+
+As an alternative to streaming I/O, memory mapping essentially
+provides a random access interface for files.  The method is by
+providing an array-like access abstraction on top of files.  It is
+then up to the operating system's file manager to deal with actual
+commits to and reads from disk.
+
+Memory mapped files are great for random access to data on disk.  For
+instance, databases and search engines make heavy use of memory
+mapping.
+
+Both the file input and file output stream classes implement a
+\code{getChannel()} method which returns an instance of
+\code{FileChannel}.  File channels are part of the ``new'' I/O,
+rooted at package name \code{java.nio}, specifically in the
+package \code{java.nio.channels}.  
+
+File channels support reading and writing into \code{ByteBuffer}
+instances.  Byte buffers and other buffers are in the \code{java.nio}
+package.  Byte buffers may be wrapped to act as character buffers or
+other primitive type buffers.  See \refsec{char-charbuffer} for a
+basic overview of buffers focusing on character buffers.
+
+File channels may also be used to produce a \code{MappedByteBuffer},
+which creates a memory-mapped file accessible as a \code{ByteBuffer}.
+The other way to create a file channel which may be used to produce a
+memory mapped buffer is through the \code{RandomAccessFile} class in
+\code{java.io}.  The random access file class implements the
+\code{DataInput} and \code{DataOutput} interfaces, which provide utilities
+to write arbitrary primitives and strings in addition to bytes.
+
+
+
+
+
 
 
 

@@ -7,6 +7,11 @@
   <property name="jar"
             value="build/lp-book-io-${version}.jar"/>
 
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+  </path>
+
   <target name="clean">
     <delete dir="build"/>
   </target>
@@ -17,6 +22,7 @@
            debuglevel="source,lines,vars"
            destdir="build/classes"
            includeantruntime="false">
+      <classpath refid="classpath"/>
       <src path="src/"/>
     </javac>
     <jar destfile="${jar}">
@@ -53,9 +59,33 @@
   </target>
 
 
+  <target name="file-properties"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileProperties"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${file.in}"/>
+    </java>
+  </target>
+
+  <property name="file.out" value="file.out.tmp"/>
+  <target name="copy-files"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileProperties"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${file.in}"/>
+      <arg value="${file.out}"/>
+    </java>
+  </target>
+
+
   <target name="run"
           depends="file-byte-count,
                    file-dump,
-                   list-roots"/>
+                   list-roots,
+                   file-properties,
+                   copy-files"/>
 
 </project>
