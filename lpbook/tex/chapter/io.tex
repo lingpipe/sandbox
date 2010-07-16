@@ -708,7 +708,7 @@ input or output stream may be constructed based on a file descriptor.
 \subsection{Examples of File Streams}
 
 
-\subsubsection{Counting the Bytes in a File}
+\subsubsection{Counting the Bytes in a File}\label{section:io-file-byte-count}
 
 We wrote a demo program \code{FileByteCount} that opens a file input
 stream and then reads all of its content, counting the number of
@@ -752,7 +752,7 @@ linefeed, 20 is a newline, 32 is the digit 2, up through 7D, which is
 the right curly bracket (\code{\}}).  We can infer that the file has
 34 lines, because there are 33 line feeds.  
 
-\subsubsection{Copying from One File to Another}
+\subsubsection{Copying from One File to Another}\label{section:io-copy-file}
 
 Our next sample program, \code{CopyFile}, copies the bytes in one file
 into another file and illustrates the use of array-based reads and
@@ -791,9 +791,6 @@ like in the source file for \code{CopyFile} in a parallel method
 named \code{main2()}.}
 
 
-
-
-
 \section{File Channels and Memory Mapped Files}
 
 As an alternative to streaming I/O, memory mapping essentially
@@ -827,19 +824,201 @@ memory mapped buffer is through the \code{RandomAccessFile} class in
 to write arbitrary primitives and strings in addition to bytes.
 
 
+\section{Standard Input, Output, and Error Streams}\label{section:io-stdin-stdout}
+
+In many contexts, the environment in which a program is executed
+provides streams for input, output, and error messages.  These streams
+are known as standard input, standard output, and standard error.
+Standard UNIX pipelines direct these streams in two ways.  They can
+direct the standard input to be read from a file or the standard
+output or error to be written to a file.  Second, they can pipe
+processes together, so that the standard output from one process is
+used for the standard input of the next process.
+Shell scripts and scripting languages such as Python manage standard
+input and output from processes in a similar way to shells.%
+%
+\footnote{Java provides an implementation of Unix-style pipes through
+  piped streams and readers and writers.  These are based on the
+  classes \code{PipedInputStream}, \code{PipedOutputStream},
+  \code{PipedReader}, and \code{PipedWriter} in the standard
+  \code{java.io} package.  These classes are multi-threaded so that
+  they may asynchronously consume the output of one process to provide
+  the input to the next, blocking if need be to wait for a read or write.}
+%
+
+\subsubsection{Accessing the Streams}
+
+Java provides access to these streams through three static variables
+in the class \code{System} in the package \code{java.lang}.  The
+variable \code{System.in} is of type \code{InputStream}
+and may be used to read bytes from the shell's standard input.  The
+standard and error output streams, \code{System.out} and
+\code{System.err}, are provided constants of type \code{PrintStream}
+(see \refsec{io-printstream} for more information on print streams).
+The standard output and error print streams use the platform's
+default encoding (see below for how to reset this).
+
+\subsubsection{Redirecting the Streams}
+
+The standard input and output streams may be reset using the methods
+\code{setIn(InputStream)}, \code{setOut(PrintStream)} and
+\code{setErr(PrintStream)}.  This is convenient for writing Java
+programs that act like Python or shell scripts.  
+
+The mutability of the output and error streams enables a Java program
+to reset their character encodings.  For example, to reset standard
+output to use UTF-8, insert the following statement before any
+output is produced,
+%
+\begin{verbatim}
+System.setOut(new PrintStream(System.out,true,"UTF-8"));
+\end{verbatim}
+%
+The value \code{true} enables auto-flushing.  The new standard
+output wraps the old standard output in a new print stream
+with the desired encoding. 
+
+The output streams may be similarly redirected to files by using a
+\code{PrintStream} constructed from a file in the same way.  For
+example,
+%
+\begin{verbatim}
+System.setErr(new PrintStream("stdout.utf8.txt","UTF-16BE"));
+\end{verbatim}
+%
+sends anyting the program writes to the standard error stream to the
+file \code{stdout.utf8.txt}, using the UTF-16BE character encoding
+to convert characters to bytes.
+
+The standard input stream may be wrapped in an
+\code{InputStreamReader} or \code{BufferedReader} to interpret byte
+inputs as characters.  Standard output and error may be wrapped in the
+same way, which is an alternative to resetting the streams.
 
 
+\section{Buffered Byte Streams}
+
+Some sources of input, such as an HTTP connection or a file, are most
+efficiently dealt with in larger chunks than a single byte.  In most
+cases, when using such streams, it is more efficient to buffer the
+input or output.  To that end, streams that buffer larger chunks of
+input are available through the classes \code{BufferedInputStream} and
+\code{BufferedOutputStream}. 
+
+\subsection{Constructing Buffered Streams}
+
+The buffered byte streams have constructors
+\code{BufferedInputStream(InputStream,int)} and
+\code{BufferedOutputStream(OutputStream,int)} that wrap a specified
+stream and use a buffer of the specified size to hold bytes.  The
+buffer sizes may be dropped, in which case a default size is used.
+
+There is often a measurable performance improvement from getting the
+buffer size right for the underlying platform and application, but
+performance measurement is a tricky business (see
+\refsec{reading-java} for recommended reading on performance tuning).
+
+\subsection{Built-in Buffering}
+
+Many of the streams (or readers and writers) have built-in buffering.
+For instance, the GZIP input and output streams have built-in buffers.
+In these cases, there's no need to buffer twice for efficiency's sake.
+
+If you are eventually going to wrap a byte stream in a buffered
+reader or writer, the byte stream doesn't itself need to be buffered.
+The buffering, though use of block reads and writes, carries itself through.
+
+Similarly, if your own code does buffering, as in our example in
+\code{CopyFile} (see \refsec{io-copy-file}), there's no need to buffer
+the file input or output streams.
 
 
+\section{Print Streams and Formatted Output}\label{section:io-printstream-format}
 
+A print stream is a very flexible output stream that supports standard
+stream output, conversion of characters to bytes for output, and
+structured C-style formatting.  This provides most of the
+functionality of a \code{Writer}'s methods, while extending the base
+class \code{InputStream}.%
+%
+\footnote{It's not possible in Java to be both a \code{Writer} and a
+  \code{InputStream} because these are both abstract base classes, and
+  a class may only extend one other class.  In retrospect, it'd be
+  much more convenient if the streams were all defined as interfaces.}
 
-\section{Standard Input and Output}\label{section:io-stdin-stdout}
+\subsection{Constructing a Print Stream}
 
-Java provides two streams corresponding to the Unix notion of standard
-input and standard output.
+A print stream may be constructed by wrapping another input stream or
+providing a file to which output should be written.  The character
+encoding and whether auto-flushing should be carried out may also be
+specified.  We recommend restricting your attention to the
+constructors \code{PrintStream(File,String)} that writes to a file
+given a specified encoding, and
+\code{PrintStream(OutputStream,boolean,String)}, which prints to the
+specified output stream, optionally using auto-flushing, using a
+specified character encoding.  The othe methods are shorthands that
+allow some parameters to be dropped.
 
+\subsection{Exception Buffering}
 
+The second unusual feature of print streams is that none of their
+methods is declared to throw an I/O exception.  Instead, what it does
+is implement an exception buffering pattern, only without an actual
+buffer.%
+%
+\footnote{This pattern is sometimes implemented so
+that the actual exceptions that were raised are accessible as a list.}
+%
+In cases where other streams would raise an I/O exception, the print
+stream methods exit quietly, while at the same time setting an error
+flag.  The status of this flag is available through the method
+\code{checkError()}, which returns \code{true} if a method has caught
+an I/O exception.
 
+\subsection{Formatted Output}
+
+One of the most convenient aspects of print streams is their
+implementation of C-style \code{printf()} methods for formatted
+printing.  These methods implicitly use an instance of
+\code{Formatter} in \code{java.util} to convert a sequence of objects
+into a string.  
+
+Format syntax is very elaborate, and for the most part, we restrict
+our attention to a few operations.  The method's signature is
+\code{printf(Locale,String,Object...)}, where the string is the
+formatting string and the variable-length argument \code{Object...}
+is zero or more objects to format.  How the objects are formatted
+depends on the format string and the \code{Locale} (from
+\code{java.util}).  The locale is optional; if it is not supplied, the
+default locale will be used.  The locale impacts the printing of
+things like dates and decimal numbers, which are conventionally
+printed differently in different places.  Although we are obsessive
+about maintaining unadulterated character data and work in many
+languages, a discussion of the intricacies f application
+internationalization is beyond the scope of this book.
+
+For example, the sample program \code{FileByteCount} (see
+\refsec{io-file-byte-count}) uses string, decimal and hexadecimal
+formatting for strings and numbers,
+%
+\codeblock{FileByteCount.2}
+%
+The first \code{printf()} has the format string
+\code{"\%4s~\%4s~\%10s{\bk}n"}, which says to write the first string
+using 4 characters, the second string using 4 characters, and the
+third string using 10 characters; if they are too short, they align to
+the right, and if they are too long, they run over their alloted
+space.  The second \code{printf()} uses \code{\%4d} for a four place
+integer (right aligned), and \code{\%4h} for a four-digit hexadecimal
+representation.  Note that auto-boxing (see \refsec{java-autoboxing})
+converts the integers \code{i} and \code{counts[i]} to instances of
+\code{Integer} to act as inputs to \code{printf()}.  Formatted prints
+do not automatically occupy a line; we have manually added UNIX-style
+line boundary with the line feed character escape \code{{\bk}n}.
+
+Finally, note that the two \code{printf()} statements
+intentionally use the same width so the output is formatted like a table
+with headings aligned above the columns.  
 
 
 

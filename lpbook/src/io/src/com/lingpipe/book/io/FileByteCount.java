@@ -21,13 +21,12 @@ public class FileByteCount {
     /*x*/
         
         System.out.println("File=" + file.getCanonicalPath());
+        /*x FileByteCount.2 */
         System.out.printf("%4s %4s %10s\n","Dec","Hex","Count");
-
         for (int i = 0; i < counts.length; ++i)
             if (counts[i] > 0L)
                 System.out.printf("%4d %4h %10d\n",i,i,counts[i]);
-
-
+        /*x*/        
     }
 
 }
