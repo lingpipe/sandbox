@@ -80,12 +80,50 @@
     </java>
   </target>
 
+  <property name="url.in" value="http://google.com/webhp?q=dirichlet"/>
+  <target name="url-properties"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.UrlProperties"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${url.in}"/>
+    </java>
+  </target>
+
+  <target name="url-read"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.UrlRead"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${url.in}"/>
+    </java>
+  </target>
+
+  <property name="data" value="The quick brown fox."/>
+  <property name="encoding" value="UTF-8"/>
+  <target name="url-write-read"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.UrlWriteRead"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${url.in}"/>
+      <arg value="${data}"/>
+      <arg value="${encoding}"/>
+    </java>
+  </target>
+
 
   <target name="run"
           depends="file-byte-count,
                    file-dump,
                    list-roots,
                    file-properties,
-                   copy-files"/>
+                   copy-files,
+                   url-properties,
+                   url-read,
+                   url-write-read"/>
 
 </project>
