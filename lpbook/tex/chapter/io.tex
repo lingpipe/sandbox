@@ -21,36 +21,6 @@ through serialization.  We use serialized objects to represent models
 and their components, such as tokenizers.  
 
 
-\section{URIs, URLs and URNs}\label{section:uri-url-urn}
-
-A uniform resource identifier (URI) picks out something on the web by
-name.  This is a very general notion, but we will only need a few
-instances in this book.  There are two (overlapping) subtypes of URIs,
-based on function.
-
-A uniform resource name (URN) is a URI that provides a name for
-something on the web, but may not say how or where to get it.  A
-typical instance of a URN is the Digital Object Identifier (DOI)
-system, which is becoming more and more widely used to identify text
-resources such as journal articles.  For example, the DOI
-\code{doi:10.1016/j.jbi.2003.10.001} picks out a paper on which
-my wife was a co-author.  An alternative URN for the same paper is
-\code{PMID:15016385}, which uses the PubMed identifier (PMID) for
-the paper.  
-
-A uniform resource locator (URL) provides a means of locating (a
-concrete instance of) an item on the web.  A URL indicates how to get
-something by providing a scheme name, such as \code{file://} for files
-or \code{http://} for the hypertext transport protocol (HTTP).  For
-example, the URL
-\code{http://dx.doi.org/10.1016/j.jbi.2003.10.001} is for the same
-paper as above, but specifies a web protocol, HTTP, and host,
-\code{dx.doi.org} from which to fetch a specific embodiment of
-the resource.  There may be many URLs that point to the same object.
-For instance, \code{http://linkinghub.elsevier.com/retrieve/pii/S1532046403001126}
-is a URL for the same paper, which links to the publisher's site.
-
-
 \section{Files}
 
 Java provides the class \code{File} in the \code{java.io} package for
@@ -661,6 +631,44 @@ be implemented with logging in the catch operation and a message to
 pass as an argument in the case of errors.
 
 
+\section{Readers}
+
+The \code{Reader} abstract base class is to \code{char} data as
+\code{InputStream} is to \code{byte} data.  For instance,
+\code{read()} reads a single \code{char} coded as an \code{int}, with
+-1 indicating the end of the streamstream.  There is a block reading
+method \code{read(char[])} that returns the number of values read,
+with -1 indicating end of stream, and a similar method taking a slice
+of an array of \code{char} values.  There is also a \code{skip(int)}
+method that skips up to the specified number of \code{char} values,
+returning the number of values skipped.  The \code{Reader} class
+implements the \code{Closeable} interface, and like streams, have a
+single \code{close()} method.  All of these methods are declared to
+throw \code{IOException}.
+
+Unlike input streams, concrete subclasses must implement the abstract
+methods \code{close()} and the slice-based bulk read method
+\code{read(char[],int,int)}.
+
+Some readers are markable, as indicated by the same
+\code{markSupported()} method, with the same \code{mark()} method to
+set the mark at the current position and \code{reset()} method to
+return to the marked position.
+
+\subsection{The \code{Readable} Interface}
+
+The \code{Reader} class also implements the \code{Readable} interface
+in \code{java.lang}.  This interface has a single method
+\code{read(CharBuffer)} that reads \code{char} values into a specified
+buffer, returning the number of values read or -1 for end of stream
+(see \refsec{char-charbuffer} for more on \code{CharBuffer}).
+
+
+\section{Writers}
+
+
+
+
 \section{File Input and Output Streams}
 
 Streaming access to files is handled by the subclasses
@@ -791,112 +799,11 @@ like in the source file for \code{CopyFile} in a parallel method
 named \code{main2()}.}
 
 
-\section{File Channels and Memory Mapped Files}
-
-As an alternative to streaming I/O, memory mapping essentially
-provides a random access interface for files.  The method is by
-providing an array-like access abstraction on top of files.  It is
-then up to the operating system's file manager to deal with actual
-commits to and reads from disk.
-
-Memory mapped files are great for random access to data on disk.  For
-instance, databases and search engines make heavy use of memory
-mapping.
-
-Both the file input and file output stream classes implement a
-\code{getChannel()} method which returns an instance of
-\code{FileChannel}.  File channels are part of the ``new'' I/O,
-rooted at package name \code{java.nio}, specifically in the
-package \code{java.nio.channels}.  
-
-File channels support reading and writing into \code{ByteBuffer}
-instances.  Byte buffers and other buffers are in the \code{java.nio}
-package.  Byte buffers may be wrapped to act as character buffers or
-other primitive type buffers.  See \refsec{char-charbuffer} for a
-basic overview of buffers focusing on character buffers.
-
-File channels may also be used to produce a \code{MappedByteBuffer},
-which creates a memory-mapped file accessible as a \code{ByteBuffer}.
-The other way to create a file channel which may be used to produce a
-memory mapped buffer is through the \code{RandomAccessFile} class in
-\code{java.io}.  The random access file class implements the
-\code{DataInput} and \code{DataOutput} interfaces, which provide utilities
-to write arbitrary primitives and strings in addition to bytes.
 
 
-\section{Standard Input, Output, and Error Streams}\label{section:io-stdin-stdout}
-
-In many contexts, the environment in which a program is executed
-provides streams for input, output, and error messages.  These streams
-are known as standard input, standard output, and standard error.
-Standard UNIX pipelines direct these streams in two ways.  They can
-direct the standard input to be read from a file or the standard
-output or error to be written to a file.  Second, they can pipe
-processes together, so that the standard output from one process is
-used for the standard input of the next process.
-Shell scripts and scripting languages such as Python manage standard
-input and output from processes in a similar way to shells.%
-%
-\footnote{Java provides an implementation of Unix-style pipes through
-  piped streams and readers and writers.  These are based on the
-  classes \code{PipedInputStream}, \code{PipedOutputStream},
-  \code{PipedReader}, and \code{PipedWriter} in the standard
-  \code{java.io} package.  These classes are multi-threaded so that
-  they may asynchronously consume the output of one process to provide
-  the input to the next, blocking if need be to wait for a read or write.}
-%
-
-\subsubsection{Accessing the Streams}
-
-Java provides access to these streams through three static variables
-in the class \code{System} in the package \code{java.lang}.  The
-variable \code{System.in} is of type \code{InputStream}
-and may be used to read bytes from the shell's standard input.  The
-standard and error output streams, \code{System.out} and
-\code{System.err}, are provided constants of type \code{PrintStream}
-(see \refsec{io-printstream} for more information on print streams).
-The standard output and error print streams use the platform's
-default encoding (see below for how to reset this).
-
-\subsubsection{Redirecting the Streams}
-
-The standard input and output streams may be reset using the methods
-\code{setIn(InputStream)}, \code{setOut(PrintStream)} and
-\code{setErr(PrintStream)}.  This is convenient for writing Java
-programs that act like Python or shell scripts.  
-
-The mutability of the output and error streams enables a Java program
-to reset their character encodings.  For example, to reset standard
-output to use UTF-8, insert the following statement before any
-output is produced,
-%
-\begin{verbatim}
-System.setOut(new PrintStream(System.out,true,"UTF-8"));
-\end{verbatim}
-%
-The value \code{true} enables auto-flushing.  The new standard
-output wraps the old standard output in a new print stream
-with the desired encoding. 
-
-The output streams may be similarly redirected to files by using a
-\code{PrintStream} constructed from a file in the same way.  For
-example,
-%
-\begin{verbatim}
-System.setErr(new PrintStream("stdout.utf8.txt","UTF-16BE"));
-\end{verbatim}
-%
-sends anyting the program writes to the standard error stream to the
-file \code{stdout.utf8.txt}, using the UTF-16BE character encoding
-to convert characters to bytes.
-
-The standard input stream may be wrapped in an
-\code{InputStreamReader} or \code{BufferedReader} to interpret byte
-inputs as characters.  Standard output and error may be wrapped in the
-same way, which is an alternative to resetting the streams.
 
 
-\section{Buffered Byte Streams}
+\section{Buffered Streams}
 
 Some sources of input, such as an HTTP connection or a file, are most
 efficiently dealt with in larger chunks than a single byte.  In most
@@ -910,13 +817,31 @@ input are available through the classes \code{BufferedInputStream} and
 The buffered byte streams have constructors
 \code{BufferedInputStream(InputStream,int)} and
 \code{BufferedOutputStream(OutputStream,int)} that wrap a specified
-stream and use a buffer of the specified size to hold bytes.  The
-buffer sizes may be dropped, in which case a default size is used.
+stream and use a buffer of the specified size to hold bytes.  
+The buffer sizes may be dropped, in which case a default size is used.
+
+For example, we may created a buffered input stream from
+a file input stream using
+%
+\begin{verbatim}
+File file = ...;
+InputStream in = new FileInputStream(file);
+InputStream bufIn = new BufferedInputStream(in);
+\end{verbatim}
+%
+The variable \code{bufIn} is then used where the unbuffered stream
+\code{in} would've been used.  By assigning all these streams of
+different types to a base \code{InputStream}, it makes it easier to
+change the code later.
 
 There is often a measurable performance improvement from getting the
 buffer size right for the underlying platform and application, but
 performance measurement is a tricky business (see
 \refsec{reading-java} for recommended reading on performance tuning).
+
+The constructors only save a pointer to the underlying stream and
+create a buffer, so they don't throw I/O exceptions, because they're
+not doing any I/O.
 
 \subsection{Built-in Buffering}
 
@@ -931,6 +856,16 @@ The buffering, though use of block reads and writes, carries itself through.
 Similarly, if your own code does buffering, as in our example in
 \code{CopyFile} (see \refsec{io-copy-file}), there's no need to buffer
 the file input or output streams.
+
+
+\section{Array-Backed Streams}
+
+
+\section{Compressed Streams}
+
+
+\section{Accessing Resources from the Classpath}
+
 
 
 \section{Print Streams and Formatted Output}\label{section:io-printstream-format}
@@ -1021,4 +956,266 @@ intentionally use the same width so the output is formatted like a table
 with headings aligned above the columns.  
 
 
+\section{Standard Input, Output, and Error Streams}\label{section:io-stdin-stdout}
 
+In many contexts, the environment in which a program is executed
+provides streams for input, output, and error messages.  These streams
+are known as standard input, standard output, and standard error.
+Standard UNIX pipelines direct these streams in two ways.  They can
+direct the standard input to be read from a file or the standard
+output or error to be written to a file.  Second, they can pipe
+processes together, so that the standard output from one process is
+used for the standard input of the next process.
+Shell scripts and scripting languages such as Python manage standard
+input and output from processes in a similar way to shells.%
+%
+\footnote{Java provides an implementation of Unix-style pipes through
+  piped streams and readers and writers.  These are based on the
+  classes \code{PipedInputStream}, \code{PipedOutputStream},
+  \code{PipedReader}, and \code{PipedWriter} in the standard
+  \code{java.io} package.  These classes are multi-threaded so that
+  they may asynchronously consume the output of one process to provide
+  the input to the next, blocking if need be to wait for a read or write.}
+%
+
+\subsection{Accessing the Streams}
+
+Java provides access to these streams through three static variables
+in the class \code{System} in the package \code{java.lang}.  The
+variable \code{System.in} is of type \code{InputStream}
+and may be used to read bytes from the shell's standard input.  The
+standard and error output streams, \code{System.out} and
+\code{System.err}, are provided constants of type \code{PrintStream}
+(see \refsec{io-printstream} for more information on print streams).
+The standard output and error print streams use the platform's
+default encoding (see below for how to reset this).
+
+\subsection{Redirecting the Streams}
+
+The standard input and output streams may be reset using the methods
+\code{setIn(InputStream)}, \code{setOut(PrintStream)} and
+\code{setErr(PrintStream)}.  This is convenient for writing Java
+programs that act like Python or shell scripts.  
+
+The mutability of the output and error streams enables a Java program
+to reset their character encodings.  For example, to reset standard
+output to use UTF-8, insert the following statement before any
+output is produced,
+%
+\begin{verbatim}
+System.setOut(new PrintStream(System.out,true,"UTF-8"));
+\end{verbatim}
+%
+The value \code{true} enables auto-flushing.  The new standard
+output wraps the old standard output in a new print stream
+with the desired encoding. 
+
+The output streams may be similarly redirected to files by using a
+\code{PrintStream} constructed from a file in the same way.  For
+example,
+%
+\begin{verbatim}
+System.setErr(new PrintStream("stdout.utf8.txt","UTF-16BE"));
+\end{verbatim}
+%
+sends anyting the program writes to the standard error stream to the
+file \code{stdout.utf8.txt}, using the UTF-16BE character encoding
+to convert characters to bytes.
+
+The standard input stream may be wrapped in an
+\code{InputStreamReader} or \code{BufferedReader} to interpret byte
+inputs as characters.  Standard output and error may be wrapped in the
+same way, which is an alternative to resetting the streams.
+
+
+
+\section{URIs, URLs and URNs}\label{section:uri-url-urn}
+
+A uniform resource identifier (URI) picks out something on the web by
+name.  This is a very general notion, but we will only need a few
+instances in this book.  The specifications for these standards are
+quite complex, and beyond the scope of this book.  
+
+\subsection{Uniform Resource Names}
+
+There are two (overlapping) subtypes of URIs, based on function.  A
+uniform resource name (URN) is a URI that provides a name for
+something on the web, but may not say how or where to get it.  A
+typical instance of a URN is the Digital Object Identifier (DOI)
+system, which is becoming more and more widely used to identify text
+resources such as journal articles.  For example, the DOI
+\code{doi:10.1016/j.jbi.2003.10.001} picks out a paper on which my
+wife was a co-author.  An alternative URN for the same paper is
+\code{PMID:15016385}, which uses the PubMed identifier (PMID) for the
+paper.
+
+\subsection{Uniform Resource Locators}
+
+A uniform resource locator (URL) provides a means of locating (a
+concrete instance of) an item on the web.  A URL indicates how to get
+something by providing a scheme name, such as \code{file://} for files
+or \code{http://} for the hypertext transport protocol (HTTP).  For
+example, the URL
+\code{http://dx.doi.org/10.1016/j.jbi.2003.10.001} is for the same
+paper as above, but specifies a web protocol, HTTP, and host,
+\code{dx.doi.org} from which to fetch a specific embodiment of
+the resource.  There may be many URLs that point to the same object.
+For instance, \code{http://linkinghub.elsevier.com/retrieve/pii/S1532046403001126}
+is a URL for the same paper, which links to the publisher's site.
+
+\subsection{URIs and URLs in Java}
+
+The standard \code{java.net} package has a class \code{URI} for URIs
+and a class \code{URL} for URLs.  Both of them may be constructed
+using a string representation of the resource.  Once constructed, the
+classes provide a range of structured access to the fields making up
+the resource.  For instance, both objects have methods such as
+\code{getHost()} and \code{getPort()}, which may return proper values
+or indicators like \code{null} or -1 that there is no host or port.
+
+The demo program \code{UrlProperties} constructs a URL from a
+command-line argument and prints out its available properties.  The
+beginning of the \code{main()} method is
+%
+\codeblock{UrlProperties.1}
+%
+The rest of the program just prints out the rest of the properties.
+The \code{main()} method throws a \code{MalformedURLException}, a
+subclass of \code{IOException}, if the URL specified on the command
+line is not well formed.  This ensures that once a URL is constructed,
+it is well formed.  There are no exceptions to catch for the get
+methods; they operate only on the string representations and are
+guaranteed to succeed if the URL was constructed.
+
+The Ant target \code{url-properties} calls the command supplying as
+an argument the value of the property \code{url.in}.
+%
+\commandlinefollow{ant -Durl.in="http://google.com/webhp?q=dirichlet" url-properties}
+\begin{verbatim}
+getAuthority()=google.com
+getDefaultPort()=80
+getFile()=/webhp?q=dirichlet
+getHost()=google.com
+getPath()=/webhp
+getPort()=-1
+getProtocol()=http
+getQuery()=q=dirichlet
+getRef()=null
+getUserInfo()=null
+toExternalForm()=http://google.com/webhp?q=dirichlet
+toString()=http://google.com/webhp?q=dirichlet
+\end{verbatim}
+%
+Looking over the output shows how the URL is parsed into components
+suc as host, path and query.
+
+\subsection{Reading from URLs}
+
+URLs know how to access resources.  These resources may reside locally
+or remotely.  Wherever they arise, and whatever their content, 
+resources are all coded as byte streams.  Java provides built-in support
+for protocols \code{http}, \code{https}, \code{ftp}, \code{file}, and 
+\code{jar}.  
+
+Once a URL is created, the method \code{openStream()} returns an
+\code{InputStream} that may be used to read the bytes from the URL.
+Depending on the URL itself, these bytes may be from a local or
+networked file, a local or remote web server, or elsewhere.  Opening
+the stream may throw an I/O exception, as a connection is opened to
+the URL.  Once the input stream is opened, it may be used like
+any other stream.  
+
+The sample program \code{ReadUrl} shows how to read the
+bytes from an URL and relay them to standard output.
+%
+\codeblock{ReadUrl.1}
+%
+The code between the stream creation and its closing is just a generic
+buffered stream copy.  
+
+The Ant target \code{read-url} is configured to call the sample
+program using as URL the value of the property \code{url.in}.
+%
+\commandlinefollow{ant -Durl.in=http://lingpipe.com url-read}
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html ...
+<html ...
+<head>
+<title>LingPipe Home</title>
+<meta http-equiv="Content-type"
+      content="application/xhtml+xml; charset=utf-8"/>
+...
+pageTracker._trackPageview();
+} catch(err) {}</script></body>
+</html>
+\end{verbatim}
+%
+As with most pages these days, LingPipe's home page starts with
+a title, content type, and cascading stylesheet (CSS) declaration,
+and ends with some Javascript.  
+Whether you can see all of the output of a page depends on your
+shell; you can save the output to a file and then view it in a
+browser.  
+
+\subsection{URL Connections}
+
+The output stream method we used above, \code{getOutputStream()}, is
+just a convenience method for calling the \code{openConnection()}
+method to get an instance of \code{URLConnection} and calling its
+\code{getOutputStream()} method.  URL connections allow various
+properties of the connection to be inspected and set.  
+
+Although the \code{URL} method \code{openConnection()} is declared to
+return a \code{URLConenction}, if the URL uses the HTTP protocol, the
+documentation specifies that a \code{HttpURLConnection} will be
+returned.  Thus the \code{URLConnection} may be cast to
+\code{HttpURLConnection} at run time.  The HTTP-based connection
+provides additional methods for manipulating HTTP headers and
+responses, such as content types, last-modified dates, character
+encodings, handling redirected web pages, fetching HTTP respose codes,
+managing timeouts and keep-alive times for the connection, and other
+intricacies of HTTP management.
+
+A URL connection may also be used to write to a URL.  This makes it
+possible to attach data for a POST-based request and thus implement
+general web services.
+
+
+\section{The Input Source Abstraction}
+
+
+\section{File Channels and Memory Mapped Files}
+
+As an alternative to streaming I/O, memory mapping essentially
+provides a random access interface for files.  The method is by
+providing an array-like access abstraction on top of files.  It is
+then up to the operating system's file manager to deal with actual
+commits to and reads from disk.
+
+Memory mapped files are great for random access to data on disk.  For
+instance, databases and search engines make heavy use of memory
+mapping.
+
+Both the file input and file output stream classes implement a
+\code{getChannel()} method which returns an instance of
+\code{FileChannel}.  File channels are part of the ``new'' I/O,
+rooted at package name \code{java.nio}, specifically in the
+package \code{java.nio.channels}.  
+
+File channels support reading and writing into \code{ByteBuffer}
+instances.  Byte buffers and other buffers are in the \code{java.nio}
+package.  Byte buffers may be wrapped to act as character buffers or
+other primitive type buffers.  See \refsec{char-charbuffer} for a
+basic overview of buffers focusing on character buffers.
+
+File channels may also be used to produce a \code{MappedByteBuffer},
+which creates a memory-mapped file accessible as a \code{ByteBuffer}.
+The other way to create a file channel which may be used to produce a
+memory mapped buffer is through the \code{RandomAccessFile} class in
+\code{java.io}.  The random access file class implements the
+\code{DataInput} and \code{DataOutput} interfaces, which provide utilities
+to write arbitrary primitives and strings in addition to bytes.
+
+
+\section{Lingpipe I/O Utilities}
