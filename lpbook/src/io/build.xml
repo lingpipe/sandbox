@@ -116,11 +116,28 @@
   </target>
 
 
+  <property name="enc.in" value="UTF-8"/>
+  <property name="enc.out" value="UTF-16LE"/>
+  <target name="file-decode-encode"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileDecodeEncode"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${file.in}"/>
+      <arg value="${enc.in}"/>
+      <arg value="${file.out}"/>
+      <arg value="${enc.out}"/>
+    </java>
+  </target>
+
+
   <target name="run"
           depends="file-byte-count,
                    file-dump,
-                   list-roots,
                    file-properties,
+                   file-decode-encode,
+                   list-roots,
                    copy-files,
                    url-properties,
                    url-read,
