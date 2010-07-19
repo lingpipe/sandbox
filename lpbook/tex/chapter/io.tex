@@ -566,11 +566,14 @@ an object.
 
 Because most streams impose local or system overhead on open I/O
 streams, it is good practice to close a stream as soon as you are done
-with it.  Conveniently, all the streams implement the handy
-\code{Closeable} interface in the package \code{java.io}.  The
-\code{Closeable} interface specifies a single method, \code{close()},
-which closes a stream and releases any resources it may be
-maintaining.  
+with it.  
+
+\subsection{The \code{Closeable} Interface}
+
+Conveniently, all the streams implement the handy \code{Closeable}
+interface in the package \code{java.io}.  The \code{Closeable}
+interface specifies a single method, \code{close()}, which closes a
+stream and releases any resources it may be maintaining.
 
 Care must be taken in closing streams, as the \code{close()} method
 itself may throw an \code{IOException}.  Furthermore, if the stream
@@ -608,12 +611,13 @@ try block may throw I/O exceptions.  To remove these, I/O exceptions
 may be caught in a block parallel to the \code{try} and
 \code{finally}.
 
-\subsubsection{LingPipe Close Utility}
+\subsection{LingPipe Quiet Close Utility}
 
 If a sequence of streams need to be closed, things get ugly quickly.
-LingPipe provides a utility method \code{Streams.close(Closeable)} in
-\code{com.aliasi.util} that tests for null and swallows I/O exceptions
-for close operations.  Basically, it's defined as follows.
+LingPipe provides a utility method
+\code{Streams.closeQuietly(Closeable)} in \code{com.aliasi.util} that
+tests for null and swallows I/O exceptions for close operations.
+Basically, it's defined as follows.
 %
 \begin{verbatim}
 static void close(Closeable c) {
@@ -666,8 +670,108 @@ buffer, returning the number of values read or -1 for end of stream
 
 \section{Writers}
 
+Writers are to readers as output streams are to input streams.  The
+method \code{write(int)} writes a single character using the two
+low-order bytes of the specified integer as a \code{char}.
+
+Arrays of characters may be written using \code{write(char[])} and
+there is a method to write only a slice of a character array.  Strings
+and slices of strings may also be written.  
+
+Like other streams, \code{Writer} implements \code{Closeable} and is
+hence closed in the usual way using \code{close()}.  Like other output
+streams, it implements \code{Flushable}, so calling \code{flush()}
+should try to write any buffered characters.
+
+\subsection{The \code{Appendable} Interface}
+
+The \code{Writer} class also implements the \code{Appendable}
+interface in \code{java.lang}.  This is the same interface as is
+implemented by the mutable character sequence implementations
+\code{CharBuffer}, \code{StringBuilder}, and \code{StringBuffer}.
+
+This interface specifies a method for appending a single character,
+\code{append(char)}, and for sequences, \code{append(CharSequence)},
+as well as for slices of character sequences.  The result specified in
+the \code{Appendable} interface is \code{Appendable}, so calls may be
+chained.  The result specified by \code{Writer} is \code{Writer};
+subclasses may declare more specific return types than their
+superclasses.  Other implementations also declare their own types
+as their return types.
 
 
+\section{Converting Byte Streams to Characters}
+
+Resources are typically provided as byte streams, but programs
+manipulating language data require character streams.  Given a
+character encoding, a byte stream may be converted to a character
+stream. 
+
+\subsection{The \code{InputStreamReader} Class}\label{section:io-inputstreamreader}
+
+Given an input stream and a characte encoding, an instance
+of \code{InputStreamReader} may be constructed to read characters.
+The usual idiom is
+%
+\begin{verbatim}
+String encoding = ...;
+InputStream in = ...;
+Reader reader = new InputStreamReader(in,encoding);
+...
+reader.close();
+\end{verbatim}
+%
+The operations ellided in the middle may then use the reader to
+retrieve character-based data.  Instances may also be constructed from
+an instance of \code{CharSet} or with a \code{CharSetDecoder}, both of
+which are in \code{java.nio.charset}; the string-based method is just
+a shortcut that creates a decoder for a character set behind the
+scenes.  This decoder is used to convert the sequence of bytes from
+the underlying input stream into the \code{char} values returned by
+the reader.
+
+The question remains as to whether to attempt to close the input
+stream itself given that the reader was closed.  When an
+\code{InputStreamReader} is closed, the input stream it wraps will be
+closed.%
+%
+\footnote{This is not clear from the documentation, but is clear from
+  the source code.  Perhaps we're meant to infer the behavior from the
+  general contract for \code{close()} in \code{Closeable}, which
+  specifies that it should release all of the resources it is holding.}
+%
+As long as the reader was constructed, there should be no problem.
+For more robustness, the stream may be nested in a
+\code{try}-\code{finally} block to ensure it's closed.  The reader
+should be closed first, and if all goes well, the stream should
+already be closed when the close in the \code{finally} block is
+reached.  This second call should not cause problems, because the
+\code{Closeable} interface specifies that redundant calls to
+\code{close()} should have no effect on a closed object.
+
+\subsection{The \code{OutputStreamWriter} Class}
+
+In the other direction, the class \code{OutputStreamWriter} does the
+conversion.  The idiom for construction, use, and closure is the same,
+only based on a \code{CharSetEncoder} to convert sequences of
+characters to sequences of bytes for writing.
+
+\subsection{Illegal Sequences}
+
+The documentation for both of these classes indicate that their
+behavior in the face of illegal \code{byte} or \code{char} sequences.
+For instance, an \code{InputStreamReader} may be faced with a sequence
+of bytes that is not decodeable with the specified character encoding.
+Going the other way, an \code{OutputStreamWriter} may receive a
+sequence \code{char} values that is not a legal UTF-16 sequence, or
+that contains code points that are not encodable in the specified
+character encoding.  
+
+In practice, a \code{InputStreamReader}'s behavior will be determined
+by its \code{CharSetDecoder}, and a \code{OutputStreamWriter}'s by its
+\code{CharSetEncoder}.  The encoders and decoders may be configured to
+allow exceptions to be raised for illegal sequences or particular
+substitutions to be carried out.
 
 \section{File Input and Output Streams}
 
@@ -798,8 +902,18 @@ rather than leaving a partial copy.  We've shown what this would look
 like in the source file for \code{CopyFile} in a parallel method
 named \code{main2()}.}
 
+\subsubsection{Character Encoding Conversion}
 
-
+As a third example, we'll show how to wrap our file-based streams
+in readers and writers in order to carry out character encoding
+conversion.  Here we use a character buffer to do the transfer,
+%
+\codeblock{FileDecodeEncode.1}
+%
+The program may be called with the Ant target
+\code{file-decode-encode} with arguments given by
+properties \code{file.in}, \code{enc.in}, \code{file.out},
+and \code{enc.out}.  
 
 
 
@@ -808,9 +922,10 @@ named \code{main2()}.}
 Some sources of input, such as an HTTP connection or a file, are most
 efficiently dealt with in larger chunks than a single byte.  In most
 cases, when using such streams, it is more efficient to buffer the
-input or output.  To that end, streams that buffer larger chunks of
-input are available through the classes \code{BufferedInputStream} and
-\code{BufferedOutputStream}. 
+input or output.  Both byte and character streams may be buffered for
+both input and output.  For byte streams, the classes are
+\code{BufferedInputStream} and \code{BufferedOutputStream}, and for
+character streams, \code{BufferedReader} and \code{BufferedWriter}
 
 \subsection{Constructing Buffered Streams}
 
@@ -834,14 +949,23 @@ The variable \code{bufIn} is then used where the unbuffered stream
 different types to a base \code{InputStream}, it makes it easier to
 change the code later.
 
+The constructors only save a pointer to the underlying stream and
+create a buffer, so they don't throw I/O exceptions, because they're
+not doing any I/O.
+
+\subsection{Sizing the Buffer}
+
 There is often a measurable performance improvement from getting the
 buffer size right for the underlying platform and application, but
 performance measurement is a tricky business (see
 \refsec{reading-java} for recommended reading on performance tuning).
 
-The constructors only save a pointer to the underlying stream and
-create a buffer, so they don't throw I/O exceptions, because they're
-not doing any I/O.
+\subsection{Closing a Buffered Stream}
+
+When a buffered stream is closed, it closes the contained stream.  See
+the discussion in \refsec{io-inputstreamreader} concerning writing
+robust stream closing idioms.  The close will also flush any bytes
+or characters currently being buffered.
 
 \subsection{Built-in Buffering}
 
@@ -857,8 +981,92 @@ Similarly, if your own code does buffering, as in our example in
 \code{CopyFile} (see \refsec{io-copy-file}), there's no need to buffer
 the file input or output streams.
 
+By this same line of reasoning, if a byte stream is converted to a
+character stream or vice versa, buffering is not required at both
+places.  Usually, the buffer is placed later in the chain, around the
+reader or writer, as in
+%
+\begin{verbatim}
+InputStream in = new FileInputStream(file);
+Reader reader = new InputStreamReader(in,"UTF-8");
+BufferedReader bufReader = new BufferedReader(isReader);
+\end{verbatim}
+%
+\begin{verbatim}
+OutputStream out = new FileOutputStream(file);
+Writer writer = new OutputStreamWriter(out,"UTF-8");
+BufferedWriter bufWriter = new BufferedWriter(writer);
+\end{verbatim}
 
-\section{Array-Backed Streams}
+\subsection{Line-Based Reads}
+
+The \code{BufferedReader} class implements a method to read lines.
+The method \code{readLine()} returns a \code{String} corresponding to
+the next line of input read, not including the end-of-line markers.
+If the end of stream has been reached, this method will return null.
+
+This class recognizes three end-of-line markers,
+a linefeed (\code{{\bk}n}), a carriage return (\code{{\bk}r}),
+or a linefeed followed by a carriage return (\code{{\bk}n{\bk}r}).
+
+
+\section{Array-Backed Input Streams}
+
+The array-backed input streams and readers read from arrays of data
+held in memory.
+
+The class \code{ByteArrayInputStream} wraps a byte array to produce an
+in-memory input stream.  The constructor
+\code{ByteArrayInputStream(byte[])} creates the input stream.  The
+byte array is not copied, so changes to it will affect the input
+stream.  
+
+Byte array input streams support the \code{mark()} and \code{reset()}
+methods.
+
+Closing a byte array input stream has no effect whatsoever.
+
+The class \code{CharArrayReader} performs the same service, creating a
+\code{Reader} from an array of characters.  They support the same
+range of methods with almost all the same behaviors, only for
+\code{char} data rather than \code{byte} data.  Inconsistently,
+\code{close()} behaves differently, releasing the reference to the
+underlying character array and causing all subsequent calls to read
+methods to throw I/O exceptions.
+
+There is also a class \code{StringReader} that does the same thing
+as a character array reader for string input.
+
+\section{Array-Backed Output Streams}
+
+The array-backed output streams and writers buffer the bytes or
+characters written to them and provide access to them as an array
+at any time.
+
+A \code{ByteArrayOutputStream} provides an in-memory output stream
+that buffers any bytes written to it.  Because it uses arrays, the
+maximum amount of data that can be written to an output stream is
+\code{Integer.MAX\_VALUE} bytes.
+
+There is a no-argument constructor and one that specifies the initial
+capacity of the buffer.  
+
+The method \code{size()} returns the number of bytes that are buffered.
+
+All of the bytes written to a byte array output stream are available
+as a byte array using the method \code{toByteArray()}.  The returned
+array is a copy of the bytes buffered in an underlying array, so
+changes to it do not affect the output stream.  Calling this method
+does not remove the returned bytes from the buffer.
+
+Calling \code{reset()} removes all of the currently buffered bytes,
+allowing a byte array output stream to be reused.  
+
+Closing a byte-array output stream has no effect.  In particular, the
+bytes that have been buffered will still be available.
+
+A \code{CharArrayWriter} does the same thing for characters,
+implementing methods of the same name as byte-array output streams.
 
 
 \section{Compressed Streams}
@@ -986,7 +1194,7 @@ variable \code{System.in} is of type \code{InputStream}
 and may be used to read bytes from the shell's standard input.  The
 standard and error output streams, \code{System.out} and
 \code{System.err}, are provided constants of type \code{PrintStream}
-(see \refsec{io-printstream} for more information on print streams).
+(see \refsec{io-printstream-format} for more information on print streams).
 The standard output and error print streams use the platform's
 default encoding (see below for how to reset this).
 
@@ -1217,5 +1425,7 @@ memory mapped buffer is through the \code{RandomAccessFile} class in
 \code{DataInput} and \code{DataOutput} interfaces, which provide utilities
 to write arbitrary primitives and strings in addition to bytes.
 
+\section{Serialization}
 
 \section{Lingpipe I/O Utilities}
+
