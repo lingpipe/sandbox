@@ -1010,10 +1010,14 @@ a linefeed (\code{{\bk}n}), a carriage return (\code{{\bk}r}),
 or a linefeed followed by a carriage return (\code{{\bk}n{\bk}r}).
 
 
-\section{Array-Backed Input Streams}
+\section{Array-Backed Input and Output Streams}
 
 The array-backed input streams and readers read from arrays of data
-held in memory.
+held in memory.  The array-backed output streams and writers buffer
+the bytes or characters written to them and provide access to them as
+an array at any time.
+
+\subsection{The \code{ByteArrayInputStream} Class}
 
 The class \code{ByteArrayInputStream} wraps a byte array to produce an
 in-memory input stream.  The constructor
@@ -1026,6 +1030,8 @@ methods.
 
 Closing a byte array input stream has no effect whatsoever.
 
+\subsection{The \code{CharArrayReader} Class}
+
 The class \code{CharArrayReader} performs the same service, creating a
 \code{Reader} from an array of characters.  They support the same
 range of methods with almost all the same behaviors, only for
@@ -1037,11 +1043,8 @@ methods to throw I/O exceptions.
 There is also a class \code{StringReader} that does the same thing
 as a character array reader for string input.
 
-\section{Array-Backed Output Streams}
 
-The array-backed output streams and writers buffer the bytes or
-characters written to them and provide access to them as an array
-at any time.
+\subsection{The \code{ByteArrayOutputStream} Class}
 
 A \code{ByteArrayOutputStream} provides an in-memory output stream
 that buffers any bytes written to it.  Because it uses arrays, the
@@ -1065,11 +1068,242 @@ allowing a byte array output stream to be reused.
 Closing a byte-array output stream has no effect.  In particular, the
 bytes that have been buffered will still be available.
 
+\subsection{The \code{CharArrayWriter} Class}
+
 A \code{CharArrayWriter} does the same thing for characters,
 implementing methods of the same name as byte-array output streams.
 
 
 \section{Compressed Streams}
+
+In many cases, resources are compressed to save storage space or
+transfer bandwidth.  The standard Java package \code{java.util.zip}
+supports a general pair of streams, \code{DeflaterInputStream} and
+\code{InflaterInputStream}, for compressing and decompressing
+sequences of bytes.  Although new implementations may be written, Java
+builds in support for Gnu Zip (GZIP) compression and for the ZIP
+format for compressing archives consisting of multiple hierarchically
+named streams as an archive.  Java's own Java archive (JAR) files are
+essentially zipped archives, and are also implemented.   
+
+\subsection{GZIP Input and Output Streams}
+
+The GZIP input and output streams are constructed by wrapping anothr
+stream and optionally specifying a buffer size.  After construction,
+they behave just like any other stream. 
+
+The sample program \code{FileGZIP} wraps a file output
+stream in a GZIP output stream in order to implement
+a simple compression command-line program.  The work
+in the \code{main()} method is done by
+%
+\codeblock{FileGZIP.1}
+%
+Aside from the creation of the compressed stream, the
+rest is just a buffered stream copy.  
+
+The sample program \code{FileUnGZIP} uncompresses one
+file into the other, with all the work being done in
+the creation of the streams,
+%
+\codeblock{FileUnGZIP.1}
+%
+After the streams are created, the input is copied to the output as
+before.  Both programs print the input and output file lengths
+for convenience.
+
+The Ant target \code{file-gzip} calls the program with arguments
+the value of properties \code{file.in} and \code{file.out}.
+It's conventional to name a compressed file the same thing as the
+original file with a suffix denoting the type of compression,
+which for GZIP is \code{gz}. Here we compress the build file
+\code{build.xml}, which being XML, is highly redundant, and hence
+highly compressible.
+%
+\commandlinefollow{ant -Dfile.in=build.xml -Dfile.out=build.xml.gz file-gzip}
+\begin{verbatim}
+Original Size=4456
+Compressed Size=827
+\end{verbatim}
+%
+We can reverse this, uncompressing into a copy \code{build.xml.copy},
+so as not to disturb our original \code{build.xml} file,
+%
+\commandlinefollow{ant -Dfile.in=build.xml.gz
+  -Dfile.out=build.xml.copy file-ungzip}
+\begin{verbatim}
+Original Size=827
+Expanded Size=4456
+\end{verbatim}
+%
+The round trip results in \code{build.xml.copy} containing exactly the
+same bytes as \code{build.xml}.  You may verify the files contain the
+same content using the \code{diff} program from the command line,
+%
+\commandline{diff~build.xml~build.xml.copy}
+%
+which prints no output when the files being compared are the same.
+Along the same lines, you may verify that command-line versions of
+GZIP, such as \code{gunzip}, can handle the compressed file.%
+%
+\footnote{We recommend working in a temporary directory so as not to
+  destroy the original \code{build.xml} file.  The command-line
+  compressors and uncompressors typically work by creating an output
+  file which adds or removes the compression format's standard
+  suffix.}%
+\footnote{We've had trouble getting the compression programs to work from the
+  DOS command line.}
+%
+
+If you try to compress a stream that isn't in GZIP format, the input
+stream will throw an I/O exception with an explanatory message.
+
+
+\subsection{ZIP Input and Output Streams}
+
+ZIP streams enable the representation of compressed archives.  A ZIP
+archive consists of a sequence of entries.  Each entry contains meta
+information and data.  The data is accessed through an input stream
+for reading and output stream for writing.  The pattern for using
+the ZIP streams is somewhat unusual, so we will provide an example.
+
+\subsubsection{The \code{ZIPEntry} Class}
+
+The meta-information for an entry is encapsulated in an instance of
+\code{ZIPEntry} in the \code{java.util.zip} package.  Information
+about the entry including compressed size, CRC-32 checksum, time last
+modified, comments, and the entry's name are available through
+methods.
+
+ZIP archives may be arranged hierarchically.  Directory structure is
+described through entry names, with the forward slash (\code{/})
+acting as the separator.  The method \code{isDirectory()} is available
+to determine if an entry is a directory, which is signaled by its
+ending in a forward slash.
+
+For the purpose of creating archives, the zip entry values may
+be set with setter methods corresponding to the get methods.  This
+entails that the \code{ZIPEntry} class is mutable.
+
+\subsubsection{Creating a Zip Archive with Ant}
+
+To provide a zip file for experimental purposes, we've written
+an Ant target \code{example-zip} that builds a zipped archive
+using Ant's built-in \code{mkdir}, \code{echo}, and \code{zip}
+tasks.  The Ant code is straightforward,
+%
+\begin{verbatim}
+<property name="file.in.zip" 
+          value="build/demo-archive.zip"/>
+
+<target name="example-zip">
+  <mkdir dir="build/archive/dir"/>    
+  <echo message="Hello."  
+        encoding="UTF-8" 
+        file="build/archive/hello.txt"/>
+...
+  <zip destfile="${file.in.zip}"
+       basedir="build/archive" 
+       encoding="UTF-8"/>
+</target>
+\end{verbatim}
+%
+It uses the property \code{file.in.zip} to define the zipped archive's
+location.  The \code{mkdir} task makes a working directory in our
+build directory, which will be cleaned the next time the \code{clean}
+target is invoked.  The \code{echo} task writes text to a file with a
+specified encoding.  The ellided tasks write two more files.  We then
+call the \code{zip} target, specifying the target file, the directory
+which is being zipped up, and the encoding to use for file names.
+
+The demo file creation target needs to be run before the demo so
+there's something to unzip.
+%
+\commandlinefollow{ant example-zip}
+\begin{verbatim}
+Building zip: c:\lpb\src\io\build\demo-archive.zip
+\end{verbatim}
+%
+
+\subsubsection{Reading a ZIP Archive}
+
+A \code{ZIPInputStream} is created, and then the archive is read entry
+by entry.  The method \code{getNextEntry()} returns the
+\code{ZIPEntry} object for the next entry to be read, or \code{null}
+if there ae no more entries.  For each entry, we read its
+meta-information from the entry object and its data from the
+input stream.
+
+We provide a sample program \code{FileZipView} that reads a ZIP
+archive from a file and displays its properties and contents.  The
+work in the \code{main()} method is done by
+%
+\codeblock{FileZipView.1}
+%
+To get going, the file input stream is wrapped in a
+\code{ZipInputStream}.  The buffer \code{bs} is used for
+writing.  This loop uses the while-true-break idiom to
+run until a condition discovered in the middle of the body
+is discovered.  Here, we assign the entry variable to
+the next entry.  If it's \code{null}, we break out of the
+loop.  Otherwise, we print the properties of the entry
+using a subroutine with the obvious implementation, then
+read the bytes from the zip input stream and write
+them to standard output.
+  
+We have an Ant target \code{file-zip-view} that dumps out
+the contents of a Zip archive specified through the
+\code{file.in.zip} property.
+%
+\commandlinefollow{ant -Dfile.in.zip=build/demo-archive.zip
+  file-zip-view}
+\begin{verbatim}
+getName()=abc/     isDirectory()=true
+getSize()=0     getCompressedSize()=0
+new Date(getTime())=Tue Jul 20 18:21:36 EDT 2010
+getCrc()=0     getComment()=null
+---------------------------
+getName()=abc/bye.txt     isDirectory()=false
+getSize()=7     getCompressedSize()=9
+new Date(getTime())=Tue Jul 20 18:21:36 EDT 2010
+getCrc()=3258114536     getComment()=null
+Goodbye
+---------------------------
+...
+---------------------------
+getName()=hello.txt     isDirectory()=false     
+...
+Hello
+\end{verbatim}
+%
+We've moved lines together to save space and ellided the third entry
+and part of the fourth.  Each division is for an entry, and the
+commands used to access the properties are printed.  For instance, the
+first entry is a directory named \code{abc/}, the second entry is an
+ordinary entry named \code{abc/bye.txt}, implying containment in the
+first directory by naming.  The final entry is another ordinary entry
+named \code{hello.txt}, which isn't in any directory.  Note that the
+compressed size is larget than the uncompressed size, which is not
+unusual for a short (or random, or already compressed) sequence of
+bytes.
+
+After printing out all the properties for each entry, the program
+prints the contents by simply writing the bytes read directly to the
+standard output.  For example, the entry named \code{abc/bye.txt}
+contains the UTF-8 bytes for \code{Goodbye}.
+
+
+\subsubsection{Creating a Zip Archive}
+
+Zip archives may be created programmatically using
+\code{ZipOutputStream} by reversing the process by which they are
+read.  That requires creating \code{ZipEntry} objects for each entry
+in the archive and setting their properties.  The entry
+meta-information is then written to the archive using the
+\code{putNextEntry()} method on the Zip output stream, then writing
+the bytes to the stream.  The method \code{setMethod(int)} may be used
+with argument constants \code{STORED} for uncompressed entries
+and \code{DEFLATED} for compressed entries.
 
 
 \section{Accessing Resources from the Classpath}
