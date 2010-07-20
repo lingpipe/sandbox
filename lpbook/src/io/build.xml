@@ -131,12 +131,67 @@
     </java>
   </target>
 
+  <target name="file-gzip"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileGZIP"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${file.in}"/>
+      <arg value="${file.out}"/>
+    </java>
+  </target>
+
+  <target name="file-ungzip"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileUnGZIP"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${file.in}"/>
+      <arg value="${file.out}"/>
+    </java>
+  </target>
+
+  <property name="file.in.zip" 
+            value="build/demo-archive.zip"/>
+  <target name="example-zip">
+    <mkdir dir="build/archive/abc"/>    
+    <echo message="Hello" 
+          encoding="UTF-8"
+          file="build/archive/hello.txt"/>
+    <echo message="Goodbye" 
+          encoding="UTF-8"
+          file="build/archive/abc/bye.txt"/>
+    <echo message="Thanks for all the fish" 
+          encoding="UTF-8"
+          file="build/archive/abc/ps.txt"/>
+    <zip destfile="${file.in.zip}"
+         basedir="build/archive" 
+         encoding="UTF-8"/>
+  </target>
+      
+  
+  <target name="file-zip-view"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileZipView"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${file.in.zip}"/>
+    </java>
+  </target>
+
 
   <target name="run"
           depends="file-byte-count,
                    file-dump,
                    file-properties,
                    file-decode-encode,
+                   file-gzip,
+                   file-ungzip,
+                   example-zip,
+                   file-zip-view,
                    list-roots,
                    copy-files,
                    url-properties,
