@@ -223,6 +223,14 @@
           fork="true">
     </java>
   </target>
+
+  <target name="serial-proxied"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.SerialProxied"
+          classpathref="classpath"
+          fork="true">
+    </java>
+  </target>
   
 
   <target name="run"
@@ -237,6 +245,7 @@
                    list-roots,
                    copy-files,
                    object-io,
+                   serial-proxied,
                    url-properties,
                    url-read,
                    url-write-read"/>
