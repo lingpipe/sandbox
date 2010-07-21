@@ -1308,6 +1308,115 @@ and \code{DEFLATED} for compressed entries.
 
 \section{Accessing Resources from the Classpath}
 
+When distributing an application, it is convenient to package all the
+necessary files along with the compiled classes in a single Java
+archive (jar).  This is particularly useful in the context of
+servlets, which are themselves packaged in web archives (war), a kind
+of jar with extra meta-information.
+
+\subsection{Adding Resources to a Jar}
+
+Resources that will be accessed programatically are added to an
+archive file just like any other file.  We provide an Ant target
+\code{example-resource-jar} which may be used to create a jar
+at the path picked out by the property \code{resource.jar}.  
+%
+\begin{verbatim}
+  <property name="resource.jar"
+            value="build/demo-text.jar"/>
+
+  <target name="example-resource-jar">
+    <mkdir dir="build/resources/com/lingpipe/book/io"/>
+    <echo message="Hello from the jar."
+          encoding="UTF-8"
+          file="build/resources/com/lingpipe/book/io/hello.txt"/>
+    ...
+    <jar destfile="${resource.jar}">
+      <fileset dir="build/resources"
+               includes="**/*.txt"/>
+    </jar>
+  </target>
+\end{verbatim}
+%
+We define the default for the property \code{resource.jar} to be a
+file of the same name in the \code{build} directory (which is subject
+to cleaning by the \code{clean} target).  The target that builds the
+jar first makes a directory under \code{build/resources} into which
+files will be placed.  These are created by \code{echo} tasks, for
+instance creating a file \code{/com/lingpipe/book/io/hello.txt} under
+\code{build/resources}.  After the directory structure to be archived
+is created in \code{build/resources}, a \code{jar} task creates it,
+specifying that the archive should include all the files in
+\code{build/resources} that match the pattern \code{**/*.txt}, which
+is all files ending in \code{.txt}.
+
+This command should be run before the demo in the next section.
+%
+\commandlinefollow{ant -Dresource.jar=build/demo-text.jar example-resource-jar}
+\begin{verbatim}
+Building jar: c:\lpb\src\io\build\demo-text.jar
+\end{verbatim}
+
+
+\subsection{Resources as Input Streams}
+
+One of the ways in which an input stream may be accessed is by
+specifying a resource.  The system will then look for the resource on
+the classpath in a number of prespecified locations based on its name.
+
+The sample program \code{ResourceInput} reads the content of a
+resource from the classpath and writes it to the standard output.
+The part of the \code{main()} method that gets the resource as
+an input streami is
+%
+\codeblock{ResourceInput.1}
+%
+The name of the resource is read in as the first command-line
+argument.  Then the method \code{getResourceAsStream(String)} is
+called with the name of the resource.  It is called on the
+\code{Class} instance for the \code{ResourceInput} class, specified by
+the static constant \code{ResourceInput.class}.  The calling class is
+also important because the rules for locating the resource depend on
+the particular class loader used to load the class.
+
+If the name begins with a forward slash (\code{/}), it is taken to be
+an absolute path name.  Otherwise, it is a relative path.  Relative
+paths are interpreted relative to the package name of the class from
+which the get method was called.  Specifically, the package name of
+the class using forward slashes as separators is used a prefix for the
+name.  
+
+The Ant target \code{resource-input} look for a resource with the name
+given by property \code{resource.name}, adding the archive named by
+property \code{resource.jar} to the classpath.  The jar from which we
+are reading needs to be on the classpath.  How it gets there doesn't
+matter: you could put it on the command line, set an environment
+variable read by the JVM, use a servlet container's classpath, etc.
+Here, we just add the jar named by property \code{resource.jar} to the
+classpath in the Ant target.  Very often, we just bundle resources
+we want to read from the class path along with the compiled classes
+for an application.  This is convenient for everything from document
+type definitions (DTDs) to compiled statistical models.
+
+We run the program using the resource named \code{hello.txt}
+and the jar we created in the last section.
+%
+\commandlinefollow{ant -Dresource.jar=build/demo-text.jar
+  -Dresource.name=hello.txt resource-input}
+\begin{verbatim}
+Hello from the jar.
+\end{verbatim}
+%
+Note that we would get the same result if we specified the
+\code{resource.name} property to be the absolute path
+\code{/com/lingpipe/book/io/hello.txt} (note the initial forward
+slash).
+
+Once the stream is retrieved from the resource, it may be
+manipulated like any other stream.  It may be buffered,
+converted to a reader or object input stream, interpreted as
+an image, etc.
+
 
 
 \section{Print Streams and Formatted Output}\label{section:io-printstream-format}
@@ -1600,6 +1709,10 @@ Whether you can see all of the output of a page depends on your
 shell; you can save the output to a file and then view it in a
 browser.  
 
+A file URL may be used as well as an HTTP-based URL.  This allows an
+abstraction over the location of the bytes being read.  
+
+
 \subsection{URL Connections}
 
 The output stream method we used above, \code{getOutputStream()}, is
@@ -1625,6 +1738,8 @@ general web services.
 
 
 \section{The Input Source Abstraction}
+
+
 
 
 \section{File Channels and Memory Mapped Files}
