@@ -182,6 +182,40 @@
     </java>
   </target>
 
+  <property name="resource.jar"
+            value="build/demo-resource.jar"/>
+  <target name="example-resource-jar">
+    <mkdir dir="build/resources/com/lingpipe/book/io"/>
+    <echo message="Hello from the jar."
+          encoding="UTF-8"
+          file="build/resources/com/lingpipe/book/io/hello.txt"/>
+    <echo message="Goodbye from the jar."
+          encoding="UTF-8"
+          file="build/resources/com/lingpipe/book/io/goodbye.txt"/>
+    <echo message="I'm a jar full of resources."
+          encoding="UTF-8"
+          file="build/resources/READ-ME.txt"/>
+    <jar destfile="${resource.jar}">
+      <fileset dir="build/resources"
+               includes="**/*.txt"/>
+    </jar>
+  </target>
+
+  <property name="resource.name"
+            value="hello.txt"/>
+  <target name="resource-input"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.ResourceInput"
+          fork="true">
+      <classpath>
+        <pathelement location="${jar}"/>
+        <pathelement location="${resource.jar}"/>
+      </classpath>
+      <arg value="${resource.name}"/>
+    </java>
+  </target>
+  
+
 
   <target name="run"
           depends="file-byte-count,
