@@ -1956,12 +1956,134 @@ Java version 6 and deserialize in version 5.
 
 Java allows classes to take full control over their serialization and
 deserialization, which we take advantage of to overcome the
-limitations of default serialization.  Our recommended approach to
-serialization is to use the serialization proxy pattern.  
+limitations of default serialization, such as the restrictions on
+superclass behavior, backward compatibility with changing signatures,
+and the ability to create immutable objects without no-arg constructors.
 
+Our recommended approach to serialization is to use the serialization
+proxy pattern, which we describe in this section by example, with an
+implementation in \code{SerialProxied}.  The class begins by declaring
+it implements \code{Serializable}, then definining two final member
+variables in a single two-argument constructor.  
+%
+\codeblock{SerialProxied.1}
+%
+The finality of the variables mean that instances of the the class are
+immutable in the sense that once they are constructed they will never
+change.  We use immutable classes wherever possible in LingPipe,
+checking during construction that they are well formed.  Immutable
+classes are easy to reason about, especially in multi-threaded
+environments, because they are well formed when constructed and never
+change behavior.
 
+\subsubsection{Write Replace}
 
+Before applying default serialization, the object write methods first
+check, using reflection, if a class implements the
+\code{writeReplace()} method.  If it does, the return result of
+calling it is serialized instead of the class itself.  
 
+The \code{SerialProxied} class implements the \code{writeReplace()}
+method by returning a new instance of the \code{Serializer} class,
+which we show below
+%
+\codeblock{SerialProxied.2}
+%
+Note that the method is declared to be private, so it will not appear
+in the documentation for the class and may not be called by clients.
+Reflection is still able to access the method even though it's
+private. 
+
+\subsubsection{Serialization Proxy Implementation}
+
+The rest of the work's done in the class \code{Serializer}.  We
+declare the class within the \code{SerialProxied} class as a static
+nested class, \code{Serializer}.  
+%
+\codeblock{SerialProxied.3}
+%
+The class itself is declared to be private and static.  The full name
+of which would be
+\code{com.lingpipe.book.io.SerialProxied.Serializer}, but given its
+privacy, we only access it from within \code{SerialProxied} anyway.
+
+As we will shortly see, the \code{Externalizable} interface it
+implements extends \code{Serializable} with the ability to take full
+control over what is written and read.  The variables and methods
+within it are package protected, though they could also all be
+private.  There are two constructors, a no-arg constructor which is
+required to be public for deserialization, and a one-argument
+constructor used by the \code{writeReplace()} method shown above for
+serialization.
+
+The rest of the methods in the \code{Serializer} class are
+%
+\codeblock{SerialProxied.4}
+%
+We describe them in turn below.
+
+\subsubsection{The \code{writeExternal()} Method}
+
+The first method is the \code{writeExternal()} method, which writes to
+the specified object output.  In this case, it uses its within-class
+private access to retrieve and write the member variables of the
+\code{SerialProxied} object \code{mObj}.  
+
+\subsubsection{The \code{readExternal()} Method}
+
+The next method is the \code{readExternal()} method.  This method
+and its sister method, \code{writeExternal()} are specified in
+the \code{Externalizable} interface as public, so must be public here.%
+%
+\footnote{The \code{readExternal()} method is also declared to throw a
+  \code{ClassNotFoundException} to deal with cases when it fails to
+  deserialize an object using the object input's \code{readObject()}
+  method.  We don't need it here because we are only using the data
+  input methods \code{readUTF()} and \code{readInt()}.}
+
+The read method first reads the serialized string and integer from the
+specified object input.  Then it uses these to construct a new
+\code{SerialProxied} instance based on the strnig and count and
+assigns it to the object variable \code{mObj}.
+
+\subsubsection{The \code{readResolve()} Method}
+
+Finally, the \code{readResolve()} method is used to return the object
+that was read in.  This method is the deserialization counterpart to
+\code{writeReplace()}.  After the \code{readExternal()} method is
+called, if \code{readResolve()} is defined, its return value is
+returned as the result of deserialization.  Thus even though
+the \code{Serializer} is the one being serialized and deserialized,
+it is not visible at all to external clients.
+
+\subsubsection{Serial Version Variable}
+
+The final piece of the puzzle to take control over is the computation
+of the serial version identifier.  This allows serialization to
+bypass the computation of this identifier by inspecting the serialized
+object's signature by reflection.  This is not only more efficient,
+it also allows the signatures to be changed without affecting
+the ability to deserialize already serialized instances.
+
+If a class has already been fielded without declaring a serial version
+ID, the command-line program \code{serialver}, which is shipped with
+the Sun/Oracle JDK, may be used to compute the value that would be
+computed by reflection during serialization.  It only needs the
+classpath and full name of the class.
+%
+\commandlinefollow{serialver -classpath build/lp-book-io-4.0.jar com.lingpipe.book.io.SerialProxied}
+\begin{verbatim}
+static final long serialVersionUID = -688378786294424932L;
+\end{verbatim}
+%
+The output is a piece of Java code declaring a constant
+\code{serialVersionUID} with the current value of the identifier as
+computed by serialization.  We just insert that into the class
+\code{SerialProxied} class.  Technically, we may use whatever number
+we like here; it's only checked for consistency during serialization.
+
+We also need to insert the version ID constant into the nested static
+class \code{SerialProxied.Serializer}.
 
 
 \section{Lingpipe I/O Utilities}
