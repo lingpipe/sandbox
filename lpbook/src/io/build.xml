@@ -214,8 +214,16 @@
       <arg value="${resource.name}"/>
     </java>
   </target>
-  
 
+
+  <target name="object-io"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.ObjectIo"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+  
 
   <target name="run"
           depends="file-byte-count,
@@ -228,6 +236,7 @@
                    file-zip-view,
                    list-roots,
                    copy-files,
+                   object-io,
                    url-properties,
                    url-read,
                    url-write-read"/>
