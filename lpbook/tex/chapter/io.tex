@@ -1739,6 +1739,43 @@ general web services.
 
 \section{The Input Source Abstraction}
 
+The class \code{InputSource}, in standard Java package
+\code{org.xml.sax}, provides an input abstraction for XML documents
+with a rather awkward mutable implementation.  An input source
+specifies the source of its input as a URL, an input stream, or a
+reader.
+
+There is a constructor for each mode of input specification.
+\code{InputSource(String)} may be used with a system identifier in the
+form of a URL, and \code{InputSource(InputStream)} and
+\code{InputSource(Reader)} for stream data.  We recommend using one
+of these constructors and not the corresponding setters.
+immutable. 
+
+There is also a no-argument constructor \code{InputSource()} and
+setters for each of the input types.  The setters
+\code{setSystemId(String)}, \code{setByteStream(InputStream)} and
+\code{setCharacterStream(Reader)} correspond to the three contentful
+constructors.
+
+The system ID may be used to resolve relative paths within an XML
+document.  Thus setting a system ID may be useful even when a byte
+stream or a character stream has been specified. 
+
+Before using an input source, a character encoding may be specified
+using the \code{setEncoding(String)} method.  A further awkwardness
+arises because this method only makes sense in conjunction with an
+input stream or URL; readers supply already converted \code{char}
+values.
+
+It is up to the consumer of the input source to gather data from
+whatever source is specified.  Typically, consumers will try the
+reader, then the input stream, then the URL.  Because of the
+mutability of the class through the setters, an input source may have
+an input stream and a reader and a URL specified.
+
+
+
 
 
 
@@ -1775,6 +1812,8 @@ memory mapped buffer is through the \code{RandomAccessFile} class in
 to write arbitrary primitives and strings in addition to bytes.
 
 \section{Serialization}
+
+
 
 \section{Lingpipe I/O Utilities}
 
