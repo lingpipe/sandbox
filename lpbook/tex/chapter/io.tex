@@ -1976,7 +1976,7 @@ classes are easy to reason about, especially in multi-threaded
 environments, because they are well formed when constructed and never
 change behavior.
 
-\subsubsection{Write Replace}
+\subsubsection{The \code{writeReplace()} Method}
 
 Before applying default serialization, the object write methods first
 check, using reflection, if a class implements the
@@ -2088,3 +2088,126 @@ class \code{SerialProxied.Serializer}.
 
 \section{Lingpipe I/O Utilities}
 
+LingPipe provides a number of utilities for input and output,
+and we discuss the general-purpose ones in this section.  
+
+\subsection{The \code{FileLineReader} Class}
+
+To deal with line-based file formats, LingPipe provides the class
+\code{FileLineReader}, in the \code{com.aliasi.io} package.  This
+class extends \code{LineNumberReader} in \code{java.io}, which itself
+extends \code{BufferedReader}, so all the inherited methods are
+avaiable.  
+
+For convenience, the \code{FileLineReader} class implements the
+\code{Iterable<String>} interface, with \code{iterator()} returning an
+\code{Iterator<String>} that iterates over the lines produced by the
+\code{readLine()} method inherited from \code{BufferedReader}.  Being
+iterable enables for-loop syntax, as in
+%
+\begin{verbatim}
+File file = ...;
+FileLineReader lines = new FileLineReader(file,"UTF-8");
+for (String line : lines) {
+    ...
+}
+lines.close();
+\end{verbatim}
+%
+The ellided code block will then perform some operation on each line.
+
+There are also static utility methods, \code{readLines()} and
+\code{readLinesArray()}, both taking a file and character encoding
+name like the constructor, to read all of the lines of a file into
+either an array of type \code{String[]} or a list of type
+\code{List<String>}.
+
+\subsection{The \code{Files} Utility Class}
+
+Some standard file operations are implemented as static methods
+in the \code{Files} class from the package \code{com.aliasi.util}.
+
+\subsubsection{File Name Parsing}
+
+The \code{baseName(File)} and \code{extension(File)} methods split a
+file's name into the part before the last period (\code{.}) and the
+part after the alst period.  If there is no last period, the base name
+is the entire file name.
+
+\subsubsection{File Manipulation}
+
+The method \code{removeDescendants(File)} removes all the files
+contained in the specified directory recursively.  The
+\code{removeRecursive(File)} method removes the descendants of a file
+and the file itself.  The \code{copy(File,File)} method
+copies the content of one file into another.
+
+\subsubsection{Bulk Reads and Writes}
+
+There are methods to read bytes, characters, or a string from a file,
+and corresponding methods to write.  The methods all pass on any I/O
+exceptions they encounter.
+
+The method \code{readBytesFromFile(File)} returns the array of bytes
+corresponding to the file's contents, whereas
+\code{writeBytesToFile(byte[],File)} writes the specified bytes to the
+specified file.
+
+The methods \code{readCharsFromFile(File,String)} and
+\code{writeCharsToFile(char[],File,String)} do the same thing for
+\code{char} values.  These methods both require the character encoding
+to be specified as the final argument.  There are corresponding
+methods for strings, \code{readFromFile(File,String)} and
+\code{writeStringToFile(String,File,String)}.  Together, we can
+use these methods to transcode from one encoding to another,
+%
+\begin{verbatim}
+char[] cs = Files.readCharsFromFile(fileIn,enc1);
+Files.writeCharsToFile(cs,fileOut,enc2);
+\end{verbatim}
+
+
+\subsection{The \code{Streams} Utility Class}
+
+The class \code{Streams} in the package \code{com.aliasi.io} provides
+static utility methods for dealing with byte and character streams.  
+
+\subsubsection{Quiet Close Methods}
+
+The method \code{closeQuietly(Closeable)} closes the specified
+closeable object, catching and ignoring any I/O exceptions raised
+by the close operation.  If the specified object is null, the
+quiet close method returns.
+
+The method \code{closeInputSource(InputSource)} closes the byte
+and character streams of the specified input source quietly, as
+if by the \code{closeQuietly()} method.
+
+\subsubsection{Bulk Reads}
+
+There are utility bulk read methods that buffer inputs and return them
+as an array.  Special utility methods are needed because the amount of
+data available or read from a stream is unpredictable.  Bulk writing,
+on teh other hand, is built into output streams and writers
+themselves.
+
+The bulk read method \code{toByteArray(InputStream)} reads all of the
+bytes from the input stream returning them as an array.  The method
+\code{toCharArray(Reader)} does the same for \code{char} values.
+
+The method \code{toCharArray(InputSource)} reads from an input source,
+using the reader if available, and if not, the input stream using
+either the specified character encoding or the platfrom default, and
+barring that, reads from the input source's system identifier (URL).
+
+The method \code{toCharArray(InputStream,String)} reads an array of
+\code{char} values by reading bytes from the specified input stream
+and converts them to \code{char} values using the specified character
+encoding. 
+
+\subsubsection{Copying Streams}
+
+The method \code{copy(InputStream,OutputStream)} reads bytes from the
+specified input stream until the end of stream, writing what it finds
+to the output stream.  The \code{copy(Reader,Writer)} does the same
+thing for \code{char} value streams.
