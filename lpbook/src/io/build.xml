@@ -231,10 +231,19 @@
           fork="true">
     </java>
   </target>
+
+  <target name="abstract-externalized"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.AbstractExternalized"
+          classpathref="classpath"
+          fork="true">
+    </java>
+  </target>
   
 
   <target name="run"
-          depends="file-byte-count,
+          depends="abstract-externalized,
+                   file-byte-count,
                    file-dump,
                    file-properties,
                    file-decode-encode,
