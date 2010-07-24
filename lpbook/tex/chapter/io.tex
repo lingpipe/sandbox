@@ -1952,7 +1952,7 @@ as that used to deserialize.  Thus it is not possible to serialize in
 Java version 6 and deserialize in version 5.
 
 
-\subsection{The Serialization Proxy Pattern}
+\subsection{The Serialization Proxy Pattern}\label{section:io-serialization-proxy}
 
 Java allows classes to take full control over their serialization and
 deserialization, which we take advantage of to overcome the
@@ -2211,3 +2211,61 @@ The method \code{copy(InputStream,OutputStream)} reads bytes from the
 specified input stream until the end of stream, writing what it finds
 to the output stream.  The \code{copy(Reader,Writer)} does the same
 thing for \code{char} value streams.
+
+\subsection{The \code{Compilable} Interface}
+
+LingPipe defines the interface \code{Compilable} in the package
+\code{com.aliasi.util} for classes that define a compiled
+representation. 
+
+The interface has a single method, \code{compileTo(ObjectOutput)},
+used for compiling an object to an object output stream.  Like all I/O
+interface methods, it's defined to throw an \code{IOException}.  The
+method is used just like the \code{writeExternal(ObjectOutput)} method
+from Java's \code{Externalizable} interface.  It is assumed that only
+whatever is written, deserialization will produce a single object that
+is the compiled form of the object that was compiled.  
+
+Many of LingPipe's statistical models, such as language models,
+classifiers and HMMs have implementations that allow training data to
+be added incrementally.  The classes implementing these models are
+often declared to be both \code{Serializable} and \code{Compilable}.
+If they are serializable, the standard serialization followed by
+deserialization typically produces an object in the same state and
+of the same class as the one serialized.  If a model's compilable,
+a compilation followed by deserialization typically produces an
+object implementing the same model more efficiently, but without the
+ability to be updated with new training data. 
+
+\subsection{The \code{AbstractExternalizable} Class}
+
+LingPipe provides a dual-purpose class \code{AbstractExternalizable}
+in the package \code{com.aliasi.util}.  This class provides static
+utility methods for dealing with serializable and compilable objects.
+It also provides an abstract base class for implementing the
+serialization proxy pattern, which was described in
+\refsec{io-serialization-proxy}.  The class is declared to implement
+\code{Externalizable}, and the \code{writeExternal(ObjectOutput)}
+method from that interface is declared to be abstract and thus must be
+implemented by a concrete subclass.  The method
+\code{readExternal(ObjectInput)} is implemented by
+\code{AbstractExternalizable}, as is the serialization method
+\code{readResolve()}.  The other abstract method that must be
+implemented is \code{read(ObjectInput)}, which returns an
+object.  This method is called by \code{readExternal()} and
+the object it returns stored to be used as the return value
+for \code{readResolve()}.
+
+We provide an example class \code{AbstractExternalized} that parallels
+our earlier example \code{SerialProxied} (see
+\refsec{io-serialization-proxy}, with the
+\code{AbstractExternalizable} interface doing some of the work.  The
+only thing that changes is the declaration of the externalizer,
+%
+\codeblock{AbstractExternalized.1}
+%
+and the read method, which now returns an object rather than
+assigning it,
+%
+\codeblock{AbstractExternalized.2}
+
