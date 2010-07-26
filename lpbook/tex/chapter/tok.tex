@@ -1,0 +1,126 @@
+\chapter{Tokenization}\label{chapter:tokenization}
+
+Many natural-language processing algorithms operate at the word level,
+such as most part-of-speech taggers and named-entity chunkers, some
+classifiers, some parameterizations of spelling correction, etc.
+
+A token is a generalized kind of word that is derived from segmenting
+an input character sequence and potentially transforming the segments.
+For instance, a search engine query like
+\searchquery{London restaurants} might be converted into a boolean
+search for the (case normalized) token \stringmention{london} and the
+(plurality normalized) token \stringmention{restaurant}.
+
+\section{Tokenizers and Tokenizer Factories}
+
+LingPipe provides a package \code{com.aliasi.tokenizer} for handling
+tokenization.  
+
+\subsection{The \code{TokenizerFactory} Interface}
+
+The \code{TokenizerFactory} factory interface defines a single method,
+\code{tokenizer(char[],int,int)}, which takes a slice of a character
+array as an argument and returns an instance of \code{Tokenizer}.
+
+LingPipe's tokenizer factory implementations come in two flavors Basic
+tokenizer factories are constructed from simple parameters.  For the
+basic tokenizers with no parameters, a singleton instance is supplied
+as a static constant in the class.  
+
+Tokenizer filters are constructed from other tokenizer factories and
+modify their outputs in some way, such as by case normalization,
+stemming, or stop-word filtering.
+
+\subsection{The \code{Tokenizer} Base Class}
+
+All tokenizers extend the abstract base class \code{Tokenizer}.
+Tokenizers provide a stream of tokens.  An instance of
+\code{Tokenizer} represents the state of tokenizing a particular
+string.  
+
+\subsubsection{Constructing a Tokenizer}
+
+There is no state represented in the \code{Tokenizer} abstract class,
+so there is a single no-argument constructor \code{Tokenizer()}.
+
+Because tokenizers are usually created through the 
+\code{TokenizerFactory} interface, most.
+classes extending \code{Tokenizer} are not delcared to be public.
+Instead, only the factory is visible, and the documentation for a
+tokenizer's behavior will be in the factory's class documentation.
+
+\subsubsection{Streaming Tokens}
+
+The only method that is required to be implemented is
+\code{nextToken()}, which returns the next token in the token stream
+as a string, or \code{null} if there are no more tokens.  There is no
+reference in a tokenizer itself to the underlying sequence of
+characters.  
+
+\subsubsection{Streaming Whitespaces}
+
+The method \code{nextWhitespace()} returns the next whitespace from
+the tokenizer.  ``White space'' is the general term for the material
+between tokens, because in most cases, all non-whitespace is part of
+some token.  LingPipe's \code{Tokenizer} class generalizes the notion
+of whitespace to arbitrary strings.
+
+Each token is preceded by a whitespace and the sequence ends with a
+whitespace.  That is, the sequence goes whitespace, token, whitespace,
+token, \ldots, whitespace, token, whitespace.  So the number of
+whitespaces is one greater than the number of tokens, and the minimum
+output of a tokenizer is a single whitespace.
+
+If the \code{nextWhitespace()} method is not implemented by a
+subclass, the implementation inherited from the \code{Tokenizer} base
+class simply returns a string consisting of a single space character,
+\unicode{0020}, \unicodedesc{space}.
+
+If the \code{nextWhitespace()} method is implemented to return the
+text between tokens, tokens do not overlap, and the string for a token
+is not modified in any way, then concatenating the sequence of
+whitespaces and tokens will produce the underlying characters that
+were tokenized.
+
+\subsubsection{Token Positions}
+
+We often wish to maintain the position of a token in the underlying
+text.  Given that tokens may be modified or even dropped altogether,
+the position of a token is not necessarily going to be recoverable
+from the sequence of tokens and whitespaces.  So the \code{Tokenizer}
+class supplies methods \code{lastTokenStartPosition()} and
+\code{lastTokenEndPosition()}, which return the index of the first
+character and of one past the last character.  If no tokens have yet
+been returned, these methods both return -1.  These positions are
+relative to the slice being tokenized, not to the underlying character
+array.  
+
+The token position methods are implemented in the \code{Tokenizer}
+base class to throw an \code{UnsupportedOperationException}.
+Subclasses that want token positions should override these methods.
+Tokenizer filters should almost always just pass the positions of the
+tokens being modified.
+
+\subsubsection{Iteration}
+
+The method \code{iterator()} returns an iterator over strings
+representing tokens.  In the \code{Tokenzer} base class, the iterator
+is defined by delegation to the \code{nextToken()} method.  Thus
+subclasses do not usually need to redefine this method.
+
+This \code{iterator()} method allows the \code{Tokenizer} class to
+implement the \code{Iterable<String>} interface.  Thus the tokens
+can be read from a tokenizer with a for loop.  Given a tokenizer
+factory \code{tokFac} and the character slice for input, the
+usual idiom is
+%
+\begin{verbatim}
+Tokenizer tokenizer = tokFac.tokenizer(cs,start,length);
+for (String token : tokenizer) { ... }
+\end{verbatim}
+
+
+ 
+
+
+
