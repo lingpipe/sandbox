@@ -31,6 +31,11 @@ Tokenizer filters are constructed from other tokenizer factories and
 modify their outputs in some way, such as by case normalization,
 stemming, or stop-word filtering.
 
+In order to bundle a tokenizer factory with a model, it must be
+serializable.  All of LingPipe's tokenizer factories are serializable,
+including ones made up by composing a sequence of filters.
+
+
 \subsection{The \code{Tokenizer} Base Class}
 
 All tokenizers extend the abstract base class \code{Tokenizer}.
@@ -56,31 +61,6 @@ The only method that is required to be implemented is
 as a string, or \code{null} if there are no more tokens.  There is no
 reference in a tokenizer itself to the underlying sequence of
 characters.  
-
-\subsubsection{Streaming Whitespaces}
-
-The method \code{nextWhitespace()} returns the next whitespace from
-the tokenizer.  ``White space'' is the general term for the material
-between tokens, because in most cases, all non-whitespace is part of
-some token.  LingPipe's \code{Tokenizer} class generalizes the notion
-of whitespace to arbitrary strings.
-
-Each token is preceded by a whitespace and the sequence ends with a
-whitespace.  That is, the sequence goes whitespace, token, whitespace,
-token, \ldots, whitespace, token, whitespace.  So the number of
-whitespaces is one greater than the number of tokens, and the minimum
-output of a tokenizer is a single whitespace.
-
-If the \code{nextWhitespace()} method is not implemented by a
-subclass, the implementation inherited from the \code{Tokenizer} base
-class simply returns a string consisting of a single space character,
-\unicode{0020}, \unicodedesc{space}.
-
-If the \code{nextWhitespace()} method is implemented to return the
-text between tokens, tokens do not overlap, and the string for a token
-is not modified in any way, then concatenating the sequence of
-whitespaces and tokens will produce the underlying characters that
-were tokenized.
 
 \subsubsection{Token Positions}
 
@@ -119,8 +99,186 @@ Tokenizer tokenizer = tokFac.tokenizer(cs,start,length);
 for (String token : tokenizer) { ... }
 \end{verbatim}
 
+\subsubsection{Bulk Tokenization}
+
+The method \code{tokenize()} returns an array of the remaining tokens
+and \code{tokenize(List,List)} writes the remaining tokens and
+whitespaces to the specified list.
+
+\subsubsection{Serializability and Thread Safety}
+
+Because they involve dynamic state, tokenizers are almost never
+serializable and almost never thread safe.  
 
  
+\subsubsection{Streaming Whitespaces}
 
+Over time, LingPipe has moved from the use of whitespace returned from
+tokenizers to token start and end positions.  Unless otherwise noted,
+tokenizers need not concern themselves with whitespace.  LingPipe's
+built-in tokenizers almost all define the whitespace to be the 
+string between the last token and the next token, or the empty string
+if that is not well defined.
+
+The method \code{nextWhitespace()} returns the next whitespace from
+the tokenizer.  ``White space'' is the general term for the material
+between tokens, because in most cases, all non-whitespace is part of
+some token.  LingPipe's \code{Tokenizer} class generalizes the notion
+of whitespace to arbitrary strings.
+
+Each token is preceded by a whitespace and the sequence ends with a
+whitespace.  That is, the sequence goes whitespace, token, whitespace,
+token, \ldots, whitespace, token, whitespace.  So the number of
+whitespaces is one greater than the number of tokens, and the minimum
+output of a tokenizer is a single whitespace.
+
+If the \code{nextWhitespace()} method is not implemented by a
+subclass, the implementation inherited from the \code{Tokenizer} base
+class simply returns a string consisting of a single space character,
+\unicode{0020}, \unicodedesc{space}.
+
+If the \code{nextWhitespace()} method is implemented to return the
+text between tokens, tokens do not overlap, and the string for a token
+is not modified in any way, then concatenating the sequence of
+whitespaces and tokens will produce the underlying characters that
+were tokenized.
+
+
+\subsection{Token Display Demo}
+
+We provide a demo program \code{DisplayTokens}, which runs a tokenizer
+over the command-line argument.  The \code{main()} method of the command
+calls a utility method on a string variable \code{text} supplied
+on the command line, using a built-in tokenizer
+%
+\codeblock{DisplayTokens.1}
+%
+The \code{IndoEuropeanTokenizerFactory} class is in
+\code{com.aliasi.tokenizer}, and provides a reusable instance through the static constant
+\code{INSTANCE}.
+
+The \code{displayTextPositions()} method just prints out the string on
+a single line followed by lines providing indexes into the string.
+This method won't display properly if there are newlines in the string
+itself.
+
+The work is actually done in the subroutine, the body of which is
+%
+\codeblock{DisplayTokens.2}
+%
+We first convert the character sequence \code{in} to a 
+character array using the utility method \code{toCharArray(CharSequence)}
+from the class \code{Strings} in the package \code{com.aliasi.util}.
+then, we create the tokenizer from the tokenizer factory.
+Next, we just iterate over the tokens, extract their start and end
+positions, and print the results.
+
+We provide a corresponding Ant target \code{display-tokens}, which
+is given a single command-line argument consisting of the value of
+the property \code{text}.  
+%
+\commandlinefollow{ant -Dtext="The note says, 'Mr. Sutton-Smith owes \$15.20.'" display-tokens}
+\begin{verbatim}
+The note says, 'Mr. Sutton-Smith owes $15.20.'
+0123456789012345678901234567890123456789012345
+0         1         2         3         4
+
+START   END  TOKEN           START   END TOKEN
+    0     3  |The|              26    27  |-|
+    4     8  |note|             27    32  |Smith|
+    9    13  |says|             33    37  |owes|
+   13    14  |,|                38    39  |$|
+   15    16  |'|                39    44  |15.20|
+   16    18  |Mr|               44    45  |.|
+   18    19  |.|                45    46  |'|
+   20    26  |Sutton|
+\end{verbatim}
+%
+In writing the string, we put the ones-place indexes below it, then
+the tens-place indexes, and so on.  Because we count from zero, the
+very first \charmention{T} has index 0, whereas the \charmention{M} in
+\stringmention{Mr} has index 16 and the final apostrophe index 45.
+The string is 46 characters long; the last index is always one less
+than the length.
+
+We then show the tokens along with their start and end positions.  As
+always, the start is the index of the first character and the end is
+one past the index of the last character.  Thus the name
+\stringmention{Smith} starts at character 27 and ends on character 31.
+This also means that the end position of one token may be the start
+position of the next when there is no space between them.  For
+example, \charmention{says} has an end position of 13 (which is
+exclusive) and the following comma a start position of 13 (which is
+inclusive).  
+
+
+\section{LingPipe's Base Tokenizer Factories}
+
+LingPipe provides several base tokenizer factories.  These may be combined
+with filters, which we describe in the next section, to create compound
+tokenizers.
+
+\subsection{The \code{IndoEuropeanTokenizerFactory} Class}
+
+LingPipe's \code{IndoEuropeanTokenizer} is a fairly fine-grained
+tokenizer in the sense that it splits most things apart.  The notable
+exception in this instance is the number \stringmention{15.20}, which
+is kept as a whole token.  Basically, it consumes as large a token
+as possible according to the following classes.
+
+\subsubsection{Kinds of Tokens}
+
+An alphanumeric token is a sequence of one or more digits or letters
+as defined by the utility methods \code{isDigit()} and
+\code{isCharacter()} methods in Java's \code{Character} class.  Thus
+\stringmention{aaa}, \stringmention{A1}, and \stringmention{1234} are all
+considered single tokens.
+
+A token may consist of a combination of digits with any number of
+token-internal periods or commas.  Thus \stringmention{1.4.2} is
+considered a token, as is \stringmention{12,493.27}, but
+\stringmention{a2.1} is three tokens, \stringmention{a2},
+\stringmention{.} (a period), and \stringmention{1}.
+
+A token may be an arbitrarily long sequence of hyphens (\code{-}) or
+an arbitrarily long sequence of equal signs (\code{=}).  The former
+are often used as en-dashes and em-dashes in ASCII-formatted text,
+and longer sequences are often used for document structure.
+
+Double grave accents (\code{``}) and double apostrophes (\code{''}) are
+treated as single tokens, as they are often used to indicate quotations.
+
+All other non-space characters, such as question marks or ampersands,
+are considered tokens themselves.
+
+\subsubsection{Construction}
+
+The static constant \code{INSTANCE} refers to an instance of
+\code{IndoEuropeanTokenizerFactory} that may be reused.   The
+no-argument constructor may also be used.
+
+
+\subsubsection{Thread Safety and Serializability}
+
+The \code{IndoEuropeanTokenizerFactory} class is both thread safe and
+serializable.  The deserialized object will be reference identical
+to the factory picked out by the \code{INSTANCE} constant.
+
+
+
+\subsection{The \code{CharacterTokenizerFactory} Class}
+
+The \code{CharacterTokenizerFactory} treats each non-whitespace
+character as a token.  As of LingPipe 4.0, this is each \code{char}
+value, so unicode code points outside of the basic multilingual plane
+(BMP) will produce two tokens (see \refsec{utf-16}).%
+%
+\footnote{In the future, this default behavior may be extended to
+allow the class to be configured so that it treats characters outside
+of the BMP as single tokens.}
+%
+The class is thread safe and serializable.  There is no constructor,
+only is a static constant \code{INSTANCE} that is also the result of
+deserialization.
 
 
