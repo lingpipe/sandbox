@@ -43,7 +43,35 @@
     </java>
   </target>
 
+  <property name="regex" value="\S+"/>
+  <property name="flags" value="0"/>
+  <target name="regex-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.RegexTokens"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${regex}"/>
+      <arg value="${flags}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+
+  <property name="minNGram" value="2"/>
+  <property name="maxNGram" value="3"/>
+  <target name="ngram-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.NGramTokens"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${minNGram}"/>
+      <arg value="${maxNGram}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+
   <target name="run"
-          depends="display-tokens"/>
+          depends="display-tokens,
+                   regex-tokens,
+                   ngram-tokens"/>
 
 </project>

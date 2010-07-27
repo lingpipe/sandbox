@@ -38,8 +38,9 @@ public class SerializedSingleton implements Serializable {
 
         @Override
         public void writeExternal(ObjectOutput out) { }
+
+        static final long serialVersionUID = 8538000269877150506L;
     }
-/*x*/
 
     public static void main(String[] args) 
         throws IOException, ClassNotFoundException {
@@ -49,8 +50,8 @@ public class SerializedSingleton implements Serializable {
         Object deser = AbstractExternalizable.serializeDeserialize(s);
         boolean same = (s == deser);
         /*x*/
-        System.out.println("Same object=" + same);
+        System.out.println("same=" + same);
     }
     
-
+    static final long serialVersionUID = 8908457830707847716L;
 }
