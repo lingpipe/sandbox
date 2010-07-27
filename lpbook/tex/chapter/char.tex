@@ -770,7 +770,7 @@ Equality and hash codes are also defined similarly, so that two
 character objects are equal if and only if they reference the same
 underlying character.
 
-\subsection{Static Utilities}
+\subsection{Static Utilities}\label{section:char-character-utils}
 
 The \code{Character} class supports a wide range of Unicode-sensitive
 static utility constants and methods in addition to the factory method
@@ -1127,6 +1127,17 @@ the length of a string in unicode code points, there is the method
 code points coded by the specified range of underlying characters.  It
 is up to the user to get the boundaries correct.
 
+\subsection{Testing String Validity}
+
+LingPipe provides a static utility method
+\code{isValidUTF16(CharSequence)} in the \code{Strings} class in
+the \code{com.aliasi.util} package.  This method checks that every
+high surrogate UTF-16 \code{char} value is followed by a low surrogate
+UTF-16 value.  Surrogacy is defined as by Java's
+\code{Character.isHighSurrogate()} and
+\code{Character.isLowSurrogate()} methods (see \refsec{char-character-utils}).
+
+
 \subsection{Interning Canonical Representations}\label{section:string-intern}
 
 The JVM keeps an underlying pool of string constants.  A call to
@@ -1330,13 +1341,22 @@ There is also a \code{setLength(int)} method which changes the length
 of the charactr sequence, either shrinking or extending the underlying
 buffer as necessary.
 
-\subsection{Reversing Character Arrays, Not Strings}
+\subsection{Reversing Strings}
 
-The method \code{reverse()} reverses the order of the \code{char}
-values in the buffer.  This is just fine if the characters only encode
-Unicode code points at or below \unicode{FFFF}, because there is one
-\code{char} per code point.  If there are larger code points, the
-reversed array of characters is no longer a legal UTF-16 sequence.
+The method \code{reverse()} method in \code{StringBuilder} reverses
+the \code{char} values in a string, except valid high-low surrogate
+pairs, which maintain the same ordering.  Thus if the string builder
+holds a well-formed UTF-16 sequence representing a sequence of code
+points, the output will be the well-formed UTF-16 sequence
+representing the reversed sequence of code points.  For instance, the
+String literal \code{"{\bk}uDC00{\bk}uD800"} constructs a string whose
+\code{length()} returns 2.  Because \code{{\bk}uDC00} is a
+high-surrogate UTF-16 \code{char} value and \code{{\bk}uD800} is a
+low-surrogate, together they pick out the single code point
+\unicode{10000}, the first code point beyond the basic multilingual
+plane.  We can verify this by evaluating the expression
+\code{"{\bk}uDC00{\bk}uD800".codePointAt(0)} and verifying the result 
+is 0x10000.
 
 
 \subsection{Chaining and String Concatenation}

@@ -239,6 +239,15 @@
           fork="true">
     </java>
   </target>
+
+
+  <target name="serialized-singleton"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.SerializedSingleton"
+          classpathref="classpath"
+          fork="true">
+    </java>
+  </target>
   
 
   <target name="run"
@@ -255,6 +264,7 @@
                    copy-files,
                    object-io,
                    serial-proxied,
+                   serialized-singleton,
                    url-properties,
                    url-read,
                    url-write-read"/>

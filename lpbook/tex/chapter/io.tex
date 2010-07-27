@@ -2274,5 +2274,35 @@ assigning it,
 %
 \codeblock{AbstractExternalized.2}
 
-\subsubsection{Serialization and Compilation Utilities}
+This class makes it particularly easy to implement serialization for a
+singleton.  We provide an example in \code{SerializedSingleton}.  Following
+the usual singleton pattern, we have a private constructor and a public
+static constant,
+%
+%
+\codeblock{SerializedSingleton.1}
+%
+We then have the usual definition of \code{writeReplace()}, and a
+particularly simple implementation of the serialization proxy itself,
+%
+\codeblock{SerializedSingleton.2}
+%
+We have not shown the serial version ID definitions, but they are in
+the file.  If the nested static class had been declared public, we
+wouldn't have needed to define the public no-argument constructor.
 
+To test that it works, we have a simple \code{main()} method,
+%
+\codeblock{SerializedSingleton.3}
+%
+which serializes and deserializes the instance using the 
+LingPipe utility in \code{AbstractExternalizable}, then tests
+for reference equality.
+
+We can run this code using the Ant target \code{serialized-singleton},
+which takes no arguments,
+%
+\commandlinefollow{ant serialized-singleton}
+\begin{verbatim}
+Same object=true
+\end{verbatim}
