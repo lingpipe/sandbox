@@ -396,17 +396,30 @@ START   END TOKEN          START   END TOKEN
 \end{verbatim}
 %
 You can see from the output that the tokenizer first outputs the
-1-grams (unigrams), then the 2-grams (bigrams), then the 3-grams (trigrams).
+1-grams , then the 2-grams, then the 3-grams.  These are typically
+referred to as ``unigrams,'' ``bigrams,'' and ``trigrams.''%
 %
 \footnote{Curiously, we get a transition in common usage from Latin to Greek at
 4-grams (tetragrams), and 5-grams (pentagrams), 6-grams (hexagrams)
 etc.  Some authors stick to all Greek prefixes, preferring the terms
 ``monogram'' and ``digram'' to ``unigram'' and ``bigram.''}
+%
+Note that the spaces and punctuation are treated like any other
+characters.  For instance, the unigram token spanning positions 1 to 2
+is the string consisting of a single space character and the one
+spanning from 5 to 6 is the string consisting of a single period
+character.  The first bigram token, spanning from positions 0 to 2, is
+the two-character string consisting of an uppercase I followed by a
+space.  By the time we get to trigrams, we begin to get cross-word
+tokens, like the trigram token spanning from position 0 to 3,
+consistinf of an uppercase I, space, and lowercase r.
 
-
-
-
-
+In terms of the information conveyed, the spaces before and after
+words help define word boundaries.  Without the bigram token spanning
+1 to 3 or the trigram spanning 1 to 4, we wouldn't know that the
+lowercase r started a word.  The cross-word ngram tokens help define
+the transitions between words.  With long enough ngrams, we can even
+get three-word effects, 
 
 
 \subsection{The \code{LineTokenizerFactory} Class}
@@ -429,6 +442,44 @@ safe.
 
 Following the same filter-based pattern as we saw for Java's I/O,
 LingPipe provides a number of classes whose job is to filter the
-tokens from an embedded tokenizer.  In all cases, there will be
-a base tokenizer providing tokens, the output 
+tokens from an embedded tokenizer.  In all cases, there will be a base
+tokenizer producing a tokenizer which is then modified by a filter to
+produce a different tokenizer.  
+
+The reason the tokenizer is modified rather than, say, the characters
+being tokenized, is that we usually want to be able to link the tokens
+back to the original text.  If we allow an arbitrary transformation of
+the text, that's no longer possible.  Thus if the text itself needs to
+be modified, that should be done externally to tokenization.
+
+\subsection{The \code{ModifiedTokenizerFactory} Abstract Class}
+
+The abstract class \code{ModifiedTokenizerFactory} in the package
+\code{com.aliasi.tokenizer} provides a basis for filtered tokenizers
+implemented in the usual way.  Like many LingPipe filter classes, a
+modified tokenizer factory is immutable.  Thus the base tokenizer
+factory it contains must be provided at construction time.  This is
+done through the single constructor
+\code{ModifiedTokenizerFactory(TokenizerFactory)}.  The specified
+tokenizer factory will be stored, and is made available through the
+method \code{baseTokenizerFactory()} (it is common to see protected
+member variables here, but we prefer methods).
+
+It then implements the \code{tokenizer(char[],int,int)} method in the
+tokenizer factory interface using the base tokenizer factory to 
+produce a tokenizer which is then passed through the method
+\code{modify(Tokenizer)}, which returns a \code{Tokenizer} that may
+then be returned.  This is perhaps easier to see in code,
+%
+\begin{verbatim}
+protected abstract Tokenizer modify(Tokenizer tokenizer);
+
+public Tokenizer tokenizer(char[] cs, int start, int length) {
+    TokenizerFactory tokFact = baseTokenizerFactory();
+    Tokenizer tok = tokFact.tokenizer(cs,start,length);
+    return modify(tok);
+}
+\end{verbatim}
+
+
 
