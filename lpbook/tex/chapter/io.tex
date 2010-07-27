@@ -1358,7 +1358,7 @@ Building jar: c:\lpb\src\io\build\demo-text.jar
 \end{verbatim}
 
 
-\subsection{Resources as Input Streams}
+\subsection{Resources as Input Streams}\label{section:io-resource-input}
 
 One of the ways in which an input stream may be accessed is by
 specifying a resource.  The system will then look for the resource on
@@ -2279,7 +2279,6 @@ singleton.  We provide an example in \code{SerializedSingleton}.  Following
 the usual singleton pattern, we have a private constructor and a public
 static constant,
 %
-%
 \codeblock{SerializedSingleton.1}
 %
 We then have the usual definition of \code{writeReplace()}, and a
@@ -2287,9 +2286,9 @@ particularly simple implementation of the serialization proxy itself,
 %
 \codeblock{SerializedSingleton.2}
 %
-We have not shown the serial version ID definitions, but they are in
-the file.  If the nested static class had been declared public, we
-wouldn't have needed to define the public no-argument constructor.
+If the nested static class had been declared public, we wouldn't have
+needed to define the public no-argument constructor.  The version ID
+is optional, but highly recommended for backward compatibility.
 
 To test that it works, we have a simple \code{main()} method,
 %
@@ -2304,5 +2303,63 @@ which takes no arguments,
 %
 \commandlinefollow{ant serialized-singleton}
 \begin{verbatim}
-Same object=true
+same=true
 \end{verbatim}
+
+\subsubsection{Serailization Proxy Utilities}
+
+The \code{AbstractExternalizable} class defines a number of static
+utility methods supporting serialization of arrays.  These methods
+write the number of members then each member of the array in turn.
+For instance, \code{writeInts(int[],ObjectOutput)} writes an array of
+integers to an object output and \code{readInts(ObjectInput)} reads
+and returns an integer array that was serialized using the
+\code{writeInts()} method.  There are similar methods for \code{double},
+\code{float}, and \code{String}.
+
+The method \code{compileOrSerialize(Object,ObjectOutput)} will attempt
+to compile the specified object if it is compilable, otherwise it
+will try to serialize it to the specified object output.  It will throw
+a \code{NotSerializableException} if the object is neither serializable
+nor compilable.  The method \code{serializeOrCompile(Object,ObjectOutput)}
+tries the operations in the opposite order, compiling only if the
+object is nor serializable.
+
+\subsubsection{General Serialization Utilities}
+
+The \code{AbstractExternalizable} class defines a number of
+general-purpose methods for supporting Java's serialization and 
+LingPipe's compilation.
+
+There are in-memory versions of compilation and serialization.  The
+method \code{compile(Compilable)} returns the result of compiling then
+deserializing an object. The method
+\code{serializeDeserialize(Serializable)} serializes and deserializes
+an object in memory.  These methods are useful for testing
+serialization and compilation.  These operations are carried out in
+memory, which requires enough capacity to store the original object, a
+byte array holding the serialized or compiled bytes, and the
+deserialized or compiled object itself.  The same operation may be
+performed with a temporary file in much less space because the
+original object may be garbage collected before deserialization and
+the bytes reside out of main memory.
+
+There are also utility methods for serializing or compiling to a file.
+The method \code{serializeTo(Serializable,File)} writes
+a serialized form of the object to the specified file.  The 
+\code{compileTo(Compilable,File)} does the same thing for compilable
+objects.
+
+To read serialized or compiled objects back in, the method
+\code{readObject(File)} reads a serialized object from a file and
+returns it.
+
+The method \code{readResourceObject(String)} reads an object from a
+resource with the specified absolute path name (see
+\refsec{io-resource-input} for information on resources including
+how to create them and put them on the classpath).  This method simply
+creates an input stream from the resource then wraps it in an object
+input stream for reading.  The
+\code{readResourceObject(Class<?>,String)} method reads a (possibly
+relative) resource relative to the specified class.  
+

@@ -60,7 +60,7 @@ trick in situations where space may appear as the prefix or suffix of
 a string.  It may get confusing if there is a vertical bar within the
 string, but the outer vertical bars are always the ones dropped.
 
-\subsection{Finding Matching Substrings}
+\subsection{Finding Matching Substrings}\label{section:regex-find}
 
 The second main application of regular expressions is to find
 substrings of a string that match the regular expression.  The main
@@ -1036,25 +1036,27 @@ exception.
 There are a set of flags, all represented as static integer constants
 in \code{Pattern}, which may be supplied to the pattern compiler
 factory method \code{Pattern.compile(String,int)} to control the
-matching behavior of the compiled pattern.  The most important of
-these for our purposes are the following.
+matching behavior of the compiled pattern.  
 %
 \begin{center}
-\begin{tabular}{lp{0.65\textwidth}}
-\tblhead{Constant Flag} & \tblhead{Description} 
+\begin{tabular}{lrp{0.65\textwidth}}
+\tblhead{Constant} & \tblhead{Value} & \tblhead{Description} 
 \\ \hline { } \\[-6pt]
 \code{DOTALL}
+& 32
 & Allows the wild card (\code{.}) expression to match any
 character, including line terminators.  If this mode is not
 set, the wild card does not match line terminators.
 \\[4pt]
 \code{MULTLINE}
+& 8
 & Allows the begin-of-line (\code{\^{}}) and end-of-line (\code{\$}) to
 match internal line terminators.  If this is not set, they only
 match before the first and after the last character.  The full Java
 notion of newline is used unless the flag \code{UNIX\_LINES} is also set.
 \\[4pt]
 \code{UNIX\_LINES}
+& 1
 & Treat newlines as in Unix, with a single \unicode{000A},
 \unicodedesc{line feed}, Java string escape \code{{\bk}n},
 representing a new line.  This affects the behavior of wildcard
@@ -1062,19 +1064,30 @@ representing a new line.  This affects the behavior of wildcard
 (\code{\$}) expressions. 
 \\[4pt] 
 \code{CASE\_INSENSITIVE} 
+& 2
 & Matching is insensitive to case.  Case folding is only for
 the ASCII charset (\unicode{0000} to \unicode{007F}) unless
 the flag \code{UNICODE\_CASE} is also set, which uses the Unicode
 definitions of case folding.
 \\[4pt]
 \code{UNICODE\_CASE}
+& 64
 & If this flag and the \code{CASE\_INSENSITIVE} flag is set,
 matching ignores case distinctions as defined by Unicode
 case folding rules.
 \\[4pt]
 \code{CANON\_EQ} 
+& 128
 & Matches are based on canonical equivalence in Unicode 
 (see \refsec{unicode-normalization-forms}).
+\\[4pt]
+\code{LITERAL} 
+& 16
+& Treats the pattern as a literal \ie{no parsing}.
+\\[4pt]
+\code{COMMENTS}
+& 4
+& Allows comments in patterns and causes pattern-internal whitespace to be ignored.
 \end{tabular}
 \end{center}
 

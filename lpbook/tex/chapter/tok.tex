@@ -296,6 +296,119 @@ The class is thread safe and serializable.  There is no constructor,
 only a static constant \code{INSTANCE}.  The instance is also the
 result of deserialization.
 
+
+\subsection{The \code{RegExTokenizerFactory} Class}
+
+For parsing programming languages, the lexical analysis stage
+typically breaks a program down into a sequence of tokens.
+Traditional C packages like Lex and Java packages like JavaCC specify
+regular expressions for tokens (and context-free grammars with side
+effects for parse trees).  Regular expression-based tokenization is
+also popular for natural language processing.
+
+LingPipe's \code{RegExTokenizerFactory} implements tokenizers where
+the tokens are defined by running regular expression matchers in find
+mode (see \refsec{regex-find}).  An instance may be constructed from a
+\code{Pattern}, or from a \code{String} representing a regular
+expression with optional integer flags (see \refsec{pattern-modes} for
+information on how to use the flags and their numerical values).
+
+The demo class \code{RegexTokens} implements a simple regular expression
+tokenizer factory based on three command line arguments, one for the
+regular expression, one for the flags, and one for the text being tokenized.
+%
+\codeblock{RegexTokens.1}
+%
+
+The Ant target \code{regex-tokens} runs the command, setting three
+command line arguments for three properties, \code{regex} for the
+string representation of the regular expression, \code{flags} for the
+integer flags, and \code{text} for the text to be tokenized.
+%
+\commandlinefollow{ant -Dregex="{\bk}p\{L\}+" -Dflags=32 -Dtext="John likes 123-Jello." regex-tokens}
+\begin{verbatim}
+regex=|\p{L}+|
+flags=32 (binary 100000)
+
+John likes 123-Jello.
+012345678901234567890
+0         1         2
+
+START   END TOKEN
+    0     4  |John|
+    5    10  |likes|
+   15    20  |Jello|
+\end{verbatim}
+%
+First we print the regex and the flags (in both decimal and binary
+forms), then the string with indexes, and finally the tokens.  Because
+we used the pattern \code{{\bk}p\{L\}+}, our tokens consist of
+maximally long sequences of letter characters.  Other characters such
+as spaces, numbers, punctuation, etc., are simply skipped so that they
+become part of the whitespace.
+
+Instances of \code{RegExTokenizerFactory} are serializable.  They are
+also thread safe.
+
+
+\subsection{The \code{NGramTokenizerFactory} Class}
+
+An \code{NGramTokenizerFactory} produces tokens from an input string
+consisting of all of the substrings of the input within specified size
+bounds.  Substrings of an input string of length $n$ are typically
+called $n$-grams (and sometimes $q$-grams).
+
+Thus such a factory is constructed using a minimum and
+maximum sequence size, with \code{NGramTokenizerFactory(int,int)}.
+The sequences produced include the whitespaces between what we
+typically think of as tokens.  Tokenizers such as these are especially
+useful for extracting features for classifiers.
+
+We provide an example implementation in the demo class
+\code{NGramTokens}.  The only thing novel is the construction of
+the tokenizer factory itself,
+%
+\codeblock{NGramTokens.1}
+%
+
+It takes three command-line arguments, the
+minimum and maximum sequence lengths and the text to analyze.
+These are supplied to Ant target \code{ngram-tokens} as 
+properties \code{minNGram}, \code{maxNGram}, and \code{text}.
+%
+\commandlinefollow{ant -DminNGram=1 -DmaxNGram=3 -Dtext="I ran." ngram-tokens}
+\begin{verbatim}
+minNGram=1
+maxNGram=3
+
+I ran.
+012345
+
+START   END TOKEN          START   END TOKEN
+    0     1  |I|               2     4  |ra|
+    1     2  | |               3     5  |an|
+    2     3  |r|               4     6  |n.|
+    3     4  |a|               0     3  |I r|
+    4     5  |n|               1     4  | ra|
+    5     6  |.|               2     5  |ran|
+    0     2  |I |              3     6  |an.|
+    1     3  | r|
+\end{verbatim}
+%
+You can see from the output that the tokenizer first outputs the
+1-grams (unigrams), then the 2-grams (bigrams), then the 3-grams (trigrams).
+%
+\footnote{Curiously, we get a transition in common usage from Latin to Greek at
+4-grams (tetragrams), and 5-grams (pentagrams), 6-grams (hexagrams)
+etc.  Some authors stick to all Greek prefixes, preferring the terms
+``monogram'' and ``digram'' to ``unigram'' and ``bigram.''}
+
+
+
+
+
+
+
 \subsection{The \code{LineTokenizerFactory} Class}
 
 A \code{LineTokenizerFactory} treats each line of input as a single
@@ -311,4 +424,11 @@ There is a static constant \code{INSTANCE} which may be used.  This is
 also the value of deserialization.  Line tokenizer factories are thread
 safe.
 
+
+\section{LingPipe's Filtered Tokenizers}
+
+Following the same filter-based pattern as we saw for Java's I/O,
+LingPipe provides a number of classes whose job is to filter the
+tokens from an embedded tokenizer.  In all cases, there will be
+a base tokenizer providing tokens, the output 
 
