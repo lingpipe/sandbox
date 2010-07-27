@@ -269,16 +269,46 @@ to the factory picked out by the \code{INSTANCE} constant.
 \subsection{The \code{CharacterTokenizerFactory} Class}
 
 The \code{CharacterTokenizerFactory} treats each non-whitespace
-character as a token.  As of LingPipe 4.0, this is each \code{char}
-value, so unicode code points outside of the basic multilingual plane
-(BMP) will produce two tokens (see \refsec{utf-16}).%
-%
-\footnote{In the future, this default behavior may be extended to
-allow the class to be configured so that it treats characters outside
-of the BMP as single tokens.}
-%
+\code{char} value in the input as a token.  The definition of
+whitespace is from Java's \code{Character.isWhitespace()} method.
+The whitespaces returned will consist of
+all of the whitespace found between the non-whitespace characters.
+
+For instance, for the string \stringmention{a dog}, there are four
+tokens, \stringmention{a}, \stringmention{d}, \stringmention{o}, and
+\stringmention{g}.  The whitespaces are all length zero other than 
+for the single space between the \stringmention{a} and \stringmention{d}
+characters.
+
+This tokenizer factory is particularly useful for Chinese, where there
+is no whitespace separating words, but words are typically only one or
+two characters (with a long tail of longer words).
+
+This class produces a token for each \code{char} value.  This means
+that a surrogate pair consisting of a high surrogate UTF-16 value and
+low surrogate UTF-16 value, which represent a single Unicode code
+point, will produce two tokens.  Specifically, unicode code points
+outside of the basic multilingual plane (BMP), that is with values at
+or above \unicode{10000}, will produce two tokens (see \refsec{utf-16} for more
+information).
+
 The class is thread safe and serializable.  There is no constructor,
-only is a static constant \code{INSTANCE} that is also the result of
-deserialization.
+only a static constant \code{INSTANCE}.  The instance is also the
+result of deserialization.
+
+\subsection{The \code{LineTokenizerFactory} Class}
+
+A \code{LineTokenizerFactory} treats each line of input as a single
+token.  It is just a convenience class extending
+\code{RegExTokenizerFactory} supplying the regex \code{.+}.  
+
+Line termination is thus defined as for regular expression patterns (see
+\refsec{regex-lines} for the full set of line-end sequences
+recognized).  Final empty lines are not included in the sequence of
+tokens.
+
+There is a static constant \code{INSTANCE} which may be used.  This is
+also the value of deserialization.  Line tokenizer factories are thread
+safe.
 
 
