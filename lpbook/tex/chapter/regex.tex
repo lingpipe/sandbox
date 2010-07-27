@@ -1039,7 +1039,7 @@ factory method \code{Pattern.compile(String,int)} to control the
 matching behavior of the compiled pattern.  
 %
 \begin{center}
-\begin{tabular}{lrp{0.65\textwidth}}
+\begin{tabular}{lrp{0.55\textwidth}}
 \tblhead{Constant} & \tblhead{Value} & \tblhead{Description} 
 \\ \hline { } \\[-6pt]
 \code{DOTALL}
@@ -1092,12 +1092,21 @@ case folding rules.
 \end{center}
 
 The flags are defined using a bit-mask pattern whereby multiple
-flags are set by taking their bitwise or value.  For instance,
+flags are set by taking their bitwise-or value.%
+%
+\footnote{Although bitwise or looks like addition for flags like
+these with only one bit on, it breaks down when you try to set
+flags twice.  Thus \code{DOTALL~+~MULTILINE} evaluates to the
+same thing as \code{DOTALL~|~MULTINE}, \code{DOTALL~+~DOTALL}
+evaluates to the same thing as \code{UNICODE\_CASE}, whereas
+\code{DOTALL~|~DOTALL} evaluates to the same thing as \code{DOTALL}.}
+%
+For instance,
 the expression \code{DOTALL~|~MULTILINE} allows the wildcard
 to match anything and the line-terminator expressions to match
 internal newlines.  More than two flags may be set this way,
 so we could further restrict to Unix newlines with
-\code{DOTALL~|~MULTILINE~|~UNIX\_LINES}.
+\code{DOTALL~|~MULTILINE~|~UNIX\_LINES}.  
 
 Even stronger matching than canonical equivalence with unicode case
 folding can be achieved by writinger the regular expression using
