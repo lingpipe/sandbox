@@ -481,5 +481,446 @@ public Tokenizer tokenizer(char[] cs, int start, int length) {
 }
 \end{verbatim}
 
+\subsubsection{Serialization}
 
+A modified tokenizer factory will be serializable if its base
+tokenizer factory is serializable.  But unless the subclass defines a
+public no-argument constructor, trying to deserialize it will throw an
+exception.  If a subclass fixes a base tokenizer factory, there may be
+a public no-argument constructor.  A subclass intended to be used
+as a general filter will not have a public no-argument constructor
+because it would lead to instances without base tokenizers defined.
+
+As elsewhere, subclasses should take control of their serialization.
+We recommend using the serialization proxy, and show an example
+in the next section.
+
+\subsubsection{Thread Safety}
+
+A modified tokenizer factory is thread safe if its \code{modify()}
+method is thread safe.
+
+\subsection{The \code{ModifyTokenTokenizerFactory} Abstract Class}
+
+In the previous section, we saw how the \code{ModifyTokenizerFactory}
+base class could be used to define tokenizer filters.  That class
+had a modify method that consumed a tokenizer and returned a tokenizer.
+The class \code{ModifyTokenTokenizerFactory} is a subclass of
+\code{ModifiedTokenizerFactory} that works at the token level.  Almost
+all of LingPipe's tokenizer filters are instances of this subclass.
+
+The method \code{modifyToken(String)} operates a token at a time,
+returning either a modified token or \code{null} to remove the token
+from the stream.  The implementation in the base class just returns
+its input.
+
+There is a similar method \code{modifyWhitespace(String)}, though
+whitespaces may not be removed.  If tokens are removed, whitespaces
+around them are accumulated.  For instance, if we had $w_1, t_1, w_2,
+t_2, w_3$ as the stream of whitespaces and tokens, then removed token
+$t_2$, the stream would be $w_1, t_1, w_2\cdot w_3$, with the last two
+whitespaces being concatenated and the token being removed.
+
+The start and end points for modified tokens will be the same as for
+the underlying tokenizer.  This allows classes that operate on
+modified tokens to link their results back to the string from which
+they arose.
+
+This subclass behaves exactly the same way as its superclass with
+respect to serialization and thread safety.  For thread safety, both
+the modify methods must both be thread safe.
+
+
+\subsubsection{Example: Reversing Tokens}
+
+As an example, we provide a demo class
+\code{ReverseTokenTokenizerFactory}.  This filter simply reverses the
+text of each token. Basically, the implementation involves a declaration,
+constructor and definition of the modify operation,
+%
+\codeblock{ReverseTokenTokenizerFactory.1}
+%
+In addition, the class implements a serialization proxy (see
+\refsec{io-serialization-proxy}).
+
+The \code{main()} method for the demo reads a command line
+argument into the variable \code{text}, then constructs a token-reversing
+tokenizer factory based on an Indo-European tokenizer factory,
+then displays the output,
+%
+\codeblock{ReverseTokenTokenizerFactory.2}
+%
+It also serializes and deserializes the factory and displays
+the output for that, but we've not shown the code here.
+
+The Ant target \code{reverse-tokens} calls the class's \code{main()}
+method, supplying the value of property \code{text} as the command-line
+argument.
+%
+\commandlinefollow{ant reverse-tokens}
+\begin{verbatim}
+The note says, 'Mr. Sutton-Smith owes $15.20.'
+0123456789012345678901234567890123456789012345
+0         1         2         3         4
+
+START   END TOKEN
+    0     3  |ehT|
+    4     8  |eton|
+    9    13  |syas|
+...
+   39    44  |02.51|
+   44    45  |.|
+   45    46  |'|
+\end{verbatim}
+%
+The results are the same positions as for the Indo-European tokenizer,
+only with the content of each token reversed.  We have not shown the
+serialized and then deserialized output; it's the same.
+
+\subsection{The \code{LowerCaseTokenizerFactory} Class}
+
+The \code{LowerCaseTokenizerFactory} class modifies tokens by
+converting them to lower case.  This could've just as easily been
+upper case -- it just needs to be normalized.
+
+Case normalization is often applied in contexts where the case of
+words doesn't matter, or provides more noise than information.  For
+instance, search engines typically store case-normalized tokens in
+their reverse index.  And classifiers often normalize words for
+case (and other properties).
+
+Instances are constructed by wrapping a base tokenizer factory.
+Optionally, an instance of \code{Locale} to define the specific
+lowercasing operations.  If no locale is specified,
+\code{Locale.ENGLISH} is used.  (This ensures consistent behavior
+across platforms, unlike using the platform's default locale.)
+
+Whitespace and start and end positions of tokens are defined
+as by the base classifier.
+
+The class is used like other filters.  For instance, to create a
+tokenizer factory that returns lowercase tokens produced the
+Indo-European tokenizer using German lowercasing, just use
+%
+\begin{verbatim}
+TokenizerFactory f = IndoEuropeanTokenizerFactory.INSTANCE;
+Locale loc = Locale.GERMAN;
+TokenizerFactory fact = new LowerCaseTokenizerFactory(f,loc);
+\end{verbatim}
+
+Instances will be serializable if the base tokenizer factory is
+serializable.  Serialization stores the locale using its built-in
+serialization, as well as the base tokenizer factory.  Instances will
+be thread safe if the base tokenizer factory is thread safe.
+
+
+\subsection{The \code{StopTokenizerFactory} Class}
+
+The \code{StopTokenizerFactory} provides a tokenizer factory filter
+that removes tokens that appear in a specified set of tokens.  The set
+of tokens removed is typically called a \stringmention{stop list}.
+The stop list is case sensitive for this class, but stoplisting is
+often applied after case normalization.
+
+It is common in token-based classifiers and search engines to further
+normalize input by removing very common words.  For instance, the
+words \stringmention{the} or \stringmention{be} in English documents
+typically convey very little information themselves (they can convey
+more information in context).  Sometimes this is done for efficiency
+reasons, in order to store fewer tokens in an index or in statistical
+model parameter vectors.  It may also help with accuracy, especially
+in situations with limited amounts of training data.  In small data
+sets, the danger is that these stop words will become associated with
+some categories more than others at random and thus randomly bias
+the resulting system.
+
+Stop lists themselves are represented as sets of tokens.  Stoplisting
+tokenizers are constructed by wrapping a base tokenizer and providing
+a stop list.  For instance, to remove the words \stringmention{the} and
+\stringmention{be}, we could use
+%
+\begin{verbatim}
+Set<String> stopSet = CollectionUtils.asSet("the","be");
+TokenizerFactory f1 = IndoEuropeanTokenizerFactory.INSTANCE;
+TokenizerFactory f2 = new LowerCaseTokenizerFactory(f1);
+TokenizerFactory f3 = new StopTokenizerFactory(f2,stopSet);
+\end{verbatim}
+%
+The first line uses the static utility method \code{asSet()}
+in the LingPipe utility class \code{CollectionUtils}.  This
+method is defined with signature 
+%
+\begin{verbatim}
+static <E> HashSet<E> asSet(E... es);
+\end{verbatim}
+%
+so that it takes a variable-length number of \code{E} objects and
+returns a hash set of that type.  Because Java performs type inference
+on method types (like the \code{<E>} generic in \code{asSet()}),
+we don't need to specify a type on the method call.
+
+We then wrap an Indo-European tokenizer factory in a lowercasing and
+then a stoplisting filter.  Operationally, what will happen is that
+the Indo-European tokenizer will tokenize, the resulting tokens will
+be converted to lower case, and then stop words will be removed.  The
+calls start out in reverse, though, with \code{f3} called to tokenize,
+which then calls \code{f2} and filters the resulting tokens, where
+\code{f2} itself calls \code{f1} and then filters its results.
+
+\subsubsection{What's a Good Stop List?}
+
+The utility of any given stop list will depend heavily on the
+application.  It often makes sense in an application to run several
+different stop lists to see which one works best.  
+
+Usually words on the stop list will be of relatively high
+frequency.  One strategy is to print out the top few hundred
+or thousand words in a corpus sorted by frequency and inspect
+them by hand to see which ones are ``uninformative'' or potentially
+misleading.
+
+\subsubsection{Built-in For English}
+
+LingPipe provides a built-in stop list for English.  The
+\code{EnglishStopTokenizerFactory} class extends the
+\code{StopTokenizerFactory} class, plugging in the following
+stoplist for English:
+%
+\begin{quote}
+a, be, had, it, only, she, was, about, because, has, its, of, some,
+we, after, been, have, last, on, such, were, all, but, he, more, one,
+than, when, also, by, her, most, or, that, which, an, can, his, mr,
+other, the, who, any, co, if, mrs, out, their, will, and, corp, in,
+ms, over, there, with, are, could, inc, mz, s, they, would, as, for,
+into, no, so, this, up, at, from, is, not, says, to
+\end{quote}
+%
+Note that the entries are all lowercase.  It thus makes sense
+to run this filter to a tokenizer factory that produces only
+lowercase tokens.  
+
+This is a fairly large stop list.  It's mostly function words, but
+also includes some content words like \stringmention{mr},
+\stringmention{corp}, and \stringmention{last}.  Also note that
+some words are ambiguous, which is problematic for stoplisting.  For
+instance, the word \stringmention{can} acts as both a modal auxiliary
+verb (presently possible) and a noun (meaning among other things, a
+kind of container).
+
+
+\subsection{The \code{RegExFilteredTokenizerFactory} Class}
+
+The \code{RegExFilteredTokenizerFactory} class provides a general
+filter that removes all tokens that do not match a specified regular
+expression.  For a token to be retained, it must match the specified
+regular expression (in the sense of \code{match()} from
+\code{Matcher}).
+
+An instance of \code{RegExFilteredTokenizerFactory} may be constructed
+from a base tokenizer factory and a \code{Pattern} (from
+\code{java.util.regex}).  For instance, we could retain only tokens
+that started with capital letters (as defined by Unicode) using
+%
+\begin{verbatim}
+TokenizerFactory f = ...;
+Pattern p = Pattern.compile("\p{Lu}.*");
+TokenizerFactory f2 = new RegExFilteredTokenizerFactory(f,p);
+\end{verbatim}
+%
+We could just as easily retain only tokens that didn't start with an
+uppercase letter by using the regex \code{[\^{\bk}p\{Lu\}].*} instead
+of the one supplied.
+
+Although stop lists could be implemented this way, it would not be
+efficient.  For one thing, regex matching is not very efficient for
+large disjunctions; set lookup is much faster.  Also, at the present
+time, the class creates a new \code{Matcher} for each token,
+generating a large number of short-lived objects for garbage
+collection.%
+%
+\footnote{A more efficient implementation would reuse a matcher for
+each token in a given tokenization.  The only problem is that it can't
+be done naturally and thread-safely by extending
+\code{ModifyTokenTokenizerFactory}.  It would be possible to do this
+by extending \code{ModifiedTokenizerFactory}.}
+%
+
+Like the other filter tokenizers, a regex filtered tokenizer is
+thread safe and serializable if its base tokenizer factory is.
+
+
+\subsection{The \code{TokenLengthTokenizerFactory} Interface}
+
+The class \code{TokenLengthTokenizerFactory} implements a tokenizer
+filter that removes tokens that do not fall in a prespecified length
+range.  In real text, tokens can get very long.  Fror instance,
+mistakes in document formatting can produce a document where all
+the words are concatenated without space.  If you look at large
+amounts of text (in the gigabytes range), especially if you're
+looking at unedited sources like the web, you will find longer
+and longer tokens used on purpose.  It's not unusual to see
+\stringmention{no}, \code{noo}, and \code{nooooooo!}.  Look
+at enough text, and someone will add 250 lowercase O characters
+after the \charmention{n}.
+
+The length range is supplied in the constructor, which takes a
+tokenizer factory, minimum token length, and maximum token length.
+Like the other filters, a length filtering tokenizer will be
+serializable and thread safe if the base tokenizer factory is.  And
+like some of the other filters, this could be implemented very easily,
+but not as efficiently, with regular expressions (in this case the
+regex \code{.\{\codeVar{m},\codeVar{n}\}} would do the
+trick).
+
+\subsection{The \code{WhitespaceNormTokenizerFactory} Class}
+
+When interpreting HTML documents on the web, whitespace (outside of
+\code{<pre>} environments) comes in two flavors, no space and some
+space.  Any number of spaces beyond will be treated the same way for
+rendering documents as a single space.
+
+This is such a reasonable normalization scheme that we often normalize
+our input texts in exactly the same way.  This is easy to do with a
+regex, replacing a string \code{text} with
+\code{text.replaceAll("{\bk}{\bk}s+"," ")}, which says to replace
+any non-empty sequence of spaces with a single space. 
+
+It's not always possible to normalize inputs.  You may need to link
+results back to some original text that's not under your control.  In
+these cases, it's possible to modify the whitespaces produced by the
+tokenizer.  This will not have any effect on the underlying text or
+the spans of the tokens themselves.  Unfortunately, very few of
+LingPipe's classes pay attention to the whitespace, and for some that
+do, it's the token bounds that matter, not the values returned by
+\code{nextWhitespace()}.
+
+A \code{WhitespaceNormTokenizerFactory} is constructed from a base
+tokenizer factory.  Like the other filter tokenizer factories, it will
+be serializable if the base tokenizer factory is serializable and will
+be thread safe if the base tokenizer factory is thread safe.
+
+
+\section{Morphology-Sensitive Tokenization} 
+
+In some applications, the differences between different morphological
+variants of the same base word are not particularly informative.  For
+instance, should the query \searchquery{new car} provide a different
+search result than \searchquery{new cars}?  The difference is that one
+query uses the singular form \stringmention{car} and the other the
+plural \stringmention{cars}.  
+
+
+\subsection{Inflectional Morphology}
+
+Inflectional morphology is concerned with how the basic paradigmatic
+variants of a word are realized.  For instance, in English, the two
+nouns \code{computer} and \code{computers} differ in number, the first
+being singular, the second plural.  These show up in different
+syntactic contexts --- we say \stringmention{one computer} and
+\stringmention{two computers}, but not \stringmention{one computers}
+and \stringmention{two computer}.%
+%
+\footnote{These ungrammatical forms like \stringmention{one computers}
+will appear in text.  You'll find just about everything in free text
+and even in fairly tightly edited text like newswire if you look at
+enough of it.}
+%
+This is an instance of agreement --- the grammatical number of the
+noun must agree with the number of the determiner.  In English, there
+are only two numbers, singular and plural, but other languages, like
+Icelandic and Sanskrit, have duals (for two things), and some
+languages go even further, defining numbers for three objects, or
+distinguishing many from a few.
+
+In English, the verbs \code{code}, \code{codes}, \code{coded}, and
+\code{coding} are all inflectional variants of the same underlying word,
+differing in person, number, tense, and aspect.  We get agreement
+between verbs and subject nouns in English for these features.  For
+instance, a person might say \stringmention{I code} in referring to
+themselves, but \stringmention{she codes} when referring to another
+woman coding.  Other languages, such as French or Russian, also have
+agreement for gender, which can be natural (male person versus female
+person versus versus non-person) or grammatical (as in French).
+Natural gender is based on what is being talked about.  That's the
+distinction we get in English between the relative pronouns
+\stringmention{who}, which is used for people and other animate
+objects, and \stringmention{what}, which is used for inanimate
+objects.  For instance, we say \stringmention{who did you see?} if
+we expect the answer to be a person, and 
+\stringmention{what did you see?} if we want a thing.
+
+Most languages have fairly straightforward inflectional morphology,
+defining a few variants of the basic nouns and verbs.  The actual
+morphological operations may be as simple as adding an affix, but even
+this is complicated by boundary effects.  For instance, in English
+present participle verbs, we have
+\stringmention{race}/\stringmention{racing},
+\stringmention{eat}/\stringmention{eating}, and \stringmention{run}/\stringmention{running}.
+In the first case, we delete the final \charmention{e} before adding
+the suffix \stringmention{-ing}, in the second case, we just append
+the suffix, and in the third case, we insert an extra \charmention{n}
+before adding the suffix.  The same thing happens with number for
+nouns, as with \stringmention{boy}/\stringmention{boys} versus
+\stringmention{box}/\stringmention{boxes}, in which the first case
+appends the suffix \charmention{s} whereas the second adds an
+\charmention{e} before the suffix (the result of which, \stringmention{boxes},
+is two syllables).
+
+It is also common to see internal vowel changes, as in the English
+alternation \stringmention{run}/\stringmention{ran}.  Languages
+like Arabic and Hebrew take this to the extreme with their
+templatic morphology systems in which a base form consists of
+a sequence of consonants and an inflected form mixes in vowles.
+
+
+\subsection{Derivational Morphology}
+
+Derivational morphology, in contrast to inflectional morphology,
+involves modifying a word to create a new word, typically with a
+different function.  For instance, from the verb \stringmention{run}
+we can derive the noun \stringmention{runner} and from the adjective
+\stringmention{quick} we can derive the adverb
+\stringmention{quickly}.  After we've derived a new form, we can
+inflect it, with singular form \stringmention{runner} and plural form
+\stringmention{runners}.
+
+Inflectional morphology is almost always bounded to a finite set of
+possible inflected forms for each base word and category.  Derivational
+morphology, on the other hand, is unbounded.  We can take the noun
+\stringmention{fortune}, derive the adjective \stringmention{fortunate},
+the adjective \stringmention{unfortunate}, and then the adverb
+\stringmention{unfortunately}.  
+
+Sometimes there's zero derivational morphology, meaning not that
+there's no derivational morphology, but that it has no surface effect.
+For instance, we can turn most nouns in English into verbs, especially
+in the business world, and most verbs into nouns (where they are
+called gerunds).  For instance, I can say \stringmention{the running
+of the race} where the verb \stringmention{running} is used as a noun,
+or \stringmention{Bill will leverage that deal}, where the noun
+\stringmention{leverage} (itself an inflected form of
+\stringmention{lever}) may be used as a verb.  In American English,
+we're also losing the adjective/adverb distinction, with many speakers
+not even bothering to use an adverbial form of an adjective, saying
+things like \stringmention{John runs fast}.  
+
+\subsection{Compounding}
+
+Some languages, like German, allow two nouns to be combined
+into a single word, written with no spaces, as in combining
+\stringmention{schnell} (fast) and \stringmention{Zug} (train)
+into the compound \stringmention{schnellzug}.  This is a relatively
+short example involving two nouns. Comnpounds can then be 
+
+
+\subsection{Languages Vary in Amount of Morphology}
+
+Languages are not all the same.  Some code up lots of information in
+their morphological systems \eg{Russian}, and some not much at all
+\eg{Chinese}.  Some languages allow very long words consisting of
+lots of independent morphemes \eg{Turkish, Finnish}, whereas most
+only allow inflection and derivation.
+
+
+\subsection{The \code{PorterStemmerTokenizerFactory} Class}
 

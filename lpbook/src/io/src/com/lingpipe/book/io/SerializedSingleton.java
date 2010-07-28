@@ -41,6 +41,7 @@ public class SerializedSingleton implements Serializable {
 
         static final long serialVersionUID = 8538000269877150506L;
     }
+/*x*/
 
     public static void main(String[] args) 
         throws IOException, ClassNotFoundException {
