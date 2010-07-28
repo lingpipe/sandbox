@@ -69,9 +69,19 @@
     </java>
   </target>
 
+  <target name="reverse-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.ReverseTokenTokenizerFactory"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
+
   <target name="run"
           depends="display-tokens,
                    regex-tokens,
-                   ngram-tokens"/>
+                   ngram-tokens,
+                   reverse-tokens"/>
 
 </project>
