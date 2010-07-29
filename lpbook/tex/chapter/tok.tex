@@ -800,15 +800,38 @@ be serializable if the base tokenizer factory is serializable and will
 be thread safe if the base tokenizer factory is thread safe.
 
 
-\section{Morphology-Sensitive Tokenization} 
+\section{Morphology, Stemming, and Lemmatization}
 
-In some applications, the differences between different morphological
-variants of the same base word are not particularly informative.  For
-instance, should the query \searchquery{new car} provide a different
-search result than \searchquery{new cars}?  The difference is that one
-query uses the singular form \stringmention{car} and the other the
-plural \stringmention{cars}.  
+In linguistics, morphology is the study of how words are formed.  A
 
+Morphology crosses the study of several other phenomena,
+including syntax (parts of speech and how words combine), phonology
+(how words are pronounced), orthography (how a language is written,
+including how words are spelled), and semantics (what a word means).
+
+LingPipe does not contain a general morphological analyzer, but it
+implements many parts of word syntax, semantics and orthography.
+
+A morpheme is the minimal meaningful unit of language.  A morpheme
+doesn't need to be a word itself.  As we will see shortly, it can be a
+word, a suffix, a vowel-change rule, or a template instantiation.
+Often the term is extended to include syntactic markers, though these
+almost always have some semantic or semantic-like effect, such as
+marking gender.
+
+We consider these different aspects of word forms in different
+sections.  LingPipe has part-of-speech taggers to determine the
+syntactic form a word, syllabifiers to break a word down into phonemic
+or orthographic syllables, word-sense disambiguators which figure out
+which meaning of an ambiguous word is intended, and many forms of word
+clustering and comparison that can be based on frequency, context
+similarity and orthographic similarity.  LingPipe also has spelling
+correctors to fix misspelled words, which is often handled in the
+same part of a processing pipeline as morphological analysis.
+
+In this section, we provide a brief overview of natural language
+morphology, then consider the processes of stemming and
+lemmatization and how they relate to tokenization.   
 
 \subsection{Inflectional Morphology}
 
@@ -910,7 +933,14 @@ Some languages, like German, allow two nouns to be combined
 into a single word, written with no spaces, as in combining
 \stringmention{schnell} (fast) and \stringmention{Zug} (train)
 into the compound \stringmention{schnellzug}.  This is a relatively
-short example involving two nouns. Comnpounds can then be 
+short example involving two nouns. 
+
+Comnpounds may themselves be inflected.  For instance, in English, we
+may combine \stringmention{foot} and \stringmention{ball} to produce
+the compound noun \stringmention{football}, which may then be
+inflected in the plural to get \stringmention{footballs}.  They may
+also be modified derivationally, to get \stringmention{footballer},
+and then inflected, to get \stringmention{footballers}.
 
 
 \subsection{Languages Vary in Amount of Morphology}
@@ -921,6 +951,300 @@ their morphological systems \eg{Russian}, and some not much at all
 lots of independent morphemes \eg{Turkish, Finnish}, whereas most
 only allow inflection and derivation.
 
+\subsection{Stemming and Lemmatization}
 
-\subsection{The \code{PorterStemmerTokenizerFactory} Class}
+In some applications, the differences between different morphological
+variants of the same base word are not particularly informative.  For
+instance, should the query \searchquery{new car} provide a different
+search result than \searchquery{new cars}?  The difference is that one
+query uses the singular form \stringmention{car} and the other the
+plural \stringmention{cars}.
+
+Lemmatization is the process of mapping a word to its root form(s).
+It may also involve determining which affixes, vowel changes, wrappers
+or infixes or templates are involved, but typically not for most
+applications.
+
+Stemming is the process of mapping a word to a canonical
+representation.  The main difference from a linguistic point of view
+is that the output of a stemmer isn't necessarily a word (or morpheme)
+itself. 
+
+\subsubsection{Example: Lemma \stringmention{author}}
+
+It is very hard to know where to draw the line in stemming.  Some
+systems take a strictly inflectional point of view, only stripping off
+inflectional affixes or templatic fillers.  Others allow full
+derivational morphology.  Even so, the line is unclear.  
+
+Consider the stem \stringmention{author}.  In the English Gigaword
+corpus,%
+%
+\footnote{Available from the Linguistic Data Consortium (LDC).  
+University of Pennsylvania.  Catalog number LDC2003T05.}
+%
+which consists of a bit over a billion words of English newswire text,
+which is relatively well behaved, the following variants are observed
+%
+\begin{quote}
+antiauthoritarian, antiauthoritarianism, antiauthority, author,
+authoratative, authoratatively, authordom, authored, authoress,
+authoresses, authorhood, authorial, authoring, authorisation,
+authorised, authorises, authoritarian, authoritarianism,
+authoritarians, authoritative, authoritatively, authoritativeness,
+authorities, authoritory, authority, authorization, authorizations,
+authorize, authorized, authorizer, authorizers, authorizes,
+authorizing, authorless, authorly, authors, authorship, authorships,
+coauthor, coauthored, coauthoring, coauthors, cyberauthor,
+deauthorized, multiauthored, nonauthor, nonauthoritarian,
+nonauthorized, preauthorization, preauthorizations, preauthorized,
+quasiauthoritarian, reauthorization, reauthorizations, reauthorize,
+reauthorized, reauthorizes, reauthorizing, semiauthoritarian,
+semiauthorized, superauthoritarian, unauthorised, unauthoritative,
+unauthorized
+\end{quote}
+%
+We're not just looking for the substring \stringmention{author}.
+Because of the complexity of morphological affixing in English, this
+is neither necessary or sufficient.  To see that it's not sufficient,
+note that \stringmention{urn} and \stringmention{turn} are not
+related, nor are \stringmention{knot} and \stringmention{not}.  To
+see that it's not necessary, consider \stringmention{pace} and
+\stringmention{pacing} or \stringmention{take} and \stringmention{took}.
+
+Each of the words in the list above is etymologically derived from the
+word \stringmention{author}.  The problem is that over time, meanings
+drift.  This makes it very hard to draw a line for which words to
+consider equivalent for a given task.  The shared root of
+\stringmention{author} and \stringmention{authorize} is not only lost to most
+native speakers, the words are only weakly semeantically related,
+despite the latter form being derived from the former using the
+regular suffix \stringmention{-ize}.  The meaning has drifted.  
+
+In contrast, the relation between \stringmention{notary} and
+\stringmention{notarize} is regular and the meaning of the latter
+is fairly predictable from the meaning of the former.  Moving down a
+derivational level, the relation between \stringmention{note} and
+\stringmention{notary} feels more opaque.  
+
+Suppose we search for \searchquery{authoritarian}, perhaps researching
+organizational behavior.  We probably don't want to see documents
+about coauthoring papers.  We probably don't want to see documents
+containing \stringmention{unauthoritative}, because that's usually
+used in a different context, but we might want to see documents
+containing the word \stringmention{antiauthority}, and would probably
+want to see documents containing
+\stringmention{antiauthoritarianism}.
+As you can see, it's rather difficult to draw a line here. 
+
+David A.~Hull provides a range of interesting examples of the
+performance of a range of stemmers from the very simple (see
+\refsec{tok-simple-stemmer}) through the mainstream medium complex
+systems (see \refsec{tok-porter-stemmer}) to the very complex (Xerox's
+finite-state-transducer based stemmer).%
+%
+\footnote{Hull, David A. 1996. 
+Stemming algorithms: a case study for detailed evaluation.
+{\it Journal of the American Society for Information Science} {\bf
+47}(1).}
+%
+For example, one of Hull's queries contained the word
+\stringmention{superconductivity}, but matching documents
+contained only the word \stringmention{superconductor}.  This clearly
+requiring derivational morphology to find the right documents. A
+similar problem occurs for the terms \stringmention{surrogate mother}
+versus \stringmention{surrogate motherhood} and \stringmention{genetic
+engineering} versus \stringmention{genetically engineered} in another.
+Another example where stemming helped was \stringmention{failure}
+versus \stringmention{fail} in the context of bank failures.
+
+An example where stemming hurt was in the compound term
+\stringmention{client server} matching documents containing
+the words \stringmention{serve} and \stringmention{client}, leading to
+numerous false positive matches.  This is really a frequency argument,
+as servers in the computer sense do serve data, but so many other
+people and organizations serve things to clients that it provides more
+noise than utility. Another example that caused problems was
+was reducing \stringmention{fishing} to \stringmention{fish};
+even though this looks like a simple inflectional change, the
+nominal use of \stringmention{fish} is so prevalent that 
+documents about cooking and eating show up rather than documents
+about catching fish.  Similar problems arise in lemmatizing
+\stringmention{privatization} to \stringmention{private}; the latter
+term just shows up in too many contexts not related to privatization.
+
+These uncertainties in derivational stem equivalence are why many
+people want to restrict stemming to inflectional morphology. The
+problem with restricting to inflectional morphology is that it's not
+the right cut at the problem. Sometimes derivational stemming helps
+and sometimes inflectional stemming hurts.%
+
+
+\subsection{A Very Simple Stemmer}\label{section:tok-simple-stemmer}
+
+One approach to stemming that is surprisingly effective for English
+(and other mostly suffixing languages) given its simplicity is to just
+map every word down to its first $k$ characters.  Typical values for
+$k$ would be 5 or 6.  This clearly misses prefixes like
+\stringmention{un-} and \stringmention{anti-}, it'll lump together all
+the other forms of \stringmention{author} discussed in the previous
+section.  It is also too agressive at lumping things together, merging
+words like \stringmention{regent} and \stringmention{regeneration}.
+
+We provide an implementation of this simple stemmer in the class
+\code{PrefixStemmer}.  The class is defined to extend
+\code{ModifyTokenTokenizerFactory}, the constructor passes the
+base tokenizer factory to the superclass, and the work is all
+done in the \code{modifyToken()} method,
+%
+\codeblock{PrefixStemmer.1}
+%
+There is also a \code{main()} method that wraps an Indo-European
+tokenizer factory in a prefix stemmer and displays the tokenizer's
+output.
+
+The Ant target \code{prefix-stem-tokens} runs the program, 
+with first argument given by property \code{prefixLen} and
+the second by property \code{text}.
+%
+\commandlinefollow{ant -DprefixLen=4 -Dtext="Joe smiled" prefix-stem-tokens}
+\begin{verbatim}
+START   END TOKEN          START   END TOKEN
+    0     3  |Joe|             4    10  |smil|
+\end{verbatim}
+%
+As you can see, the token \stringmention{smiled} is reduced to
+\stringmention{smil}, but \stringmention{Joe} is unaltered.  
+
+In an application, the non-text tokens would probably also be
+normalized in some way, for instance by mapping all non-decimal
+numbers to \stringmention{0} and all decimal numbers to
+\stringmention{0.0}, or simply by replacing all digits with
+\stringmention{0}.  Punctuation might also get normalized into
+bins such as end-of-sentence, quotes, etc.  The Unicode classes
+are helpful for this.
+
+\subsection{The \code{PorterStemmerTokenizerFactory} Class}\label{section:tok-porter-stemmer}
+
+The most widely used approach to stemming in English is
+that developed by Martin Porter in what has come to be known
+generically as the Porter stemmer.%
+%
+\footnote{Porter, Martin. 1980. An algorithm for suffix
+stripping. {\it Program}. {\bf 14}:3.}
+%
+One of the reasons for its popularity is that Porter and others
+have made it freely available and ported it to a number of
+programming languages such as Java.  
+
+The stemmer has a very simple input/output behavior, taking a string
+argument and returning a string.  LingPipe incorporates Porter's
+implementation of his algorithm in the
+\code{PorterStemmerTokenizerFactory}.  Porter's stemming operation
+is encapsulated in the static method \code{stem(String)}, which returns
+the stemmed form of a string.
+
+The tokenizer factory implementation simply delegates
+the \code{modifyToken(String)} method in the superclass
+\code{ModifyTokenTokenizerFactory} to the \code{stem(String)} method.
+
+\subsubsection{Demo Code}
+
+We provide an example use of the stemmer in the demo class
+\code{PorterStemTokens}.  The \code{main()} method does nothing
+more than create a Porter stemmer tokenizer,
+%
+\codeblock{PorterStemmerTokens.1}
+%
+and then display the results.  
+
+The Ant target \code{porter-stemmer-tokens} runs the program
+with a command line argument given by the value of the property
+\code{text},
+%
+\commandlinefollow{ant -Dtext="Smith was bravely charging the front lines" porter-stemmer-tokens}
+\begin{verbatim}
+Smith was Bravely charging the front lines.
+0123456789012345678901234567890123456789012
+0         1         2         3         4
+
+START   END TOKEN          START   END TOKEN
+    0     5  |Smith|          27    30  |the|
+    6     9  |wa|             31    36  |front|
+   10    17  |Brave|          37    42  |line|
+   18    26  |charg|          42    43  |.|
+\end{verbatim}
+%
+Note that the token spans are for the token before stemming,
+so that the token \stringmention{breavely} starts at position
+10 (inclusive) and ends at 17 (exclusive), spanning the substring
+of the input text \stringmention{bravley}.  
+
+You can see that the resulting tokens are not necessarily words,
+with \stringmention{was} stemmed to \stringmention{wa} and
+\stringmention{charging} stemmed to \stringmention{charge}.  The
+token \stringmention{charge} also stems to \stringmention{charg}.  In
+many cases, the Porter stemmer strips off final \charmention{e} and
+\charmention{s} characters.  It performs other word-final normalizations,
+such as stemming \stringmention{cleanly} and
+\stringmention{cleanliness} to \stringmention{cleanli}.
+
+You can also see from the reduction of \stringmention{Bravely}
+to \stringmention{Brave} that the stemmer is not case sensitive,
+but also does not case normalization.  Typically the input or output
+would be case normalized.  You can also see that punctuation, like
+the final period, is passed through unchanged.
+
+The Porter stemmer does not build in knowledge of common words of
+English.  It thus misses many non-regular relations.  For instance,
+consider
+%
+\commandlinefollow{ant -Dtext="eat eats ate eaten eating" porter-stemmer-tokens}
+\begin{verbatim}
+START   END TOKEN          START   END TOKEN
+    0     3  |eat|            13    18  |eaten|
+    4     8  |eat|            19    25  |eat|
+    9    12  |at|
+\end{verbatim}
+%
+It fails to equate \stringmention{ate} and \stringmention{eaten} to
+the other forms.  And it unfortunately reduces \stringmention{at} to
+the same stem as would be found for the preposition of the same
+spelling.
+
+The Porter stemmer continues to apply until no more reductions are
+possible.  This provides the nice property that for any string
+\code{s}, the expression \code{stem(stem(s))} produces a string that's
+equal to \code{stem(s)}. 
+%
+\commandlinefollow{ant -Dtext="fortune fortunate fortunately" porter-stemmer-tokens}
+\begin{verbatim}
+START   END TOKEN          START   END TOKEN
+    0     7  |fortun|         18    29  |fortun|
+    8    17  |fortun|         
+\end{verbatim}
+%
+
+The Porter stemmer does not attempt to remove prefixes.
+%
+\commandlinefollow{ant -Dtext="antiwar unhappy noncompliant inflammable tripartite" porter-stemmer-tokens}
+\begin{verbatim}
+START   END TOKEN          START   END TOKEN
+    0     7  |antiwar|        29    40  |inflamm|
+    8    15  |unhappi|        41    51  |tripartit|
+   16    28  |noncompli|
+\end{verbatim}
+
+
+
+
+
+
+
+\subsubsection{Thread Safety and Serialization}
+
+A Porter stemmer tokenizer factory is thread safe if its base
+tokenizer factory is thread safe.  It is serializable if the base
+factory is serializable.
+
 
