@@ -10,6 +10,7 @@
   <path id="classpath">
     <pathelement location="${jar}"/>
     <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+    <pathelement location="../../lib/icu4j-4_4_1.jar"/>
   </path>
             
 
@@ -98,6 +99,29 @@
     </java>
   </target>
 
+  <target name="soundex-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.SoundexTokens"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
+
+
+  <property name="translit.scheme" 
+            value="NFD; [:Nonspacing Mark:] Remove; NFC"/>
+  <target name="unicode-norm-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.UnicodeNormTokenizerFactory"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${translit.scheme}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+ 
+
 
   <target name="run"
           depends="display-tokens,
@@ -105,6 +129,8 @@
                    ngram-tokens,
                    reverse-tokens,
                    prefix-stem-tokens,
-                   porter-stemmer-tokens"/>
+                   porter-stemmer-tokens,
+                   soundex-tokens,
+                   unicode-norm-tokens"/>
 
 </project>
