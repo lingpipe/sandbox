@@ -22,6 +22,4 @@ public class Transliterate {
             System.out.printf("%5h",c);
     }
     
-    // System.setOut(new java.io.PrintStream(System.out,true,"UTF-8"));
-
 }

@@ -1,0 +1,12 @@
+Aramorph.jar for Arabic morphology demo.  Frustratingly non thread
+safe.  Have to add a word then retrieve the analyses as a "solution"
+then pull out the lemma -- also ambiguous.  Analyzer, not 1.0-b is
+the later one. GNU license with unpacked full download from sourceforge:
+    http://www.nongnu.org/aramorph/english/download.html
+
+Use ICU to normalize and then strip off diacritics for another
+useful tokenizer.
+
+
+
+

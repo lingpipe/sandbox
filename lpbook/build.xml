@@ -32,7 +32,7 @@
     </jar>
   </target>
 
-  <target name="j2t">
+  <target name="jt">
     <mkdir dir="${java2tex.out}"/>
     <java classname="com.colloquial.java2tex.Java2Tex"
           classpath="lib/java2tex-a.jar"

@@ -1079,6 +1079,20 @@ problem with restricting to inflectional morphology is that it's not
 the right cut at the problem. Sometimes derivational stemming helps
 and sometimes inflectional stemming hurts.%
 
+\subsubsection{Context Sensitivity of Morphology}
+
+Words are ambiguous in many different ways, including morphologically.
+Depending on the context, the same token may be interpreted
+differently.  For instance, the plural noun \stringmention{runs} is
+the same word as the present tense verb \stringmention{runs}.  For
+nouns, only \stringmention{run} and \stringmention{runs} are
+appropriate, both of which are also verbal forms.  Additional verbal
+forms include \stringmention{running} and \stringmention{ran}.  A word
+like \stringmention{hyper} might be used as the short-form adjective
+meaning the same thing as \stringmention{hyperactive}, or it could be
+a noun derived from the the verb \stringmention{hype}, meaning someone
+who hypes something (in the publicicity sense).
+
 
 \subsection{A Very Simple Stemmer}\label{section:tok-simple-stemmer}
 
@@ -1123,6 +1137,7 @@ numbers to \stringmention{0} and all decimal numbers to
 \stringmention{0}.  Punctuation might also get normalized into
 bins such as end-of-sentence, quotes, etc.  The Unicode classes
 are helpful for this.
+
 
 \subsection{The \code{PorterStemmerTokenizerFactory} Class}\label{section:tok-porter-stemmer}
 
@@ -1236,15 +1251,257 @@ START   END TOKEN          START   END TOKEN
 \end{verbatim}
 
 
-
-
-
-
-
 \subsubsection{Thread Safety and Serialization}
 
 A Porter stemmer tokenizer factory is thread safe if its base
 tokenizer factory is thread safe.  It is serializable if the base
 factory is serializable.
+
+
+\section{Soundex: Pronunciation-Based Tokens}
+
+For some applications involving unedited or transliterated text, it's
+useful to reduce tokens to punctuation.  Although LingPipe does not
+contain a general pronunciation module, it does provide a combination
+of lightweight pronunciation and stemming through an implementation of
+the Soundex System.  Soundex was defined in the early 20th century and
+patented by Robert C.~Russell.
+%
+\footnote{United States Patents 1,261,167 and 1,435,663.}
+%
+The main application was for indexing card catalogs of names.
+The LingPipe version is based on the a modified version of
+Soundex known as ``American Soundex,'' which was used by the
+United States Census Bureau in the 1930s.  You can still access
+census records by Soundex today.
+
+\subsection{The American Soundex Algorithm}
+
+Soundex produces a four-character long representation of arbitrary
+words that attempts to model something like a pronunciation class.
+
+
+\subsubsection{The Algorithm}
+
+The basic procedure, as implemented in LingPipe, is described
+in the following pseudocode, which references the character code
+table in the next section.  The algorithm itself, as well as the
+examples, are based on pseudocode by Donald Knuth.%
+%
+\footnote{Knuth, Donald E. 1973. {\it The Art of Computer Programming, Volume 3:
+ Sorting and Searching}. 2nd Edition.  Addison-Wesley. Pages 394-395.}
+%
+\begin{enumerate}
+\item
+Normalize input by removing all characters that are not Latin1
+letters, and converting all other characters to uppercase ASCII after
+first removing any diacritics.
+\item 
+If the input is empty, return \stringmention{0000}
+\item 
+Set the first letter of the output to the first letter of the input.
+\item 
+While there are less than four letters of output do:
+%
+\begin{enumerate}
+  \item If the next letter is a vowel, unset the last letter's code.
+  \item If the next letter is \charmention{A}, \charmention{E}, 
+     \charmention{I}, \charmention{O}, \charmention{U}, \charmention{H}, 
+     \charmention{W}, \charmention{Y}, continue.
+  \item If the next letter's code is equal to the previous letter's code, continue.
+  \item Set the next letter of output to the current letter's code. 
+\end{enumerate}
+\item 
+If there are fewer than four characters of output, pad the output with zeros (\charmention{0})
+\item 
+Return the output string. 
+\end{enumerate}
+
+\subsubsection{Character Codes} 
+
+Soundex's character coding attempts to group together letters with
+similar sounds.  While this is a reasonable goal, it can't be perfect
+(or even reasonably accurate) because pronunciation in English is
+so context dependent.
+
+The table of individual character codes is as follows.
+%
+\begin{center}
+\begin{tabular}{ll}
+\tblhead{Characters} & \tblhead{Code} \\ \hline
+\charmention{B}, \charmention{F}, \charmention{P}, \charmention{V} & 1
+\\
+\charmention{C}, \charmention{G}, \charmention{J}, \charmention{K}, \charmention{Q}, \charmention{S}, \charmention{X}, \charmention{Z} & 2
+\\
+\charmention{D}, \charmention{T} & 3
+\\
+\charmention{L} & 4
+\\
+\charmention{M}, \charmention{N} & 5
+\\
+\charmention{R} & 6
+\end{tabular}
+\end{center}
+
+\subsubsection{Examples}
+
+Here are some examples of Soundex codes, drawn from Knuth's
+presentation.
+%
+\begin{center}
+\hfill
+\begin{tabular}{ll}
+\tblhead{Tokens} & \tblhead{Encoding}
+\\ \hline
+\stringmention{Gutierrez} & \code{G362}	
+\\
+\stringmention{Pfister} & \code{P236}	
+\\
+\stringmention{Jackson} & \code{J250}	
+\\
+\stringmention{Tymczak} & \code{T522}	
+\\
+\stringmention{Ashcraft} & \code{A261}	
+\\
+\stringmention{Robert}, \stringmention{Rupert} & \code{R163}	
+\\
+\stringmention{Euler}, \stringmention{Ellery} & \code{E460}	
+\end{tabular}
+\hfill
+\begin{tabular}{ll}
+\tblhead{Tokens} & \tblhead{Encoding}
+\\ \hline
+\stringmention{Gauss}, \stringmention{Ghosh} & \code{G200}	
+\\
+\stringmention{Hilbert}, \stringmention{Heilbronn} & \code{H416}	
+\\
+\stringmention{Knuth}, \stringmention{Kant} & \code{K530}	
+\\
+\stringmention{Lloyd}, \stringmention{Liddy} & \code{L300}	
+\\
+\stringmention{Lukasiewicz}, \stringmention{Lissajous} & \code{L222}	
+\\
+\stringmention{Wachs}, \stringmention{Waugh} & \code{W200}
+\end{tabular}
+\hfill
+\end{center}
+
+\subsection{The \code{SoundexTokenizerFactory} Class}
+
+LingPipe provides a tokenizer factory filter based on the
+American Soundex defined above in the class \code{SoundexTokenizerFactory}
+in the package \code{com.aliasi.tokenizer}.
+
+Like the Porter stemmer tokenizer filter, there is a static utility
+method, here named \code{soundexEncoding(String)}, for carrying out
+the basic encoding.  Provide a token, get its American Soundex encoding
+back.  Also like the Porter stemmer, the rest of the implementation just
+uses this static method to transform tokens as they stream by.
+
+\subsubsection{Demo}
+
+We provide a demo of the Soundex encodings in the class
+\code{SoundexTokens}.  Like the Porter stemmer demo,%
+%
+\footnote{While we could've encapsulated the text and display
+functionality, we're trying to keep our demos relatively
+independent from one another so that they are easier to follow.}
+%
+it just wraps an Indo-European tokenizer factory in a Soundex
+tokenizer factory.
+%
+\codeblock{SoundexTokens.1}
+%
+
+Also like the Porter stemmer demo, the \code{main()} method
+consumes a single command-line argument and displays the
+text with indexes and then the resulting tokens.  
+
+We provide an Ant target \code{soundex-tokens}, which 
+feeds the value of property \code{text} to the program.
+%
+\commandlinefollow{ant -Dtext="Mr. Roberts knows Don Knuth." soundex-tokens}
+\begin{verbatim}
+Mr. Roberts knows Don Knuth.
+0123456789012345678901234567
+0         1         2
+
+START   END TOKEN          START   END TOKEN
+    0     2  |M600|           18    21  |D500|
+    2     3  |0000|           22    27  |K530|
+    4    11  |R163|           27    28  |0000|
+   12    17  |K520|
+\end{verbatim}
+%
+For instance, the first token spans from 0 to 2,
+covering the text \stringmention{Mr} and producing
+the Soundex encoding \code{M600}.  The following
+period, spanning from position 2 to 3, gets code
+\code{0000}, because it is not all Latin1 characters.
+The token spanning 12 to 17, covering text \stringmention{Roberts},
+gets code \code{R163}, the same as \stringmention{Robert} in the table
+of examples.  Similarly, we see that \stringmention{Knuth} gets its
+proper code from positions 22 to 27.
+
+From this example, we see that it might make sense to follow the
+Soundex tokenizer with a stop list tokenizer that removes the token
+\stringmention{0000}, which is unlikely to be very informative in most
+contexts.
+
+
+\subsection{Variants of Soundex}
+
+Over the years, Soundex-like algorithms have been developed for many
+languages.  Other pronunciation-based stemmers have also been
+developed, perhaps the most popular being Metaphone and its variant,
+Double Metaphone.
+
+
+\section{Character Normalizing Tokenizer Filters}
+
+We demonstrated how to use the International Components for Unicide
+(ICU) package for normalizing sequences of Unicode characters in
+\refsec{icu-unicode-normalization}.  In this section, we'll show how
+to plug that together with tokenization to provide tokenizers that
+produce output with normalized text.  
+
+The alternative to normalizing with a token filter would be to
+normalize the text before input.  As a general rule, we prefer not to
+modify the original underlying text if it can be avoided.  A case
+where it makes sense to parse or modify text before processing would
+be an XML and HTML document.  
+
+\subsection{Demo: ICU Transliteration}
+
+We wrote a demo class, \code{UnicodeNormTokenizerFactory}, which
+uses the the \code{Transliterate} class from ICU to do the work (see
+\refsec{char-unicode-transliterate} for an introduction to the class and
+more examples).  A transliterator is configured with a transliteration
+scheme, so we configure our factory the same way,
+%
+\codeblock{UnicodeNormTokenizerFactory.1}
+%
+As with our other filters, we extend
+\code{ModifyTokenTokenizerFactory}, and then do the actualy work in
+the \code{modifyToken(String)} method.  Here, the constructor stores
+the scheme and creates the transliterator using the static factory
+method \code{getInstance(String)} from \code{Transliterator}.
+Transliteration operations in ICU are thread safe as long as the
+transliterator is not modified during the transliteration.
+
+The class also includes a definition of a serialization proxy,
+which only needs to store the scheme and base tokenizer in order
+to reconstruct the transliterating tokenizer.
+
+The Ant target \code{unicode-norm-tokens} runs the program,
+using the property \code{translit.scheme} to define the
+transliteration scheme (see \refsec{char-unicode-transliterate} for
+a description of the available schemes and the language for
+composing them) and property \code{text} for the text to modify.
+%
+\commandlinefollow{}
+\begin{verbatim}
+
+\end{verbatim}
 
 
