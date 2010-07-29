@@ -78,10 +78,33 @@
     </java>
   </target>
 
+  <property name="prefixLen" value="5"/>
+  <target name="prefix-stem-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.PrefixStemTokenizerFactory"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${prefixLen}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+
+  <target name="porter-stemmer-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.PorterStemmerTokens"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
+
+
   <target name="run"
           depends="display-tokens,
                    regex-tokens,
                    ngram-tokens,
-                   reverse-tokens"/>
+                   reverse-tokens,
+                   prefix-stem-tokens,
+                   porter-stemmer-tokens"/>
 
 </project>
