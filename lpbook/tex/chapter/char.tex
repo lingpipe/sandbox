@@ -440,7 +440,171 @@ wirtten using character types like ``R'' for right-to-left
 and ``L'' for left-to-right.
 
 The full set of character categories recognized by Java is detailed in
-the constant documentation for \code{java.lang.Character}.
+the constant documentation for \code{java.lang.Character}.  There's a
+missing component to the implementation, which makes it hard to take a
+given \code{char} value (or code point) and find its Unicode
+properties.  To that end, we've written a utility class
+\code{UnicodeProperties} that displays properties of Unicode.  The
+code just enumerates the constants in \code{Character}, indexes them
+by name, writes out a key to the values produced by
+\code{Character.getType(char)} along with their standard abbreviations
+(as used in regular expressions) and names.
+
+The code may be run from the Ant target \code{unicode-properties}.
+This target will print the key to the types, then the type of
+each character in a range specified by the properites 
+\code{low.hex} and \code{high.hex} (both inclusive).
+%
+\commandlinefollow{ant -Dlow.hex=0 -Dhigh.hex=FF unicode-properties}
+\begin{verbatim}
+KEY
+ 0=Cn UNASSIGNED
+ 1=Lu UPPERCASE_LETTER
+ 2=Ll LOWERCASE_LETTER
+ 3=Lt TITLECASE_LETTER
+ 4=Lm MODIFIER_LETTER
+ 5=Lo OTHER_LETTER
+ 6=Mn NON_SPACING_MARK
+ 7=Me ENCLOSING_MARK
+ 8=NSM DIRECTIONALITY_NONSPACING_MARK
+ 9=BN DIRECTIONALITY_BOUNDARY_NEUTRAL
+ a=Nl LETTER_NUMBER
+ b=No OTHER_NUMBER
+ c=Zs SPACE_SEPARATOR
+ d=Zl LINE_SEPARATOR
+ e=Zp PARAGRAPH_SEPARATOR
+ f=LRO DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE
+10=Cf FORMAT
+11=RLO DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE
+12=Co PRIVATE_USE
+13=Cs SURROGATE
+14=Pd DASH_PUNCTUATION
+15=Ps START_PUNCTUATION
+16=Pe END_PUNCTUATION
+17=Pc CONNECTOR_PUNCTUATION
+18=Po OTHER_PUNCTUATION
+19=Sm MATH_SYMBOL
+1a=Sc CURRENCY_SYMBOL
+1b=Sk MODIFIER_SYMBOL
+1c=So OTHER_SYMBOL
+1d=Pi INITIAL_QUOTE_PUNCTUATION
+1e=Pf FINAL_QUOTE_PUNCTUATION
+
+VALUES
+ 0 LRO DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE
+...
+20 Zs SPACE_SEPARATOR
+21 Po OTHER_PUNCTUATION
+...
+24 Sc CURRENCY_SYMBOL
+...
+28 Ps START_PUNCTUATION
+29 Pe END_PUNCTUATION
+...
+2b Sm MATH_SYMBOL
+...
+2d Pd DASH_PUNCTUATION
+...
+30 BN DIRECTIONALITY_BOUNDARY_NEUTRAL
+...
+41 Lu UPPERCASE_LETTER
+...
+5e Sk MODIFIER_SYMBOL
+5f Pc CONNECTOR_PUNCTUATION
+...
+61 Ll LOWERCASE_LETTER
+...
+a6 So OTHER_SYMBOL
+...
+ab Pi INITIAL_QUOTE_PUNCTUATION
+...
+ad Cf FORMAT
+...
+b2 No OTHER_NUMBER
+...
+bb Pf FINAL_QUOTE_PUNCTUATION
+\end{verbatim}
+%
+We specified the entire Latin1 range, but only display the first
+instance of each type above rather than all 256.  To help interpret
+the table, let's consider the types we have.  
+
+\unicode{0000}, \unicodedesc{<control> null}, is the null control
+character, which is typed as a directionality override; backspaces,
+linefeeds, and other control characters get the same type.  This can
+be confusing for newlines and their ilk, which aren't treated as space
+characters in the Unicode typology, but are in contexts like regular
+expressions.  
+
+The first character typed as a space is \unicode{0020},
+\unicodedesc{space}, the ordinary (ASCII) space character.
+
+\unicode{0021}, \unicodedesc{exclamation mark} (\charmention{!}) is
+classified as other punctuation, meaning it's not half of a matched
+pair like brackets.  Characters \unicode{0028} and \unicode{0029},
+\unicodedesc{left parenthesis} (\charmention{(}) and
+\unicodedesc{right parenthesis} (\charmention{)}), the round
+parentheses, are assigned start and end punctuation types
+respectively.  Other brackets such as the ASCII curly and square
+varieties, get the same categories.
+
+\unicode{0024}, \unicodedesc{dollar sign} (\charmention{\$}), is
+marked as a currency symbol, as are the signs for the euro, the yen,
+and other currencies.  
+
+\unicode{002B}, \unicodedesc{plus sign} (\charmention{+}), the symbol
+for arithmetic addition, is characterized as a math symbol.
+
+\unicode{002D}, \unicodedesc{hyphen-minus} (\charmention{-}), used for
+hyphenation and for arithmetical subtraction, is typed as a dash
+punctuation.  This ambiguous symbol presents a problem for a typology
+based on unique types for characters; the problem with whitespace and
+newline is similar.  \unicode{005F}, \unicodedesc{low line}
+(\charmention{\_}), the ASCII underscore character, is typed as
+connector punctuation.
+
+\unicode{0030}, \unicodedesc{digit zero} (\charmention{0}), is oddly
+typed as a direcitonality-boundary-neutral character; it'd seem more
+natural to mark it as a number.  The first character marked as a
+number is \unicode{00B2}, \unicodedesc{superscript two}
+(${}^{\rm\small \charmention{2}}$), which is assigned to the other
+number type.
+
+\unicode{0041}, \unicodedesc{latin capital letter a}
+(\charmention{A}), and \unicode{0061}, \unicodedesc{latin small letter
+  a} (\charmention{a}), are typed as uppercase and lowercase letters
+respectively.  
+
+\unicode{005E}, \unicodedesc{circumflex accent} (\charmention{\^{}}),
+is typed as a modifier symbol.  \unicode{00A6}, the Latin1
+\unicodedesc{broken bar}, which is usually displayed as a broken
+horizontal bar, is typed as an other symbol.
+
+\unicode{00AB}, \unicodedesc{left-pointing double angle quotation
+  mark} (\charmention{}), and \unicode{00BB},
+\unicodedesc{right-pointing double angle quotation mark}
+(\charmention{}), traditionally known as the left and right guillemet,
+and used in French like open and close quotation marks in English, are
+initial quote and final quote punctuation categories.  The ``curly''
+quotes are also divided into open and initial and final quote
+punctuation.  In contrast, \unicode{0022}, \unicodedesc{quotation
+  mark} (\charmention{"}), and \unicode{0027},
+\unicodedesc{apostrophe} (\charmention{'}), the standard ASCII
+undirected quotation mark and apostrophe, are marked as other
+punctuation, even though they may be used for quotations.
+
+\unicode{00AD}, \unicodedesc{soft hyphen}, is typed as a format
+character.  It's used in typesetting for continuation hyphens used to
+split words across lines.  This allows a word split with a hyphen
+across lines to be put back together.  This character shows up in
+conversions from PDF documents generated by \LaTeX, such as the one
+for this book.
+
+
+
+
+
+
 
 \subsubsection{Normalization Forms}\label{section:unicode-normalization-forms}
 

@@ -980,8 +980,7 @@ derivational morphology.  Even so, the line is unclear.
 Consider the stem \stringmention{author}.  In the English Gigaword
 corpus,%
 %
-\footnote{Available from the Linguistic Data Consortium (LDC).  
-University of Pennsylvania.  Catalog number LDC2003T05.}
+\footnote{Graff, David and Christopher Cieri. 2003. {\it English Gigaword}. Linguistic Data Consortium (LDC). University of Pennsylvania.  Catalog number LDC2003T05.}
 %
 which consists of a bit over a billion words of English newswire text,
 which is relatively well behaved, the following variants are observed
@@ -1503,5 +1502,109 @@ composing them) and property \code{text} for the text to modify.
 \begin{verbatim}
 
 \end{verbatim}
+
+% \centerline {\RL{^gu.hA wa-.himAruhu}}
+
+\section{Penn Treebank Tokenization}
+
+One of the more widely used resources for natural language
+processing is the Penn Treebank.%
+%
+\footnote{Marcus, Mitchell P., Beatrice Santorini, Mary Ann
+  Marcinkiewicz, and Ann Taylor. 1999. {\it Treebank-3}. Linguistic
+  Data Consortium.  University of Pennsylvania.  Catalog number
+  LDC99T42.}
+%
+
+\subsection{Pre-Tokenized Datasets}
+
+Like many older data sets, the Penn Treebank is presented only in
+terms of its tokens, each separated by a space.  So there's no way to
+get back to the underlying text.  This is convenient because it allows
+very simple scripts to be used to parse data.  Thus it is easy to
+train and evaluate models.  You don't even have to write a tokenizer,
+and there can't be any tokenization errors.  More modern datasets tend
+to use either XML infix annotation or offset annotation, allowing the
+boundaries of tokens in the original text to be recovered.
+
+The major drawback is that there is no access to the underlying text.
+As a consequence, there is no way to train whitespace-sensitive models
+using the Penn Treebank as is (it might be possible to reconstitute
+the token alignments given the original texts and the parser).
+
+Although it is easy to train and evaluate in a pre-tokenized data
+set, using it on new data from the wild requires an implementation
+of the tokenization scheme used to create the corpus.
+
+\subsection{The Treebank Tokenization Scheme}
+
+In this section, we provide an overview of the Penn Treebank's
+tokenization scheme.%
+%
+\footnote{An overview is available from
+  \url{http://www.cis.upenn.edu/~treebank/tokenization.html}
+  (downloaded 30 July 2010), and Robert MacIntyre's implementation as
+  a SED script, released under the Gnu Public License, in
+  \url{http://www.cis.upenn.edu/~treebank/tokenizer.sed}.}
+%
+The major distinguishing feature of the Treebank's tokenizer is that
+they analyze punctuation based on context.  For instance, a period at
+the end of the sentence is treated as a standalone token, whereas an
+abbreviation followed by a period, such as \stringmention{Mr.}, is
+treated as a single token.  Thus the input needs to already be
+segmented into sentences, a process we consider in
+\refchap{sentence}.
+
+The Treebank tokenizer was designed for the ASCII chaacters
+(\unicode{0000}--\unicode{007F}), which means it is not defined for
+characters such as Unicode punctuation.  Following the convention of
+\LaTeX rather than Unicode, the Treebank tokenizer analyzes a quote
+character (\charmention{"}) as two grave accents (\charmention{``}) if
+it's an opening qoe and two apostrophes (\charmention{''}) if it's a
+closing quote.  Like periods, determining the status of the quotes
+requires context.
+
+The Treebank tokenizer is also English specific.  In its
+context-sensitive treatment of apostrophes (\charmention{'}), it
+attempts to distinguish the underlying words making up contractions
+together, so that a word like \stringmention{I'm} is split into two
+tokens, \stringmention{I} and \stringmention{'m}, the second of which
+is the contracted form of \stringmention{am}.  To handle negative
+contractions, it keeps the negation together, splitting
+\stringmention{don't} into \stringmention{do} and \stringmention{n't}.
+The reason for this is that the Treebank labels syntactic categories,
+and they wanted to assign \stringmention{I} to a pronoun category and
+\stringmention{'m} to an auxiliary verb category just like
+\stringmention{am}; similarly, \stringmention{do} is an auxiliary verb
+and \stringmention{n't} a negative particle.
+
+Ellipses, which appear in ASCII text as a sequence of periods
+(\stringmention{...}), are handled as single tokens.
+
+Other than the treatment of periods, quotation marks and apostrophes
+in the aforementioned contexts, the Treebank tokenizer splits out
+other punctuation characters into their own tokens.
+
+The ASCII bracket characters, left and right, round and square and curly,
+are replaced with acronyms and hyphens.  For instance, \unicode{005B},
+\unicodedesc{left square bracket} (\charmention{[}) produces the
+token \stringmention{-LSB-}.  The acronym \charmention{LSB}
+stands for left square bracket; other brackets are coded similarly
+using \charmention{R} for right, and \charmention{R} for round and
+\charmention{C} for curly.
+
+\subsection{Demo: Penn Treebank Tokenizer}
+
+We provide an implementation of the Penn Treebank tokenizer based on
+Robert MacIntyre's SED script in the class
+\code{PennTreebankTokenizerFactory}.
+
+
+
+
+
+
+
+
 
 
