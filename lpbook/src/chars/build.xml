@@ -99,12 +99,27 @@
     </java>
   </target>
 
+
+  <property name="low.hex" value="0"/>
+  <property name="high.hex" value="FF"/>
+  <target name="unicode-properties"
+          depends="jar">
+    <java classname="com.lingpipe.book.chars.UnicodeProperties"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${low.hex}"/>
+      <arg value="${high.hex}"/>
+    </java>
+  </target>
+
+
   <target name="run"
           depends="available-charsets,
                    byte-to-string,
                    detect-encoding,
                    normalize-unicode,
                    show-transliterations,
-                   transliterate"/>
+                   transliterate,
+                   unicode-properties"/>
 
 </project>
