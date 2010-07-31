@@ -120,6 +120,15 @@
       <arg value="${text}"/>
     </java>
   </target>
+
+  <target name="treebank-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.PennTreebankTokenizerFactory"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
  
 
 
