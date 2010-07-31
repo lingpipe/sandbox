@@ -51,10 +51,9 @@ public class PennTreebankTokenizerFactory
         + "|" + "--"
         + "|" + "'(?<![\\p{Z}])"
         + "|" + "'(ll|re|ve|s|d|M)" // adding 'm' (only lower) breaks disjunction.  wtf?
-        + "|" + "ca(?=(n't|N'T))"
         + "|" + "can(?=not)"
         + "|" + "n't|N'T"
-        + "|" + "[\\p{L}\\p{N}]+$"
+        + "|" + "[\\p{L}\\p{N}]+($|(?=(n't|N'T)))"
         + "|" + "[\\p{L}\\p{N}\\.]+"
         + "|" + "[^\\p{Z}]"
         + ")";
