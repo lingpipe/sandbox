@@ -5,11 +5,14 @@ import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.tokenizer.TokenizerFactory;
 
+import java.util.regex.Pattern;
+
 public class PennTreebankTokenizerFactory
     extends ModifyTokenTokenizerFactory {
 
     private PennTreebankTokenizerFactory() {
-        super(new RegExTokenizerFactory(BASE_REGEX));
+        super(new RegExTokenizerFactory(BASE_REGEX,
+                                        Pattern.CASE_INSENSITIVE));
     }
 
     @Override
@@ -49,20 +52,45 @@ public class PennTreebankTokenizerFactory
         = "("
         + "\\.\\.\\."
         + "|" + "--"
+        + "|" + "can(?=not )"
+        + "|" + "d'(?=ye )"
+        + "|" + "gim(?=me )"
+        + "|" + "lem(?=me )"
+        + "|" + "gon(?=na )"
+        + "|" + "wan(?=na )"
+        + "|" + "more(?='n )"
+        + "|" + "'t(?=is )"
+        + "|" + "'t(?=was )"
+        + "|" + "ha(?=ddya )"
+        + "|" + "dd(?=ya )" // (?<ha)
+        + "|" + "ha(?=tcha )"
+        + "|" + "t(?=cha )" // (?<ha)
+        + "|" + "'(ll|re|ve|s|d|m|n)"
+        + "|" + "n't"
         + "|" + "'(?<![\\p{Z}])"
-        + "|" + "'(ll|re|ve|s|d|M)" // adding 'm' (only lower) breaks disjunction.  wtf?
-        + "|" + "can(?=not)"
-        + "|" + "n't|N'T"
-        + "|" + "[\\p{L}\\p{N}]+($|(?=(n't|N'T)))"
+        + "|" + "[\\p{L}\\p{N}]+($|(?=(n't)))"
         + "|" + "[\\p{L}\\p{N}\\.]+"
         + "|" + "[^\\p{Z}]"
         + ")";
-    
+
+    // c'mon, this needs to be richer -- what about y'all?  
+
     public static void main(String[] args) {
         String text = args[0];
         DisplayTokens.displayTextPositions(text);
         TokenizerFactory tf = PennTreebankTokenizerFactory.INSTANCE;
         DisplayTokens.displayTokens(text,tf);
+    }
+
+
+    static followedBy(String tok, String next) {
+        return tok + "(?=" + next + ")"; // needs escapes!
+    }
+
+    static triple(String token, String tokenNext, String token3) {
+        return followedBy(token,tokenNext+token3)
+            + "|"
+            + followedBy(tokenNext,token3);
     }
 
 
