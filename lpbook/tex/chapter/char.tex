@@ -829,28 +829,28 @@ each character in a range specified by the properites
 \begin{verbatim}
 ID CD TYPE                     ID CD TYPE
  0 Cn UNASSIGNED               15 Cc CONTROL
- 1 Lu UPPERCASE_LETTER         16 Cf FORMAT
- 2 Ll LOWERCASE_LETTER         18 Co PRIVATE_USE
- 3 Lt TITLECASE_LETTER         19 Cs SURROGATE
- 4 Lm MODIFIER_LETTER
- 5 Lo OTHER_LETTER             20 Pd DASH_PUNCTUATION
- 6 Mn NON_SPACING_MARK         21 Ps START_PUNCTUATION
- 7 Me ENCLOSING_MARK           22 Pe END_PUNCTUATION
- 8 Mc COMBINING_SPACING_MARK   23 Pc CONNECTOR_PUNCTUATION
-                               24 Po OTHER_PUNCTUATION
- 9 Nd DECIMAL_DIGIT_NUMBER
+                               16 Cf FORMAT
+ 1 Lu UPPERCASE_LETTER         18 Co PRIVATE_USE
+ 2 Ll LOWERCASE_LETTER         19 Cs SURROGATE
+ 3 Lt TITLECASE_LETTER         
+ 4 Lm MODIFIER_LETTER          20 Pd DASH_PUNCTUATION
+ 5 Lo OTHER_LETTER             21 Ps START_PUNCTUATION
+                               22 Pe END_PUNCTUATION
+ 6 Mn NON_SPACING_MARK         23 Pc CONNECTOR_PUNCTUATION
+ 7 Me ENCLOSING_MARK           24 Po OTHER_PUNCTUATION
+ 8 Mc COMBINING_SPACING_MARK   29 Pi INITIAL_QUOTE_PUNCTUATION
+                               30 Pf FINAL_QUOTE_PUNCTUATION
+ 9 Nd DECIMAL_DIGIT_NUMBER     
 10 Nl LETTER_NUMBER            25 Sm MATH_SYMBOL
 11 No OTHER_NUMBER             26 Sc CURRENCY_SYMBOL
                                27 Sk MODIFIER_SYMBOL
 12 Zs SPACE_SEPARATOR          28 So OTHER_SYMBOL
-13 Zl LINE_SEPARATOR
-14 Zp PARAGRAPH_SEPARATOR      29 Pi INITIAL_QUOTE_PUNCTUATION
-                               30 Pf FINAL_QUOTE_PUNCTUATION
+13 Zl LINE_SEPARATOR           
+14 Zp PARAGRAPH_SEPARATOR      
 \end{verbatim}
 %
-Note that the types are arranged alphabetically, with spaces between
-the main types (and put into two columns for the book).  The initial
-character of a type, which is capitalized, indicates the main
+For display, we have organized the results based on primary type.  The
+initial character of a type, which is capitalized, indicates the main
 category, and the second character, which is lowercase, indicates the
 subtype.  We've added extra space in the output to pick out the
 groupings.  For instance, there are five letter types, all of which
@@ -2235,6 +2235,7 @@ Output=deja
 \end{verbatim}
 
 
+% ARABIC \begin{center} \RL{^gu.hA wa-.himAruhu} \end{center}
 
 
 

@@ -24,10 +24,10 @@ public class SerializedSingleton implements Serializable {
 
 /*x SerializedSingleton.2 */
     Object writeReplace() {
-        return new Externalizer();
+        return new Serializer();
     }
     
-    static class Externalizer extends AbstractExternalizable {
+    static class Serializer extends AbstractExternalizable {
 
         public Externalizer() { }
 
