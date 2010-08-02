@@ -31,15 +31,15 @@ public class PrefixStemTokenizerFactory
     }
 
     Object writeReplace() {
-        return new Externalizer(this);
+        return new Serializer(this);
     }
 
-    static class Externalizer extends AbstractExternalizable {
+    static class Serializer extends AbstractExternalizable {
         private final PrefixStemTokenizerFactory mStemmer;
-        public Externalizer() { 
+        public Serializer() { 
             this(null);
         }
-        Externalizer(PrefixStemTokenizerFactory stemmer) {
+        Serializer(PrefixStemTokenizerFactory stemmer) {
             mStemmer = stemmer;
         }
 
@@ -54,6 +54,7 @@ public class PrefixStemTokenizerFactory
             TokenizerFactory f = (TokenizerFactory) in.readObject();
             return new PrefixStemTokenizerFactory(f,prefixLength);
         }
+        static final long serialVersionUID = 7337750796142781843L;
     }
 
     public static void main(String[] args) 
@@ -78,4 +79,5 @@ public class PrefixStemTokenizerFactory
         DisplayTokens.displayTokens(text,deserTokFact);
     }
 
+    static final long serialVersionUID = 8257231905932729718L;
 }

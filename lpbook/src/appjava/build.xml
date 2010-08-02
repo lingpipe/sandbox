@@ -17,6 +17,7 @@
            debuglevel="source,lines,vars"
            destdir="build/classes"
            includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
       <src path="src/"/>
     </javac>
     <jar destfile="${jar}">

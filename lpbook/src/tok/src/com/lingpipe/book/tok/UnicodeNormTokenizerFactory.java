@@ -56,6 +56,7 @@ public class UnicodeNormTokenizerFactory
                 (TokenizerFactory) in.readObject();
             return new UnicodeNormTokenizerFactory(scheme,f);
         }
+        static final long serialVersionUID = -8867574612350665755L;
     }
 
     public static void main(String[] args) 
@@ -79,5 +80,7 @@ public class UnicodeNormTokenizerFactory
 
 
     }
+
+    static final long serialVersionUID = 8989033400387209930L;
 
 }

@@ -1597,16 +1597,203 @@ using \charmention{R} for right, and \charmention{R} for round and
 
 \subsection{Demo: Penn Treebank Tokenizer}
 
-We provide an implementation of the Penn Treebank tokenizer based on
-Robert MacIntyre's SED script in the class
-\code{PennTreebankTokenizerFactory}.
+We provide a port and generalization of the Penn Treebank tokenizer
+based on Robert MacIntyre's SED script in the class
+\code{PennTreebankTokenizerFactory}.  We have also generalized it
+to Unicode character codes where possible.  
+
+The original SED script worked by transforming the input string by
+adding or deleting spaces and transforming characters.  If we transformed
+the input, the positions of the tokens would all be off unless we
+somehow kept track of them.  Luckily, an easier solution presents itself
+with Java regular expressions and LingPipe's built-in regex tokenizer
+factories and token filter.
+
+Our implementation works in three parts.  First, the original string
+is transformed, but in a position-preserving way.  This mainly takes
+care of issues in detecting opening versus closing quotes.  Second,
+a regular expression tokenizer is used to break the input into tokens.
+Third, the tokens are transformed on a token-by-token basis into
+the Penn Treebank's representation. 
+
+\subsubsection{Construction}
+
+Before any of these steps, we declare the tokenizer factory to extend
+the token-modifying token factory and to be serailizable,
+%
+\codeblock{PennTreebankTokenizerFactory.1}
+%
+We had to supply the base tokenizer factory as an argument
+to \code{super()} in order to supply the superclass with its
+base tokenizer.  This is a regex-based tokenizer factory which
+we describe below.  There's also a serialization proxy implementation
+we don't show.
+
+We chose to implement the Penn Treebank tokenizer as a singleton, with
+a private constructor and static constant instance.  The constructor
+could've just as easily been made public, but we only need a single
+instance.
+
+\subsubsection{Input String Munging}
+
+In the first processing step, we override the tokenization method
+itself to trasnform the input text using a sequence of regex replace
+operations (see \refsec{regex-replace}),
+%
+\codeblock{PennTreebankTokenizerFactory.2}
+%
+The \code{replaceAll()} methods chain, starting with a string produced
+from the character slice input.  The first replacement replaces an
+instance of \unicode{0022}, \unicodedesc{quotation mark}, (\charmention{"}),
+the ordinary typewriter non-directional quotation mark symbol, with 
+\unicode{201C}, \unicodedesc{left double quotation mark} (\charmention{``{}}).
+The second replacement replaces a quotation mark after characters of
+class \code{Z} (separators such as spaces, line or paragraph
+separators) or class \code{Ps}, the start-punctuation class, which
+includes all the open brackets specified in the original SED script.
+The context characters are specified as a non-capturing lookbehind
+(see \refsec{regex-lookbehind}), The third replacement converts
+remaining quote characters
+\unicode{201D}, \unicodedesc{right double quotation mark}
+(\charmention({}'')).  The fourth replacement converts any character
+typed as initial quote punctuation (\code{Pi}) and replaces it with a
+left double quotation mark, and similarly for final quote punctuation
+(\code{Pf}).  
+
+We take the final string and convert it to a character array to send
+the superclass's implementation of \code{tokenizer()}.  We have been
+careful to only use replacements that do not modify the length of the
+input, so that all of our offsets for tokens will remain correct.  
+
+
+\subsubsection{Base Tokenizer Regex}
+
+The implementation of \code{tokenize()} in the superclass
+\code{ModifyTokenTokenizerFactory} invokes the base
+tokenizer, which was supplied to the constructor, then feeds the
+results through the \code{modifyToken()} method, which we describe
+below.
+
+The base tokenizer factory is constructed from a constant representing
+the regular expression and the specification that matching is to
+be case insensitive.  The regex used is
+%
+\codeblock{PennTreebankTokenizerFactory.4}
+%
+We have broken it out into pieces and used string concatenation to put
+it back together so it's more readable.  
+
+The first disjunct allows three period characters to be a token, the
+second a pair of dashes.  
+
+The next thirteen disjuncts are spread over several lines.  Each of these
+simply breaks a compound apart.  For instance, \stringmention{cannot}
+will be split into two tokens, \stringmention{can} and
+\stringmention{not}.  This is achieved in each case by matching the
+first half of a compound when followed by the second half.  The
+following context is a positive lookahead, requiring the rest of the
+compound and then a word boundary (regex \code{{\bk}b} is the word
+boundary matcher).
+
+The next two disjuncts pull out the contracted part of contractions,
+such as \charmention{'s}, \charmention{'ve} and \charmention{n't}.  
+
+Next, we match tokens consisting of sequences of letters and/or
+numbers (Unicode types \code{L} and \code{N}).  The first disjunct
+pulls off tokens that directly precede the final period or the
+sequence \stringmention{n't}.  The disjunct uses positive lookahead to
+match the following context.  Because regexes are greedy, the disjunct
+just described will match if possible.  If not, periods are included
+alongw ith letters and numbers (but no other punctuation).
+
+The final disjunct treats any other non-separator character as
+a token.
+
+\subsubsection{Modified Token Output}
+
+To conform to the Penn Treebank's output format for characters,
+we do a final replace on the tokens, using
+%
+\codeblock{PennTreebankTokenizerFactory.3}
+%
+Each of the ASCII brackets is replaced with a five-letter sequence.
+Any initial quote characters are replaced with two grave accents
+(\stringmention{{`}{`}}) and then final quote characters are replaced
+with two apostrophes (\stringmention{{'}{'}}).
+
+\subsubsection{Running It}
+
+The Ant target \code{treebank-tokens} runs the Penn Treebank tokenizer,
+supplying the value of the Ant property \code{text} as the first
+argument, which is the string to tokenize.
+%
+\commandlinefollowa{ant -Dtext="Ms. Smith's papers' -- weren't (gonna) miss." treebank-tokens}
+\begin{verbatim}
+Ms. Smith's papers' -- weren't (gonna) miss.
+01234567890123456789012345678901234567890123
+0         1         2         3         4
+
+START   END TOKEN          START   END TOKEN
+    0     3  |Ms.|            27    30  |n't|
+    4     9  |Smith|          31    32  |-LRB-|
+    9    11  |'s|             32    35  |gon|
+   12    18  |papers|         35    37  |na|
+   18    19  |'|              37    38  |-RRB-|
+   20    22  |--|             39    43  |miss|
+   23    27  |were|           43    44  |.|
+\end{verbatim}
+%
+This short example illustrates the different handling of periods
+sentence-internally and finally, the treatment of contractions,
+distinguished tokens like the double-dash, and compounds like
+\charmention{gonna}.  It also shows how the brackets get
+substituted, for instance the left with token \charmention{-LRB-};
+note that these have their original spans, so that the
+token \charmention{-RRB-} spans from 37 (inclusive) to 38 (exclusive),
+the position of the right round bracket in the original text.
+
+Given how difficult it is to get a standard quote character into a
+command, we've used a properties file in
+\filepath{config/text2.properties}.  The content of the properties
+file is 
+%
+\begin{verbatim}
+text=I say, \\"John runs\\".
+\end{verbatim}
+%
+Recall that in Java properties files, strings are parsed in the same
+way as string literals in Java programs.  In particular, we can use
+Unicode and Java backslash escapes,%
+%
+\footnote{Unicode escapes for the quote character will be interpreted
+rather than literal, so you need to use the backslash.  And the
+backslash needs to be escaped, just as in Java source.}
+%
+We run the Ant target by specifying the properties file on the
+command line,
+%
+\commandlinefollow{ant -propertyfile=config/text2.properties treebank-tokens}
+\begin{verbatim}
+I say, "John runs"
+012345678901234567
+0         1
+
+START   END TOKEN          START   END TOKEN
+    0     1  |I|               8    12  |John|
+    2     5  |say|            13    17  |runs|
+    5     6  |,|              17    18  |''|
+    7     8  |``|             18    19  |.|
+\end{verbatim}
+%
+The output demonstrates how open double quotes are treated differently
+than close double quotes.  Like the bracket token substitutions,
+the two characters substituted for quotes still span only a single token
+of the input.
 
 
 
 
 
-
-
-
+\end{verbatim}
 
 

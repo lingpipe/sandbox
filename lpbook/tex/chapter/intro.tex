@@ -633,9 +633,12 @@ always the first value to which it is set; further attempts to set it
 \subsection{Ant Targets}
 
 Next, we have a sequence of targets, each of which groups together
-a sequence of tasks.  The order of targets is not important.  The
-first target we have is
+a sequence of tasks.  The order of targets is not important.  
 
+\subsubsection{Clean Target}
+
+The first target we have performs cleanup.
+%
 \begin{verbatim}
   <target name="clean">
     <delete dir="build"/>
@@ -654,6 +657,8 @@ the automatically generated content in a project.  Here, the
 file produced by the archiver will be deleted, as should soon be
 evident.
 
+\subsubsection{Compiliation/Archive Target}
+
 The next target is the compilation target, named \code{jar},
 
 \begin{verbatim}
@@ -663,6 +668,7 @@ The next target is the compilation target, named \code{jar},
            debuglevel="source,lines,vars"
            destdir="build/classes"
            includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
       <src path="src/"/>
     </javac>
     <jar destfile="${jar}">
@@ -679,11 +685,12 @@ creation (\code{jar}).  Note that, as we exploit here, it is
 allowable to have a target with the same name as a task, because Ant
 keeps the namespaces separate.
 
-The first task is the make-directory task, \code{mkdir}, takes the path for a directory and creates
-that directory and all of its necessary parent directories.  Here,
-it builds the directory \filepath{build/classes}.  All files are
-relative to the base directory, which is here the directory containing
-the \code{build.xml} file, namely \relpath{src/intro}.
+The first task is the make-directory task, \code{mkdir}, takes the
+path for a directory and creates that directory and all of its
+necessary parent directories.  Here, it builds the directory
+\filepath{build/classes}.  All files are relative to the base
+directory, which is here the directory containing the \code{build.xml}
+file, namely \relpath{src/intro}.
 
 The second task is the Java compilation task, \code{javac}, does the
 actual compilation.  Here we have supplied the task element with four
@@ -694,7 +701,7 @@ These can be removed to save space, but they can be very helpful for
 deployed systems, so we don't recommend it.  The \code{debug} element
 says to turn debugging on, and the \code{debuglevel} says to debug the
 source down to lines and variable names, which is the maximal amount
-of debugging information available.
+of debugging information available.  
 
 The destination directory attribute, \code{destdir} indicates where
 the compiled classes will be stored.  Here, the path is \filepath{build/classes}.
@@ -709,16 +716,47 @@ for the compilation.  In our opinion, this should have defaulted to
 build files.  If you don't specify this attribute, Ant gripes and
 tells you what it's defaulting to.
 
-The java compilation task here has content, namely a single
-source element with tag \code{src}.  This says where to find
-the source code to compile.  Here we specify the value of
-attribute for the path to the source, \code{path}, as
-\code{src/}.  As usual, this path is interpreted relative to the base directory,
-which is the one holding the \code{build.xml} file.  
+The java compilation task here has content, startign with a compiler
+argument.  The element \code{compilerarg} passes the value of the
+attribute \code{value} to the underlying call to the \code{javac}
+executable in the JDK.  Here, we specified a value of 
+\code{-Xlint:all}.  The \code{-X} options to \code{javac} are
+documented by running the command \code{javac -X}.  This \code{-X}
+option specifies \code{lint:all}, which says to turn all lint
+detection on.  This provides extended warnings for form, including
+deprecation, unchecked casts, lack of serial version IDs, lack or
+extra override specifications, and so on.  These can be turned on and
+off one by one, but we prefer to leave them all on and produce
+lint-free programs.  This often involves suppressing warnings that
+would otherwise be unavoidable, such as casts after object I/O or
+internal uses of deprecated public methods.
 
-In more elaborate builds, we would specify a classpath element as
-further content to the java-compilation task if we depend on external
-libraries.  
+When compilation requires external libraries, we may add the classpath
+specifications either as attributes or elements in the \code{javac}
+task.  For instance, we can have a classpath specification, which
+is much like a property definition,
+
+\begin{verbatim}
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/icu4j-4_4_1.jar"/>
+  </path>
+\end{verbatim}
+%
+And then we'd add the element 
+%
+\begin{verbatim}
+<classpath refid="classpath"/>
+\end{verbatim}
+%
+as content in the \code{javac} target.
+
+The java compilation task's content continues a source element with
+tag \code{src}.  This says where to find the source code to compile.
+Here we specify the value of attribute for the path to the source,
+\code{path}, as \code{src/}.  As usual, this path is interpreted
+relative to the base directory, which is the one holding the
+\code{build.xml} file.
 
 The third task is the Java archive task, \code{jar}, which packages up
 the compiled code into a single compressed file, conventionally
@@ -729,6 +767,8 @@ substituted, here \code{build/lpb-intro-4.0.jar}.  As ever, this is
 interpreted relative to the base project directory.  Note that the jar
 is being created in the \code{build} directory, which will be cleaned
 by the clean target.  
+
+\subsubsection{Java Execution Task}
 
 The final target is the one that'll run Java,
 
@@ -810,7 +850,6 @@ of which is passed to the named Java programs \code{main()} program as
 arguments.  As a convention, our programs will all create string
 variables of the same name as their first action, just as in our
 hello program with arguments. 
-
 
 
 In more elaborate uses of the \code{java} task, we can also specify

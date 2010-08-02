@@ -22,6 +22,7 @@
            debuglevel="source,lines,vars"
            destdir="build/classes"
            includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
       <classpath refid="classpath"/>
       <src path="src/"/>
     </javac>
