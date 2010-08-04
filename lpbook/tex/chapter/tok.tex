@@ -1796,12 +1796,54 @@ than close double quotes.  Like the bracket token substitutions,
 the two characters substituted for quotes still span only a single token
 of the input.
 
+\subsubsection{Discussion}
+
+There are several problems with the Penn Treebank tokenizer as presented.
+The problems are typical of systems developed on limited sets of data with
+the goal of parsing the data at hand rather than generalizing.  
+
+We fixed the problem of only recognizing ASCII quotes and only
+recognizing ASCII brackets by generalizing to Unicode classes in our
+regular expressions.
+
+A remaining problem is that we don't handle sentence-final, but
+non-string-final periods.  For instance, if we run
+%
+\commandlinefollow{ant -Dtext="John says, 'hello.'" treebank-tokens}
+%
+we'll find the token \charmention{hello.} (including the period
+character).  The problem is with the rule that splits out final
+periods in both our code and the SED script from which it was derived.
+We'll tackle this issue again when it comes to sentence detection
+(see \refchap{sentence}).
+
+Another problem, which is fairly obvious from looking at the code, is
+that we've only handled a small set of contractions.  We haven't
+handled \stringmention{y'all} or \stringmention{c'mon}, which are in
+everyday use in English.  I happen to be a fan of nautical fiction,
+but the tokenizer will stumble on \stringmention{fo'c's'le}, the
+conventional contraction of \stringmention{forecastle}.  Things get
+even worse when we move into technical domains like chemistry or
+mathematics, where apostrophes are used as primes or have other
+meanings.
+
+We've also only handled a small set of word-like punctuation.  What
+about the e-mail smiley punctuation, \stringmention{:-)}?  It's a unit,
+but will be broken into three tokens by the current tokenizer.
 
 
-cool.  
+
+
+
+
+\section{Some Silly UTF-8 and Arabic Tests}
+
+Let's see if we can do Latin1 chars in UTF-8:
+
 Déjà vu
 
-Here's one with \code{RLtext}:
+
+Here's transliterated Arabic source in \code{RLtext}
 
 
 
@@ -1809,10 +1851,10 @@ Here's one with \code{RLtext}:
 bismi al-ll_ahi al-rra.hm_ani al-rra.hImi
 \end{RLtext}
 
-With \code{RL}, \RL{السَلامُ عَليكم ورَحمةُ الله وبَركاته}, it'll show
-up inline
+Inline, using \code{RL}, we get \RL{السَلامُ عَليكم ورَحمةُ الله وبَركاته}, which
+is inline.
 
-and with \code{arabtext}, it'll be displayed.
+With \code{arabtext}, we get a display.
 
 \begin{arabtext}
 0 1 2 3 4 5 6 7 8 9
@@ -1822,4 +1864,3 @@ and with \code{arabtext}, it'll be displayed.
 السَلامُ عَليكم ورَحمةُ الله وبَركاته
 \end{arabtext}
 
-Et voila.
