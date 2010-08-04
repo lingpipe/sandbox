@@ -44,7 +44,7 @@ X, and for Linux, and is also available for Solaris.
 If you're working in Windows (XP, Vista or 7), we recommend the 
 Cygwin suite of Unix command-line tools for Windows.  
 
-Cygwin is released under version 2 of the Gnu Public License (GPLv2), with
+Cygwin is released under version 2 of the GNU Public License (GPLv2), with
 terms outlined here:
 %
 \urldisplay{http://cygwin.com/license.html}
@@ -108,28 +108,59 @@ official guide by the authors, available onlie at
 In order to generate code, HTML, and reports, you will need to be able
 to edit text.  We like to work in the emacs text editor, because of
 its configurability.  It's as close as you'll get to an IDE in a
-simple text editor.  We use the XEmacs distribution of emacs, which is
-available from its home page,
-%
-\urldisplay{http://www.xemacs.org/}
-%
-There's an installer for Windows.  We found the install from
-\site{xemacs.org} to work better than the one that comes with Cygwin
-as far as interacting with Windows.  We like to work with the Lucida
-Console font, which is distributed with Windows; it's the font used
-for code examples in this book.
+simple text editor. 
 
 \subsubsection{Spaces, Not Tabs}
 
 To make code portable, we highly recommend using spaces instead of
-tabs.  Yes, it takes up a bit more space, but it's worth it.  The
-requisite commands are shown in \reffig{emacs-tabs}.  To apply these
-commands, first select the \menuitem{Edit Init File} selection from
-the \menuitem{Options} menu in XEmacs, add the text in
-\reffig{emacs-tabs}, then save using the \menuitem{Save Options to Custom
-File} selection from the \menuitem{Options} menu.
+tabs.  Yes, it takes up a bit more space, but it's worth it.  We
+follow Sun's coding standard for Java, so we use four spaces for a
+tab.  This is a bit easier to read, but wastes more horizontal space.
 
-\begin{figure}
+\subsubsection{(GNU) Emacs}
+
+We use the GNU Emacs distribution of emacs, which is available from
+its home page,
+%
+\urldisplay{http://www.gnu.org/software/emacs/}
+%
+It's standard on most Unix and Linux distributions; for Windows, there
+is a zipped binary distribution in a subdirectory of the main
+distribution that only needs to be unpacked in order to be run.  We've
+had problems with the Cygwin-based installations in terms of their
+font integration.  And we've also not been able to configure XEmacs
+for Unicode, which is the main reason for our preference for GNU Emacs.
+
+We like to work with the Lucida Console font, which is distributed
+with Windows; it's the font used for code examples in this book.  It
+also supports a wide range of non-Roman fonts.  You can change the
+font by pulling down the \code{Options} menu and selecting the
+\code{Set Default Font...} item to pop up a dialog box.  Then use
+the \code{Save Options} item in the same menu to save it.  It'll show
+you where it saved a file called \code{.emacs} which you will need
+to edit for the next customizations.
+
+In order to configure GNU Emacs to run UTF-8, you need to add
+the following text to your \code{.emacs} file:%
+%
+\footnote{The UTF-8 instructions are from the Sacrificial Rabbit blog entry
+  \url{http://blog.jonnay.net/archives/820-Emacs-and-UTF-8-Encoding.html},
+  downloaded 4 August 2010.}
+%
+\begin{verbatim}
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(setq default-buffer-file-coding-system 'utf-8)
+(setq x-select-request-type 
+    '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+(set-clipboard-coding-system 'utf-16le-dos)
+\end{verbatim}
+%
+The requisite commands to force tabs to be replaced with spaces in
+Java files are: 
+%
 \begin{verbatim}
 (defun java-mode-untabify ()
   (save-excursion
@@ -143,9 +174,9 @@ File} selection from the \menuitem{Options} menu.
          (make-local-variable 'write-contents-hooks)
          (add-hook 'write-contents-hooks 'java-mode-untabify)))
 
-(setq indent-tabs-mode nil)\end{verbatim}\vspace*{-12pt}%
-\caption{Required configuration for emacs so that it uses spaces rather than tabs for Java.}\label{fig:emacs-tabs}%
-\end{figure}
+(setq indent-tabs-mode nil)
+\end{verbatim}
+
 
 
 
@@ -341,7 +372,7 @@ Netbeans is free, and may be downloaded from its home page,
 %
 Its licensing is rather complex, being released under a dual license
 consisting of the Common Development and Distribution License (CDDL)
-and version 2 of the Gnu Public License version (GPLv2).  Full details
+and version 2 of the GNU Public License version (GPLv2).  Full details
 are at
 %
 \urldisplay{http://netbeans.org/about/legal/license.html}
@@ -891,7 +922,7 @@ last: R
 \end{verbatim}
 %
 We invoke the Ant target \code{hello-name} to run the demo,
-specifying that the properties from teh file \code{demo.properties}
+specifying that the properties from the file \code{demo.properties}
 be read in.
 %
 \commandlinefollow{ant -propertyfile demo.properties hello-name}
