@@ -1753,7 +1753,13 @@ token \charmention{-RRB-} spans from 37 (inclusive) to 38 (exclusive),
 the position of the right round bracket in the original text.
 
 Given how difficult it is to get a standard quote character into a
-command, we've used a properties file in
+property definition,%
+%
+\footnote{Although the double quote character itself can be escaped in
+  most shells, Ant's scripts can't handle \code{-D} property
+  specifications with embedded quotes.}
+% 
+we've used a properties file in
 \filepath{config/text2.properties}.  The content of the properties
 file is 
 %
@@ -1794,3 +1800,26 @@ of the input.
 
 cool.  
 Déjà vu
+
+Here's one with \code{RLtext}:
+
+
+
+\begin{RLtext}
+bismi al-ll_ahi al-rra.hm_ani al-rra.hImi
+\end{RLtext}
+
+With \code{RL}, \RL{السَلامُ عَليكم ورَحمةُ الله وبَركاته}, it'll show
+up inline
+
+and with \code{arabtext}, it'll be displayed.
+
+\begin{arabtext}
+0 1 2 3 4 5 6 7 8 9
+
+0123456789
+
+السَلامُ عَليكم ورَحمةُ الله وبَركاته
+\end{arabtext}
+
+Et voila.
