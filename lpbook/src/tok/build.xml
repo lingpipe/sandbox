@@ -11,6 +11,8 @@
     <pathelement location="${jar}"/>
     <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
     <pathelement location="../../lib/icu4j-4_4_1.jar"/>
+    <pathelement location="../../lib/lucene-core-3.0.2.jar"/>
+    <pathelement location="../../lib/lucene-analyzers-3.0.2.jar"/>
   </path>
             
 
@@ -130,6 +132,25 @@
       <arg value="${text}"/>
     </java>
   </target>
+
+
+  <target name="lucene-lp-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.AnalyzerTokenizerFactory"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
+
+  <target name="lp-lucene-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.TokenizerFactoryAnalyzer"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
  
 
 
@@ -141,6 +162,8 @@
                    prefix-stem-tokens,
                    porter-stemmer-tokens,
                    soundex-tokens,
-                   unicode-norm-tokens"/>
+                   unicode-norm-tokens,
+                   lucene-lp-tokens,
+                   lp-lucene-tokens"/>
 
 </project>
