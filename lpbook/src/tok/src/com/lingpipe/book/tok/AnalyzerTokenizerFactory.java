@@ -43,7 +43,7 @@ public class AnalyzerTokenizerFactory
         return new TokenStreamTokenizer(tokenStream);
     }
 
-    Object writeReplace() {
+    Object writeReplace() { 
         return new Serializer(this);
     }
 
