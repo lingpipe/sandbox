@@ -7,6 +7,9 @@
   <property name="title"
            value="lp-book"/>
 
+  <property name="version"
+            value="0.1"/>
+
   <property name="java.src"
             value="src/"/>
 
@@ -32,7 +35,7 @@
     </jar>
   </target>
 
-  <target name="jt">
+  <target name="j2t">
     <mkdir dir="${java2tex.out}"/>
     <java classname="com.colloquial.java2tex.Java2Tex"
           classpath="lib/java2tex-a.jar"
@@ -75,13 +78,58 @@
     </subant>
   </target>
 
-
   <target name="run-demos">
     <subant failonerror="false">
             <fileset dir="." includes="**/build.xml" excludes="build.xml"/>
             <target name="clean"/>
             <target name="run"/>
     </subant>
+  </target>
+
+  <target name="site">
+
+    <antcall target="clean"/>
+    <antcall target="j2t"/>
+    <antcall target="book"/>
+    <antcall target="book"/>
+
+    <tar destfile="build/lingpipe-book-code-${version}.tgz"
+         compression="gzip">
+      <tarfileset dir="."
+                  prefix="lingpipe-book-code-${version}"
+                  mode="775">
+        <include name="lib/**/*"/>
+        <exclude name="lib/java2tex*"/>
+        <include name="src/**/*"/>
+        <include name="licenses/**/*"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/.svn/*"/>
+      </tarfileset>
+    </tar>
+
+    <copy file="build/lp-book.pdf" 
+          tofile="build/lingpipe-book-${version}.pdf"/>
+
+    <tar destfile="build/lingpipe-book-site-${version}.tgz"
+         compression="gzip">
+      <tarfileset dir="build"
+                  prefix="lingpipe-book/"
+                  mode="775">
+	<include name="lingpipe-book-${version}.pdf"/>
+      </tarfileset>
+      <tarfileset dir="web"
+                  prefix="lingpipe-book/"
+                  mode="775">
+	<include name="**/*"/>
+      </tarfileset>
+      <tarfileset dir="build"
+                  prefix="lingpipe-book/"
+                  mode="775">
+	<include name="lingpipe-book-code-${version}.tgz"/>
+      </tarfileset>
+
+      
+    </tar>
   </target>
 
 </project>

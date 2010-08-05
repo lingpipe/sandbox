@@ -29,7 +29,7 @@ public class SerializedSingleton implements Serializable {
     
     static class Serializer extends AbstractExternalizable {
 
-        public Externalizer() { }
+        public Serializer() { }
 
         @Override
         public Object read(ObjectInput in) {

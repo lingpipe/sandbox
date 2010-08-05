@@ -68,6 +68,7 @@
     </java>
   </target>
 
+  <property name="replacement" value="X"/>
   <target name="regex-replace"
           depends="jar">
     <java classname="com.lingpipe.book.regex.RegexReplace"
