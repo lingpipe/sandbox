@@ -34,6 +34,8 @@
     </java>
   </target>
 
+  <property name="first" value="Foo"/>
+  <property name="last" value="Bar"/>
   <target name="hello-name"
           depends="jar">
     <java classname="com.lingpipe.book.intro.HelloName"

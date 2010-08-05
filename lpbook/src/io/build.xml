@@ -102,20 +102,6 @@
     </java>
   </target>
 
-  <property name="data" value="The quick brown fox."/>
-  <property name="encoding" value="UTF-8"/>
-  <target name="url-write-read"
-          depends="jar">
-    <java classname="com.lingpipe.book.io.UrlWriteRead"
-          classpath="${jar}"
-          fork="true">
-      <classpath refid="classpath"/>
-      <arg value="${url.in}"/>
-      <arg value="${data}"/>
-      <arg value="${encoding}"/>
-    </java>
-  </target>
-
 
   <property name="enc.in" value="UTF-8"/>
   <property name="enc.out" value="UTF-16LE"/>
@@ -132,25 +118,28 @@
     </java>
   </target>
 
+  <property name="file.uncompressed" value="${file.in}"/>
+  <property name="file.gzipped" value="temp.gzipped"/>
   <target name="file-gzip"
           depends="jar">
     <java classname="com.lingpipe.book.io.FileGZIP"
           classpath="${jar}"
           fork="true">
       <classpath refid="classpath"/>
-      <arg value="${file.in}"/>
-      <arg value="${file.out}"/>
+      <arg value="${file.uncompressed}"/>
+      <arg value="${file.gzipped}"/>
     </java>
   </target>
 
+  <property name="file.ungzipped" value="temp.ungzipped"/>
   <target name="file-ungzip"
           depends="jar">
     <java classname="com.lingpipe.book.io.FileUnGZIP"
           classpath="${jar}"
           fork="true">
       <classpath refid="classpath"/>
-      <arg value="${file.in}"/>
-      <arg value="${file.out}"/>
+      <arg value="${file.gzipped}"/>
+      <arg value="${file.ungzipped}"/>
     </java>
   </target>
 
@@ -267,7 +256,6 @@
                    serial-proxied,
                    serialized-singleton,
                    url-properties,
-                   url-read,
-                   url-write-read"/>
+                   url-read"/>
 
 </project>

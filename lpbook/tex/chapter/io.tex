@@ -1113,27 +1113,25 @@ before.  Both programs print the input and output file lengths
 for convenience.
 
 The Ant target \code{file-gzip} calls the program with arguments
-the value of properties \code{file.in} and \code{file.out}.
+the value of properties \code{file.uncompressed} and \code{file.gzipped}.
 It's conventional to name a compressed file the same thing as the
 original file with a suffix denoting the type of compression,
 which for GZIP is \code{gz}. Here we compress the build file
 \code{build.xml}, which being XML, is highly redundant, and hence
 highly compressible.
 %
-\commandlinefollow{ant -Dfile.in=build.xml -Dfile.out=build.xml.gz file-gzip}
+\commandlinefollow{ant -Dfile.uncompressed=build.xml -Dfile.gzipped=build.xml.gz file-gzip}
 \begin{verbatim}
-Original Size=4456
-Compressed Size=827
+Original Size=7645          Compressed Size=1333 
 \end{verbatim}
 %
-We can reverse this, uncompressing into a copy \code{build.xml.copy},
-so as not to disturb our original \code{build.xml} file,
+We can uncompress in the same way, calling the \code{file-ungzip}
+target, which takes as command-line arguments the values of properties
+\code{file.gzipped} and \code{file.ungzipped}.
 %
-\commandlinefollow{ant -Dfile.in=build.xml.gz
-  -Dfile.out=build.xml.copy file-ungzip}
+\commandlinefollow{ant -Dfile.ungzipped=build.xml.copy -Dfile.gzipped=build.xml.gz file-ungzip}
 \begin{verbatim}
-Original Size=827
-Expanded Size=4456
+Original Size=1333          Expanded Size=7645
 \end{verbatim}
 %
 The round trip results in \code{build.xml.copy} containing exactly the
@@ -1143,6 +1141,15 @@ same content using the \code{diff} program from the command line,
 \commandline{diff~build.xml~build.xml.copy}
 %
 which prints no output when the files being compared are the same.
+Listing the directory contents shows the sizes,
+%
+\commandlinefollow{ls -l}
+\begin{verbatim}
+7645 Aug  5 16:54 build.xml        
+7645 Aug  5 16:58 build.xml.copy
+1333 Aug  5 16:58 build.xml.gz
+\end{verbatim}
+
 Along the same lines, you may verify that command-line versions of
 GZIP, such as \code{gunzip}, can handle the compressed file.%
 %

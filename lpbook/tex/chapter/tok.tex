@@ -1752,6 +1752,33 @@ note that these have their original spans, so that the
 token \charmention{-RRB-} spans from 37 (inclusive) to 38 (exclusive),
 the position of the right round bracket in the original text.
 
+The negative lookahead for the basic tokenizer makes sure that periods
+are not picked up as part of tokens if they are followed by the end of
+input or a non-emptysequence of punctuation characters including final
+punctuation like right brackets (Unicode class \code{Pf}), the double
+quote character or the apostrophe.  For example, 
+%
+\commandlinefollow{ant -Dtext="(John ran.)" treebank-tokens}
+\begin{verbatim}
+(john ran.)
+01234567890
+
+START   END TOKEN          START   END TOKEN
+    0     1  |-LRB-|           9    10  |.|
+    1     5  |John|           10    11  |-RRB-|
+    6     9  |ran|
+\end{verbatim}
+%
+The period is not tokenized along with \stringmention{ran}, because it
+is followed by a right round bracket character (\charmention{)}), an
+instance of final punctuation matching \code{Pf}.  Without the
+negative lookahead disjunct appearing before the general disjunct,
+the period would've been included.
+
+The same negative lookahead makes sure that the contraction
+\stringmention{n't}, which has an internal apostrophe, is not
+included in the previous token, as we saw a few examples back.
+
 Given how difficult it is to get a standard quote character into a
 property definition,%
 %
@@ -1796,6 +1823,7 @@ than close double quotes.  Like the bracket token substitutions,
 the two characters substituted for quotes still span only a single token
 of the input.
 
+
 \subsubsection{Discussion}
 
 There are several problems with the Penn Treebank tokenizer as presented.
@@ -1835,32 +1863,4 @@ but will be broken into three tokens by the current tokenizer.
 
 
 
-
-\section{Some Silly UTF-8 and Arabic Tests}
-
-Let's see if we can do Latin1 chars in UTF-8:
-
-Déjà vu
-
-
-Here's transliterated Arabic source in \code{RLtext}
-
-
-
-\begin{RLtext}
-bismi al-ll_ahi al-rra.hm_ani al-rra.hImi
-\end{RLtext}
-
-Inline, using \code{RL}, we get \RL{السَلامُ عَليكم ورَحمةُ الله وبَركاته}, which
-is inline.
-
-With \code{arabtext}, we get a display.
-
-\begin{arabtext}
-0 1 2 3 4 5 6 7 8 9
-
-0123456789
-
-السَلامُ عَليكم ورَحمةُ الله وبَركاته
-\end{arabtext}
 

@@ -70,7 +70,7 @@ public class PennTreebankTokenizerFactory
         + "|" + "dd(?=ya\\b)" + "|" + "ha(?=tcha\\b)"
         + "|" + "t(?=cha\\b)"
         + "|" + "'(ll|re|ve|s|d|m|n)" + "|" + "n't"
-        + "|" + "[\\p{L}\\p{N}]+(?=(\\.$|n't))"
+        + "|" + "[\\p{L}\\p{N}]+(?=(\\.$|\\.([\\{Pf}\"']*)|n't))"
         + "|" + "[\\p{L}\\p{N}\\.]+"
         + "|" + "[^\\p{Z}]"
         + ")";
