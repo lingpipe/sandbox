@@ -25,6 +25,7 @@ import java.io.ObjectOutput;
 import java.io.Reader;
 import java.io.Serializable;
 
+/*x AnalyzerTokenizerFactory.1 */
 public class AnalyzerTokenizerFactory 
     implements TokenizerFactory, Serializable {
 
@@ -36,70 +37,86 @@ public class AnalyzerTokenizerFactory
         mAnalyzer = analyzer;
         mFieldName = fieldName;
     } 
+/*x*/
 
+    /*x AnalyzerTokenizerFactory.2 */
     public Tokenizer tokenizer(char[] cs, int start, int len) {
         Reader reader = new CharArrayReader(cs,start,len);
         TokenStream tokenStream 
             = mAnalyzer.tokenStream(mFieldName,reader);
         return new TokenStreamTokenizer(tokenStream);
     }
+    /*x*/
+    
 
     Object writeReplace() { 
         return new Serializer(this);
     }
 
-    static class TokenStreamTokenizer 
-        extends Tokenizer 
-        implements Closeable {
+    /*x AnalyzerTokenizerFactory.3 */
+    static class TokenStreamTokenizer extends Tokenizer {
+
         private final TokenStream mTokenStream;
         private final TermAttribute mTermAttribute;
-	private final OffsetAttribute mOffsetAttribute;
-	private int mLastTokenStartPosition = -1; 
-	private int mLastTokenEndPosition = -1;
+        private final OffsetAttribute mOffsetAttribute;
+
+        private int mLastTokenStartPosition = -1; 
+        private int mLastTokenEndPosition = -1;
+
         public TokenStreamTokenizer(TokenStream tokenStream) {
             mTokenStream = tokenStream;
             mTermAttribute 
                 = mTokenStream.addAttribute(TermAttribute.class);
-	    mOffsetAttribute
-		= mTokenStream.addAttribute(OffsetAttribute.class);
+            mOffsetAttribute
+                = mTokenStream.addAttribute(OffsetAttribute.class);
         }
+    /*x*/
+
+        /*x AnalyzerTokenizerFactory.4 */
         @Override
         public String nextToken() {
             try {
                 if (mTokenStream.incrementToken()) {
-                    return getNextToken();
+                    mLastTokenStartPosition 
+                        = mOffsetAttribute.startOffset();
+                    mLastTokenEndPosition 
+                        = mOffsetAttribute.endOffset();
+                    return mTermAttribute.term();
                 } else {
-                    close();
+                    closeQuietly();
                     return null;
                 }
             } catch (IOException e) {
-                close();
+                closeQuietly();
                 return null;
             }
         }
-	@Override
-	public int lastTokenStartPosition() {
-	    return mLastTokenStartPosition;
-	}
-	@Override
-	public int lastTokenEndPosition() {
-	    return mLastTokenEndPosition;
-	}
+        /*x*/
 
-        public void close() {
+        /*x AnalyzerTokenizerFactory.5 */
+        @Override
+        public int lastTokenStartPosition() {
+            return mLastTokenStartPosition;
+        }
+        /*x*/
+
+        @Override
+        public int lastTokenEndPosition() {
+            return mLastTokenEndPosition;
+        }
+
+        /*x AnalyzerTokenizerFactory.6 */
+        public void closeQuietly() {
             try {
                 mTokenStream.end();
             } catch (IOException e) {
-                /* no op */
+                /* ignore */
             } finally {
                 Streams.closeQuietly(mTokenStream);
             }
         }
-        String getNextToken() {
-	    mLastTokenStartPosition = mOffsetAttribute.startOffset();
-	    mLastTokenEndPosition = mOffsetAttribute.endOffset();
-            return mTermAttribute.term();
-        }    
+        /*x*/
+
     }
 
     static class Serializer extends AbstractExternalizable {
@@ -120,7 +137,7 @@ public class AnalyzerTokenizerFactory
         }
         @Override
         public void writeExternal(ObjectOutput out) 
-	    throws IOException {
+            throws IOException {
             out.writeObject(mFactory.mAnalyzer);
             out.writeUTF(mFactory.mFieldName);
         }
@@ -128,15 +145,17 @@ public class AnalyzerTokenizerFactory
     }
 
     public static void main(String[] args) throws IOException {
+        /*x AnalyzerTokenizerFactory.7 */
         String text = args[0];
 
         StandardAnalyzer analyzer 
             = new StandardAnalyzer(Version.LUCENE_30);
         AnalyzerTokenizerFactory tokFact
-            = new AnalyzerTokenizerFactory(analyzer,"text");
+            = new AnalyzerTokenizerFactory(analyzer,"foo");
 
-	DisplayTokens.displayTextPositions(text);
-	DisplayTokens.displayTokens(text,tokFact);
+        DisplayTokens.displayTextPositions(text);
+        DisplayTokens.displayTokens(text,tokFact);
+        /*x*/
 
     }
 

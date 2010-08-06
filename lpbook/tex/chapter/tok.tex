@@ -1977,10 +1977,88 @@ The start (inclusive) and end (exclusive) positions of the
 extracted terms is also shown.
 
 
-\subsection{Adapting Analyzers to Tokenizer Factories}
+\subsection{Adapting Analyzers for Tokenizer Factories}
 
-A Lucene analyzer together with the name of a field implements roughly
-the same functionality as a LingPipe \code{TokenizerFactory}.  
+The demo class \code{AnalyzerTokenizerFactory} implements LingPipe's
+\code{TokenizerFactory} interface based on a Lucene \code{Analyzer}
+and field name.  In general design terms, the class adapts an analyzer
+to do the work of a tokenizer factory.
+
+The class is declared to implement the tokenizer factory interface to
+be serializable,
+%
+\codeblock{AnalyzerTokenizerFactory.1}
+%
+The constructor simply stores an analyzer and field name in private
+final member variables.
+
+The only method we need to implement is \code{tokenizer()},
+%
+\codeblock{AnalyzerTokenizerFactory.2}
+%
+It creates a reader from the character array slice and then uses the
+stored analyzer to convert it to a Lucene \code{TokenStream}.  A
+new instance of \code{TokenStreamTokenizer} is constructed based
+on the token stream and returned.
+
+The \code{TokenStreamTokenizer} class is a nested static class.
+It is defined to extend LingPipe's \code{Tokenizer} base class and
+implement Java's \code{Closeable} interface.
+%
+\codeblock{AnalyzerTokenizerFactory.3}
+%
+The constructor stores the token stream in a member variable, along
+with the term and offset attributes it adds to the token stream.
+The token start positions are initialized to -1, which is the proper
+return value before any tokens have been found.
+
+The \code{nextToken()} method is implemented by delegating to the
+contained token stream's \code{incrementToken()} method, which
+advances the underlying token stream.  
+%
+\codeblock{AnalyzerTokenizerFactory.4}
+After the increment, the start
+and end positions are stored befre returning the term as the next
+token.  If the token stream is finished or the increment method throws
+an I/O exception, the stream is ended and closed quietly (see below).
+%
+\codeblock{AnalyzerTokenizerFactory.6}
+
+The methods for start and end just return the stored
+values.  For example,
+%
+\codeblock{AnalyzerTokenizerFactory.5}
+
+The \code{main()} method for the demo takes a command-line argument
+for the text.  It sets up a standard Lucene analyzer, then constructs
+a tokenizer factory from it using the field \code{text} (the field
+doesn't matter to the standard analyzer, but may matter for other
+analyzers).  
+%
+\codeblock{AnalyzerTokenizerFactory.7}
+%
+We then just display the text and tokens as we have in
+previous demos.
+
+The Ant target \code{lucene-lp-tokens} runs the example, with
+property \code{text} passed in as the command-line argument.
+%
+\commandlinefollow{ant -Dtext="Mr.\ Smith is happy!" lucene-lp-tokens}
+\begin{verbatim}
+Mr. Smith is happy!
+0123456789012345678
+0         1
+
+START   END TOKEN          START   END TOKEN
+    0     2  |mr|             13    18  |happy|
+    4     9  |smith|
+\end{verbatim}
+%
+As before, we see the stoplisting and case normalization of
+the standard Lucene analyzer.
+
+
+
 
 
 
