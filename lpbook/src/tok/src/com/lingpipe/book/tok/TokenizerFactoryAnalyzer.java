@@ -26,8 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TokenizerFactoryAnalyzer 
-    extends Analyzer {
+public class TokenizerFactoryAnalyzer  extends Analyzer {
 
     private final Map<String,TokenizerFactory> mFieldToTokenizerFactory;
     private final TokenizerFactory mDefaultTokenizerFactory;
