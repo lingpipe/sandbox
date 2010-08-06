@@ -177,7 +177,7 @@ We provide a corresponding Ant target \code{display-tokens}, which
 is given a single command-line argument consisting of the value of
 the property \code{text}.  
 %
-\commandlinefollow{ant -Dtext="The note says, 'Mr. Sutton-Smith owes \$15.20.'" display-tokens}
+\commandlinefollow{ant -Dtext="The note says, 'Mr.\ Sutton-Smith owes \$15.20.'" display-tokens}
 \begin{verbatim}
 The note says, 'Mr. Sutton-Smith owes $15.20.'
 0123456789012345678901234567890123456789012345
@@ -1419,7 +1419,7 @@ text with indexes and then the resulting tokens.
 We provide an Ant target \code{soundex-tokens}, which 
 feeds the value of property \code{text} to the program.
 %
-\commandlinefollow{ant -Dtext="Mr. Roberts knows Don Knuth." soundex-tokens}
+\commandlinefollow{ant -Dtext="Mr.\ Roberts knows Don Knuth." soundex-tokens}
 \begin{verbatim}
 Mr. Roberts knows Don Knuth.
 0123456789012345678901234567
@@ -1541,9 +1541,9 @@ of the tokenization scheme used to create the corpus.
 In this section, we provide an overview of the Penn Treebank's
 tokenization scheme.%
 %
-\footnote{An overview is available from
+\footnote{We draw from the online description
   \url{http://www.cis.upenn.edu/~treebank/tokenization.html}
-  (downloaded 30 July 2010), and Robert MacIntyre's implementation as
+  (downloaded 30 July 2010) and Robert MacIntyre's implementation as
   a SED script, released under the Gnu Public License, in
   \url{http://www.cis.upenn.edu/~treebank/tokenizer.sed}.}
 %
@@ -1587,13 +1587,14 @@ Other than the treatment of periods, quotation marks and apostrophes
 in the aforementioned contexts, the Treebank tokenizer splits out
 other punctuation characters into their own tokens.
 
-The ASCII bracket characters, left and right, round and square and curly,
-are replaced with acronyms and hyphens.  For instance, \unicode{005B},
-\unicodedesc{left square bracket} (\charmention{[}) produces the
-token \stringmention{-LSB-}.  The acronym \charmention{LSB}
-stands for left square bracket; other brackets are coded similarly
-using \charmention{R} for right, and \charmention{R} for round and
-\charmention{C} for curly.
+The ASCII bracket characters, left and right, round and square and
+curly, are replaced with acronyms and hyphens.  For instance,
+\unicode{005B}, \unicodedesc{left square bracket} (\charmention{[})
+  produces the token \stringmention{-LSB-}.  The acronym
+  \charmention{LSB} stands for left square bracket; other brackets are
+  coded similarly alternating \charmention{R} for right in the first
+  position, and \charmention{R} for round and \charmention{C} for
+  curly in the second position.
 
 \subsection{Demo: Penn Treebank Tokenizer}
 
@@ -1752,11 +1753,13 @@ note that these have their original spans, so that the
 token \charmention{-RRB-} spans from 37 (inclusive) to 38 (exclusive),
 the position of the right round bracket in the original text.
 
-The negative lookahead for the basic tokenizer makes sure that periods
-are not picked up as part of tokens if they are followed by the end of
-input or a non-emptysequence of punctuation characters including final
+The first disjunct after all the special cases allows a sequence of
+letters and numbers to form a token subject to the negative lookahead
+constraint.  The negative lookahead makes sure that periods are not
+picked up as part of tokens if they are followed by the end of input
+or a non-empty sequence of punctuation characters including final
 punctuation like right brackets (Unicode class \code{Pf}), the double
-quote character or the apostrophe.  For example, 
+quote character or the apostrophe.  
 %
 \commandlinefollow{ant -Dtext="(John ran.)" treebank-tokens}
 \begin{verbatim}
@@ -1772,18 +1775,20 @@ START   END TOKEN          START   END TOKEN
 The period is not tokenized along with \stringmention{ran}, because it
 is followed by a right round bracket character (\charmention{)}), an
 instance of final punctuation matching \code{Pf}.  Without the
-negative lookahead disjunct appearing before the general disjunct,
-the period would've been included.
+negative lookahead disjunct appearing before the general disjunct, the
+period would've been included.  
 
-The same negative lookahead makes sure that the contraction
-\stringmention{n't}, which has an internal apostrophe, is not
-included in the previous token, as we saw a few examples back.
+The final disjunct in the negative
+lookahead constraint ensures the suffix \stringmention{n't} is kept
+together as we saw in the first example; without lookahead, the
+\stringmention{n} would be part of the previous token.
 
 Given how difficult it is to get a standard quote character into a
 property definition,%
 %
 \footnote{Although the double quote character itself can be escaped in
-  most shells, Ant's scripts can't handle \code{-D} property
+  any halfway decent shell, they all do it differently.  The real
+  problem is that Ant's scripts can't handle \code{-D} property
   specifications with embedded quotes.}
 % 
 we've used a properties file in
@@ -1807,8 +1812,8 @@ command line,
 %
 \commandlinefollow{ant -propertyfile=config/text2.properties treebank-tokens}
 \begin{verbatim}
-I say, "John runs"
-012345678901234567
+I say, "John runs".
+0123456789012345678
 0         1
 
 START   END TOKEN          START   END TOKEN
@@ -1826,24 +1831,12 @@ of the input.
 
 \subsubsection{Discussion}
 
-There are several problems with the Penn Treebank tokenizer as presented.
-The problems are typical of systems developed on limited sets of data with
-the goal of parsing the data at hand rather than generalizing.  
-
-We fixed the problem of only recognizing ASCII quotes and only
-recognizing ASCII brackets by generalizing to Unicode classes in our
-regular expressions.
-
-A remaining problem is that we don't handle sentence-final, but
-non-string-final periods.  For instance, if we run
-%
-\commandlinefollow{ant -Dtext="John says, 'hello.'" treebank-tokens}
-%
-we'll find the token \charmention{hello.} (including the period
-character).  The problem is with the rule that splits out final
-periods in both our code and the SED script from which it was derived.
-We'll tackle this issue again when it comes to sentence detection
-(see \refchap{sentence}).
+There are several problems with the Penn Treebank tokenizer as
+presented.  The problems are typical of systems developed on limited
+sets of data with the goal of parsing the data at hand rather than
+generalizing.  We fixed one such problem, only recognizing ASCII
+quotes and only recognizing ASCII brackets, by generalizing to Unicode
+classes in our regular expressions.
 
 Another problem, which is fairly obvious from looking at the code, is
 that we've only handled a small set of contractions.  We haven't
@@ -1858,6 +1851,137 @@ meanings.
 We've also only handled a small set of word-like punctuation.  What
 about the e-mail smiley punctuation, \stringmention{:-)}?  It's a unit,
 but will be broken into three tokens by the current tokenizer.
+
+
+\section{Lucene's Analyzers}
+
+Given a set of texts and a tokenization scheme to map texts to
+sequences of tokens, a reverse index is a mapping from tokens to the
+set of documents in which they occur.  Such reverse indexes form
+the backbone of search APIs like Apache's Lucene.
+
+\subsection{Documents, Fields and Analyzers}
+
+In Lucene, a document consists (in part) of a mapping from string
+field names to string values.%
+%
+\footnote{It may also contain values that are binary blobs.  Each
+  field is also marked as to whether it is (a) reverse indexed, (b)
+  tokenized for indexing, and (c) stored in the document store.}
+%
+Lucene manages reverse indexes for each indexed field of a document.
+Each field may have its own tokenization scheme.  
+
+Lucene's abstract base class \code{TokenStream}, in package
+\code{org.apache.lucene.analysis}, provides a streaming interface to
+tokens serving the same role as LingPipe's \code{Tokenizer} abstract
+base class.
+
+LingPipe's \code{TokenizerFactory} interface provides a representation
+of a mapping from character sequences to tokenizers.  Lucene bypasses
+this level of representation.  Instead, it uses the \code{Analyzer}
+abstract base class in package \code{org.apache.lucene.analysis} to
+map fields and sequences of characters into token streams.  The method
+\code{tokenStream(String,Reader)} returns a \code{TokenStream} given
+the name of the field being tokenized and the text to be tokenized as
+a Java \code{Reader} (character input stream).
+
+
+\subsection{Token Streams and Attributes}
+
+Before version 3.0 of Lucene, token streams had a string-position
+oriented tokenization API, much like LingPipe's tokenizers.  Version
+3.0 generalized the interface for token streams and other basic
+objects using a very general pattern based on what they call
+attributes.
+
+\subsubsection{Code Walkthrough}
+
+We provide a sample class \code{LuceneAnalysis} that applies an
+analyzer to a field name and text input and prints out the resulting
+tokens.  The work is done in a simple \code{main()} with two
+arguments, the field name and the text to be analyzed.  
+
+The first step is to create the analyzer.
+%
+\codeblock{LuceneAnalysis.1}
+%
+Here we've used Lucene's \code{StandardAnalyzer}, which applies case
+normalization and English stoplisting to their basic standard
+tokenizer, which pays attentiont to issues like periods and e-mail
+addresses.  Note that it's constructed with a constant for the Lucene
+version, as the behavior has changed over time.
+
+The standard analyzer, like almost all of Lucene's built-in analyzers,
+ignores the name of the field that is passed in.  Such analyzers
+essentially implement simple token stream factories, like LingPipe's
+tokenizer factories.
+
+The next step of the \code{main()} method constructs the token stream
+given the string values of the command-line arguments \code{fieldName}
+and \code{text}.  
+%
+\codeblock{LuceneAnalysis.2}
+%
+We first have to create a \code{Reader}, which we do by wrapping the
+input text string in a \code{StringReader} (from \code{java.io}).
+Then we use the analyzer to create a token stream from the field name
+and text reader.  The next three statements attach attributes to the
+token stream, specifically a term attribute, offset attribute and
+position increment attribute.  These are used to retrieve the text of
+a term, the span of the term in the original text, and the ordinal
+position of the term in the sequence of terms in the document.  The
+position is given by an increment from the previous position, and
+Lucene uses these values for phrase-based search \ie{searching for a
+fixed sequence of tokens in the given order without intervening
+material}.
+
+The last block of code in the \code{main()} method iterates through
+the tokens tream, printing the attributes of each token it finds.
+%
+\codeblock{LuceneAnalysis.3}
+%
+The while loop continually calls \code{incrementToken()} on the token
+stream, which advances to the next token, returning \code{true} if
+there are more tokens.  The body of the loop just pulls out the
+increment, start and end positions, and term for the token.  The
+rest of the code, which isn't shown, just prints these values.
+
+\subsubsection{Running the Demo}
+
+It may be run from the Ant target \code{lucene-analysis}, with
+the arguments provided by properties \code{field.name} and 
+\code{text} respectively.
+
+\commandlinefollow{ant -Dfield.name=foo -Dtext="Mr.\ Sutton-Smith will pay \$1.20 for the book." lucene-analysis}
+\begin{verbatim}
+Mr. Sutton-Smith will pay $1.20 for the book.
+012345678901234567890123456789012345678901234
+0         1         2         3         4
+
+ INCR (START,   END) TERM         INCR (START,   END) TERM
+    1 (    0,     2) mr              2 (   22,    25) pay
+    1 (    4,    10) sutton          1 (   27,    31) 1.20
+    1 (   11,    16) smith           3 (   40,    44) book
+\end{verbatim}
+%
+The terms are all lowercased, and non-word-internal punctuation has
+been removed.  The stop words \charmention{will}, \charmention{for}
+and \charmention{the} are also removed from the output.  Unlike
+punctuation, when a stop word is removed, it causes the increment
+between terms to be larger.  For instance, the increment between
+\charmention{smith} and \charmention{pay} is 2, because the stopword
+\charmention{will} was removed between them.  
+
+The start (inclusive) and end (exclusive) positions of the
+extracted terms is also shown.
+
+
+\subsection{Adapting Analyzers to Tokenizer Factories}
+
+A Lucene analyzer together with the name of a field implements roughly
+the same functionality as a LingPipe \code{TokenizerFactory}.  
+
 
 
 

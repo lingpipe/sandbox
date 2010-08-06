@@ -134,6 +134,17 @@
   </target>
 
 
+  <property name="field.name" value="foo"/>
+  <target name="lucene-analysis"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.LuceneAnalysis"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${field.name}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+
   <target name="lucene-lp-tokens"
           depends="jar">
     <java classname="com.lingpipe.book.tok.AnalyzerTokenizerFactory"
@@ -152,8 +163,6 @@
     </java>
   </target>
  
-
-
   <target name="run"
           depends="display-tokens,
                    regex-tokens,
@@ -163,6 +172,7 @@
                    porter-stemmer-tokens,
                    soundex-tokens,
                    unicode-norm-tokens,
+                   lucene-analysis,
                    lucene-lp-tokens,
                    lp-lucene-tokens"/>
 
