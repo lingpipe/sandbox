@@ -2058,6 +2058,144 @@ As before, we see the stoplisting and case normalization of
 the standard Lucene analyzer.
 
 
+\subsection{Adapting Tokenizer Factories for Analyzers}
+
+Recall that a Lucene analyzer maps fields and readers to token
+streams.  We can implement an analyzer given a mapping from fields to
+tokenizer factories.  We will also use a default tokenizer factory to
+apply to fields that are not defined in the map.
+
+The demo class \code{TokenizerFactoryAnalyzer} provides such
+an implementation.  The class definition and constructor are
+%
+\codeblock{TokenizerFactoryAnalyzer.1}
+%
+The mapping and default factory are stored as final member variables.
+
+Version 3.0 of Lucene has been defined to allow greater efficiency
+through object pooling, such as reuse of token streams.  This makes
+the implementation of \code{tokenStream()} more complex than may at
+first seem necessary.  
+%
+\codeblock{TokenizerFactoryAnalyzer.2}
+%
+The method creates a new instance of \code{TokenizerTokenStream}, the
+definition of which we show below.  It then sets the field name using
+the method \code{setField()} and the reader using the method
+\code{reset()}.  If the setting a field throws an exception, the
+\code{tokenStream()} method returns an instance
+\code{EmptyTokenStream}.%
+%
+\footnote{From the package
+  \code{org.apache.lucene.analysis.miscellaneous}, in the contributed
+  analyzers library, \code{lucene-analyzers-3.0.2.jar}.}
+%
+
+We also define the \code{reusableTokenStream()} method for efficiency,
+which reuses the previous token stream if there is one or uses
+\code{tokenStream()} to create one.  
+
+The class \code{TokenizerTokenStream} is defined as a (non-static)
+inner class.  
+%
+\codeblock{TokenizerFactoryAnalyzer.3}
+%
+It is defined to extend Lucene's \code{Tokenizer} interface, whose
+full package, \code{org.apache.lucene.analysis}, is included to avoid
+conflict with LingPipe's \code{Tokenizer} class.  Lucene's
+\code{Tokenizer} class is a subclass of \code{TokenStream} defined to
+support basic tokenizers (the other abstract base class supports token
+stream filters).  As with our use of token streams in the previous
+section to adapt analyzers to tokenizer factories, we again add and
+store the term, offset and position increment attributes.
+
+The field and reader are set and reset as follows.
+%
+\codeblock{TokenizerFactoryAnalyzer.4}
+%
+The \code{setField()} method simply stores the field name.  The
+\code{reset(Reader)} method extracts and stores the characters from
+the reader using LingPipe's utility method \code{toCharArray()}.
+The tokenizer factory is retrieved from the map using the field
+name as a key, returning the default tokenizer factory if the
+field name is not in the map.  After setting the characters and
+tokenizer, it calls the \code{reset()} method.  The \code{reset()}
+method sets the tokenizer based on the current tokenizer factory
+and stored strings, throwing an exception if \code{reset(Reader)}
+has not yet been called or the \code{close()} method has been
+called.
+
+Once a token stream is set up, its \code{incrementToken()} method
+sets up teh properties for the next token if there is one.
+%
+\codeblock{TokenizerFactoryAnalyzer.5}
+%
+It gathers the token itself from the LingPipe tokenizer stored in
+member variable \code{mTokenizer}.  If the token's \code{null}, we've
+reached the end of the token stream, and return \code{false} from the
+\code{incrementToken()} method to signal the end of stream.
+Otherwise, we grab the character buffer from the term attribute and
+fill it with the characters from the token using the \code{String}
+method \code{getChars()}.  We also set the Lucene tokenizr's offset
+attribute based on the LingPipe tokenizer's start and end position.
+
+Lucene's \code{Tokenizer} class specifies a method \code{end} that
+advances the token position past the final token; we set the offset to
+indicate there is no more of teh input string left.  The
+\code{close()} method, which is intended to be called after a client
+is finished with the token stream, frees up the character array
+used to store the characters being tokenized.
+
+\subsubsection{Tokenizer Factory Analzyer Demo}
+
+There's a \code{main()} method in the \code{TokenizerFactoryAnalzyer}
+class that we will use as a demo.  It mirrors the Lucene analysis
+demo.  
+%
+\codeblock{TokenizerFactoryAnalyzer.7}
+%
+First, we grab the text from the first command-line argument.  Then
+we set up the mapping from field names to tokenizer factories, using
+an Indo-European tokenizer factory for field \code{foo} and
+a trigram tokenizer factory for field \code{bar}.  The default
+tokenizer factory is based on a regex matching sequences of
+non-space characters.  Finally, the analyzer is constructed from
+the map and default factory.  The rest just prints the tokens and
+the results of the analysis.
+
+
+The Ant target \code{lp-lucene-tokens} runs the command with the
+value of property \code{text} passed in as an argument.
+%
+\commandlinefollow{ant -Dtext="Jim ran." lp-lucene-tokens}
+\begin{verbatim}
+Jim ran.
+01234567
+
+Field=foo                   Field=jib
+  Pos Start   End            Pos Start   End              
+    1     0     3 Jim          1     0     3 Jim
+    1     4     7 ran          1     4     8 ran.
+    1     7     8 .
+
+Field=bar
+  Pos Start   End
+    1     0     3 Jim
+    1     1     4 im
+...
+    1     5     8 an.
+\end{verbatim}
+%
+We see the tokens produced in each field are derived in the case of
+\code{foo} from the Indo-European tokenzier factory, in the case of
+\code{bar} from the trigram tokenizer factory, and in the case of the
+feature \code{jar}, the default tokenizer factory.  In all cases, the
+position increment is 1; LingPipe's tokenization framework is not set up
+to account for position offsets for phrasal search.
+
+
+
+
 
 
 
