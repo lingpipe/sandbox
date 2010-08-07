@@ -20,6 +20,7 @@ public class DisplayTokens {
 
     public static void displayTokens(CharSequence in,
                                      TokenizerFactory tokFact) {
+        
         System.out.printf("\n%5s %5s %s\n","START", "END", "TOKEN");
 
         /*x DisplayTokens.2 */

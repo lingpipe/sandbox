@@ -26,10 +26,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TokenizerFactoryAnalyzer  extends Analyzer {
+/*x TokenizerFactoryAnalyzer.1 */
+public class TokenizerFactoryAnalyzer extends Analyzer {
 
     private final Map<String,TokenizerFactory> mFieldToTokenizerFactory;
     private final TokenizerFactory mDefaultTokenizerFactory;
+
+    public TokenizerFactoryAnalyzer(Map<String,TokenizerFactory> fieldToTokenizerFactory,
+                                    TokenizerFactory defaultTokenizerFactory) {
+        mFieldToTokenizerFactory 
+            = new HashMap<String,TokenizerFactory>(fieldToTokenizerFactory);
+        mDefaultTokenizerFactory = defaultTokenizerFactory;
+    }
+/*x*/
 
     // use same tokenizer for all fields
     public TokenizerFactoryAnalyzer(TokenizerFactory tokenizerFactory) {
@@ -37,17 +46,9 @@ public class TokenizerFactoryAnalyzer  extends Analyzer {
              tokenizerFactory);
     }
         
-    // reset per field
-    public TokenizerFactoryAnalyzer(Map<String,TokenizerFactory> fieldToTokenizerFactory,
-                                    TokenizerFactory defaultTokenizerFactory) {
-        mFieldToTokenizerFactory 
-            = new HashMap<String,TokenizerFactory>(fieldToTokenizerFactory);
-        mDefaultTokenizerFactory = defaultTokenizerFactory;
-    }
-
+    /*x TokenizerFactoryAnalyzer.2 */
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
-
         TokenizerTokenStream tokenizer = new TokenizerTokenStream();
         tokenizer.setField(fieldName);
         try {
@@ -57,6 +58,7 @@ public class TokenizerFactoryAnalyzer  extends Analyzer {
             return new EmptyTokenStream();
         }
     }
+    /*x*/
 
     
     @Override
@@ -79,6 +81,7 @@ public class TokenizerFactoryAnalyzer  extends Analyzer {
         return tokenizer;
     }
 
+    /*x TokenizerFactoryAnalyzer.3 */
     class TokenizerTokenStream 
         extends org.apache.lucene.analysis.Tokenizer {
 
@@ -90,40 +93,17 @@ public class TokenizerFactoryAnalyzer  extends Analyzer {
         private TokenizerFactory mTokenizerFactory;
         private char[] mCs;
         private Tokenizer mTokenizer;
-        private int mPosition;
 
         TokenizerTokenStream() {
             mOffsetAttribute = addAttribute(OffsetAttribute.class);
             mTermAttribute = addAttribute(TermAttribute.class);
             mPositionAttribute = addAttribute(PositionIncrementAttribute.class);
         }
-        
+    /*x*/
+
+        /*x TokenizerFactoryAnalyzer.4 */
         public void setField(String fieldName) {
             mFieldName = fieldName;
-        }
-
-        @Override
-        public boolean incrementToken() {
-            String token = mTokenizer.nextToken();
-            if (token == null)
-                return false;
-            char[] cs = mTermAttribute.termBuffer();
-            token.getChars(0,token.length(),cs,0);
-            mTermAttribute.setTermLength(token.length());
-            mPositionAttribute.setPositionIncrement(mPosition++);
-            mOffsetAttribute.setOffset(mTokenizer.lastTokenStartPosition(),
-                                       mTokenizer.lastTokenEndPosition());
-            return true;
-
-        }
-        @Override
-        public void end() {
-            mOffsetAttribute.setOffset(mTokenizer.lastTokenEndPosition(),
-                                       mTokenizer.lastTokenEndPosition());
-        }
-        @Override
-        public void close() {
-            mCs = null;
         }
 
         @Override
@@ -139,26 +119,62 @@ public class TokenizerFactoryAnalyzer  extends Analyzer {
         @Override
         public void reset() throws IOException {
             if (mCs == null) {
-                String msg = "Cannot reset after close().";
+                String msg = "Cannot reset after close() or before a reader has been set.";
                 throw new IOException(msg);
             }
-            mPosition = 0;
             mTokenizer = mTokenizerFactory.tokenizer(mCs,0,mCs.length);
         }
+        /*x*/
+
+        /*x TokenizerFactoryAnalyzer.5 */
+        @Override
+        public boolean incrementToken() {
+            String token = mTokenizer.nextToken();
+            if (token == null)
+                return false;
+            char[] cs = mTermAttribute.termBuffer();
+            token.getChars(0,token.length(),cs,0);
+            mTermAttribute.setTermLength(token.length());
+            mOffsetAttribute.setOffset(mTokenizer.lastTokenStartPosition(),
+                                       mTokenizer.lastTokenEndPosition());
+            return true;
+
+        }
+        /*x*/
+
+        /*x TokenizerFactoryAnalyzer.6 */
+        @Override
+        public void end() {
+            mOffsetAttribute.setOffset(mTokenizer.lastTokenEndPosition(),
+                                       mTokenizer.lastTokenEndPosition());
+        }
+
+        @Override
+        public void close() {
+            mCs = null;
+        }
+        /*x*/
+
     }
 
     public static void main(String[] args) throws IOException {
+        /*x TokenizerFactoryAnalyzer.7 */
         String text = args[0];
 
         Map<String,TokenizerFactory> fieldToTokenizerFactory
             = new HashMap<String,TokenizerFactory>();
-        fieldToTokenizerFactory.put("foo",IndoEuropeanTokenizerFactory.INSTANCE);
-        fieldToTokenizerFactory.put("bar",new NGramTokenizerFactory(3,3));
+        fieldToTokenizerFactory
+            .put("foo",IndoEuropeanTokenizerFactory.INSTANCE);
+        fieldToTokenizerFactory
+            .put("bar",new NGramTokenizerFactory(3,3));
+
         TokenizerFactory defaultFactory
             = new RegExTokenizerFactory("\\S+");
+
         TokenizerFactoryAnalyzer analyzer
             = new TokenizerFactoryAnalyzer(fieldToTokenizerFactory,
                                            defaultFactory);
+        /*x*/
 
         DisplayTokens.displayTextPositions(text);
         
