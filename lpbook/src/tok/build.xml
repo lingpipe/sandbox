@@ -162,6 +162,15 @@
       <arg value="${text}"/>
     </java>
   </target>
+
+  <target name="tokenization"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.DisplayTokenization"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
  
   <target name="run"
           depends="display-tokens,
