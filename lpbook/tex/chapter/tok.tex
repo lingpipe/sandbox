@@ -2194,8 +2194,149 @@ position increment is 1; LingPipe's tokenization framework is not set up
 to account for position offsets for phrasal search.
 
 
+\section{Tokenizations as Objects}
+
+In our examples so far, we have used the iterator-like streaming
+interface to tokens. 
+
+\subsection{Tokenizer Results}
+
+The \code{Tokenizer} base class itself provides two ways to get at the
+entire sequence of tokens (and whitespaces) produced by a tokenizer.  
+
+The method \code{tokenize()} returns a string array containing the
+sequence of tokens produced by the tokenizer.  
+%
+\codeblock{FragmentsTok.1}
+%
+The method \code{tokenize(List<String>,List<String>)} adds the lists
+of tokens to the first list specified and the list of tokens to the
+second list.  The usage pattern is
+%
+\codeblock{FragmentsTok.2}
+%
+In both cases, the results are only sequences of tokens and
+whitespaces.  The underlying string being tokenized nor the
+positions of the tokens are part of the result.
+
+\subsection{The \code{Tokenization} Class}
+
+The class \code{Tokenization} in \code{com.aliasi.tokenizer}
+represents all of the information in a complete tokenization of an
+input character sequence.  This includes the sequence of tokens, the
+sequence of whitespaces, the character sequence that was tokenized,
+and the start and end positions of each token.
+
+\subsubsection{Constructing a \code{Tokenization}}
+
+There are three constructors for the \code{Tokenization} class.  Two
+of them, \code{Tokenization(char[],int,int,TokenizerFactory)} and
+\code{Tokenization(CharSequence,TokenizerFactory)}, take a tokenizer
+factory and a sequence of characters as input, and store the results
+of the tokenizer produced by the tokenizer factory.  The third
+constructor takes all of the components of a tokenization as
+arguments, the text, tokens, whitespaces, and token positions,
+\code{Tokenization(String,List<String>,List<String>,int[],int[])}.
+
+The constructors all store copies of their arguments so that they are
+not linked to the constructor arguments.
 
 
+\subsubsection{Getters for \code{Tokenization}}
+
+Once constructed, a tokenization is immutable.  There are getters for
+all of the information in a tokenization.  The method \code{text()}
+returns the underlying text that was tokenized.  The method
+\code{numTokens()} returns the total number of tokens (there will be
+one more whitespace than tokens).  The methods \code{token(int)} and
+\code{whitespace(int)} return the token and whitespace at the
+specified position.  The methods \code{tokenStart(int)} and
+\code{tokenEnd(int)} return the starting offset (inclusive) of the
+token and the ending position (exclusive0 for the token at the
+specified index.
+
+There are also methods to retrieve sequences of values.  The method
+\code{tokenList()} returns an unmodifiable view of the underlying
+tokens and \code{tokens()} returns a copy of an array of the tokens.
+The methods \code{whitespaceList()} and \code{whitespaces()} are
+similar.  
+
+
+\subsubsection{Equality and Hash Codes}
+
+Two tokenization objects are equal if their character sequences
+poroduce the same strings, they have equivalent token and
+whitespace lists, and the arrays of start and end positions for
+tokens are the same.  Hash codes are defined consistently with
+equality.
+
+
+\subsubsection{Serialization}
+
+A tokenization may be serialized.  The deserialized object is 
+a \code{Tokenization} that is equal to the first.
+
+
+\subsubsection{Thread Safety}
+
+Tokenizations are immutable and completely thread safe once
+constructed.
+
+\subsubsection{Demo of \code{Tokenization}}
+
+The demo class \code{DisplayTokenization} provides an example of how
+the \code{Tokenization} class may be used.  The work is in the
+\code{main()} method, which begins as follows.
+%
+\codeblock{DisplayTokenization.1}
+%
+It begins by creatig a tokenizer factory from a regex that matches
+arbitrary sequences of letters as tokens.  Then it creates the
+\code{Tokenization} object using the text from the command-line
+argument and the tokenizer factory.  Then we collect up the
+list of tokens, list of whitespaces and underlying text.
+%
+The command continues by looping over the tokens.
+%
+\codeblock{DisplayTokenization.2}
+%
+For each token, it extracts the start position (inclusive), end
+position (exclusive), whitespace before the token, and the token
+itself.  These are printed.  After the loop, it prints out
+the final whitespace.
+%
+\codeblock{DisplayTokenization.3}
+
+The Ant target \code{tokenization} runs the demo command with
+the value of property \code{text} as the command-line argument.
+%
+\commandlinefollow{ant -Dtext="John didn't run.\ " tokenization}
+\begin{verbatim}
+tokenList=[John, didn, t, run]
+whitespaceList=[,  , ',  , . ]
+textTok=|John didn't run. |
+
+John didn't run.
+01234567890123456
+0         1
+
+   n start   end  whsp      token
+   0     0     4    ||     |John|
+   1     5     9   | |     |didn|
+   2    10    11   |'|        |t|
+   3    12    15   | |      |run|
+lastWhitespace=|. |
+\end{verbatim}
+%
+We have added vertical bars around the text, tokens and whitespaces to
+highlight the final space.  The spans here are only for the tokens.
+The whitespaces span the interstitial spaces between tokens, so their
+span can be computed as the end of the previous token to the start of
+the next token.  The last whitespace ends at the underlying text length.
+
+Because tokens are only defined to be contiguous sequences of letters,
+the apostrophe in \stringmention{didn't} and the final period appear
+in the whitespace.  The period only appears in the final whitespace.
 
 
 
