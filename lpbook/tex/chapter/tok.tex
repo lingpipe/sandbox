@@ -2081,9 +2081,17 @@ Larkey, Ballesteros and Connell's tokenizer and stemmer.%
   A.~Soudi, A.~van~den~Bosch, and G.~Neumann, (eds.) {\it Arabic
     Computational Morphology}. 221--243.  Springer.}
 %
+This class performs basic word segmentation, character normalization,
+``light'' stemming, and stop listing, with a configuarable stop list.
+Because it's a contributed class, it's found in a separate jar,
+\code{lucene-analyzers-3.0.2.jar}, which we've included with the
+distribution and inserted into the classpath for this chapter's Ant
+build file.
+
 We provide a demo class \code{ArabicTokenizerFactory}, which provides
 a static singleton implementation of a tokenizer factory wrapping
-Lucene's Arabic analyzer.  We don't need anything other than the
+Lucene's Arabic analyzer.  
+We don't need anything other than the
 Lucene \code{Analyzer} and LingPipe \code{TokenizerFactory},
 %
 \codeblock{ArabicTokenizerFactory.1}

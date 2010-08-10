@@ -1,0 +1,305 @@
+\chapter{Symbol Tables}\label{chapter:symbol-tables}
+
+Strings are unwieldy objects --- they consume substantial memory and
+are slow to compare, making them slow for sorting and use as hash
+keys.  In many contexts, we don't care about the string itself {\it
+  per se}, but only its identity.  For instance, document search
+indexes like Lucene consider only the identity of a term.  Naive Bayes
+classifiers, token-based language models and clusterers like K-means
+or latent Dirichlet allocation do not care about the identity of
+tokens either.  Even compilers for languages like Java do not care
+about the names of variables, just their identity.
+
+In applications where the identity of tokens is not important, the
+traditional approach is to use a symbol table.  A symbol table
+provides integer-based representations of strings, supporting mappings
+from integer identifiers to strings and from strings to identifiers.
+The usage pattern is to add symbols to a symbol table, then reason
+with their integer representations.  So many of LingPipe's classes
+operate either explicitly or implicitly with symbol tables, that
+we're breaking them out into their own chapter.
+
+\section{The \code{SymbolTable} Interface}
+
+The interface \code{SymbolTable} in \code{com.aliasi.symbol} provides
+a bidirectional mapping between string-based symbols and numerical
+identifiers. 
+
+\subsection{Querying a Symbol Table}
+
+The two key methods are \code{symbolToID(String)}, which returns the
+integer identifier for a string, or -1 if the symbol is not in the
+symbol table.  The inverse method \code{idToSymbol(int)} returns the
+string symbol for an identifier; it throws an
+\code{IndexOutOfBoundsException} if the identifier is not valid.  
+
+The method \code{numSymbols()} returns the total number of symbols
+stored in the table as an integer (hence the upper bound on the size
+of a symbol table is \code{Integer.MAX\_VALUE}).
+
+\subsubsection{Modifying a Symbol Table}
+
+Like the \code{Collection} interface in \code{java.util}, LingPipe's
+symbol table interface specifies optional methods for modifying the
+symbol table.  In concrete implementations of \code{SymbolTable},
+these methods either modify the symbol table or throw an
+\code{UnsupportedOperationException}.
+
+The method \code{clear()} removes all the entires in the symbol table.
+The method \code{removeSymbol(String)} removes the specified symbol
+from the symbol table, returning its former identifier or -1 if it
+was not in the table.  
+
+The method \code{getOrAddSymbol(String)} returns the identifier
+for the specified string, adding it to the symbol table if necessary.
+
+
+
+\section{The \code{MapSymbolTable} Class}
+
+Of the two concrete implementations of \code{SymbolTable} provided in
+LingPipe, the map-based table is the most flexible.  
+
+\subsection{Demo: Basic Symbol Table Operations}
+
+The class \code{SymbolTableDemo} contains a demo of the basic symbol
+table operations using a \code{MapSymbolTable}.  The \code{main()}
+method contains the following statements (followed by prints).
+%
+\codeblock{SymbolTableDemo.1}
+%
+The first statement constructs a new map symbol table.  Then three
+symbols are added to it using the \code{getOrAddSymbol()} method, with
+the resulting symbol being assigned to local variables.  Note that
+\code{"foo"} is added to the table twice.  This method adds the
+symbol if it doesn't exist, so the results returned are always
+non-negative.
+
+Next, we use the \code{symbolToID()} methods to get identifiers
+and also assign them to local variables.  This method does not
+add the symbol if it doesn't already exist.  Finally, we retrieve
+the number of symbols.
+
+The Ant target \code{symbol-table-demo} runs the command.
+%
+\commandlinefollow{ant symbol-table-demo}
+\begin{verbatim}
+id1=0          s1=foo
+id2=1          s2=bar
+id3=0          n=2
+id4=0
+id5=-1
+\end{verbatim}
+%
+Note that \code{id1} and \code{id3} are the same, getting the
+identifier 0 for string \code{"foo"}.  This is also the value returned
+by the \code{symboltoID()} method, as shown by the value of
+\code{id4}.  Becase we used \code{symbolToID("bazz")} rather than
+\code{getOrAddSymbol("bazz")}, the value assigned to \code{id5} is -1,
+the special value for symbols not in the symbol table.  
+
+The \code{idToSymbol()} method invert the mappings as shown by their
+results.  Finally, note there are 2 symbols in the symbol table when
+we are done, \code{"foo"} and \code{"bar"}.
+
+
+\subsection{Demo: Removing Symbols}
+
+The class \code{RemoveSymbolsDemo} shows how the map symbol table
+can be used to modify a symbol table.  Its \code{main()} method is
+%
+\codeblock{RemoveSymbolsDemo.1}
+%
+We first add the symbols \code{"foo"} and \code{"bar"}, then query the
+number of symbols.  Then we remove \code{"foo"} using the method
+\code{removeSymbol()} and query the numbe of symbols again.  Finally,
+we clear the symbol table of all symbols using the method \code{clear()},
+and query a final time.  
+
+We can run the demo with the Ant target \code{remove-symbol-demo},
+%
+\commandlinefollow{ant remove-symbol-demo}
+\begin{verbatim}
+n1=2     n2=1     n3=0
+\end{verbatim}
+
+By removing symbols, we may create holes in the run of identifiers.
+For instance, the identifier 17 may have a symbol but identifier 16
+may not.  This needs to be kept in mind for printing or enumerating
+the symbols, which is why there are symbol and identifier set views
+in a map symbol table (see below).
+
+\subsection{Additional \code{MapSymbolTable} Methods}
+
+The implementation \code{MapSymbolTable} provides several methods not
+found in the \code{SymbolTable} interface.  
+
+
+\subsubsection{Boxed Methods}
+
+The map symbol table duplicates the primitive-based \code{SymbolTable}
+methods with methods accepting and returning \code{Integer} objects.
+This avoids round trip automatic unboxing and boxing when integrating
+symbol tables with collections in \code{java.util}.  
+
+The methods \code{getOrAddSymbolInteger(String)},
+\code{symbolToIDInteger(String)} return integer objects rather than
+primitives.  The method \code{idToSymbol(Integer)} returns the symbol
+corresponding to the integer object identifier.
+
+
+\subsubsection{Symbol and Identifier Set Views}
+
+The method \code{symbolSet()} returns the set of symbols stored in the
+table as a set of strings, \code{Set<String>}.  The method
+\code{idSet()} returns the set of IDs stored in the table as a set of
+integer objects, \code{Set<Integer>}.  
+
+These sets are views of the underlying data and as such track the data
+in the symbol table from which they originated.  As the symbol table
+changes, so do the sets of symbols and sets of identifiers.  
+
+These sets are immutable.  All of the collection methods that might
+modify their contents will throw unsupported operation exceptions.
+
+Providing immutable views of underlying objects is a common interface
+idiom.  It allows the object to maintain the consistency of the two
+sets while letting the sets reflect changes in the underlying symbol
+table.
+
+We provide a demo in \code{SymbolTableViewsDemo}.  
+%
+\codeblock{SymbolTableViewsDemo.1}
+%
+The two sets are assigned as soon as the symbol table is constructed.
+We then print out the set of symbols and identifiers.  After that, we
+add the symbols \code{"foo"} and \code{"bar"} and print again.  
+Finally, we remove \code{"foo"} and print for the last time.
+
+The Ant target \code{symbol-table-views} runs the demo,
+%
+\commandlinefollow{ant symbol-table-views-demo}
+\begin{verbatim}
+symbolSet=[] idSet=[]
+symbolSet=[foo, bar] idSet=[0, 1]
+symbolSet=[bar] idSet=[1]
+\end{verbatim}
+%
+As advertised, the values track the underlying symbol table's values.
+
+
+\subsubsection{Unmodifiable Symbol Table Views}
+
+In many cases in LingPipe, models will guard their symbol tables
+closely.  Rather than returning their actual symbol table, they return
+an unmodifiable view of the entire table.  The method
+\code{unmodifiableView(SymbolTable)} returns a symbol table that tracks
+the specified symbol table, but does not support any of the modification
+methods.  
+
+This method employs the same pattern as the generic static utility
+method \code{<T>unmodifiableSet(Set<?~extends~T>)} in the utility
+class \code{Collections} from the built-in package \code{java.util};
+it returns a value of type \code{Set<T>} which tracks the specified
+set, but may not be modified.  This collection utility is used under
+the hood to implement the symbol and identifier set views discussed in
+the previous section.
+
+\subsubsection{Thread Safety}
+
+Map symbol tables are not thread safe.  They require read-write
+synchronization, where all the methods that may modify the underlying
+table are considered writers.
+
+\subsubsection{Serialization}
+
+Map symbol tables are serializable.  They deserialize to a
+\code{MapSymbolTable} with the same behavior as the one serialized.
+Specifically, the identifiers do no change.
+
+
+
+\section{The \code{SymbolTableCompiler} Class}
+
+The \code{SymbolTableCompiler} implementation of \code{SymbolTable} is
+a legacy class used in some of the earlier LingPipe models.  We could
+have gotten away without the entire \code{com.aliasi.symbol} package
+and just dropped \code{MapSymbolTable} into \code{com.aliasi.util}.
+Instead, we abstracted an interface and added a parallel
+implementation in order to maintain backward compatibility at the
+model level.
+
+Once a symbol is added, it can't be removed.  Symbol table
+compilers do not support the \code{remove()} or \code{clear()}
+methods; these methods throw unsupported operation exceptions.
+
+\subsection{Adding Symbols}
+
+The symbol table compiler implements a very unwieldy usage pattern.
+It begins with a no-argument constructor.  The usual
+\code{getOrAddSymbol(String)} method from the \code{SymbolTable}
+interface will throw an unsupported operation exception.  Instead, the
+method \code{addSymbol(String)} is used to add symbols to the table,
+returning \code{true} if the symbol hasn't previously been added.
+
+The really broken part about this class is that it doesn't actually
+implement \code{SymbolTable} properly until after its been compiled.
+
+\subsection{Compilation}
+
+A symbol table compiler implements LingPipe's \code{Compilable}
+interface (see \refsec{io-compilable}).  
+
+\subsection{Demo: Symbol Table Compiler}
+
+The demo class \code{SymbolTableCompilerDemo} implements a \code{main()}
+method demonstrating the usage of a symbol table compiler.  The method
+begins by setting up the compiler and adding some symbols
+%
+\codeblock{SymbolTableCompilerDemo.1}
+%
+It sets some variables that result from attempting to get the symbols
+again at this point.
+
+Next, we compile the symbol table using the static utility method
+\code{compile()} from LingPipe's \code{AbstractExternalizable} class.
+We use the original symbol table then the compiled version to convert
+symbols to identifiers.
+
+The Ant target \code{symbol-table-compiler-demo} runs the command.
+%
+\commandlinefollow{ant symbol-table-compiler-demo}
+\begin{verbatim}
+n1=-1     n2=-1     n3=-1
+n4=1     n5=0     n6=-1
+n7=1     n8=0     n9=-1
+
+st.getClass()=class com.aliasi.symbol.CompiledSymbolTable
+\end{verbatim}
+%
+The symbols are all unknown before compilation, returning -1 as their
+identifier.  After compilation, both the compiler and the compiled
+version agree on symbol identifiers.  We also print the class for the
+result, which is the package-protected class
+\code{CompiledSymbolTable}.  This class does implement
+\code{SymbolTable}, but the get-or-add method is not supported.
+
+One nice property of the class is that we are guaranteed to have
+identifiers numbered from 0 to the number of symbols minus 1.  We
+are also guaranteed to get symbols stored in alphabetical order. 
+Note that the symbol \code{"bar"} is assigned identifier 0 even
+though it was added after the symbol \code{"foo"}.
+
+Be careful with this class.  If more symbols are added, then the table
+is compiled again, identifiers will change.  This is because it relies
+on an underlying sorted array of symbols to store the symbols and look
+up their identifiers.
+
+\subsection{Static Factory Method}
+
+The static utility method \code{asSymbolTable(String[])} constructs a
+symbol table from an array of symbols.  It will throw an illegal
+argument exception if there are duplicates in the symbol table.
+Perhaps a \code{SortedSet} would've been a better interface here.
+
+
