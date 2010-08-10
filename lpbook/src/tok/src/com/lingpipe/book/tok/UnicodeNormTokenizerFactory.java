@@ -1,8 +1,8 @@
 package com.lingpipe.book.tok;
 
 import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;
-import com.aliasi.tokenizer.TokenizerFactory;
 import com.aliasi.tokenizer.ModifyTokenTokenizerFactory;
+import com.aliasi.tokenizer.TokenizerFactory;
 
 import com.aliasi.util.AbstractExternalizable;
 
@@ -16,8 +16,8 @@ import java.io.ObjectOutput;
 public class UnicodeNormTokenizerFactory 
     extends ModifyTokenTokenizerFactory {
 
-    private final Transliterator mTransliterator;
     private final String mScheme;
+    private final Transliterator mTransliterator;
 
     public UnicodeNormTokenizerFactory(String scheme,
                                        TokenizerFactory f) {
@@ -65,10 +65,13 @@ public class UnicodeNormTokenizerFactory
         String translitScheme = args[0];
         String text = args[1];
 
+        System.setOut(new java.io.PrintStream(System.out,true,"UTF-8"));
+
         TokenizerFactory f1 = IndoEuropeanTokenizerFactory.INSTANCE;
         UnicodeNormTokenizerFactory f2
             = new UnicodeNormTokenizerFactory(translitScheme,f1);
-        
+
+        System.out.println("translitScheme=" + translitScheme);
         DisplayTokens.displayTextPositions(text);
         DisplayTokens.displayTokens(text,f2);
 

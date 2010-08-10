@@ -29,15 +29,16 @@ import java.util.Map;
 /*x TokenizerFactoryAnalyzer.1 */
 public class TokenizerFactoryAnalyzer extends Analyzer {
 
-    private final Map<String,TokenizerFactory> mFieldToTokenizerFactory;
-    private final TokenizerFactory mDefaultTokenizerFactory;
+    private final Map<String,TokenizerFactory> mTfMap;
 
-    public TokenizerFactoryAnalyzer(Map<String,TokenizerFactory> fieldToTokenizerFactory,
-                                    TokenizerFactory defaultTokenizerFactory) {
-        mFieldToTokenizerFactory 
-            = new HashMap<String,TokenizerFactory>(fieldToTokenizerFactory);
-        mDefaultTokenizerFactory = defaultTokenizerFactory;
-    }
+    private final TokenizerFactory mDefaultTf;
+
+    public 
+    TokenizerFactoryAnalyzer(Map<String,TokenizerFactory> tfMap,
+                             TokenizerFactory defaultTf) {
+        mTfMap = new HashMap<String,TokenizerFactory>(tfMap);
+        mDefaultTf = defaultTf;
+  }
 /*x*/
 
     // use same tokenizer for all fields
@@ -97,7 +98,8 @@ public class TokenizerFactoryAnalyzer extends Analyzer {
         TokenizerTokenStream() {
             mOffsetAttribute = addAttribute(OffsetAttribute.class);
             mTermAttribute = addAttribute(TermAttribute.class);
-            mPositionAttribute = addAttribute(PositionIncrementAttribute.class);
+            mPositionAttribute 
+                = addAttribute(PositionIncrementAttribute.class);
         }
     /*x*/
 
@@ -110,9 +112,9 @@ public class TokenizerFactoryAnalyzer extends Analyzer {
         public void reset(Reader reader) throws IOException {
             mCs = Streams.toCharArray(reader);
             mTokenizerFactory
-                = mFieldToTokenizerFactory.containsKey(mFieldName)
-                ? mFieldToTokenizerFactory.get(mFieldName)
-                : mDefaultTokenizerFactory;
+                = mTfMap.containsKey(mFieldName)
+                ? mTfMap.get(mFieldName)
+                : mDefaultTf;
             reset();
         }
 

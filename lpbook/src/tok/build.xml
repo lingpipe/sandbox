@@ -163,6 +163,17 @@
     </java>
   </target>
 
+  <property name="file" value="config/arabic-sample.utf8.txt"/>
+  <target name="arabic-tokens"
+          depends="jar">
+    <java classname="com.lingpipe.book.tok.ArabicTokenizerFactory"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${file}"/>
+    </java>
+  </target>
+
+
   <target name="tokenization"
           depends="jar">
     <java classname="com.lingpipe.book.tok.DisplayTokenization"
@@ -183,6 +194,8 @@
                    unicode-norm-tokens,
                    lucene-analysis,
                    lucene-lp-tokens,
-                   lp-lucene-tokens"/>
+                   lp-lucene-tokens,
+                   arabic-tokens,
+                   tokenization"/>
 
 </project>

@@ -1498,11 +1498,20 @@ transliteration scheme (see \refsec{char-unicode-transliterate} for
 a description of the available schemes and the language for
 composing them) and property \code{text} for the text to modify.
 %
-\commandlinefollow{}
+\commandlinefollow{ant "-Dtext=Déjà vu" "-DtranslitScheme=NFD; [:Nonspacing Mark:] Remove; NFC" unicode-norm-tokens}
 \begin{verbatim}
+translitScheme=NFD; [:Nonspacing Mark:] Remove; NFC
 
+Déjà vu
+0123456
+
+START   END TOKEN
+    0     4  |Deja|
+    5     7  |vu|
 \end{verbatim}
-
+%
+To get the output encoded correctly, we had to reset \code{System.out}
+to use UTF-8 (see \refsec{io-reset-system-out}).
 
 
 \section{Penn Treebank Tokenization}
@@ -1979,6 +1988,11 @@ extracted terms is also shown.
 
 \subsection{Adapting Analyzers for Tokenizer Factories}
 
+Because of the wide range of basic analyzers and filters employed by
+Lucene, it's useful to be able to wrap a Lucene analyzer for use in
+LingPipe.  For instance, we could analyze Arabic with stemming this
+way, or even Chinese.
+
 The demo class \code{AnalyzerTokenizerFactory} implements LingPipe's
 \code{TokenizerFactory} interface based on a Lucene \code{Analyzer}
 and field name.  In general design terms, the class adapts an analyzer
@@ -2056,6 +2070,69 @@ START   END TOKEN          START   END TOKEN
 %
 As before, we see the stoplisting and case normalization of
 the standard Lucene analyzer.
+
+\subsubsection{An Arabic Analyzer with Stemming and Stoplisting}
+
+The contributed Lucene class \code{ArabicAnalyzer} implements
+Larkey, Ballesteros and Connell's tokenizer and stemmer.%
+%
+\footnote{Larkey, Leah, Lisa Ballesteros and Margaret
+  Connell. 2007. Light Stemming for Arabic Information Retrieval. In
+  A.~Soudi, A.~van~den~Bosch, and G.~Neumann, (eds.) {\it Arabic
+    Computational Morphology}. 221--243.  Springer.}
+%
+We provide a demo class \code{ArabicTokenizerFactory}, which provides
+a static singleton implementation of a tokenizer factory wrapping
+Lucene's Arabic analyzer.  We don't need anything other than the
+Lucene \code{Analyzer} and LingPipe \code{TokenizerFactory},
+%
+\codeblock{ArabicTokenizerFactory.1}
+%
+In the file \code{src/tok/config/arabic-sample.utf8.txt}, we
+have placed some Arabic text%
+%
+\footnote{Downloaded
+from 
+{\tt http://ar.wikipedia.org/wiki/\RL{أولويوكي}{\tt \_}\RL{نهر}}\
+on 9 July 2010.}
+%
+encoded with UTF-8; the first few lines of the file are as follows.
+%
+\begin{quote}
+\begin{RLtext}
+أولويوكي $\mbox{\rm (Oulujoki)}$ نهر في مقاطعة أولو بفنلندا. 
+منشؤه هو بحيرة أولويارفي، يغطي جزءاً كبيرا من 
+إقليم كاينو ويصب في بحر البلطيق. النهر مجهز ب 12 
+محطة لتوليد الطاقة الكهرمائية بقدرة إنتاجية 
+تبلغ 541 ميغاواط. ...
+\end{RLtext}
+\end{quote}
+%
+
+There is a \code{main()} class that reads a file name from the command
+line, reads the file in and tokenizes it for display.  The Ant target
+\code{arabic-tokens} runs the tokenizer over a file specified by name
+as the first command specified file,
+%
+\commandlinefollow{ant "-Dfile=config{\bk}arabic-sample.utf8.txt" arabic-tokens}
+\begin{Verbatim}[commandchars=\!\[\],commentchar=\^]
+file=config\arabic-sample.utf8.txt
+text=!RL[أولويوكي] (Oulujoki) ...
+...
+from: http://ar.wikipedia.org/wiki/!RL[أولويوكي]_!RL[نهر]
+
+START   END TOKEN          START   END TOKEN
+    0     8  |!RL[اولويوك]|  282   291  |wikipedia|
+   10    18  |oulujoki|      292   295  |org|
+   20    23  |!RL[نهر]|      296   300  |wiki|
+   27    33  |!RL[مقاطع]|    301   309  |!RL[اولويوك]|
+   34    38  |!RL[اولو]|     310   313  |!RL[نهر]|
+   ...
+\end{Verbatim}
+%
+As is clear from teh output, the very first token is stemmed from its
+original form and the English input word is lowercased and tokenized
+separately, with the parentheses being dropped.
 
 
 \subsection{Adapting Tokenizer Factories for Analyzers}
@@ -2337,11 +2414,4 @@ the next token.  The last whitespace ends at the underlying text length.
 Because tokens are only defined to be contiguous sequences of letters,
 the apostrophe in \stringmention{didn't} and the final period appear
 in the whitespace.  The period only appears in the final whitespace.
-
-
-
-
-
-
-
 
