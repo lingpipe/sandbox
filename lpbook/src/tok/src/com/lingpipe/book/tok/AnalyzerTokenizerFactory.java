@@ -39,6 +39,10 @@ public class AnalyzerTokenizerFactory
     } 
 /*x*/
 
+    public Analyzer analyzer() {
+        return mAnalyzer;
+    }
+
     /*x AnalyzerTokenizerFactory.2 */
     public Tokenizer tokenizer(char[] cs, int start, int len) {
         Reader reader = new CharArrayReader(cs,start,len);

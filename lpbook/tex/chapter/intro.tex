@@ -732,7 +732,9 @@ These can be removed to save space, but they can be very helpful for
 deployed systems, so we don't recommend it.  The \code{debug} element
 says to turn debugging on, and the \code{debuglevel} says to debug the
 source down to lines and variable names, which is the maximal amount
-of debugging information available.  
+of debugging information available.  The \code{javac} task may specify
+the character encoding used for the Java program using the attribute
+\code{encoding}.
 
 The destination directory attribute, \code{destdir} indicates where
 the compiled classes will be stored.  Here, the path is \filepath{build/classes}.
