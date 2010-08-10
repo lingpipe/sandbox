@@ -2121,18 +2121,18 @@ text=!RL[أولويوكي] (Oulujoki) ...
 ...
 from: http://ar.wikipedia.org/wiki/!RL[أولويوكي]_!RL[نهر]
 
-START   END TOKEN          START   END TOKEN
-    0     8  |!RL[اولويوك]|  282   291  |wikipedia|
-   10    18  |oulujoki|      292   295  |org|
-   20    23  |!RL[نهر]|      296   300  |wiki|
-   27    33  |!RL[مقاطع]|    301   309  |!RL[اولويوك]|
-   34    38  |!RL[اولو]|     310   313  |!RL[نهر]|
+START   END TOKEN
+    0     8  |!RL[اولويوك]|
+   10    18  |oulujoki|
+   20    23  |!RL[نهر]|
+   27    33  |!RL[مقاطع]|
+   34    38  |!RL[اولو]|
    ...
 \end{Verbatim}
 %
 As is clear from teh output, the very first token is stemmed from its
-original form and the English input word is lowercased and tokenized
-separately, with the parentheses being dropped.
+original form and the word in Roman characters is lowercased and
+tokenized separately, with the parentheses being dropped.
 
 
 \subsection{Adapting Tokenizer Factories for Analyzers}
