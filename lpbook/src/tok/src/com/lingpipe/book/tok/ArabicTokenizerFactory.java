@@ -34,7 +34,9 @@ public class ArabicTokenizerFactory {
         System.setOut(new java.io.PrintStream(System.out,true,"UTF-8"));
 
         System.out.println("file=" + file);
-        System.out.println("text=" + text);
+        System.out.println("-----text-----");
+        System.out.print(text);
+        System.out.println("-----end text-----");
 
         DisplayTokens.displayTokens(text,ArabicTokenizerFactory.INSTANCE);
         
