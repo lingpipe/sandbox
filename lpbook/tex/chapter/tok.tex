@@ -2099,9 +2099,8 @@ Lucene \code{Analyzer} and LingPipe \code{TokenizerFactory},
 In the file \code{src/tok/config/arabic-sample.utf8.txt}, we
 have placed some Arabic text%
 %
-\footnote{Downloaded
-from 
-{\tt http://ar.wikipedia.org/wiki/\RL{أولويوكي}{\tt \_}\RL{نهر}}\
+\footnote{Downloaded from 
+\url{http://ar.wikipedia.org/wiki/\%D9\%86\%D9\%87\%D8\%B1_\%D8\%A3\%D9\%88\%D9\%84\%D9\%88\%D9\%8A\%D9\%88\%D9\%83\%D9\%8A}
 on 9 July 2010.}
 %
 encoded with UTF-8; the first few lines of the file are as follows.
@@ -2125,23 +2124,27 @@ as the first command specified file,
 \commandlinefollow{ant "-Dfile=config{\bk}arabic-sample.utf8.txt" arabic-tokens}
 \begin{Verbatim}[commandchars=\!\[\],commentchar=\^]
 file=config\arabic-sample.utf8.txt
-text=!RL[أولويوكي] (Oulujoki) ...
+ -----text-----
+!RL[أولويوكي] (Oulujoki) ...
 ...
 from: http://ar.wikipedia.org/wiki/!RL[أولويوكي]_!RL[نهر]
-
-START   END TOKEN
+-----end text-----
+START   END TOKEN          START   END TOKEN
     0     8  |!RL[اولويوك]|
-   10    18  |oulujoki|
+   10    18  |oulujoki|      
    20    23  |!RL[نهر]|
-   27    33  |!RL[مقاطع]|
-   34    38  |!RL[اولو]|
-   ...
+   27    33  |!RL[مقاطع]|   
+...
+  292   295  |org|
+  296   300  |wiki|
+  301   309  |!RL[اولويوك]|
+  310   313  |!RL[نهر]|
 \end{Verbatim}
 %
-As is clear from teh output, the very first token is stemmed from its
-original form and the word in Roman characters is lowercased and
-tokenized separately, with the parentheses being dropped.
-
+Note that the text mixes Roman characters and Arabic characters.  The
+source URL is part of the text.  The Roman characters are separated
+out as their own tokens and retained, but all punctuation is ignored.
+The very first token, which is also part of the URL, is stemmed.
 
 \subsection{Adapting Tokenizer Factories for Analyzers}
 
