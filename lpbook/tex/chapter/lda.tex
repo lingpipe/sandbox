@@ -1,0 +1,96 @@
+\chapter{Latent Dirichlet Allocation}\label{chapter:lda}
+
+Latent Dirichlet allocation (LDA) provides a generative statistical
+model of an entire corpus of text documents.  At the basis of the LDA
+model is the notion that each document is generated from its own
+mixture of topics.  For instance, a post on a blog about a dinner
+party might 70\% about cooking, 20\% about sustainable farming, and
+10\% about entertaining.
+
+Applications of LDA include document similarity measurement, document
+clustering, topic discovery, word association for search, feature
+extraction for discriminative models such as logistic regression or
+conditional random fields, classification of new documents, language
+modeling, and many more.
+
+\section{Corpora and Documents}
+
+For LDA, a corpus is nothing more than a collection of documents.
+Each document is modeled as a sequence of words (or tokens).  It turns
+out that only the count of the words is significant, not their order.
+
+A bag is a data structure like a set, only with (non-negative) counts.
+We can think of a bag as a mapping from tokens to their counts. Like
+other models that don't distinguish word order, LDA is called a
+bag-of-words model.
+
+We often start with a real document collection consisting of character
+data.  LingPipe uses tokenizer factories to convert character
+sequences to sequences of tokens (see \refchap{tokenization}).
+Utilities in the LDA implementation class help convert these to
+appropriate representations with the help of symbol tabls (see
+\refchap{symbol-tables}).
+
+\subsection{Generalized ``Documents''}
+
+Although LDA is framed in terms of documents and words, it turns out
+it only uses the identities of the tokens.  As such, it may be applied
+to collections of ``documents'' consisting of any kind of count data,
+not just bags of words.  For instance, LDA may be applied to RNA
+expression data.
+
+
+\section{The Generative Model}
+
+LDA is a kind of probabilistic model known as a generative model.
+Generative models provide step-by-step characterizations of how to
+generate a corpus of documents.%
+%
+\footnote{LDA does not model the number of documents in a corpus
+or the number of tokens in each document.  These values must be
+provided as constants.  This is usually not a problem because
+the corpus is given as data.}
+%
+This setup seems strange to many people at first because we are in
+practice presenting LDA with a collection of documents and asking it
+to infer the topic model, not the other way around.  Nevertheless, the
+probabilistic model is generative.
+
+LDA generates each document independently based on the model
+parameters.  To generate a document, LDA first generates a topic
+distribution for that document.%
+%
+\footnote{The topic distribution for a document is generated from
+a Dirichlet distribution, which is where the model gets its name.}
+%
+This happens before any of the words in a document are generated.  At
+this stage, we might only know that a document is 70\% about politics
+and 30\% about the economy, not what words it contains.
+
+After generating the topic distribution for a document, we generate
+the words for the document.  
+
+In the case of LDA, we suppose that the number of documents and the
+number of tokens in each document is given.  This means they're
+not part of 
+
+That means we don't try
+to predict how long each document is or use document-length
+information for relating documents.  Furthermore, LDA does not We also do not attempt to model
+the size of the corpus.
+
+
+contain are known, but 
+
+
+LDA is a probabilistic topic (or factor) model.  Historically, LDA
+evolved as a Bayesian generalization of the probabilistic latent
+semantic indexing (pLSI) model.  pLSI was itself motivated as a
+properly discretized probabilistic form of latent semantic indexing
+(LSI).  LingPipe's implementation of the LSI factor model is covered
+in \refchap{svd}.
+
+The topic model is latent \ie{unknown}.
+
+LingPipe's implementation of LDA is able to start from a corpus of
+documents and infer the set of topics in the corpus, the topic
