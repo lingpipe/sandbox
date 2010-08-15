@@ -498,3 +498,199 @@ other.  If the values are \code{double} or \code{long} values or
 uncompressed references, there is an additional 4 bytes of padding
 after the length so that they start on 8-byte boundaries.
 
+
+\section{Synchronization}
+
+LingPipe follows to fairly simple approaches to synchronization, which
+we describe in the next two sections.  For more information on
+synchronization, see Goetz et al.'s definitive book {\it Java
+  Concurrency in Practice} (see \refappendix{java-libs} for a full
+reference).
+
+\subsection{Immutable Objects}
+
+Wherever possible, instances of LingPipe classes are immutable.  After
+they are constructed, immutable objects are completely thread safe in
+the sense of allowing arbitrary concurrent calls to its methods.
+
+\subsubsection{(Effectively) Final Member Variables}
+
+In LingPipe's immutable objects, almost all member variabls are
+declared to be final or implemented to behave as if they are declared
+to be final.  
+
+Final objects can never change.  Once they are set in the constructor,
+they always have the same value.
+
+LingPipe's effectively final variables never change value.  In this
+way, they display the same behavior as the hash code variable in the
+implementation of Java's \code{String}.  In the source code for
+\code{java.lang.String} in Java Standard Edition version 1.6.18,
+authored by Lee Boynton and Arthur van Hoff, we have the following
+four member variables:
+%
+\begin{verbatim}
+private final char value[];
+private final int offset;
+private final int count;
+private int hash;
+\end{verbatim}
+%
+The final member variables \code{value}, \code{offset}, and
+\code{count} represent the characte slice on which the string is
+based.  This is not enough to guarantee true immutability, because the
+values in the value array may change.  The design of the \code{String}
+class guarantees that they don't.  Whenever a string is constructed,
+its value array is derived from another string, or is copied.  Thus no
+references to \code{value} ever escape to client code.
+
+The \code{hash} variable is not final.  It is initialized lazily when
+the \code{hashCode()} method is called if it is has not already been
+set.
+%
+\begin{verbatim}
+public int hashCode() {
+    int h = hash;
+    if (h == 0) {
+        int off = offset;
+        char val[] = value;
+        int len = count;
+        for (int i = 0; i < len; i++) {
+            h = 31*h + val[off++];
+        }
+        hash = h;
+    }
+    return h;
+}
+\end{verbatim}
+%
+Note that there is no synchronization.  The lack of synchronization
+and public nature of \code{hashCode()} exposes a race condition.
+Specifically, two threads may concurrently call \code{hashCode()} and
+each see the hash code variable \code{hash} with value 0.  They would
+then both enter the loop to compute and set the variable.  This is
+safe because the value computed for \code{hash} only depends on
+the truly final variables \code{offset}, \code{value}, and \code{count}.
+
+
+\subsubsection{Safe Construction}
+
+The immutable objects follow the safe-construction practice of not
+releasing references to the object being constructed to escape during
+construction.  Specifically, we do not supply the \code{this} variable
+to other objects within constructors.  Not only must we avoid sending
+a direct reference through \code{this}, but we can also not let inner
+classes or other data structures containing implicit or explicit
+references to \code{this} to escape.
+
+
+\subsection{Read-Write Synchronization}
+
+Objects which are not immutable in LingPipe require read-write
+synchronization.  A read method is one that does not change the
+underlying state of an object.  In an immutable object, all methods
+are read methods.  A write method may change the state of an object.
+
+Read-write synchronization allows concurrent read operations, but ensures
+that writes do not execute concurrently with reads or other writes.
+
+\subsubsection{Java's Concurrency Utilities}
+
+Java's built-in \code{synchronized} keyword and block declarations use
+objects for simple mutex-like locks.  Non-static methods declared to
+be synchronized use their object instance for synchronization, whereas
+static methods use the object for the class.  
+
+In the built-in \code{java.util.concurrent} library, there are a
+number of lock interfaces and implementations in the subpackage
+\code{locks}.
+
+The \code{util.concurrent} base interface \codeVar{Lock} generalizes Java's
+built-in \code{synchronized} blocks to support more fine-grained forms
+of lock acquisition and relaese, allowing operations like acquisitions
+that time out.  
+
+The subinterface \code{ReentrantLock} adds reentrancy to the basic
+lock mechanism, allowing the same thread to acquire the same lock more
+than once without blocking.
+
+The \code{util.concurrent} library also supplies an interface
+\codeVar{ReadWriteLock} for read-write locks.  It contains two
+methods, \code{readLock()} and \code{writeLock()}, which return
+instances of the interface \codeVar{Lock}.
+
+There is only a single implementation of \codeVar{ReadWriteLock}, in
+the class \code{ReentrantReadWriteLock}.  Both of the locks in the
+implementation are declared to be reentrant (recall that a subclass
+may declare more specific return types than its superclass or the
+interfaces it implements).  More specifically, they are declared to
+return instances of the static classes \code{ReadLock}
+and \code{WriteLock}, which are nested in {ReentrantReadWriteLock}.
+
+The basic usage of a read-write lock is straightforward, though
+configuring and tuning its behavior is more involved.  We illustrate
+the basic usage with the simplest possible case, the implementation of
+a paired integer data structure.  The class has two methods, a paired
+set and a paired get, that deal with two values at once.  
+
+Construction simply stores a new read write lock, which itself
+never changes, so may be declared final.
+%
+\codeblock{SynchedPair.1}
+%
+
+The set method acquires the write lock before setting both values.
+%
+\codeblock{SynchedPair.2}
+%
+Note that it releases the lock in a \code{finally} block.  This is
+the only way to guarantee, in general, that locks are released even if
+the work done by the method raises an exception.
+
+The get method is implemented with the same idiom, but using the
+read lock.
+%
+\codeblock{SynchedPair.3}
+%
+Note that it, too, does all of its work after the lock is acquired,
+returning an array consisting of both values.  If we'd tried to have
+two separate methods, one returning the first integer and one
+returning the second, there would be no way to actually get both
+values at once in a synchronized way without exposing the read-write
+lock itself.  If we'd had two set and two get methods, one for each
+component, we'd have to use the read-write lock on the outside to
+guarantee the two operations always happened together.  
+
+We can test the method with the following command-line program.
+%
+\codeblock{SynchedPair.4}
+%
+It constructs a \code{SynchedPair} and assigns it to the variable
+\code{pair}, which is delcared to be final so as to allow its usage in
+the anonymous inner class runnable.  It then creates an array of threads,
+setting each one's runnable to do a sequence of paired sets where the
+two values are the same.  It tests first that the values it reads are
+coherent and writes out an error message if they are not.  The runnables
+all yield after their operations to allow more interleaving of the threads
+in the test.  After constructing the threads with anonymous inner class
+\code{Runnable} implementations, we start each of the threads and join them
+so the message won't print and JVM won't exit until they're ll done.
+
+The Ant target \code{synched-pair} runs the demo.  
+%
+\commandlinefollow{ant synched-pair}
+\begin{verbatim}
+OK
+\end{verbatim}
+%
+The program takes about 5 seconds to run on our four-core notebook.
+
+
+
+
+
+
+
+
+
+
