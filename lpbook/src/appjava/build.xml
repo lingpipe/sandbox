@@ -34,7 +34,16 @@
     </java>
   </target>
 
+  <target name="synched-pair"
+          depends="jar">
+    <java classname="com.lingpipe.book.appjava.SynchedPair"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+
   <target name="run"
-          depends="byte-table"/>
+          depends="byte-table,
+                   synched-pair"/>
 
 </project>
