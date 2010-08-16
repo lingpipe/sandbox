@@ -1,11 +1,18 @@
 \chapter{Latent Dirichlet Allocation}\label{chapter:lda}
 
-Latent Dirichlet allocation (LDA) provides a generative statistical
-model of an entire corpus of text documents.  At the basis of the LDA
-model is the notion that each document is generated from its own
-mixture of topics.  For instance, a post on a blog about a dinner
-party might 70\% about cooking, 20\% about sustainable farming, and
-10\% about entertaining.
+Latent Dirichlet allocation (LDA) provides a statistical approach to
+document clustering based on the words (or tokens) that appear in a
+document.  Given a set of documents, a tokenization scheme to convert
+them to bags of words, and a number of topics, LDA is able to infer
+the set of topics making up the collection of documents and the
+mixture of topics found in each document.  These assignments are soft
+in that they are expressed as probability distributions, not absolute
+decisions.
+
+At the basis of the LDA model is the notion that each document is
+generated from its own mixture of topics.  For instance, a blog post
+about a dinner party might 70\% about cooking, 20\% about sustainable
+farming, and 10\% about entertaining.
 
 Applications of LDA include document similarity measurement, document
 clustering, topic discovery, word association for search, feature
@@ -19,25 +26,108 @@ For LDA, a corpus is nothing more than a collection of documents.
 Each document is modeled as a sequence of words (or tokens).  It turns
 out that only the count of the words is significant, not their order.
 
-A bag is a data structure like a set, only with (non-negative) counts.
-We can think of a bag as a mapping from tokens to their counts. Like
-other models that don't distinguish word order, LDA is called a
-bag-of-words model.
+A bag is a data structure like a set, only with (non-negative) counts
+for each member.  Mathematically, we may model a bag as a mapping from
+its members to their counts. Like other models that don't distinguish
+word order, LDA is called a bag-of-words model.
 
 We often start with a real document collection consisting of character
 data.  LingPipe uses tokenizer factories to convert character
 sequences to sequences of tokens (see \refchap{tokenization}).
 Utilities in the LDA implementation class help convert these to
-appropriate representations with the help of symbol tabls (see
+appropriate representations with the help of symbol tables (see
 \refchap{symbol-tables}).
 
-\subsection{Generalized ``Documents''}
 
-Although LDA is framed in terms of documents and words, it turns out
-it only uses the identities of the tokens.  As such, it may be applied
-to collections of ``documents'' consisting of any kind of count data,
-not just bags of words.  For instance, LDA may be applied to RNA
-expression data.
+\section{Synthetic LDA Example}
+
+We begin with a synthetic example due to Steyvers and Griffiths.%
+%
+\footnote{From Steyvers, Mark and Tom Griffiths. 2007. Probabilistic
+  topic models. In Thomas K. Landauer, Danielle S. McNamara, Simon
+  Dennis and Walter Kintsch (eds.), {\it Handbook of Latent Semantic
+    Analysis}. Laurence Erlbaum.}
+%
+Synthetic or ``fake data'' models play an important role in
+statistics, where they are used like unit tests for statistical
+inference mechanisms.  
+
+In this section, we will create an LDA model by fixing all of its
+parameters, then use it to generate synthetic data according to the
+model.  Then, we will provide the generated data to our LDA
+inference algorithm and make sure that it can recover the known
+structure of the data.
+
+The implementation of our synthetic example, which illustrates
+the basic inference mechanism for LDA, is in the demo class
+\code{SyntheticLdaExample}.
+
+\subsection{Two Topic, Five Word Model}
+
+Steyvers and Griffiths' synthetic example involved only two topics and
+five words.  The words are \stringmention{river},
+\stringmention{stream}, \stringmention{bank}, \stringmention{money},
+and \stringmention{loan}.  The first two words typically occur in
+articles about rivers, and the last two words in articles about money.
+The word \stringmention{bank}, the canonical example of an ambiguous
+word in English, occurs in both types of articles.  
+
+\subsubsection{What's a Topic?}
+
+A topic in LDA is nothing more than a discrete probability
+distribution over words.  That is, given a topic, each word
+has a probability of occurring, and the sum of all word
+probabilities in a topic must sum to 1.
+
+Steyvers and Griffiths' example involves two topics, one about
+banking and one about rivers, with the following word probabilities.
+%
+\begin{center}
+\begin{tabular}{lrrrrr}
+& \stringmention{river} 
+& \stringmention{stream}
+& \stringmention{bank}
+& \stringmention{money}
+& \stringmention{loan}
+\\ \hline
+\tblhead{Topic 1} & 1/3 & 1/3 & 1/3 & 0 & 0 
+\\
+\tblhead{Topic 2} & 0 & 0 & 1/3 & 1/3 & 1/3
+\end{tabular}
+\end{center}
+%
+Topic 1 is about water and topic 2 about money.  If a word is drawn
+from topic 1, there is a 1/3 chance it is \charmention{river}, a 1/3
+chance it is \charmention{stream} and a 1/3 chance it is
+\charmention{bank}.  
+
+
+\subsubsection{What's a Document?}
+
+For the purposes of LDA, a document is modeled as a sequence of
+tokens.  We use a tokenizer factory to convert the documents into
+counts.  The identity of the tokens doesn't matter.  Neither does
+the order of the tokens, though we preserve order so that we can
+label tokens with topics in our final output.
+
+LDA deals with token identifiers in the form of a matrix, not
+with string tokens.  But there's a handy utility method to produce
+such a matrix from a corpus of texts and a tokenizer factory.
+
+The code in \code{SyntheticLdaExample} starts out defining an array of
+character sequences making up the document collection that will
+be clustered.  The texts are defined as a static constant, begining
+with.
+%
+\codeblock{SyntheticLdaExample.1a}
+%
+and ending with
+%
+\codeblock{SyntheticLdaExample.1b}
+
+
+
+
 
 
 \section{The Generative Model}
@@ -94,3 +184,14 @@ The topic model is latent \ie{unknown}.
 
 LingPipe's implementation of LDA is able to start from a corpus of
 documents and infer the set of topics in the corpus, the topic
+
+
+
+\section{Generalized ``Documents''}
+
+Although LDA is framed in terms of documents and words, it turns out
+it only uses the identities of the tokens.  As such, it may be applied
+to collections of ``documents'' consisting of any kind of count data,
+not just bags of words.  For instance, LDA may be applied to RNA
+expression data.
+
