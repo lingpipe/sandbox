@@ -35,6 +35,8 @@
     </jar>
   </target>
 
+  <property name="code.width"
+            value="63"/>
   <target name="j2t">
     <mkdir dir="${java2tex.out}"/>
     <java classname="com.colloquial.java2tex.Java2Tex"
@@ -42,6 +44,9 @@
           fork="true">
       <arg value="${java.src}"/>
       <arg value="${java2tex.out}"/>
+      <arg value="${code.width}"/>
+      <arg value="UTF-8"/>
+      <arg value="UTF-8"/>
       <arg value="\.java$"/>
     </java>
   </target>

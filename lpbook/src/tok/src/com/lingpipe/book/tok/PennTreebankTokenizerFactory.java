@@ -24,7 +24,8 @@ public class PennTreebankTokenizerFactory
 
     private PennTreebankTokenizerFactory() {
         super(new RegExTokenizerFactory(BASE_REGEX,
-                                        Pattern.CASE_INSENSITIVE));
+                                        Pattern
+                                        .CASE_INSENSITIVE));
     }
 /*x*/
 

@@ -23,8 +23,11 @@ public class SyntheticLdaExample {
 
     /*x SyntheticLdaExample.1a */
     static final CharSequence[] TEXTS = new String[] {
-        "bank loan money loan loan money bank loan bank loan loan money bank money money money",
-        "loan money money loan bank bank money bank money loan money money bank loan bank money",
+        "bank loan money loan loan money bank loan bank loan"
+        + " loan money bank money money money",
+
+        "loan money money loan bank bank money bank money loan"
+        + " money money bank loan bank money",
     /*x*/
         "loan bank money money bank bank loan bank money bank bank loan bank money money loan",
         "loan bank money bank bank money bank money bank money bank loan money loan bank money",
@@ -38,8 +41,11 @@ public class SyntheticLdaExample {
         "bank stream bank loan river stream bank bank river stream bank river river river river bank",
         "bank bank stream bank stream bank stream stream stream stream bank stream river bank river stream",
     /*x SyntheticLdaExample.1b */
-        "river stream stream stream river stream stream bank bank bank bank river river stream bank stream",
-        "stream river river bank stream stream stream stream bank river river stream bank river stream bank"
+        "river stream stream stream river stream stream bank"
+        + " bank bank bank river river stream bank stream",
+
+        "stream river river bank stream stream stream stream"
+        + " bank river river stream bank river stream bank"
     };
     /*x*/
 

@@ -12,6 +12,7 @@ import org.apache.lucene.analysis.ar.ArabicAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 
 public class ArabicTokenizerFactory {
 
@@ -31,15 +32,16 @@ public class ArabicTokenizerFactory {
         String text = Files.readFromFile(new File(file),"UTF-8");
 
         /*x ArabicTokenizerFactory.2 */
-        System.setOut(new java.io.PrintStream(System.out,true,"UTF-8"));
+        System.setOut(new PrintStream(System.out,true,"UTF-8"));
 
         System.out.println("file=" + file);
         System.out.println("-----text-----");
         System.out.print(text);
         System.out.println("-----end text-----");
 
-        DisplayTokens.displayTokens(text,ArabicTokenizerFactory.INSTANCE);
-        
+        DisplayTokens.displayTokens(text,
+                                    ArabicTokenizerFactory.INSTANCE);
+        /*x*/
     }
 
 

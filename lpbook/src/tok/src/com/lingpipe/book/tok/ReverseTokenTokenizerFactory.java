@@ -49,11 +49,12 @@ public class ReverseTokenTokenizerFactory
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         String text = args[0];
         /*x ReverseTokenTokenizerFactory.2 */
-        ReverseTokenTokenizerFactory fact
-            = new ReverseTokenTokenizerFactory(IndoEuropeanTokenizerFactory
-                                               .INSTANCE);
+        TokenizerFactory baseTokFact
+            = IndoEuropeanTokenizerFactory.INSTANCE;
+        ReverseTokenTokenizerFactory tokFact
+            = new ReverseTokenTokenizerFactory(baseTokFact);
         DisplayTokens.displayTextPositions(text);
-        DisplayTokens.displayTokens(text,fact);
+        DisplayTokens.displayTokens(text,tokFact);
         /*x*/
 
         TokenizerFactory deserFact

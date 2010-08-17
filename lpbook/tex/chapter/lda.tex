@@ -115,18 +115,68 @@ with string tokens.  But there's a handy utility method to produce
 such a matrix from a corpus of texts and a tokenizer factory.
 
 The code in \code{SyntheticLdaExample} starts out defining an array of
-character sequences making up the document collection that will
-be clustered.  The texts are defined as a static constant, begining
-with.
+sixteen character sequences making up the document collection that
+will be clustered.  The texts are defined starting with
 %
 \codeblock{SyntheticLdaExample.1a}
 %
 and ending with
 %
 \codeblock{SyntheticLdaExample.1b}
-
-
-
+%
+The only reason we used concatenation is so that the lines would fit
+on the pages of the book.  The complete set of documents is most
+easily described in a table.
+%
+\begin{center}
+\begin{tabular}{c|ccccc}
+% & \multicolumn{5}{c}{\tblhead{Tokens}} \\
+\tblhead{Doc ID}
+& \tblhead{river}
+& \tblhead{stream}
+& \tblhead{bank}
+& \tblhead{money}
+& \tblhead{loan}
+\\ \hline
+\tblhead{0} & 0 & 0 & 4 & 6 & 6 
+\\
+\tblhead{1} & 0 & 0 & 5 & 7 & 4
+\\
+\tblhead{2} & 0 & 0 & 7 & 5 & 4 
+\\
+\tblhead{3} & 0 & 0 & 7 & 6 & 3 
+\\
+\tblhead{4} & 0 & 0 & 7 & 2 & 7
+\\
+\tblhead{5} & 0 & 0 & 9 & 3 & 4
+\\
+\tblhead{6} & 1 & 0 & 4 & 6 & 5 
+\\
+\tblhead{7} & 1 & 2 & 6 & 4 & 3
+\\
+\tblhead{8} & 1 & 3 & 6 & 4 & 2
+\\
+\tblhead{9} & 2 & 3 & 6 & 1 & 4
+\\
+\tblhead{10} & 2 & 3 & 7 & 3 & 1
+\\
+\tblhead{11} & 3 & 6 & 6 & 1 & 0
+\\
+\tblhead{12} & 6 & 3 & 6 & 0 & 1
+\\
+\tblhead{13} & 2 & 8 & 6 & 0 & 0
+\\
+\tblhead{14} & 4 & 7 & 5 & 0 & 0
+\\
+\tblhead{15} & 5 & 7 & 9 & 0 & 0
+\end{tabular}
+\end{center}
+%
+The first document, with identifier 0, has four instances of
+\stringmention{bank}, six of \stringmention{money} and six of
+\stringmention{loan}.  Each document has sixteen tokens, but this is
+not a requirement, but rather an artifact of Steyvers and Griffiths'
+example.
 
 
 

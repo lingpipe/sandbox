@@ -46,7 +46,9 @@ public class SerialProxied implements Serializable {
     /*x*/
 
         /*x SerialProxied.4 */
-        public void writeExternal(ObjectOutput out) throws IOException {
+        public void writeExternal(ObjectOutput out) 
+            throws IOException {
+
             out.writeUTF(mObj.mS);
             out.writeInt(mObj.mCount);
         }

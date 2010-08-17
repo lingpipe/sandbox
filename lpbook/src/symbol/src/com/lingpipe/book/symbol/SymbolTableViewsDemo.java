@@ -14,14 +14,17 @@ public class SymbolTableViewsDemo {
         MapSymbolTable st = new MapSymbolTable();
         Set<String> symbolSet = st.symbolSet();
         Set<Integer> idSet = st.idSet();
-        System.out.println("symbolSet=" + symbolSet + " idSet=" + idSet);
+        System.out.println("symbolSet=" + symbolSet 
+                           + " idSet=" + idSet);
 
         st.getOrAddSymbol("foo");
         st.getOrAddSymbol("bar");
-        System.out.println("symbolSet=" + symbolSet + " idSet=" + idSet);
+        System.out.println("symbolSet=" + symbolSet 
+                           + " idSet=" + idSet);
 
         st.removeSymbol("foo");
-        System.out.println("symbolSet=" + symbolSet + " idSet=" + idSet);
+        System.out.println("symbolSet=" + symbolSet 
+                           + " idSet=" + idSet);
         /*x*/
     }
 

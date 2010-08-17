@@ -39,7 +39,8 @@ public class SerializedSingleton implements Serializable {
         @Override
         public void writeExternal(ObjectOutput out) { }
 
-        static final long serialVersionUID = 8538000269877150506L;
+        static final long serialVersionUID 
+            = 8538000269877150506L;
     }
 /*x*/
 

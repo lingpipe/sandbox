@@ -1,6 +1,8 @@
 package com.lingpipe.book.chars;
 
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+
 
 public class ByteToString {
 
@@ -8,7 +10,7 @@ public class ByteToString {
     public static void main(String[] args) 
         throws UnsupportedEncodingException {
 
-        System.setOut(new java.io.PrintStream(System.out,true,"UTF-8"));
+        System.setOut(new PrintStream(System.out,true,"UTF-8"));
 
         String s = "D\u00E9j\u00E0 vu";
         System.out.println(s);

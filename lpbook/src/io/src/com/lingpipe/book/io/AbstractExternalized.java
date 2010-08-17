@@ -29,7 +29,8 @@ public class AbstractExternalized implements Serializable {
     static final long serialVersionUID = -688378786294424932L;
 
     /*x AbstractExternalized.1 */
-    private static class Serializer extends AbstractExternalizable {
+    private static class Serializer 
+        extends AbstractExternalizable {
     /*x*/
 
         final AbstractExternalized mObj;
