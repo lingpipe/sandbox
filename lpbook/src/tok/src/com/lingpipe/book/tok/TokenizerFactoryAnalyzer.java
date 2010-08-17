@@ -34,7 +34,8 @@ public class TokenizerFactoryAnalyzer extends Analyzer {
     private final TokenizerFactory mDefaultTf;
 
     public 
-    TokenizerFactoryAnalyzer(Map<String,TokenizerFactory> tfMap,
+    TokenizerFactoryAnalyzer(Map<String,
+                                 TokenizerFactory> tfMap,
                              TokenizerFactory defaultTf) {
         mTfMap = new HashMap<String,TokenizerFactory>(tfMap);
         mDefaultTf = defaultTf;
@@ -49,8 +50,10 @@ public class TokenizerFactoryAnalyzer extends Analyzer {
         
     /*x TokenizerFactoryAnalyzer.2 */
     @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
-        TokenizerTokenStream tokenizer = new TokenizerTokenStream();
+    public TokenStream tokenStream(String fieldName, 
+                                   Reader reader) {
+        TokenizerTokenStream tokenizer 
+            = new TokenizerTokenStream();
         tokenizer.setField(fieldName);
         try {
             tokenizer.reset(reader);
@@ -121,7 +124,8 @@ public class TokenizerFactoryAnalyzer extends Analyzer {
         @Override
         public void reset() throws IOException {
             if (mCs == null) {
-                String msg = "Cannot reset after close() or before a reader has been set.";
+                String msg = "Cannot reset after close()"
+                    + " or before a reader has been set.";
                 throw new IOException(msg);
             }
             mTokenizer = mTokenizerFactory.tokenizer(mCs,0,mCs.length);
@@ -137,8 +141,9 @@ public class TokenizerFactoryAnalyzer extends Analyzer {
             char[] cs = mTermAttribute.termBuffer();
             token.getChars(0,token.length(),cs,0);
             mTermAttribute.setTermLength(token.length());
-            mOffsetAttribute.setOffset(mTokenizer.lastTokenStartPosition(),
-                                       mTokenizer.lastTokenEndPosition());
+            mOffsetAttribute
+                .setOffset(mTokenizer.lastTokenStartPosition(),
+                           mTokenizer.lastTokenEndPosition());
             return true;
 
         }
@@ -147,8 +152,9 @@ public class TokenizerFactoryAnalyzer extends Analyzer {
         /*x TokenizerFactoryAnalyzer.6 */
         @Override
         public void end() {
-            mOffsetAttribute.setOffset(mTokenizer.lastTokenEndPosition(),
-                                       mTokenizer.lastTokenEndPosition());
+            mOffsetAttribute
+                .setOffset(mTokenizer.lastTokenEndPosition(),
+                           mTokenizer.lastTokenEndPosition());
         }
 
         @Override

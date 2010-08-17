@@ -40,6 +40,19 @@
 \usepackage{utf8}  
 \setcode{utf8}
 
+% went back to j2t, but this is what we need for listings pkg
+%\usepackage{listings}
+%\lstset{language=} % =java}
+%\lstset{basicstyle=\ttfamily}
+%\lstset{showstringspaces=false}
+%\lstset{breaklines=true}
+%\lstset{prebreak=\mbox{$\searrow$}}
+%\lstset{postbreak=\mbox{$\searrow$}}
+%\lstset{breakautoindent=false}
+%\lstset{breakindent=0pt}
+%\lstset{breakatwhitespace=false}
+
+
 % ====================== SIZING ======================
 
 
@@ -95,13 +108,16 @@
 \newcommand{\rootdir}{\$BOOK}
 \newcommand{\bookname}{LingPipe 4.0}
 
-% AUTO CODE
+% AUTO CODE (from Java2Tex package)
 \newcommand{\codeblock}[1]{\begin{trivlist}\item[] \ttfamily\input{\autocodedir/#1}\end{trivlist}}
 \newlength{\charWidth}
 \settowidth{\charWidth}{\tt X}
 \newcommand{\brkLine}[1]{\\ \hspace*{#1\charWidth}}
 \newcommand{\plnLine}[1]{\hspace*{#1\charWidth}}
 \newcommand{\empLine}{\\[-8pt]}
+\newcommand{\brkeol}{\mbox{\small $\rhd$}} % swarrow
+\newcommand{\brkbol}{\mbox{\small $\rhd$}} % hookrightarrow
+
 
 % CODE 
 \newcommand{\code}[1]{{\ttfamily #1}}
