@@ -378,6 +378,17 @@ topic 1 is only 39.5\% and thus it should be evident that these can't
 be probabilities of topics given words, becuase they don't add up to 1
 (33.6\% + 39.5\% = 78.1\% < 1).
 
+These probabilities estimated from the small set of randomly generated
+data are as close as could be expected to the actual probability
+distributions.  With larger data sets, results will be tighter.
+
+The order of the topics is not determined.  With a different random
+seed or stopping after different numbers of samples, we will get
+slightly different results.  One difference may be that the
+identifiers on the topics will be switched.  This lack of
+identifiability of the topic identifier is typical of clustering
+models.  We return to its effect on Bayesian inference below.
+
 The final column provides a z score for the word in the topic.  This
 value measures how much more prevalent a word is in a topic than it is
 in the corpus as a whole.  The units are standard deviations.  For
