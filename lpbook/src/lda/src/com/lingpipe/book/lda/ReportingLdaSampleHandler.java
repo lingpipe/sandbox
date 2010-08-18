@@ -29,11 +29,10 @@ public class ReportingLdaSampleHandler
     public void handle(GibbsSample sample) {
         if ((sample.epoch() % mReportPeriod) != 0) return;
         long t = System.currentTimeMillis() - mStartTime;
-        System.out.printf("Epoch=%3d   elapsed time=%s\n",
-                          sample.epoch(), Strings.msToString(t));
         double xEntropyRate = -sample.corpusLog2Probability()
             / sample.numTokens();
-        System.out.printf("  tok x-entropy rate=%7.4f\n",
+        System.out.printf("n=%6d t=%8s x-entropy-rate=%8.4f\n",
+                          sample.epoch(), Strings.msToString(t),
                           xEntropyRate);
     }
 
@@ -49,7 +48,7 @@ public class ReportingLdaSampleHandler
         int numDocs = sample.numDocuments();
         int numTokens = sample.numTokens();
 
-        System.out.println("epoch=" + sample.epoch());
+        System.out.println("sample=" + sample.epoch());
         System.out.println("numDocs=" + numDocs);
         System.out.println("numTokens=" + numTokens);
         System.out.println("numWords=" + numWords);

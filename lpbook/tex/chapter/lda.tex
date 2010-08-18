@@ -44,7 +44,7 @@ appropriate representations with the help of symbol tables (see
 We begin with a synthetic example due to Steyvers and Griffiths.%
 %
 \footnote{From Steyvers, Mark and Tom Griffiths. 2007. Probabilistic
-  topic models. In Thomas K. Landauer, Danielle S. McNamara, Simon
+  topic models. In Thomas K.~Landauer, Danielle S.~McNamara, Simon
   Dennis and Walter Kintsch (eds.), {\it Handbook of Latent Semantic
     Analysis}. Laurence Erlbaum.}
 %
@@ -75,9 +75,9 @@ word in English, occurs in both types of articles.
 \subsubsection{What's a Topic?}
 
 A topic in LDA is nothing more than a discrete probability
-distribution over words.  That is, given a topic, each word
-has a probability of occurring, and the sum of all word
-probabilities in a topic must sum to 1.
+distribution over words.  That is, given a topic, each word has a
+probability of occurring, and the sum of all word probabilities in a
+topic must be one.
 
 Steyvers and Griffiths' example involves two topics, one about
 banking and one about rivers, with the following word probabilities.
@@ -106,17 +106,16 @@ chance it is \charmention{stream} and a 1/3 chance it is
 
 For the purposes of LDA, a document is modeled as a sequence of
 tokens.  We use a tokenizer factory to convert the documents into
-counts.  The identity of the tokens doesn't matter.  Neither does
-the order of the tokens, though we preserve order so that we can
-label tokens with topics in our final output.
-
-LDA deals with token identifiers in the form of a matrix, not
-with string tokens.  But there's a handy utility method to produce
-such a matrix from a corpus of texts and a tokenizer factory.
+counts.  The identity of the tokens doesn't matter.  It turns out the
+order of the tokens doesn't matter for fitting the model, though we
+preserve order and identity so that we can label tokens with topics in
+our final output.
 
 The code in \code{SyntheticLdaExample} starts out defining an array of
 sixteen character sequences making up the document collection that
-will be clustered.  The texts are defined starting with
+will be clustered.  These documents were generated randomly from an
+LDA model by Steyvers and Griffiths.  The texts making up the
+documents are defined starting with
 %
 \codeblock{SyntheticLdaExample.1a}
 %
@@ -172,11 +171,284 @@ easily described in a table.
 \end{tabular}
 \end{center}
 %
-The first document, with identifier 0, has four instances of
+The first document (identifier/position 0) has four instances of
 \stringmention{bank}, six of \stringmention{money} and six of
-\stringmention{loan}.  Each document has sixteen tokens, but this is
-not a requirement, but rather an artifact of Steyvers and Griffiths'
-example.
+\stringmention{loan}.  Each document has sixteen tokens, but equal
+sized documents is just an artifact of Steyvers and Griffiths'
+example.  In general, document sizes will differ.
+
+\subsubsection{Tokenizing Documents}
+
+LDA deals with token identifiers in the form of a matrix, not
+with string tokens.  But there's a handy utility method to produce
+such a matrix from a corpus of texts and a tokenizer factory.
+The first few lines of the \code{main()} method in
+the \code{SyntheticLdaExample} class provide the conversion
+given our static array \code{TEXTS} of character sequences:
+%
+\codeblock{SyntheticLdaExample.2}
+%
+The regex-based tokenizer factory is used with a regex defining tokens
+as maximal sequences of characters in the Unicode letter class (see
+\refsec{tok-regex-tokenizer-factory} for regex tokenizer factories and
+\refsec{regex-unicode-classes} for Unicode regex classes).  This will
+pull out each of the words in our documents.  
+
+Next, we create a symbol table (see \refsec{symbol-map-symbol-table})
+which we will use to provide integer indexes to each of the tokens.
+
+The variable \code{minCount} will specify how many instances of a
+token must be seen in the entire set of documents for it to be used in
+the model.  Here we set the threshold to 1, so no tokens will be
+pruned out.  For most applications, it makes sense to use a slightly
+larger value.
+
+Then, we create a two-dimensional array of document-word identifiers.
+The value of \code{docWords[n]} is an array of the symbol identifiers
+from the symbol table for the words in document \code{n} (which will
+range from 0 (inclusive) to 15 (inclusive) for our 16-document
+corpus).
+
+the number of times the token with
+symbol \code{i} occurs in document \code{n}.  Here we have five
+tokens, so \code{i} ranges between 0 (inclusive) and 4 (inclusive),
+and we have 16 documents, so \code{n} ranges between 0 (inclusive) and
+15 (inclusive).
+
+The program prints the symbol table and document-word array so
+you may see what is actually produced,
+%
+\begin{verbatim}
+symbTab={0=stream, 1=money, 2=bank, 3=loan, 4=river}
+
+docWords[ 0] = { 2, 3, 1, 3, 3, 1, 2, 3, 2, 3, 3, 1, 2, 1, 1, 1 }
+docWords[ 1] = { 3, 1, 1, 3, 2, 2, 1, 2, 1, 3, 1, 1, 2, 3, 2, 1 }
+...
+docWords[14] = { 4, 0, 0, 0, 4, 0, 0, 2, 2, 2, 2, 4, 4, 0, 2, 0 }
+docWords[15] = { 0, 4, 4, 2, 0, 0, 0, 0, 2, 4, 4, 0, 2, 4, 0, 2 }
+\end{verbatim}
+%
+Given the symbol table, the first document (index 0) has tokens 2
+(\stringmention{bank}), 3 (\stringmention{loan}), 1
+(\stringmention{money}), and so on, matching the input.  
+
+It is this document-word matrix that is input to LDA.  First,
+we need to set up a number of parameters, which we will explain
+after seeing the example run.  The first of these are the model
+parameters,
+%
+\codeblock{SyntheticLdaExample.3}
+%
+First, we set up 
+The number of topics is fixed in advance.  Here we cheat and set
+it to 2, which we happen to know in this case is the actual number
+of topics used to generate the documents.  In general, we won't know
+the best value for the number of topics for a particular application.
+
+Next, we set up the variables that control the sampler underlying
+the LDA inference mechanism.
+%
+\codeblock{SyntheticLdaExample.4}
+%
+These are the number of samples we take, the number of samples thrown
+away during the burnin phase, and the period between samples after
+burnin (we explain these parameters in full detail below).  
+
+The sampler also requires a pseudo-random number generator.  We will
+use Java's built-in pseudo-random number generator in the class
+\code{Random} in \code{java.util}.  Here we provide the long integer
+seed \code{43L}.  The behavior of \code{Random} is fully determined by
+the seed (hence the qualifier \stringmention{pseudo-}).  By setting
+the seed, we are able to generate the same ``random'' results whenever
+we run the algorithm.  This is immensely helpful for debugging
+purposes.  When we want true randomization, just use the zero-arg
+constructor \code{Random()}, which combines the time (specifically
+\code{System.nanoTime()}) and an internal key to generate a presumably
+fresh seed.  
+
+We sometimes use the following pattern to enable us a fresh random
+seed each time but still reproduce outputs:
+%
+\codeblock{FragmentsLda.1}
+
+After that, we set up a handler that'll be used for reporting on the
+progress of the sampler.  Specifically, we define a callback class
+\code{ReportingLdaSampleHandler} (the code of which we describe
+below), which will be passed to the inference method.
+%
+\codeblock{SyntheticLdaExample.5}
+%
+The callback handler will receive information about each sample
+produced and provides the flexibility to perform online Bayesian
+inference (which we explain below).  It's constructed with the
+symbol table and takes an argument specifying the period between
+reports (measured in samples).
+
+At last, we are in a position to actually call the LDA inference
+method, which is named after the algorithmic approach, Gibbs
+sampling, which we'll also define below,
+%
+\codeblock{SyntheticLdaExample.6}
+%
+Basically, we pass it all of our parameters, including the
+document-token matrix.
+
+After the method returns, we have a sample in hand.  We use the
+handler's \code{fullReport()} method to print out information
+about the final sample.  It requires the final sample and parameters
+controlling verbosity (printing at most 5 words per topic and 2 topics
+per document, which here, are not actually constraints).
+%
+\codeblock{SyntheticLdaExample.7}
+
+We run the example using the Ant target \code{synthetic-lda} to
+run the \code{main()} method in \code{SyntheticLdaExample}.  
+a
+%
+\commandline{ant synthetic-lda}
+%
+We've already seen the output of the symbol table and the 
+document-token matrix above.  The next thing that's output
+is monitoring information from the sampler.
+%
+\begin{verbatim}
+n=     0 t=     :00 x-entropy-rate=  2.1553
+n=     4 t=     :00 x-entropy-rate=  2.1528
+...
+n=    20 t=     :00 x-entropy-rate=  1.7837
+n=    24 t=     :00 x-entropy-rate=  1.7787
+...
+n=   248 t=     :00 x-entropy-rate=  1.7811
+n=   252 t=     :00 x-entropy-rate=  1.7946
+\end{verbatim}
+%
+The results here are typical.  The report for the sample number.  Note
+that we only get a report for every four samples because of how we
+parameterized the handler.  We can report every epoch, but it's
+relatively expensive.  The second column is the elapsed time.  This
+example is so slow, it takes less than a second total.  The third
+column is the cross-entropy rate.  This is essentially a measure of
+the number of bits required to code each word if we were to use the
+LDA model for compression.  Note that it starts high, at 2.1 bits, but
+quickly drops to 1.8 bits.  
+
+The goal in running Gibbs samplers is to reach convergence, where
+numbers like cross-entropy rates stabilize.  Note that Gibbs sampling
+is not an optimization algorithm, so while the cross-entropy rates
+start high and get lower, once they've reached about 1.78 in this
+example, they start bouncing around.  
+
+The number of samples used for burnin should be large enough that it
+gets you to the bouncing around stage.  After that, results should be
+relatively stable (see below for more discussion of LDA stability).
+
+Next, we get a report of the parameters we've fit for the topic
+models themselves.
+%
+\begin{verbatim}
+TOPIC 0  (total count=104)
+SYMBOL             WORD    COUNT   PROB          Z
+--------------------------------------------------
+     0           stream       42   0.404       4.2
+     2             bank       35   0.336      -0.5
+     4            river       27   0.260       3.3
+
+TOPIC 1  (total count=152)
+SYMBOL             WORD    COUNT   PROB          Z
+--------------------------------------------------
+     2             bank       60   0.395       0.5
+     1            money       48   0.316       3.1
+     3             loan       44   0.289       3.0
+\end{verbatim}
+%
+We fixed the number of topics at 2.  LDA operates by assigning each
+token to a topic (as we will see in a second).  These reports show the
+most frequent words associated with each topic along with the symbol
+table ID and the number of times each word was assigned to a topic.
+At the top of the report is the total number of words assigned to that
+topic (just a sum of the word counts).  
+
+The probability column displays the estimated probabiltiy of a word in
+a topic.  Thus if we sample a word from topic 0, it is 40.4\% likely
+to be \stringmention{stream}, 33.6\% likely to be \stringmention{bank}
+and 26.6\% likely to be \stringmention{river}.  Note that these
+probabilities add up to 1.  Also note that these are not probabilities
+of topics given words.  The probability of \stringmention{bank} in
+topic 1 is only 39.5\% and thus it should be evident that these can't
+be probabilities of topics given words, becuase they don't add up to 1
+(33.6\% + 39.5\% = 78.1\% < 1).
+
+The final column provides a z score for the word in the topic.  This
+value measures how much more prevalent a word is in a topic than it is
+in the corpus as a whole.  The units are standard deviations.  For
+instance, the word \stringmention{bank} appears 95 times in the corpus
+of 256 words, accounting for 95/256, or approximately 37\% of all
+tokens.  In topic 0, it appears 35 times in 104 tokens, accounting for
+approximately 34\% of all tokens; in topic 1, it appears 60 times in
+152 words, accounting for roughly 39\% of the total number of words.
+Because the prevalence of \stringmention{bank} in topic 0 is less than
+in the corpus (34\% versus 37\%), its z score is negative; because
+it's higher in topic 1 than in the corpus (39\% versus 37\%), the z
+score is positive.   
+
+The final form of output is on a per-document basis (controlled
+by a flag to the final output method).  This provides a report
+on a document-by-document basis of how each word is assigned.
+%
+\begin{verbatim}
+DOC 0
+TOPIC    COUNT    PROB
+----------------------
+    1       16   0.994
+
+bank(1) loan(1) money(1) loan(1) loan(1) money(1) bank(1) 
+loan(1) bank(1) loan(1) loan(1) money(1) bank(1) money(1) 
+money(1) money(1)
+...
+DOC 8
+TOPIC    COUNT    PROB
+----------------------
+    1       11   0.685
+    0        5   0.315
+
+money(1) bank(1) money(1) loan(1) stream(0) bank(1) loan(1) 
+bank(1) bank(1) stream(0) money(1) bank(0) bank(1) stream(0) 
+river(0) money(1)
+...
+DOC 15
+TOPIC    COUNT    PROB
+----------------------
+    0       16   0.994
+
+stream(0) river(0) river(0) bank(0) stream(0) stream(0) 
+stream(0) stream(0) bank(0) river(0) river(0) stream(0) bank(0) 
+river(0) stream(0) bank(0)
+\end{verbatim}
+%
+We've only shown the output from three representative documents.  For
+each document, we show the topic assignment to each token in parens
+after the token.  All the words in document 0 are assigned to topic 1
+whereas all the word in document 15 are assigned to topic 0.  In
+document 8, we see that 11 words are assigned topic 1 and 5 words
+topic 0.  The word \stringmention{bank} is assigned to both topic 0
+and topic 1 in the document.  This shows how LDA accounts for
+documents that are about more than one topic.
+
+The aggregate counts show how many words are assigned to each topic,
+and the probability that a word from a document is chosen from the
+probability.  
+
+Even though all words were assigned to topic 1 in document 0, the
+probability is still only 0.994.  This is because of the priors, which
+induce smoothing, setting aside a small count for unseen topics in
+each document.  This kind of smoothing is immensely helpful for
+robustness in the face of noisy data, and almost all natural language
+data is immensely noisy.
+
+
+
+
+
 
 
 
