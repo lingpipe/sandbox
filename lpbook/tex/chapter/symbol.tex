@@ -55,7 +55,7 @@ for the specified string, adding it to the symbol table if necessary.
 
 
 
-\section{The \code{MapSymbolTable} Class}
+\section{The \code{MapSymbolTable} Class}\label{section:symbol-map-symbol-table}
 
 Of the two concrete implementations of \code{SymbolTable} provided in
 LingPipe, the map-based table is the most flexible.  
@@ -167,7 +167,8 @@ idiom.  It allows the object to maintain the consistency of the two
 sets while letting the sets reflect changes in the underlying symbol
 table.
 
-We provide a demo in \code{SymbolTableViewsDemo}.  
+We provide a demo in \code{SymbolTableViewsDemo}.  The \code{main()} method
+uses the following code.
 %
 \codeblock{SymbolTableViewsDemo.1}
 %
@@ -179,6 +180,7 @@ Finally, we remove \code{"foo"} and print for the last time.
 The Ant target \code{symbol-table-views} runs the demo,
 %
 \commandlinefollow{ant symbol-table-views-demo}
+\vspace*{6pt} // don't know why I need this here -- variable spacing, I think
 \begin{verbatim}
 symbolSet=[] idSet=[]
 symbolSet=[foo, bar] idSet=[0, 1]
