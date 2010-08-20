@@ -94,7 +94,7 @@ numbers\index{hexadecimal!notation} are distinguished by prefixing
 them with \code{0x}.  For example,
 \code{0xB2F} is the hexadecimal equivalent of the decimal 2863.
 
-\subsection{Bytes}\label{section:java-bytes}
+\subsection{Bytes}\label{appendix:java-bytes}
 
 The basic unit of organization in contemporary computing systems is
 the byte.  By this we mean it's the smallest chunk of data that may be
@@ -428,7 +428,7 @@ object that is equal to the result of \code{new~Integer(42)}, but is
 not guaranteed to be a fresh instance, and thus may be reference equal
 (\code{==}) to other \code{Integer} objects.
 
-\subsubsection{Autoboxing}\label{section:java-autoboxing}
+\subsubsection{Autoboxing}\label{appendix:java-autoboxing}
 
 Autoboxing automatically provides an object wrapper for a primitive
 type when a primitive expression is used where an object is expected.
@@ -685,6 +685,113 @@ OK
 %
 The program takes about 5 seconds to run on our four-core notebook.
 
+
+\section{Generating Random Numbers}\label{appendix:java-random}
+
+Java has a built-in pseudorandom number generator.  It is implemented
+in the class \code{Random} in package \code{java.util}.  
+
+\subsection{Generating Random Numbers}
+
+Given an instance of \code{Random} (see the next section for
+construction details), we are able to use it to generate random
+outcomes of several primitive types. 
+
+\subsubsection{Discrete Random Numbers}
+
+The method \code{nextBoolean()} returns a random \code{boolean}n
+value, \code{nextInt()} a random \code{int}, and \code{nextLong()} a
+random long.  The algorithms generating these values are designed to
+assign equal probabilities to all outcomes.  
+
+The method \code{nextInt(int)} is particularly useful in that it
+generates a value between 0 (inclusive) and its argument (exclusive).
+
+Byte are generated using the C-like method \code{nextBytes(byte[])},
+which fills the specified byte array with random bytes.  
+
+\subsubsection{Floating Point Numbers}
+
+As with all things floating point, random number generation is tricky.
+The method \code{nextFloat()} and \code{nextDouble()} return values
+beteween 0.0 (inclusive) and 1.0 (exclusive).  This is, in part, to
+compensate for the uneven distribution of values across the bit-level
+representations.  When values are large, there are larger gaps between
+possible floating point representations.  The algorithms used are not
+quite generating random bit-level representations; they are documented
+in the class's Javadoc.
+
+There is also a method \code{nextGaussian()} that generates a draw
+from a unit normal, $\distro{Norm}(0,1)$, distribution.
+
+
+\subsection{Seeds and Pseudorandomness}
+
+A random number generator is constructed using a base costructor
+\code{Random(long)}.  The argument is called the seed of the random
+number generator.
+
+The behavior of \code{Random} is fully determined by the seed.  A
+generator with deterministic behavior like this is said to be
+\stringmention{pseudorandom}.  By setting the seed, we are able to
+generate the same ``random'' results whenever we run the algorithm.
+This is immensely helpful for debugging purposes.
+
+If you want true randomization, just use the zero-argument constructor
+\code{Random()}.  This constructor combines the time obtained from
+Java's \code{System.nanoTime()}) and a changing internal key in an
+attempt to generate unique seeds each time it is called.
+
+We sometimes use the following pattern to enable us a fresh random
+seed for each run, but still enable reproducible results.
+%
+\codeblock{FragmentsJava.1}
+%
+By printing out the seed, we can reproduce any results from a run.
+This is especially useful for random algorithms (that is, algorithms
+that makes choices probabilistically, such as Gibbs samplers or
+K-means clusterers).  
+
+LingPipe is set up so that randomized algorithms take an explicit
+\code{Random} argument, so that results may be reproduced.
+
+
+\subsection{Alternative Randomization Implementations}
+
+Because the \code{Random} class is not final, it is possible to plug
+in different implementations.  In fact, \code{Random} was designed for
+extension by implementing most of its work through the protected
+\code{next(int)} method.  This method is used to define the other
+random number generators, sometimes being called more than once in a
+method.
+
+\subsection{Synchronization}
+
+Although not externally documented, there is a great deal of careful
+synchronization underlying the methods in \code{Random}.  As of Java
+1.6, the various \code{next\codeVar{X}()} methods (other than
+\code{nextGaussian()}) use a scalable compare-and-set (CAS) strategy
+through Java's built-in \code{AtomicLong} class.  The
+\code{nextGaussian()} method uses its own synchronization.
+
+This synchronization happens in the \code{next(int)} method, so
+classes that extend \code{Random} need to be designed with thread
+safety in mind. 
+
+Even with its design for liveness, the Javadoc itself recommends using
+a separate random number generator in each thread if possible to
+reduce even the minimal lock contention imposed by the atomic long's
+compare-and-set operation.
+
+\subsection{The \code{Math.random()} Utility}
+
+The \code{Math} utility class in the built-in \code{java.lang} package
+provides a simple means of generating double values.  The utility
+method \code{Math.random()} that returns the result of calling
+\code{nextDouble()} on a random number generator, thus returning a
+value between 0.0 (inclusive) and 1.0 (exclusive).  The random number
+generator is lazily initialized thread safely so that calls to the
+method are thread safe.
 
 
 

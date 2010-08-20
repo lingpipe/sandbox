@@ -305,14 +305,12 @@ table.%
 \footnote{Adapted from {\it Unicode Standard Version 5.2}, Table 3-5.}
 %
 \begin{center}
-\begin{tabular}{|r|r|}
-\hline
+\begin{tabular}{rr}
 \tblhead{Code Point Bits} & \tblhead{UTF-16 Bytes} 
 \\ \hline
 \code{xxxxxxxx xxxxxxxx} & \code{xxxxxxxx xxxxxxxx}
-\\ \hline
+\\ 
 \code{000uuuuuxxxxxxxxxxxxxxxx} & \code{110110ww wwxxxxxx 110111xx xxxxxxxx}
-\\ \hline
 \end{tabular}
 \end{center}
 %
@@ -345,18 +343,16 @@ use the table-based visualization of the encoding scheme.%
 \footnote{Adapted from {\it Unicode Standard Version 5.2},  Table 3-6.}
 %
 \begin{center}
-\begin{tabular}{|r|r|}
-\hline
+\begin{tabular}{rr}
 \tblhead{Code Point Bits} & \tblhead{UTF-8 Bytes}
 \\ \hline
 \code{0xxxxxxxx} & \code{0xxxxxxx}
-\\ \hline
+\\ 
 \code{00000yyyyyxxxxxx} & \code{110yyyyy 10xxxxxx}
-\\ \hline
+\\ 
 \code{zzzzyyyyyyxxxxxx} & \code{1110zzzz 10yyyyyy 10xxxxxx}
-\\ \hline
+\\ 
 \code{000uuuuuzzzzyyyyyyxxxxxx} & \code{11110uuu 10uuzzzz 10yyyyyy 10xxxxxx}
-\\ \hline
 \end{tabular}
 \end{center}
 %
@@ -463,18 +459,16 @@ There are four basic normalization forms, reproduced here from Table 1
 in the normalization annex document.
 %
 \begin{center}
-\begin{tabular}{|l|p{0.5\textwidth}|}
-\hline
+\begin{tabular}{lp{0.5\textwidth}}
 \tblhead{Normalization Form} & \tblhead{Description} 
 \\ \hline
 NFD & canonical decomposition
-\\ \hline
+\\ 
 NFC & canonical decomposition, followed by canonical composition
-\\ \hline
+\\ 
 NFKD & compatibility decomposition
-\\ \hline
+\\ 
 NFKC & compatibility decomposition, followed by canonical composition
-\\ \hline
 \end{tabular}
 \end{center}
 %
@@ -665,7 +659,7 @@ string literals.
 \begin{center}
 \begin{tabular}{lll}
 \tblhead{Escape} & \tblhead{Code Point} & \tblhead{Description}
-\\
+\\ \hline
 \code{{\bk}n} & \unicode{000A} & \unicodedesc{line feed}
 \\
 \code{{\bk}t} & \unicode{0009} & \unicodedesc{character tabulation}
@@ -1416,7 +1410,7 @@ picks out \unicode{00E9}, \unicodedesc{latin small letter e with
 acute}, and so on.
 
 We have printed out the bytes using unsigned hexadecimal notation (see
-\refsec{java-bytes} for more information about signs and bytes).  
+\refappendix{java-bytes} for more information about signs and bytes).  
 Note that there are more bytes than \code{char} values.  This is
 because characters above \unicode{0080} require two bytes or more to
 encode in UTF-8 (see \refsec{utf-8}).  For instance, the sequence of
