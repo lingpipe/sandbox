@@ -20,26 +20,35 @@ extraction for discriminative models such as logistic regression or
 conditional random fields, classification of new documents, language
 modeling, and many more.
 
-\section{Corpora and Documents}
+\section{Corpora, Documents, and Tokens}
 
 For LDA, a corpus is nothing more than a collection of documents.
-Each document is modeled as a sequence of words (or tokens).  It turns
-out that only the count of the words is significant, not their order.
+Each document is modeled as a sequence of tokens, which are often
+words or normalized forms of words.
 
-A bag is a data structure like a set, only with (non-negative) counts
-for each member.  Mathematically, we may model a bag as a mapping from
-its members to their counts. Like other models that don't distinguish
-word order, LDA is called a bag-of-words model.
+Applications of LDA typically start with a real document collection
+consisting of character data.  LingPipe uses tokenizer factories to
+convert character sequences to sequences of tokens (see
+\refchap{tokenization}).  Utilities in the LDA implementation class
+help convert these to appropriate representations with the help of
+symbol tables (see \refchap{symbol-tables}).
 
-We often start with a real document collection consisting of character
-data.  LingPipe uses tokenizer factories to convert character
-sequences to sequences of tokens (see \refchap{tokenization}).
-Utilities in the LDA implementation class help convert these to
-appropriate representations with the help of symbol tables (see
-\refchap{symbol-tables}).
+For LDA, and many other models such as traditional naive Bayes
+classification and $k$-means clustering, only the count of the words
+is significant, not their order.  A bag is a data structure like a
+set, only with (non-negative) counts for each member.  Mathematically,
+we may model a bag as a mapping from its members to their counts. Like
+other models that don't distinguish word order, LDA is called a
+bag-of-words model.
 
 
-\section{Synthetic LDA Example}
+\section{LDA Parameter Estimation}
+
+In this section, we will cover the steps necessary to set up the
+constant parameters for an LDA model and then estimate the unknown
+parameters from a corpus of text data.
+
+\subsection{Synthetic Data Example}
 
 We begin with a synthetic example due to Steyvers and Griffiths.%
 %
@@ -62,7 +71,7 @@ The implementation of our synthetic example, which illustrates
 the basic inference mechanism for LDA, is in the demo class
 \code{SyntheticLdaExample}.
 
-\subsection{Two Topic, Five Word Model}
+\subsubsection{Tokens}
 
 Steyvers and Griffiths' synthetic example involved only two topics and
 five words.  The words are \stringmention{river},
@@ -228,7 +237,7 @@ Given the symbol table, the first document (index 0) has tokens 2
 
 It is this document-word matrix that is input to LDA.  
 
-\subsubsection{LDA Parameters}
+\subsection{LDA Parameters}
 
 Before running LDA, we need to set up a number of parameters, which we
 will explain after seeing the example run.  The first of these are the
@@ -288,14 +297,15 @@ Basically, we pass it all of our parameters, including the
 document-token matrix.
 
 After the method returns, we have a sample in hand.  We use the
-handler's \code{fullReport()} method to print out information
-about the final sample.  It requires the final sample and parameters
-controlling verbosity (printing at most 5 words per topic and 2 topics
-per document, which here, are not actually constraints).
+reporting methods in the handler to print out information about the
+final sample.  It requires the final sample and parameters controlling
+verbosity (printing at most 5 words per topic and 2 topics per
+document, which here, are not actually constraints).
 %
 \codeblock{SyntheticLdaExample.7}
 
-\subsubsection{Runnning the Demo}
+
+\section{Interpreting LDA Output}
 
 We run the example using the Ant target \code{synthetic-lda} to
 run the \code{main()} method in \code{SyntheticLdaExample}.  
@@ -306,7 +316,7 @@ a
 We've already seen the output of the symbol table and the 
 document-token matrix above.  
 
-\subsubsection{Convergence Monitoring}
+\subsection{Convergence Monitoring}
 
 The next thing that's output is monitoring information from the
 sampler.
@@ -351,7 +361,7 @@ The number of samples used for burnin should be large enough that it
 gets you to the bouncing around stage.  After that, results should be
 relatively stable (see below for more discussion of LDA stability).
 
-\subsubsection{Inferred Topics}
+\subsection{Inferred Topics}
 
 Next, we get a report of the parameters we've fit for the topic
 models themselves.
@@ -413,7 +423,7 @@ in the corpus (34\% versus 37\%), its z score is negative; because
 it's higher in topic 1 than in the corpus (39\% versus 37\%), the z
 score is positive.   
 
-\subsubsection{Inferred Token and Document Categorizations}
+\subsection{Inferred Token and Document Categorizations}
 
 The final form of output is on a per-document basis (controlled
 by a flag to the final output method).  This provides a report
@@ -470,18 +480,9 @@ robustness in the face of noisy data, and almost all natural language
 data is immensely noisy.
 
 
-\section{Content of a Sample}
+\section{LDA's Gibbs Samples}
 
-The method we used in the last section to invoke the sampler returned
-only a single Gibbs sample.  There is a second method that is
-parameterized roughly the same way and returns an iterator over Gibbs
-samples.  The iterator and one-shot sampler return instances of
-\code{GibbsSample}, which is a static class nested in
-\code{LatentDirichletAllocation}.
-
-Samples are produced in order by the sampler.  The poorly named method
-\code{epoch()} returns the sample number, with numbering beginning
-from 0.
+The return value of the LDA estimation method is a Gibbs sample.
 
 \subsection{Constant, Hyperparameter and Data Access}
 
@@ -534,22 +535,6 @@ posteriori (MAP) estimates provided by the methods
 \code{topicWordPrior()} and \code{documentTopicPrior()}, respectively.
 
 
-\subsection{Handler Demo Class}
-
-We define a class \code{ReporingLdaSampleHandler} which follows our
-generic handler pattern.  The class declaration, member variables and
-constructor are as follows.
-%
-\codeblock{ReporingLdaSampleHandler.1}
-%
-We maintain a reference to the symbol table so that our reports
-can reassociate the integer identifiers with which LDA works
-with the tokens from which they arose.
-
-The class was defined to implement the interface
-\code{ObjectHandler<GibbsSample>}.  Its single method is implemented
-as
-
 
 \subsection{Retrieving an LDA Model}
 
@@ -561,6 +546,178 @@ hyperparameters.
 Although the Gibbs samples themselves are not serializable, the LDA
 models they return are.  We turn to the use of an LDA instance in the
 next section.
+The method we used in the last section to invoke the sampler returned
+a single Gibbs sample.  There is a related static estimation method in
+\code{LatentDirichletAllocation} that returns an iterator over all of
+the Gibbs samples.  The iterator and one-shot sampler return instances
+of \code{GibbsSample}, which is a static class nested in
+\code{LatentDirichletAllocation}.
+
+Samples are produced in order by the sampler.  The poorly named method
+\code{epoch()} returns the sample number, with numbering beginning
+from 0.
+
+
+\section{Handling Gibbs Samples}
+
+In our running synthetic data example, we provided an instance of the
+demo class \code{ReporingLdaSampleHandler} to the LDA estimation
+method \code{gibbsSampler()}.  The use of the handler class follows
+LingPipe's generic callback handler pattern.  For every
+Gibbs sample produced by the sampler, the handler object receives
+a reference to it through a callback.
+
+\subsection{Samples are Reused}
+
+Unlike many of our other callbacks, the Gibbs sampler callbacks
+were implemented for efficiency.  Rather than getting a new
+Gibbs sample object for each sample, the same instance of
+\code{GibbsSample} is reused.  Thus it does not make any sense
+to create a collection of the Gibbs samples for later use.  
+All statistics must be computed online or accumulated outside
+the Gibbs sample object for later use.
+
+\subsection{Reporting Handler Demo}
+
+The reporting handler demo is overloaded to serve two purposes.
+First, it handles Gibbs samples as they arrive as required by
+its interface.  Second, it provides a final report in a
+class-specific method.
+
+\subsubsection{Online Sample Handler}
+
+The class declaration, member variables and constructor for the
+handler are as follows.
+%
+\codeblock{ReportingLdaSampleHandler.1}
+%
+We maintain a reference to the symbol table so that our reports can
+reassociate the integer identifiers with which LDA works with the
+tokens from which they arose.  We see how the report period is used in
+the implementation of the handler method.
+
+The class was defined to implement the interface
+\code{ObjectHandler<GibbsSample>}.  It thus requires an implementation
+of the \code{void} return method \code{handle(GibbsSample)}.  Up to
+the print statement, this method is implemented as follows.
+%
+\codeblock{ReportingLdaSampleHandler.2}
+%
+This is the callback method that will be called for every sample.  It
+first grabs the epoch, or sample number.  If this is not an even
+multiple of the report period, the method returns without performing
+any action.  Otherwise, we fall through and calcualte the elapsed time
+and cross-entropy rate.  Note that the cross-entropy rate as reported
+here is the negative log (base 2) probability of the entire corpus of
+documents divided by the number of tokens in the entire corpus.  
+This cross-entropy rate is what we saw printed and what we monitor for
+convergence.
+
+\subsubsection{General Reporting}
+
+There are additional reporting methods in the handler above the
+required one that provide more detailed reporting for a sample.  They
+produce the output shown in the previous section after the online
+reporting of cross-entropy rates finishes and the final sample is
+produced by LDA's \code{gibbsSampler()} method.
+
+The general parameter reporting method, \code{reportParameters()},
+just prints general corpus and estimator parameters from the sample.
+There are two more interesting reporters, one for topics and one for
+documents.  The topic reporting method, \code{reportTopics()},
+begins as follows.
+%
+\codeblock{ReportingLdaSampleHandler.3}
+%
+The loop is over the topic identifiers.  Within the loop, the method
+begins by assigning the number of words assigned to a topic.  It then
+allocates a general LingPipe object counter to use for the word
+counts.  Each word identifier is considered int he inner loop, and the
+counter's value for that word is set to the number of times the word
+was assigned to the current topic.  After collecting the counts in our
+map, we create a list of the keys, here word indexes, ordered in
+descending order of their counts.  
+
+We continue by looping over the words by rank.
+%
+\codeblock{ReportingLdaSampleHandler.4}
+%
+We bound the number of words by the maximum given and make sure not to
+overflow the model's size bounds.  Inside the loop, we just pull out
+identifiers and counts, and calculate the z-score.  This is where we
+need the symbol table in order to print out the actual words rather
+than just their numbers.  The rest of the method is just printing.
+
+The method used to calculate the z-score is
+%
+\codeblock{ReportingLdaSampleHandler.5}
+%
+It first calculates the maximum likelihood estimate of the word's
+probabilty in the corpus, which is just the overall count of the word
+divided by the number of words in the corpus.  The maximum likelihood
+variance estimate is calculated as usual for a binomial outcome over
+$n$ samples (here \code{wordsInCorpus}) with known probabiltiy
+$\theta$ (here \code{pCorpus}), namely $n \times \theta \times (1 -
+\theta)$.  The expected number of occurrences if it had the corpus
+distribution is given by the number of words in the document times the
+probability in the corpus.  The z-score is then the actual value minus
+the expected value scaled by the expected deviation.
+
+Returning to the general reporting, we have a method
+\code{reportDocs()}, which provides a report on the documents,
+optionally including a word-by-word report of topic assignments.
+%
+\codeblock{ReportingLdaSampleHandler.6}
+%
+This method enumerates all the documents in the corpus, reporting on
+each one in turn.  For each topic, we follow the same pattern as we
+did for the topics beofre, establishing a LingPipe object counter
+mapping topic identifiers to the number of times a word in the current
+document was assigned to that topic.  We then sort as before, then
+loop over the ranks up to the maximum number of topics or total number
+of topics in the model.
+%
+\codeblock{ReportingLdaSampleHandler.7}
+%
+For each rank, we calculate the counts and probabilities and display
+them.
+
+Finally, we report on a token-by-token basis if the flag is set.
+%
+\codeblock{ReportingLdaSampleHandler.8}
+%
+Here we just enumerate over the tokens in a document printing
+the topic to which they were assigned.
+
+
+\subsection{General Handlers}
+
+In general, handlers can do anything.  For instance, they can be used
+to accumulate results such as running averages, thus supporting full
+Bayesian inference with a small memory footprint (only the current
+sample need stay in memory).
+
+For instance, the following handler would calculate average corpus
+log 2 probability over all samples.
+%
+\codeblock{CorpusLog2ProbAvgHandler.1}
+%
+We use an instance of LingPipe's \code{OnlineNormalEstimator} for the
+calculation.  It calculates averages and sample variances and standard
+deviations online without accumulating the data points.  The method
+\code{mAvg.mean()} returns the sample mean and
+\code{mAvg.varianceUnbiased()} the unbiased sample variance.
+
+Along these sample lines, more complex statistics such as word or
+document similarities or held out data entropy estimates may be
+computed online.
+
+
+
+
+
+
+
 
 
 \section{The Generative Model}
