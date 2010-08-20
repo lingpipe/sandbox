@@ -12,6 +12,7 @@ import com.aliasi.util.Strings;
 
 import java.util.List;
 
+/*x ReportingLdaSampleHandler.1 */
 public class ReportingLdaSampleHandler 
     implements ObjectHandler<GibbsSample> {
 
@@ -25,6 +26,7 @@ public class ReportingLdaSampleHandler
         mStartTime = System.currentTimeMillis();
         mReportPeriod = reportPeriod;
     }
+/*x*/
 
     public void handle(GibbsSample sample) {
         if ((sample.epoch() % mReportPeriod) != 0) return;

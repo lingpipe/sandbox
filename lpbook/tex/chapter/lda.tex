@@ -83,7 +83,7 @@ Steyvers and Griffiths' example involves two topics, one about
 banking and one about rivers, with the following word probabilities.
 %
 \begin{center}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{l|rrrrr}
 & \stringmention{river} 
 & \stringmention{stream}
 & \stringmention{bank}
@@ -207,13 +207,7 @@ Then, we create a two-dimensional array of document-word identifiers.
 The value of \code{docWords[n]} is an array of the symbol identifiers
 from the symbol table for the words in document \code{n} (which will
 range from 0 (inclusive) to 15 (inclusive) for our 16-document
-corpus).
-
-the number of times the token with
-symbol \code{i} occurs in document \code{n}.  Here we have five
-tokens, so \code{i} ranges between 0 (inclusive) and 4 (inclusive),
-and we have 16 documents, so \code{n} ranges between 0 (inclusive) and
-15 (inclusive).
+corpus).  
 
 The program prints the symbol table and document-word array so
 you may see what is actually produced,
@@ -232,18 +226,23 @@ Given the symbol table, the first document (index 0) has tokens 2
 (\stringmention{bank}), 3 (\stringmention{loan}), 1
 (\stringmention{money}), and so on, matching the input.  
 
-It is this document-word matrix that is input to LDA.  First,
-we need to set up a number of parameters, which we will explain
-after seeing the example run.  The first of these are the model
-parameters,
+It is this document-word matrix that is input to LDA.  
+
+\subsubsection{LDA Parameters}
+
+Before running LDA, we need to set up a number of parameters, which we
+will explain after seeing the example run.  The first of these are the
+model parameters,
 %
 \codeblock{SyntheticLdaExample.3}
 %
-First, we set up 
-The number of topics is fixed in advance.  Here we cheat and set
-it to 2, which we happen to know in this case is the actual number
-of topics used to generate the documents.  In general, we won't know
-the best value for the number of topics for a particular application.
+First, we set up the number of topics, which must be fixed in advance.
+Here we cheat and set it to 2, which we happen to know in this case is
+the actual number of topics used to generate the documents.  In
+general, we won't know the best value for the number of topics for a
+particular application.
+
+\subsubsection{Sampler Parameters}
 
 Next, we set up the variables that control the sampler underlying
 the LDA inference mechanism.
@@ -254,22 +253,15 @@ These are the number of samples we take, the number of samples thrown
 away during the burnin phase, and the period between samples after
 burnin (we explain these parameters in full detail below).  
 
-The sampler also requires a pseudo-random number generator.  We will
-use Java's built-in pseudo-random number generator in the class
-\code{Random} in \code{java.util}.  Here we provide the long integer
-seed \code{43L}.  The behavior of \code{Random} is fully determined by
-the seed (hence the qualifier \stringmention{pseudo-}).  By setting
-the seed, we are able to generate the same ``random'' results whenever
-we run the algorithm.  This is immensely helpful for debugging
-purposes.  When we want true randomization, just use the zero-arg
-constructor \code{Random()}, which combines the time (specifically
-\code{System.nanoTime()}) and an internal key to generate a presumably
-fresh seed.  
+The sampler also requires a pseudo-random number generator.  We use
+Java's built-in pseudo-random number generator in the class
+\code{Random} in \code{java.util} (see \refappendix{java-random} for
+more information bout \code{Random} and using it in experimental
+settings).  By providing the constructor an explicit seed, \code{43L},
+the program will have the same behavior each time it is run.  Remove
+the argument or provide a different seed to get different behavior.
 
-We sometimes use the following pattern to enable us a fresh random
-seed each time but still reproduce outputs:
-%
-\codeblock{FragmentsLda.1}
+\subsubsection{Reporting Callback Handler Parameters}
 
 After that, we set up a handler that'll be used for reporting on the
 progress of the sampler.  Specifically, we define a callback class
@@ -283,6 +275,8 @@ produced and provides the flexibility to perform online Bayesian
 inference (which we explain below).  It's constructed with the
 symbol table and takes an argument specifying the period between
 reports (measured in samples).
+
+\subsubsection{Invoking the Sampler}
 
 At last, we are in a position to actually call the LDA inference
 method, which is named after the algorithmic approach, Gibbs
@@ -301,6 +295,8 @@ per document, which here, are not actually constraints).
 %
 \codeblock{SyntheticLdaExample.7}
 
+\subsubsection{Runnning the Demo}
+
 We run the example using the Ant target \code{synthetic-lda} to
 run the \code{main()} method in \code{SyntheticLdaExample}.  
 a
@@ -308,8 +304,12 @@ a
 \commandline{ant synthetic-lda}
 %
 We've already seen the output of the symbol table and the 
-document-token matrix above.  The next thing that's output
-is monitoring information from the sampler.
+document-token matrix above.  
+
+\subsubsection{Convergence Monitoring}
+
+The next thing that's output is monitoring information from the
+sampler.
 %
 \begin{verbatim}
 n=     0 t=     :00 x-entropy-rate=  2.1553
@@ -327,10 +327,19 @@ that we only get a report for every four samples because of how we
 parameterized the handler.  We can report every epoch, but it's
 relatively expensive.  The second column is the elapsed time.  This
 example is so slow, it takes less than a second total.  The third
-column is the cross-entropy rate.  This is essentially a measure of
-the number of bits required to code each word if we were to use the
-LDA model for compression.  Note that it starts high, at 2.1 bits, but
-quickly drops to 1.8 bits.  
+column is the cross-entropy rate.  This is roughly a measure of the
+expected number of bits required to code a word if we were to use
+the LDA model for compression.%
+%
+\footnote{This figure ignores the generation of the multinomial for
+  the document. For use in compression, we would also need to encode a
+  discrete approximation of the draw of the document's multinomial
+  from the Dirichlet prior.}
+%
+Note that the cross-entropy starts high, at 2.1 bits, but quickly
+drops to 1.8 bits.  Further note that at the converged state, LDA is
+providing a better model than randomly generating words, which would
+have a cross-entropy of $- \log_2 1/5 \approx 2.3$ bits.
 
 The goal in running Gibbs samplers is to reach convergence, where
 numbers like cross-entropy rates stabilize.  Note that Gibbs sampling
@@ -341,6 +350,8 @@ example, they start bouncing around.
 The number of samples used for burnin should be large enough that it
 gets you to the bouncing around stage.  After that, results should be
 relatively stable (see below for more discussion of LDA stability).
+
+\subsubsection{Inferred Topics}
 
 Next, we get a report of the parameters we've fit for the topic
 models themselves.
@@ -402,6 +413,8 @@ in the corpus (34\% versus 37\%), its z score is negative; because
 it's higher in topic 1 than in the corpus (39\% versus 37\%), the z
 score is positive.   
 
+\subsubsection{Inferred Token and Document Categorizations}
+
 The final form of output is on a per-document basis (controlled
 by a flag to the final output method).  This provides a report
 on a document-by-document basis of how each word is assigned.
@@ -457,10 +470,97 @@ robustness in the face of noisy data, and almost all natural language
 data is immensely noisy.
 
 
+\section{Content of a Sample}
+
+The method we used in the last section to invoke the sampler returned
+only a single Gibbs sample.  There is a second method that is
+parameterized roughly the same way and returns an iterator over Gibbs
+samples.  The iterator and one-shot sampler return instances of
+\code{GibbsSample}, which is a static class nested in
+\code{LatentDirichletAllocation}.
+
+Samples are produced in order by the sampler.  The poorly named method
+\code{epoch()} returns the sample number, with numbering beginning
+from 0.
+
+\subsection{Constant, Hyperparameter and Data Access}
+
+The samples store all the argments supplied to the LDA method other
+than number of samples information.  These values will be constant
+for the chain of samples produced by the iterator.
+
+The method \code{numTopics()} returns the constant number of topics
+specified in the original invocation.  The methods
+\code{topicWordPrior()} and \code{documentTopicPrior()} return the two
+hyperparameters \ie{constant prior parameters}.
+
+The sample object also provides access to the underlying document-word
+matrix matrix through the methods \code{numDocuments()},
+\code{documentLength(int)}, and \code{word(int,int)}.
+
+\subsection{Word Topic Assignments and Probability Estimates}
+
+What we're really after is the actual content of the sample.  Each
+step of sampling contains an assignment of each token in each document
+to one of the topics.  The method \code{topicSample(int,int)} returns
+the \code{short}-valued topic identifier for the specified document
+and token position.
+
+These assignments of topics to words, combined with the priors'
+hyperparameters, determine the probability estimates for topics and
+documents we showed in the output in the previous section.  The method
+\code{topicWordProb(int,int)} returns the \code{double}-valued
+probability estimate of a word in a topic.  These probability
+distributions fix the behavior of the topics themselves.
+
+The method \code{documentTopicProb(int,int)} returns the
+\code{double}-valued proability estimate for a topic in a document.
+These probabilities summarize the topics assigned to the document.
+
+These probability estimates, coupled with the underlying document-word
+data matrix, allows us to compute \code{corpusLog2Probability()},
+which is the probability of the topics and words given the models.
+Note that it does not include the probabilities of the document
+multinomials or the topic multinomials given their Dirichlet priors.
+The main reason they're excluded is that the multinomials are not
+sampled in the collapsed sampler.
+
+The static utility method \code{dirichletLog2Prob(double[],double[])}
+in the class \code{Statistics} in LingPipe's \code{stats} package may
+be used to compute Dirichlet probabilities.  We may plug the maximum a
+posteriori (MAP) estimates provided by the methods
+\code{topicWordProb()} and \code{documentTopicProb()} into the
+\code{dirichletLog2Prob()} method along with the relevant prior,
+\code{topicWordPrior()} and \code{documentTopicPrior()}, respectively.
 
 
+\subsection{Handler Demo Class}
+
+We define a class \code{ReporingLdaSampleHandler} which follows our
+generic handler pattern.  The class declaration, member variables and
+constructor are as follows.
+%
+\codeblock{ReporingLdaSampleHandler.1}
+%
+We maintain a reference to the symbol table so that our reports
+can reassociate the integer identifiers with which LDA works
+with the tokens from which they arose.
+
+The class was defined to implement the interface
+\code{ObjectHandler<GibbsSample>}.  Its single method is implemented
+as
 
 
+\subsection{Retrieving an LDA Model}
+
+Each Gibbs sample contains a factory method \code{lda()} to construct
+an instance of \code{LatentDirichletAllocation} based on the
+topic-word distributions implied by the sample and the prior
+hyperparameters.  
+
+Although the Gibbs samples themselves are not serializable, the LDA
+models they return are.  We turn to the use of an LDA instance in the
+next section.
 
 
 \section{The Generative Model}
