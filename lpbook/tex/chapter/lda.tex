@@ -713,8 +713,175 @@ document similarities or held out data entropy estimates may be
 computed online.
 
 
+\section{Scalability of LDA}
+
+LDA is a highly scalable model.  It takes an amount of time per token
+that is proportional to the number of topics.  Thus with a fixed
+number of topics, it scales linearly in topic size.  Tens of thousands
+of documents are no problem on desktop machines.
+
+\subsection{Wormbase Data}
+
+In this section, we consider a larger scale LDA estimation problem, in
+analyzing a collection of biomedical research paper citations related
+to the model organism caenorhabditis elegans (c.~elegans), the
+nematode worm.%
+%
+\footnote{\label{footnote:lda-wormbase-data} We downloaded the data,
+  which consists of MEDLINE citations, from the Wormbase data
+  repository,
+  \url{ftp://ftp.wormbase.org/pub/wormbase/misc/literature/2007-12-01-wormbase-literature.endnote.gz},
+  on 20 August 2010.}
+%
+Similar data from a slightly different source on a smaller scale
+was analyzed by Blei et al.\ in an attempt to relate the topics
+inferred using LDA with those added for genetics by the database
+curators.%
+%
+\footnote{Blei et al.  analyzed a smaller set of worm citations from
+  the Caenorhabditis Genetic Center (CGC) bibliography.  This data is
+  available from the WormBook site at \url{http://www.wormbook.org/wli/cgcbib}.  
+\begin{quote}
+Blei, D.~M., K.~Franks, M.~I.~Jordan and
+  I.~S.~Mian. 2006. Statistical modeling of biomedical corpora: mining
+  the Caenorhabditis Genetic Center Bibliography for genes related to
+  life span. {\it BMC Bioinformatics} {\bf 7}:250.
+\end{quote}
+Blei et al.\ considered 50 topics generated from 5225 documents using
+a total of 28,971 distinct words.  }
+%
+An example of a citation in raw form is
+%
+\begin{verbatim}
+%0 Journal Article
+%T Determination of life-span in Caenorhabditis elegans 
+   by four clock genes.
+%A Lakowski, B
+%A Hekimi, S
+%D 1996
+%V 272
+%P 1010-1013
+%J Science
+%M WBPaper00002456
+%X The nematode worm Caenorhabditis elegans is a model system 
+   for the study of the genetic basis of aging. Maternal-effect
+   mutations in four genes--clk-1, clk-2, clk-3, and gro-1
+   --interact genetically to determine both the duration of 
+   development and life-span. Analysis of the phenotypes of
+   physiological clock in the worm. Mutations in certain genes 
+   involved in dauer formation (an alternative larval stage
+   induced by adverse conditions in which development is 
+   arrested) can also extend life-span, but the life extension 
+   of Clock mutants appears to be independent of these genes. 
+   The daf-2(e1370) clk-1(e2519) worms, which carry life-span-
+   extending mutations from two different pathways, live nearly 
+   five times as long as wild-type worms.
+\end{verbatim}
+%
+There are not actually line breaks in the \code{\%T} and \code{\%X} elements.
+
+\subsection{Running the Demo}
+
+First, you'll need to download the gzipped data from wormbase; see
+\reffootnote{lda-wormbase-data} in this section for the URL.  It
+doesn't matter where you put it; the program takes the location as
+a parameter.
+
+We created an Ant target \code{lda-worm} to run the demo.  It is
+configured to provide seven command-line arguments as properties,
+\code{wormbase.corpus.gz} for the location of the gzipped corpus,
+\code{min.token.count} for the minimum token count in the corpus to
+preserve the word in the model, \code{num.topics} for the number of
+topics to generate, \code{topic.prior} and \code{word.prior} for the
+priors, \code{random.seed} for the random seed, and \code{num.samples}
+for the total number of samples to draw.
+%
+\commandline{ant -Dwormbase.corpus.gz=../../data-dist/2007-12-01-wormbase-literature.endnote.gz -Dmin.token.count=5 -Dnum.topics=50 -Dtopic.prior=0.1 -Dword.prior=0.001 -Drandom.seed=42 -Dnum.samples=500 lda-worm}
+%
+The output begins by reporting on the parameters and the corpus itself.
+%
+\begin{verbatim}
+Citation file
+     =..\..\data-dist\2007-12-01-wormbase-literature.endnote.gz
+Minimum token count=5
+Number of topics=50
+Topic prior in docs=0.1
+Word prior in topics=0.0010
+Burnin epochs=0
+Sample lag=1
+Number of samples=200
+#articles=26888 #chars=43343525
+Number of unique words above count threshold=27882
+Tokenized.  #Tokens After Pruning=3798050
+\end{verbatim}
+%
+We see that there are 26,888 total citations, made up of around 43
+million characters.  After tokenization, there are 27,882 tokens that
+appeared at least 5 times (the minimum token count), and a total token
+count of around 3.8 million instances.  That means each Gibbs sampling
+step is going to reassign all 3.8 million tokens.
+
+We configured the reporter to only print out each five epochs (not
+in the input parameters, so the output after this looks as follows.
+%
+\begin{verbatim}
+
+\end{verbatim}
 
 
+\subsection{Code Walk Through}
+
+The code is all in the class \code{LdaWorm}.  The main differences
+from the synthetic demo include the parser for the compressed data and
+a custom tokenizer for the Wormbase data.  
+
+The method to read the corpus into an array of character sequences is
+based on LingPipe's \code{FileLineReader} utility (see
+\refsec{io-file-line-reader}).  It just scans the lines and
+accumulates texts and adds them to an accumulating list.
+
+The tokenization scheme is more interesting.  We create it with
+the following method.
+%
+\codeblock{LdaWorm.1}
+%
+It creates a regex-based tokenizer that includes hyphens, letters and
+numbers as parts of tokens.  We include hyphens and allow alphanumeric
+mixtures to include tokens for gene or protein names such as
+\charmention{p53} and \code{daf-19}, which would otherwise be
+separated.  It also requires at least two characters.
+
+It then immediately filters out tokens that are not at least two
+characters long and don't contain at least one letter.  This filter
+could've been rolled into the base regex, but these kinds of
+exclusions quickly get clunky when mixed with alternations like in
+our base tokenizer factory.  
+
+We then convert the tokens to lower case and remove standard English
+stop words.  We also remove custom stop words we discovered from
+looking at the distribution of tokens in the corpus.  This list
+contains domain-specific words like \stringmention{elegan} (remember
+the ``plural'' stripping) and non-topical words from the biomedical
+research domain such as \stringmention{however} and
+\stringmention{although}.  We also remove the names of numbers, such
+as \stringmention{eleven} and Roman numerals, such as \code{viii},
+which are prevalent in this data.  Note that we have already lowercased
+before stoplisting, so the stop list consists only of lowercase
+entries.
+
+The last filter is our own custom stemmer, which was designed to
+follow the approach to removing English plural markers outlined in
+Blei et al.'s paper.  Here's the code.
+%
+\codeblock{LdaWorm.3}
+%
+This filter fairly crudely strips off suffixes consisting of simple
+English plural markers.  It will overstrip in the situation where a
+word ends with one of these suffixes but is not plural.  It just
+checks for suffixes and strips them off.  If the result is too short
+or no longer contains a vowel, we return the original stem.  (The
+restriction to ASCII is OK here because the documents were all
+normalized to ASCII by the bibliography curators.)
 
 
 
@@ -760,24 +927,7 @@ information for relating documents.  Furthermore, LDA does not We also do not at
 the size of the corpus.
 
 
-contain are known, but 
-
-
-LDA is a probabilistic topic (or factor) model.  Historically, LDA
-evolved as a Bayesian generalization of the probabilistic latent
-semantic indexing (pLSI) model.  pLSI was itself motivated as a
-properly discretized probabilistic form of latent semantic indexing
-(LSI).  LingPipe's implementation of the LSI factor model is covered
-in \refchap{svd}.
-
-The topic model is latent \ie{unknown}.
-
-LingPipe's implementation of LDA is able to start from a corpus of
-documents and infer the set of topics in the corpus, the topic
-
-
-
-\section{Generalized ``Documents''}
+\subsection{Generalized ``Documents''}
 
 Although LDA is framed in terms of documents and words, it turns out
 it only uses the identities of the tokens.  As such, it may be applied
