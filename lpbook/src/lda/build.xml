@@ -40,6 +40,35 @@
     </java>
   </target>
 
+  <property name="wormbase.corpus.gz"
+            value="../../data-dist/2007-12-01-wormbase-literature.endnote.gz"/>
+  <property name="min.token.count"
+            value="5"/>
+  <property name="num.topics"
+            value="50"/>
+  <property name="topic.prior"
+            value="0.01"/>
+  <property name="word.prior"
+            value="0.001"/>
+  <property name="random.seed"
+            value="42"/>
+  <property name="num.samples"
+            value="10"/>
+  <target name="lda-worm"
+          depends="jar">
+    <java classname="com.lingpipe.book.lda.LdaWorm"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${wormbase.corpus.gz}"/>
+      <arg value="${min.token.count}"/>
+      <arg value="${num.topics}"/>
+      <arg value="${topic.prior}"/>
+      <arg value="${word.prior}"/>
+      <arg value="${random.seed}"/>
+      <arg value="${num.samples}"/>
+    </java>
+  </target>
+
   <target name="run"
           depends="synthetic-lda"/>
 
