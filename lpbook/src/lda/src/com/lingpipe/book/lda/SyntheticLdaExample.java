@@ -116,8 +116,9 @@ public class SyntheticLdaExample {
         int wordsPerTopic = 5;
         int topicsPerDoc = 2;
         boolean reportTokens = true;
-        handler.fullReport(sample,wordsPerTopic,
-                           topicsPerDoc,reportTokens);
+        handler.reportParameters(sample);
+        handler.reportTopics(sample,wordsPerTopic);
+        handler.reportDocs(sample,topicsPerDoc,reportTokens);
         /*x*/
     }
 
