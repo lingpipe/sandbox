@@ -168,6 +168,16 @@
 
 % Probability
 \newcommand{\distro}[1]{\mbox{\sf #1}}
+\newcommand{\kld}[2]{\mbox{D}_{\mbox{\footnotesize KL}}({#1}{\parallel}{#2})}
+\newcommand{\skld}[2]{\mbox{D}_{\mbox{\footnotesize SKL}}({#1}{\parallel}{#2})}
+\newcommand{\jsd}[2]{\mbox{D}_{\mbox{\footnotesize JS}}({#1}{\parallel}{#2})}
+\newcommand{\entropy}[1]{\mbox{H}[#1]}
+\newcommand{\expectsub}[2]{\mathbb{E}_{#1}[#2]}
+\newcommand{\expect}[1]{\mathbb{E}[#1]}
+
+
+% Matrices
+\newcommand{\vecext}[1]{\langle #1 \rangle}
 
 \makeatletter
 % \renewcommand\section{\@startsection{section}{1}{0mm}{-1.5\baselineskip}{0.4\baselineskip}{\normalfont\large\bf}}

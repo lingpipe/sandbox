@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/lp-book-stats-${version}.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
+      <classpath refid="classpath"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <property name="p.X" 
+            value="0.2 0.8"/>
+  <property name="p.Y" 
+            value="0.4 0.6"/>
+  <target name="kl"
+          depends="jar">
+    <java classname="com.lingpipe.book.stats.KlDivergence"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${p.X}"/>
+      <arg value="${p.Y}"/>
+    </java>
+  </target>
+
+  <target name="run"
+          depends="kl"/>
+
+</project>

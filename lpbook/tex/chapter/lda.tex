@@ -796,30 +796,19 @@ topics to generate, \code{topic.prior} and \code{word.prior} for the
 priors, \code{random.seed} for the random seed, and \code{num.samples}
 for the total number of samples to draw.
 %
-\commandline{ant -Dwormbase.corpus.gz=../../data-dist/2007-12-01-wormbase-literature.endnote.gz -Dmin.token.count=5 -Dnum.topics=50 -Dtopic.prior=0.1 -Dword.prior=0.001 -Drandom.seed=42 -Dnum.samples=500 lda-worm}
+\commandline{ant -Dwormbase.corpus.gz=../../data-dist/2007-12-01-wormbase-literature.endnote.gz -Dmin.token.count=5 -Dnum.topics=50 -Dtopic.prior=0.1 -Dword.prior=0.001 -Drandom.seed=42 -Dnum.samples=5000 lda-worm}
 %
 The output begins by reporting on the parameters and the corpus itself.
 %
 \begin{verbatim}
-Citation file
-     =..\..\data-dist\2007-12-01-wormbase-literature.endnote.gz
-Minimum token count=5
-Number of topics=50
-Topic prior in docs=0.1
-Word prior in topics=0.0010
-Burnin epochs=0
-Sample lag=1
-Number of samples=200
-#articles=26888 #chars=43343525
-Number of unique words above count threshold=27882
-Tokenized.  #Tokens After Pruning=3798050
+???
 \end{verbatim}
 %
 We see that there are 26,888 total citations, made up of around 43
-million characters.  After tokenization, there are 27,882 tokens that
-appeared at least 5 times (the minimum token count), and a total token
-count of around 3.8 million instances.  That means each Gibbs sampling
-step is going to reassign all 3.8 million tokens.
+million characters.  After tokenization, there are 27,882 distinct
+tokens that each appeared at least 5 times (the minimum token count),
+and a total token count of around 3.8 million instances.  That means
+each Gibbs sampling step is going to reassign all 3.8 million tokens.
 
 We configured the reporter to only print out each five epochs (not
 in the input parameters, so the output after this looks as follows.
@@ -829,7 +818,7 @@ in the input parameters, so the output after this looks as follows.
 \end{verbatim}
 
 
-\subsection{Code Walk Through}
+\subsection{Code Walkthrough}
 
 The code is all in the class \code{LdaWorm}.  The main differences
 from the synthetic demo include the parser for the compressed data and
@@ -848,7 +837,7 @@ the following method.
 It creates a regex-based tokenizer that includes hyphens, letters and
 numbers as parts of tokens.  We include hyphens and allow alphanumeric
 mixtures to include tokens for gene or protein names such as
-\charmention{p53} and \code{daf-19}, which would otherwise be
+\stringmention{p53} and \stringmention{daf-19}, which would otherwise be
 separated.  It also requires at least two characters.
 
 It then immediately filters out tokens that are not at least two
@@ -876,15 +865,41 @@ Blei et al.'s paper.  Here's the code.
 \codeblock{LdaWorm.2}
 %
 This filter fairly crudely strips off suffixes consisting of simple
-English plural markers.  It will overstrip in the situation where a
-word ends with one of these suffixes but is not plural.  It just
-checks for suffixes and strips them off.  If the result is too short
-or no longer contains a vowel, we return the original stem.  (The
-restriction to ASCII is OK here because the documents were all
-normalized to ASCII by the bibliography curators.)
+English plural markers, ensuring that what's left behind is at least
+two characters long.  It uses relucatant quantifiers on the contexts
+ensuring the match of the plural suffix is as long as possible.  Thus
+we map \stringmention{fixes} to \stringmention{fix} not
+\stringmention{fixe}, and map \stringmention{theories} to
+\stringmention{theori}, not \stringmention{theorie}.  In contrast, we
+reduce \stringmention{lies} to \stringmention{lie}, because we can't
+match the first group with a vowel if we pull of \stringmention{-ies},
+but we map \stringmention{entries} to \stringmention{entr}.  
+
+This crude stemmer will overstrip in the situation where a word ends
+with one of these suffixes but is not plural.  It just checks for
+suffixes and strips them off.  If the result is too short or no longer
+contains a vowel, we return the original stem.  (The restriction to
+ASCII is OK here because the documents were all normalized to ASCII by
+the bibliography curators.)
 
 
+\section{Stability of Samples}
 
+Because LDA uses a random initialization, the results will not be the
+same each time it is run with a different random seed.  One issue
+that comes up is how stable the set of topics are that are derived.
+It turns out that the bigger topics tend to be relatively stable,
+but the smaller topics tend to vary more.  
+
+Griffiths and Steyvers tested the stability of topics by running
+LDA over the same corpus from two different seeds, then comparing
+the set of topics that are produced.
+
+\subsection{Comparing Topics with Symmetrized KL Divergence}
+
+Because topics are probability distributions, we need a way to compare
+them to each other.  We would like distributions that assign similar
+probabilities to outcomes to be considered close by our measure.  
 
 
 \section{The Generative Model}

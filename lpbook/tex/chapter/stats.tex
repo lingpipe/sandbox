@@ -1,0 +1,159 @@
+\chapter{Statistics Utilities}\label{chapter:stats}
+
+This chapter provides an overview of the basic low-level statistical
+utility classes and methods used by LingPipe.  It may make sense to
+use this chapter more as a reference than to read it on the first
+pass.
+
+\section{Distribution Divergence Measures}\label{section:stats-divergence}
+
+Kullback-Leibler (KL) divergence is the standard method to compare the
+distributions of two random variables.  Pairs of topic distributions
+that have similar probability assignments to words will have low KL
+divergences from each other.
+
+We will start with the discrete case, as it is what Griffiths and
+Steyvers used in their experiments.  We'll consider the continuous
+case, and specifically consider the Dirichlet distributions underlying
+the LDA models.
+
+\subsection{Defining KL Divergence}
+
+As is standard, our definition will use random variables, but we point
+out ahead of time that only the distributions of the variables matter,
+not the outcomes.  Suppose that $X$ and $Y$ are two random variables
+with possible outcomes ranging from 1 to $N$ and probabilty
+distributions $p_X(n)$ and $p_Y(n)$.  The KL divergence of $X$ from
+$Y$ is given by
+%
+\begin{equation}
+\kld{X}{Y}
+= \sum_{n=1}^N p_X(n) \log_2 \frac{p_X(n)}{p_Y(n)}
+\end{equation}
+%
+Becuase we used base-2 logs, the result is in units of bits.  
+
+If there is an outcome $n$ where $p_Y(n) = 0$ and $p_X(n) > 0$, the
+divergence is infinite.  We may allow $p_X(n) = 0$ by interpreting $0
+\log_2 \frac{0}{p_Y(n)} = 0$ by convention (even if $p_Y(n) > 0$).
+
+Although we do not provide a proof, we note that $\kld{X}{Y} \geq 0$
+for all random variables $X$ and $Y$.  We further note without proof
+that $\kld{X}{Y} = 0$ if and only if $p_X = p_Y$.
+
+For example, suppose we have three discrete random variables, $X$, $Y$
+and $Z$, each with the same two outcomes, and distributions defined by
+$p_X(1) = 0.2$, $p_X(2) = 0.8$ and $p_Y(1) = 0.4$, $p_Y(2) = 0.6$.  We
+calculate 
+%
+\[
+\kld{X}{Y} = 0.2 \log_2 (0.2/0.4) + 0.8 \log_2 (0.8/0.6) \approx 0.13.
+\]
+%
+Consider a third random variable, $Z$, with $p_Z(1) = 0.5$ and
+$p_Z(2) = 0.5$.  The KL-divergence calculation is 
+%
+\[
+\kld{X}{Z} = 0.2 \log_2 (0.2/0.5) + 0.8 \log_2 (0.8/0.5) \approx 0.27.
+\]
+As we'd expect, $Z$ diverges further from $X$ than $Y$.  
+Comparing $X$ to itself, we get
+%
+\[
+\kld{X}{X} = 0.2 \log_2 (0.2/0.2) + 0.8 \log_2(0.8/0.8) = 0.
+\]  
+%
+From this example, it's easy to see why $\kld{X}{X}$ is always 0.
+
+KL divergence may expressed using expectation notation as
+%
+\begin{align}
+\kld{X}{Y} 
+&= \expect{\log_2 \frac{p_X(X)}{p_Y(X)}}
+\\
+&= \expect{\log_2 p_X(X)} - \expect{\log_2 p_Y(X)}.
+\end{align}
+%
+As usual, unmarked expectation notation presupposes the natural
+distributions for random variables, here using the distribution $p_X$
+for the random variable $X$.%
+%
+\footnote{The first term is just the entropy of $X$,
+$\entropy{X} = \expect{\log_2 p_X(X)}$.  Another way of interpreting
+KL divergence is as the expected penalty in bits for using $p_Y$ to
+model values of $X$ rather than $p_X$.}
+
+\subsection{Symmetrized KL Divergence}
+
+KL divergence is not symmetric in the sense that there exist pairs of
+random variables $X$ and $Y$ such that $\kld{X}{Y} \neq \kld{Y}{X}$.
+We have an example to hand.  Consider our example $X$ and $Y$ above,
+for which we noted $\kld{X}{Y} \approx 0.13$.  The other way around,
+$\kld{Y}{X} = 0.4 \log_2 0.4/0.2 + 0.6 \log_2 0.6/0.8 \approx 0.15$.
+
+There are several divergence measures derived from KL divergence that
+are symmetric.  The simplest approach is just to introduce symmetry
+by brute force.  The symmetrized KL-divergence between random variables
+$X$ and $Y$ is defined by averaging KL divergence of $X$ from $Y$
+and of $Y$ from $X$,
+%
+\begin{equation}
+\skld{X}{Y} = \frac{1}{2}(\kld{X}{Y} + \kld{Y}{X}).
+\end{equation}
+%
+Obviously, $\skld{X}{Y} = \skld{Y}{X}$, so the measure is symmetric.
+
+
+\subsection{Jensen-Shannon Divergence}
+
+Another widely used symmetric divergence measure derived from KL divergence
+is the Jensen-Shannon divergence.  To compare $X$ and $Y$ using Jensen-Shannon
+divergence, we first define a new random variable $Z$ with distribution defined by
+averaging the distributions of $X$ and $Y$,
+%
+\[
+p_Z(n) = \frac{1}{2}(p_X(n) + p_Y(n))
+\]
+%
+We then define Jensen-Shannon divergence by taking average divergence
+from $Z$,
+%
+\begin{equation}
+\jsd{X}{Y} = \frac{1}{2}(\kld{X}{Z} + \kld{Y}{Z})
+\end{equation}
+%
+As with the symmetrized KL divergence, Jensen-Shannon divergence is
+symmetric by definition.
+
+
+\subsection{LingPipe KL-Divergence Utilities}
+
+KL-divergence is implemented as a static utility method in the
+\code{Statistics} utility class in package \code{com.aliasi.stats}.
+The method takes two double arrays representing probability
+distributions and measures how much the first is like the second.
+
+In order to give you a sense of KL-divergence, we implement a simple
+utility in the demo class \code{KlDivergence} to let you try various
+values.  The code just parses out double arrays from teh command line
+and sends them to the KL function.
+%
+\codeblock{KlDivergence.1}
+
+The ant target \code{kl} runs the command with the first two arguments
+given by properties \code{p.x} and \code{p.y}.  To calculate the example
+from above, we have
+%
+\commandlinefollow{ant -Dp.x="0.2 0.8" -Dp.y="0.4 0.6" kl}
+\begin{verbatim}
+pX=(0.2, 0.8)     pY=(0.4, 0.6)     
+kld=0.13202999942307514    
+skld=0.1415037499278844   
+jsd=0.03485155455967723
+\end{verbatim}
+%
+The Jensen-Shannon divergence is less than the symmetrized KL
+divergence because the interpolated distribution $p_Z$ is closer to
+both of the original distributions $p_X$ and $p_Y$ than they are to
+each other.
+

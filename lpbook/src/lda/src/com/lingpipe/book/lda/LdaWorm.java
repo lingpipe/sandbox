@@ -10,6 +10,7 @@ import com.aliasi.tokenizer.EnglishStopTokenizerFactory;
 import com.aliasi.tokenizer.LowerCaseTokenizerFactory;
 import com.aliasi.tokenizer.ModifyTokenTokenizerFactory;
 import com.aliasi.tokenizer.RegExTokenizerFactory;
+import com.aliasi.tokenizer.RegExFilteredTokenizerFactory;
 import com.aliasi.tokenizer.StopTokenizerFactory;
 import com.aliasi.tokenizer.TokenizerFactory;
 
@@ -25,6 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // ftp://ftp.wormbase.org/pub/wormbase/misc/literature/2007-12-01-wormbase-literature.endnote.gz
 
@@ -128,8 +132,9 @@ public class LdaWorm {
     
     /*x LdaWorm.1 */
     static final TokenizerFactory wormbaseTokenizerFactory() {
+        String regex = "[\\x2D\\p{L}\\p{N}]{2,}";
         TokenizerFactory factory 
-            = new RegExTokenizerFactory("[\\x2D\\p{L}\\p{N}]{2,}"); 
+            = new RegExTokenizerFactory(regex);
         Pattern alpha = Pattern.compile(".*\\p{L}.*");
         factory = new RegExFilteredTokenizerFactory(factory,alpha);
         factory = new LowerCaseTokenizerFactory(factory);
@@ -243,40 +248,18 @@ public class LdaWorm {
         }
 
         public String modifyToken(String token) {
-            for (String suffix : SUFFIXES) {
-                if (token.endsWith(suffix)) {
-                    String stem 
-                        = token.substring(0,
-                                          token.length()
-                                          -suffix.length());
-                    return validStem(stem) ? stem : token;
-                }
-            }
-            return token;
+            Matcher matcher = SUFFIX_PATTERN.matcher(token);
+            return matcher.matches() ? matcher.group(1) : token;
         }
 
-        static boolean validStem(String stem) {
-            if (stem.length() < 2) return false;
-            for (int i = 0; i < stem.length(); ++i) {
-                char c = stem.charAt(i);
-                for (int k = 0; k < VOWELS.length; ++k)
-                    if (c == VOWELS[k])
-                        return true;
-            }
-            return false;
-        }
-
-        static final String[] SUFFIXES = new String[] {
-            "ss", "ies", "sses", "s" 
-        };
-
-        static final char[] VOWELS
-            = new char[] { 'a', 'e', 'i', 'o', 'u', 'y' };
-
+        static final Pattern SUFFIX_PATTERN
+            = Pattern.compile("(.+?[aeiouy].*?|.*?[aeiouy].+?)"
+                              + "(ss|ies|sses|es|s)");
+        
     /*x*/
         static final long serialVersionUID = -6045422132691926248L;
+
+
     }
-
-
 
 }
