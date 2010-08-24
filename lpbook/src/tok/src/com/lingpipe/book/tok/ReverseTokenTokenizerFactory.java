@@ -59,7 +59,7 @@ public class ReverseTokenTokenizerFactory
 
         TokenizerFactory deserFact
             = (TokenizerFactory)
-            AbstractExternalizable.serializeDeserialize(fact);
+            AbstractExternalizable.serializeDeserialize(tokFact);
         DisplayTokens.displayTokens(text,deserFact);
     }
 

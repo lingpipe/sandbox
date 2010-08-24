@@ -36,22 +36,7 @@ public class DisplayTokens {
     }
 
     static void displayTextPositions(CharSequence in) {
-        System.out.println(in);
-        for (int i = 0; i < in.length(); ++i)
-            System.out.print(i%10);
-        System.out.println();
-        if (in.length() < 10) return;
-        for (int i = 0; i < in.length(); ++i)
-            System.out.print(i % 10 == 0 
-                             ? Integer.toString(i/10)
-                             : " ");
-        System.out.println();
-        if (in.length() < 100) return;
-        for (int i = 0; i < in.length(); ++i)
-            System.out.print(i % 100 == 0
-                             ? Integer.toString(i/100)
-                             : " ");
-        System.out.println();
+        System.out.println(Strings.textPositions(in));
     }
 
 }
