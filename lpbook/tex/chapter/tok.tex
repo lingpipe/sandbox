@@ -1862,128 +1862,13 @@ about the e-mail smiley punctuation, \stringmention{:-)}?  It's a unit,
 but will be broken into three tokens by the current tokenizer.
 
 
-\section{Lucene's Analyzers}
+\section{Adapting Lucene Analyzers}
 
-Given a set of texts and a tokenization scheme to map texts to
-sequences of tokens, a reverse index is a mapping from tokens to the
-set of documents in which they occur.  Such reverse indexes form
-the backbone of search APIs like Apache's Lucene.
-
-\subsection{Documents, Fields and Analyzers}
-
-In Lucene, a document consists (in part) of a mapping from string
-field names to string values.%
-%
-\footnote{It may also contain values that are binary blobs.  Each
-  field is also marked as to whether it is (a) reverse indexed, (b)
-  tokenized for indexing, and (c) stored in the document store.}
-%
-Lucene manages reverse indexes for each indexed field of a document.
-Each field may have its own tokenization scheme.  
-
-Lucene's abstract base class \code{TokenStream}, in package
-\code{org.apache.lucene.analysis}, provides a streaming interface to
-tokens serving the same role as LingPipe's \code{Tokenizer} abstract
-base class.
-
-LingPipe's \code{TokenizerFactory} interface provides a representation
-of a mapping from character sequences to tokenizers.  Lucene bypasses
-this level of representation.  Instead, it uses the \code{Analyzer}
-abstract base class in package \code{org.apache.lucene.analysis} to
-map fields and sequences of characters into token streams.  The method
-\code{tokenStream(String,Reader)} returns a \code{TokenStream} given
-the name of the field being tokenized and the text to be tokenized as
-a Java \code{Reader} (character input stream).
-
-
-\subsection{Token Streams and Attributes}
-
-Before version 3.0 of Lucene, token streams had a string-position
-oriented tokenization API, much like LingPipe's tokenizers.  Version
-3.0 generalized the interface for token streams and other basic
-objects using a very general pattern based on what they call
-attributes.
-
-\subsubsection{Code Walkthrough}
-
-We provide a sample class \code{LuceneAnalysis} that applies an
-analyzer to a field name and text input and prints out the resulting
-tokens.  The work is done in a simple \code{main()} with two
-arguments, the field name and the text to be analyzed.  
-
-The first step is to create the analyzer.
-%
-\codeblock{LuceneAnalysis.1}
-%
-Here we've used Lucene's \code{StandardAnalyzer}, which applies case
-normalization and English stoplisting to their basic standard
-tokenizer, which pays attentiont to issues like periods and e-mail
-addresses.  Note that it's constructed with a constant for the Lucene
-version, as the behavior has changed over time.
-
-The standard analyzer, like almost all of Lucene's built-in analyzers,
-ignores the name of the field that is passed in.  Such analyzers
-essentially implement simple token stream factories, like LingPipe's
-tokenizer factories.
-
-The next step of the \code{main()} method constructs the token stream
-given the string values of the command-line arguments \code{fieldName}
-and \code{text}.  
-%
-\codeblock{LuceneAnalysis.2}
-%
-We first have to create a \code{Reader}, which we do by wrapping the
-input text string in a \code{StringReader} (from \code{java.io}).
-Then we use the analyzer to create a token stream from the field name
-and text reader.  The next three statements attach attributes to the
-token stream, specifically a term attribute, offset attribute and
-position increment attribute.  These are used to retrieve the text of
-a term, the span of the term in the original text, and the ordinal
-position of the term in the sequence of terms in the document.  The
-position is given by an increment from the previous position, and
-Lucene uses these values for phrase-based search \ie{searching for a
-fixed sequence of tokens in the given order without intervening
-material}.
-
-The last block of code in the \code{main()} method iterates through
-the tokens tream, printing the attributes of each token it finds.
-%
-\codeblock{LuceneAnalysis.3}
-%
-The while loop continually calls \code{incrementToken()} on the token
-stream, which advances to the next token, returning \code{true} if
-there are more tokens.  The body of the loop just pulls out the
-increment, start and end positions, and term for the token.  The
-rest of the code, which isn't shown, just prints these values.
-
-\subsubsection{Running the Demo}
-
-It may be run from the Ant target \code{lucene-analysis}, with
-the arguments provided by properties \code{field.name} and 
-\code{text} respectively.
-
-\commandlinefollow{ant -Dfield.name=foo -Dtext="Mr.\ Sutton-Smith will pay \$1.20 for the book." lucene-analysis}
-\begin{verbatim}
-Mr. Sutton-Smith will pay $1.20 for the book.
-012345678901234567890123456789012345678901234
-0         1         2         3         4
-
- INCR (START,   END) TERM         INCR (START,   END) TERM
-    1 (    0,     2) mr              2 (   22,    25) pay
-    1 (    4,    10) sutton          1 (   27,    31) 1.20
-    1 (   11,    16) smith           3 (   40,    44) book
-\end{verbatim}
-%
-The terms are all lowercased, and non-word-internal punctuation has
-been removed.  The stop words \charmention{will}, \charmention{for}
-and \charmention{the} are also removed from the output.  Unlike
-punctuation, when a stop word is removed, it causes the increment
-between terms to be larger.  For instance, the increment between
-\charmention{smith} and \charmention{pay} is 2, because the stopword
-\charmention{will} was removed between them.  
-
-The start (inclusive) and end (exclusive) positions of the
-extracted terms is also shown.
+In \refsec{lucene-analysis}, we discuss the role of Lucene's
+analyzers in the indexing process.  A Lucene document maps field names
+to text values.  A Lucene analyzer maps a field name and text to a
+stream of tokens.  In this section, we show how to convert a Lucene
+analyzer to a LingPipe tokenizer factory and vice-versa.
 
 
 \subsection{Adapting Analyzers for Tokenizer Factories}

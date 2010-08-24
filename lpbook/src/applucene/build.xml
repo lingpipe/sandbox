@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/lp-book-applucene-${version}.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+    <pathelement location="../../lib/lucene-core-3.0.2.jar"/>
+  </path>
+
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac classpathref="classpath"
+           debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="doc-demo"
+          depends="jar">
+    <java classname="com.lingpipe.book.applucene.DocDemo"
+          classpathref="classpath"
+          fork="true">
+    </java>
+  </target>
+
+  <property name="field.name" value="foo"/>
+  <property name="text"
+            value="The note says, 'Mr. Sutton-Smith owes $15.20.'"/>
+  <target name="lucene-analysis"
+          depends="jar">
+    <java classname="com.lingpipe.book.applucene.LuceneAnalysis"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${field.name}"/>
+      <arg value="${text}"/>
+    </java>
+  </target>
+
+
+  <property name="doc.dir" value="../../data/federalist-papers/texts"/>
+  <property name="index.dir" value="luceneIndex"/>
+  <target name="lucene-index"
+          depends="jar">
+    <java classname="com.lingpipe.book.applucene.LuceneIndexing"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${doc.dir}"/>
+      <arg value="${index.dir}"/>
+    </java>
+  </target>
+
+
+  <property name="query" 
+            value="power money election"/>
+  <property name="max.hits" 
+            value="10"/>
+  <target name="lucene-search"
+          depends="jar">
+    <java classname="com.lingpipe.book.applucene.LuceneSearch"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${index.dir}"/>
+      <arg value="${query}"/>
+      <arg value="${max.hits}"/>
+    </java>
+  </target>
+
+  <target name="run"
+          depends="lucene-analysis,
+                   lucene-index,
+                   lucene-search"/>
+
+</project>

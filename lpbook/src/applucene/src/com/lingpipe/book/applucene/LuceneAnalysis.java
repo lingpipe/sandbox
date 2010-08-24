@@ -1,4 +1,6 @@
-package com.lingpipe.book.tok;
+package com.lingpipe.book.applucene;
+
+import com.aliasi.util.Strings;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -44,7 +46,7 @@ public class LuceneAnalysis {
             .addAttribute(PositionIncrementAttribute.class);
         /*x*/
 
-        DisplayTokens.displayTextPositions(text);
+        System.out.println(Strings.textPositions(text));
         System.out.printf("\n%5s (%5s, %5s) %s\n","INCR","START","END","TERM");
         /*x LuceneAnalysis.3 */
         while (tokenStream.incrementToken()) {
