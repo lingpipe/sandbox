@@ -141,6 +141,7 @@ public class LdaWorm {
         factory = new EnglishStopTokenizerFactory(factory);
         factory = new StopTokenizerFactory(factory,STOPWORD_SET);
         factory = new StemTokenizerFactory(factory);
+        factory = new StopTokenizerFactory(factory,STOPWORD_SET); // stop before and after stemming
         return factory;
     }
     /*x*/
@@ -152,7 +153,9 @@ public class LdaWorm {
 
         "these",
         "elegan",
+        "elegans",
         "caenorhabditi",
+        "caenorhabditis",
         "both",
         "may",
         "between",
