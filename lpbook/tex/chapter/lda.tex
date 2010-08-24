@@ -891,16 +891,120 @@ that comes up is how stable the set of topics are that are derived.
 It turns out that the bigger topics tend to be relatively stable,
 but the smaller topics tend to vary more.  
 
-Griffiths and Steyvers tested the stability of topics by running
-LDA over the same corpus from two different seeds, then comparing
-the set of topics that are produced.
+Steyvers and Griffiths tested the stability of topics by running LDA
+over the same corpus from two different seeds, then comparing the set
+of topics that are produced.  Their basic approach is to line up
+the topics in the two samples based on the similarity of their
+probability distributions.   In this section, we replicate their
+approach with a demo.  The code is in demo class \code{LdaTopicSimilarity}.
 
 \subsection{Comparing Topics with Symmetrized KL Divergence}
 
-Because topics are probability distributions, we need a way to compare
-them to each other.  We would like distributions that assign similar
-probabilities to outcomes to be considered close by our measure.  
+Because topics are nothing more than probability distributions over
+tokens, to compare topics, we need a way to compare probabiilty
+distributions.  Here, we follow Steyvers and Griffiths in using
+symmetrized KL divergence (see
+\refsec{stats-symmetrized-kl-divergence} for definitions and
+examples).
 
+Steyvers and Griffiths produced two chains of Gibbs samples, both of
+which they ran for a large nubmer of iterations.  They then compared
+the last samples from each chain to each other.  Specifically, they
+compared every every topic in the final sample from chain 1 against
+every topic in the final sample from chain 2.  
+
+The basis of their comparison was a greedy alignment.  Conceptually,
+if we put the pairwise scores in order from lowest divergence to
+highest, we walk down the list of pairs, retaining every pair for
+which neither topic has been consumed.  That way, every topic only
+shows up once on each side of the pairing.  The choices are greedy in
+that we always select the least divergent pair of topics to add next
+from among the topics that haven't yet been assigned.
+
+
+\subsection{Runnnig the Demo}
+
+The demo is hard coded for everything but the path to the compressed
+data, which is specified as in the simple LDA example.  The Ant target
+\code{lda-topic-sim} invokes the demo, specifying the path to the
+compressed corpus as the value of the property \code{wormbase.corpus.gz}.
+%
+\commandlinefollow{ant -Dwormbase.corpus.gz="../../data-dist/2007-12-01-wormbase-literature.endnote.gz" lda-topic-sim}
+\begin{verbatim}
+
+\end{verbatim}
+
+
+\subsection{Sample Code}
+
+The code to run the example is in \code{LdaTopicSimilarity}.  Most of the
+work is done in the \code{main()} method of the command.  It's declared
+to throw not only an I/O exception, but also an interrupted exception,
+because we are going to run each chain in its own thread.  
+%
+\codeblock{LdaTopicSimilarity.1}
+%
+After that, the method parses the text, creates the tokenizer factory,
+and extracts the tokens the same way as in our earlier Wormbase demo,
+using the utility methods introduced in the demo class \code{LdaWorm}.
+
+We run two chains concurrently in their own threads.  We basically
+just create the runnable from the doc-token matrix and random
+seed, create threads for teh runnable, start the threads, join
+them so our \code{main()} method's thread waits for the newly spawned
+threads to complete.  We then extract the LDA model from the result,
+where they are stored in the member variable \code{mLda}.  Finally,
+we compute the scores, then print them out.
+%
+\codeblock{LdaTopicSimilarity.2}
+%
+The real work's in the runnable and in the similarity method.
+
+The runnable that executes in each thread is defined to simply
+generate 1999 Gibbs samples, then set the 2000th as the value of
+the member variable \code{mLda}.
+%
+\codeblock{LdaTopicSimilarity.4}
+%
+We save the doc-token matrix and the random generated from the seed.
+The \code{run()} method uses the other Gibbs sampling method in LDA,
+which returns an iterator over samples.  It's simpler to configure
+because there's nothing about number of epochs or reporting with callbacks.
+We then generate number of samples minus one samples in a for loop,
+then take another sample and assign it to \code{mLda} for later use.
+
+The similarity method which computes the greedy alignment between
+topics in the two LDA instances is as follows.
+%
+\codeblock{LdaTopicSimilarity.3}
+%
+It starts by walking over the pairs of topics, extracting the
+distribution for a specified topic using the method
+\code{wordProbabilities(int)}, which is defined on the LDA object.
+We compute the divergence using the symmetrized KL divergence in
+LingPipe's \code{Statistics} utility class.  
+
+We keep track of the pairs of topics and their scores using
+a nested static class, \code{TopicSim}, defined in the same file.
+%
+\codeblock{LdaTopicSimilarity.5}
+%
+The constructor stores the indices of the topics and the divergence
+between their topics.  The class is defined to implement LingPipe's
+\code{Scored} interface to allow easy sorting.  
+
+Once we have the set of pairs, we sort it using Java's static
+\code{sort()} utility method in the utility class \code{Collections}.
+This ensures the pairs are sorted in order of increasing divergence.
+
+Next, we create boolean arrays to keep track of which topics have
+already been assigned.  All values start with default \code{false}
+values, then they are set to \code{true} when the topic with the index
+is used.  This makes sure we don't double-assign topics in our
+alignment across samples.  We then just walk over the pairs in
+increasing order of divergence, and if both their topics are not
+already assigned, we assign the topics to each other, set the score,
+and set the fact that we've assigned.  Then, we just return the result.
 
 \section{The Generative Model}
 
