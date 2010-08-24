@@ -53,7 +53,7 @@
   <property name="random.seed"
             value="42"/>
   <property name="num.samples"
-            value="5000"/>
+            value="10000"/>
   <target name="lda-worm"
           depends="jar">
     <java classname="com.lingpipe.book.lda.LdaWorm"
@@ -66,6 +66,16 @@
       <arg value="${word.prior}"/>
       <arg value="${random.seed}"/>
       <arg value="${num.samples}"/>
+    </java>
+  </target>
+
+
+  <target name="lda-topic-sim"
+          depends="jar">
+    <java classname="com.lingpipe.book.lda.LdaTopicSimilarity"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${wormbase.corpus.gz}"/>
     </java>
   </target>
 

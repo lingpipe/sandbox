@@ -254,7 +254,7 @@ public class LdaWorm {
 
         static final Pattern SUFFIX_PATTERN
             = Pattern.compile("(.+?[aeiouy].*?|.*?[aeiouy].+?)"
-                              + "(ss|ies|sses|es|s)");
+                              + "(ss|ies|es|s)");
         
     /*x*/
         static final long serialVersionUID = -6045422132691926248L;
