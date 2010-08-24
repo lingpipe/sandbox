@@ -53,7 +53,7 @@
   <property name="random.seed"
             value="42"/>
   <property name="num.samples"
-            value="10000"/>
+            value="20000"/>
   <target name="lda-worm"
           depends="jar">
     <java classname="com.lingpipe.book.lda.LdaWorm"
