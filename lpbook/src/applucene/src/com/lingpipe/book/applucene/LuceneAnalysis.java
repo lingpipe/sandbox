@@ -39,8 +39,10 @@ public class LuceneAnalysis {
 
         TermAttribute terms 
             = tokenStream.addAttribute(TermAttribute.class);
+
         OffsetAttribute offsets 
             = tokenStream.addAttribute(OffsetAttribute.class);
+
         PositionIncrementAttribute positions
             = tokenStream
             .addAttribute(PositionIncrementAttribute.class);

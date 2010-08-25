@@ -16,6 +16,7 @@ import org.apache.lucene.document.Field.TermVector;
 
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -37,10 +38,9 @@ public class LuceneIndexing {
         File indexDir = new File(args[1]);
         
         Directory fsDir = FSDirectory.open(indexDir);
-        Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+        Analyzer an = new StandardAnalyzer(Version.LUCENE_30);
         IndexWriter indexWriter
-            = new IndexWriter(fsDir,analyzer,
-                              IndexWriter.MaxFieldLength.UNLIMITED);
+            = new IndexWriter(fsDir,an,MaxFieldLength.UNLIMITED);
     /*x*/
 
     /*x LuceneIndexing.2 */        

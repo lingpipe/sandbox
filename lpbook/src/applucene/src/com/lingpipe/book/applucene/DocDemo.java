@@ -14,20 +14,20 @@ public class DocDemo {
         Document doc = new Document();
         doc.add(new Field("title", "Fast and Accurate Read Alignment",
                           Store.YES,Index.ANALYZED, TermVector.NO));
-        doc.add(new Field("author","Heng Li",
-                          Store.YES,Index.ANALYZED,TermVector.NO));
-        doc.add(new Field("author","Richard Durbin",
-                          Store.YES,Index.ANALYZED,TermVector.NO));
+        doc.add(new Field("author", "Heng Li",
+                          Store.YES,Index.ANALYZED));
+        doc.add(new Field("author", "Richard Durbin",
+                          Store.YES,Index.ANALYZED));
         doc.add(new Field("journal","Bioinformatics",
-                          Store.YES,Index.ANALYZED,TermVector.NO));
+                          Store.YES,Index.ANALYZED));
         doc.add(new Field("mesh","algorithms",
-                          Store.YES,Index.ANALYZED,TermVector.NO));
+                          Store.YES,Index.ANALYZED));
         doc.add(new Field("mesh","genomics/methods",
-                          Store.YES,Index.ANALYZED,TermVector.NO));
+                          Store.YES,Index.ANALYZED));
         doc.add(new Field("mesh","sequence alignment/methods",
-                          Store.YES,Index.ANALYZED,TermVector.NO));
+                          Store.YES,Index.ANALYZED));
         doc.add(new Field("pmid","20080505",
-                          Store.YES,Index.NOT_ANALYZED,TermVector.NO));
+                          Store.YES,Index.NOT_ANALYZED));
         /*x*/
 
         /*x DocDemo.2 */
