@@ -1,21 +1,31 @@
 \chapter{The Lucene Search Library}\label{appendix:lucene}
 
-Apache Lucene is a search library written in Java.  Due to its
-performance, configurability and generous licensing terms, it has
-become very popular.  In this section, we'll provide a hello-world
-type example to help you get started with Lucene.
+\firstchar{A}pache Lucene is a search library written in Java.  Due to
+its performance, configurability and generous licensing terms, it has
+become very popular in both academic and commercial settings.  In this
+section, we'll provide an overview of Lucene's components and how to
+use them, based on a single simple hello-world type example.  
 
-Lucene provides search over documents.  Documents are added to the
-index and documents are retrieved by searching over the index.  A
-document is essentially a collection of fields, where a field
-supplies a field name and value.  
+Lucene provides search over documents.  A document is essentially a
+collection of fields, where a field supplies a field name and value.
+Lucene can store numerical and binary data, but we will concentrate
+on text values.
 
-What actually gets indexed is terms produced from documents through an
-analysis process.  For instance, a title field like
-\stringmention{Molecular Biology, 2nd Edition} might yield indexing
-terms \stringmention{molecul}, \stringmention{biolog},
-\stringmention{2}, and \stringmention{edition}.  The index structure
-provides the reverse mapping from terms back to documents.
+Lucene manages a dynamic document index, which supports adding
+documents to the index and retrieving documents from the index using a
+highly expressive search API.  Although Lucene is like a database in
+its storage and indexing of data on disk, it is unlike most database
+implementations in that there are no transactional capabilities built
+into Lucene itself.
+
+What actually gets indexed is a set of terms.  A term combines a field
+name with a token that may be used for search.  For instance, a title
+field like \stringmention{Molecular Biology, 2nd Edition} might yield
+the tokens \stringmention{molecul}, \stringmention{biolog},
+\stringmention{2}, and \stringmention{edition} after case
+normalization, stemming and stoplisting.  The index structure provides
+the reverse mapping from terms, consisting of field names and tokens,
+back to documents.
 
 
 \section{Fields}
@@ -24,8 +34,9 @@ All fields in Lucene are instances of the \code{Fieldable} interface
 in the package \code{org.apache.lucene.document}.  Numeric fields are
 still marked as experimental, and we are mainly interested in text, so
 we concentrate on the other built-in concrete implementation of
-\code{Fieldable}, the final class \code{Field}.  This implementation
-can store both binary and character data, but we concentrate on the latter.
+\code{Fieldable}, the final class \code{Field}, also in the
+\code{document} package.  This implementation can store both binary
+and character data, but we only consider text.
 
 \subsection{Field Names and Values}
 
@@ -34,10 +45,10 @@ time, user searches are directed at particular fields.  For instance,
 a MEDLINE citation might store the name of the article, the journal in
 which it was published, the authors of the article, the date of
 publication, the text of the article's abstract, and a list of topic
-keywords (drawn from MeSH).  Each of these fields would get a
-different name, and at search time, the client could specify that it
-was searching for authors or titles or both, potentially restricting
-to a date range and set of journals.
+keywords drawn from Medical Subject Headings (MeSH).  Each of these
+fields would get a different name, and at search time, the client
+could specify that it was searching for authors or titles or both,
+potentially restricting to a date range and set of journals.
 
 We will focus on text fields.  The value for a text field may be
 supplied as a Java \code{String} or \code{Reader}.%
@@ -52,43 +63,44 @@ supplied as a Java \code{String} or \code{Reader}.%
   before indexing, eliminating any performance advantage readers might
   have.}
 %
-The value for a binary (blob) field is supplied as a byte array slice,
-and the indexing flags are preset.
+The value for a binary (blob) field is supplied as a byte array slice.
 
 
 \subsection{Indexing Flags}
 
-Because documents are overloaded for use during indexing and search,
-fields were designed to store information about how they are indexed
+Documents are overloaded for use during indexing and search.  For use
+in indexing, fields include information about how they are indexed
 and/or stored.  This information is provided to a field during
 construction in the form of a number of flags.  These flags are
-implemented as nested enum instances in the \code{Field} class.
+implemented as nested enum instances in the \code{Field} class,
+all in the \code{document} package.
 
 \subsubsection{The \code{Field.Store} Enum}
 
 All fields are marked as to whether their raw value is stored in the
 index or not.  Storing raw values allows you to retrieve them at
-search time, but may consume substantial space.
+search time, but may consume substantial space.  
 
-There are two instances of the enum \code{Field.Store}, namely
-\code{Field.Store.YES} and \code{Field.Store.NO}, with the
-obvious interpretations.
+The enum \code{Field.Store} is used to mark whether or not to store
+the value of a field.  Its two instances, \code{Store.YES} and
+\code{Store.NO}, have the obvious interpretations.
 
 \subsubsection{The \code{Field.Index} Enum}
 
 All fields are also marked as to whether they are indexed or not.  A
-field must be indexed in order for it to be searchable.  Non-indexed
-fields may be stored.  It makes no sense to have a non-stored,
-non-indexed field.
+field must be indexed in order for it to be searchable.  While it's
+possible to have a field that is indexed but not stored, or stored but
+not indexed, it's pointless to have a field that is neither stored nor
+indexed.
 
-The value \code{Field.Index.NO} turns off indexing for a field.  The
-other values all turn on indexing for a field.  Where they vary is how
-the terms that are indexed are pulled out of the field value.  The
-standard value for indexed field is \code{Field.Index.ANALYZED}, which
-will run the analyzer over the raw value to produce terms to index
-(see \refsec{lucene-analysis}).  The value
-\code{Field.Index.NOT\_ANALYZED} causes the field to be treated a
-single term; it's primarily used for identifier fields that are not
+Whether a field is indexed is controlled by an instance of the
+\code{Field.Index} enum.  The value \code{Index.NO} turns off indexing
+for a field.  The other values all turn on indexing for a field.
+Where they vary is how the terms that are indexed are pulled out of
+the field value.  The value \code{Index.ANALYZED} indexes a field with
+tokenization turned on (see \refsec{lucene-analysis}).  The value
+\code{Index.NOT\_ANALYZED} causes the field value to be treated like a
+single token; it's primarily used for identifier fields that are not
 decomposed into searchable terms.
 
 \subsubsection{The \code{Field.TermVector} Enum}
@@ -97,9 +109,16 @@ The final specification on a field is whether to store term vectors or
 not, and if they are stored, what specifically to store.  Term vectors
 are an advanced data structure encapsulating the geometric search
 structure of a document's terms (the pieces extracted from a field by
-an analyzer).  The default is not to store term vectors, with flag
-\code{Field.TermVector.NO}.  We will use that option as we will not be
-demonstrating the use of term vectors.
+an analyzer).  They may be useful for downstream processing like
+results clustering or finding documents that are similar to a known
+document.
+
+Whether to use term vectors is controlled by an instance of the enum
+\code{Field.TermVector}.  The default is not to store term vectors,
+corresponding to value \code{TermVector.NO}.  Because we do not need
+term vectors for our simple demo, we restrict attention to
+constructors for \code{Field} which implicitly set the term vector
+flag to \code{TermVector.NO}.
 
 
 \subsection{Constructing Fields}
@@ -108,18 +127,22 @@ A field requires all of its components to be specified in the
 constructor.  Even so, fields are defined to be mutable so that their
 values, but not their field names, may be reset after construction.
 The explicit constructor for text fields is
-\code{Field(String,String,Field.Store,Field.Index,Field.TermVector)},
+\code{Field(String,String,Field.Store,Field.Index)},
 where the first two strings are field and value, and the remaining
 three are the enum flags discsussed in the previous section.%
 %
-\footnote{There is also a constructor with an additional boolean
-  argument that lets you control whether a field is interned or not
-  (see \refsec{string-intern}).  The default in the unmarked
-  constructors is to intern all field names.}
+\footnote{The full constructor has two additional arguments.  The
+  first is a boolean flag controlling whether the field's name is
+  interned or not (see \refsec{string-intern}), with the default
+  setting being \code{true}.  The second is a \code{TermVector}
+  enum indicating how to store term vectors, with the default
+  being \code{TermVector.NO}.}
 %
-There are also a ragne of utility constructors that provide default
-values for the flags.  There is also a constructor that takes a
-\code{TokenStream} rather than a string.%
+There are also several utility constructors that provide default
+values for the flags in addition to those taking the text value as a
+\code{Reader}.  There is also a public constructor that takes a
+\code{TokenStream} (see \refsec{lucene-analysis}) rather than a
+string.%
 %
 \footnote{It's not clear what the use case is for this constructor.
 Users must be careful to make sure the token stream provided is
@@ -133,12 +156,16 @@ term vectors are stored.  These methods are all specified in the
 \code{Fieldable} interface.  For instance, \code{name()} returns
 a field's name, and \code{stringValue()} its value.%
 %
-\footnote{For fields constructed with a \code{Reader} for a value,
-the method \code{stringValue()} returns \code{null}.  Instead,
-the method \code{readerValue()} must be used.  Similarly, the
-methods \code{tokenStreamValue()} and \code{binaryValue()} are
-used to retrieve values of fields constructed with token streams
-or byte array values.}
+\footnote{For fields constructed with a \code{Reader} for a value, the
+  method \code{stringValue()} returns \code{null}.  Instead, the
+  method \code{readerValue()} must be used.  Similarly, the methods
+  \code{tokenStreamValue()} and \code{binaryValue()} are used to
+  retrieve values of fields constructed with token streams or byte
+  array values.  The problem with classes like this that that allow
+  disjoint setters (or constructors) is that it complicates usage for
+  clients, who now have to check where they can get their data.
+  Another example of this anti-pattern is Java's built-in XML
+  \code{InputSource} in package \code{org.xml.sax}.}
 %
 
 There are convenience getters derived from the flag settings.  For
@@ -150,19 +177,14 @@ vector is stored in the index.
 
 \section{Documents}
 
-All documents are instances of the final class \code{Document}, in
-package \code{org.apache.lucene.document}.  
+In Lucene, documents are represented as instances of the final class
+\code{Document}, in package \code{org.apache.lucene.document}.
 
-\subsection{Constructing Documents} 
+\subsection{Constructing and Populating Documents} 
 
-Documents are constructed using a zero-arg constructor \code{Document()}.
-After construction, they a document may be modified with a range of
-setters. 
-
-\subsection{Populating Documents}
-
-Once a document is constructed, the method \code{add(Fieldable)} is
-used to add fields to the document.  
+Documents are constructed using a zero-arg constructor
+\code{Document()}.  Once a document is constructed, the method
+\code{add(Fieldable)} is used to add fields to the document.
 
 Lucene does not in any way constrain document structures.  An index
 may store a heterogeneous set of documents, with any number of
@@ -172,9 +194,10 @@ level.
 
 A document may have more than one field with the same name added to
 it.  All of the fields with a given name will be searchable under that
-name (if the field is indexed, of course).  The behavior is conceptually
-similar to what you'd get from concatenating all the field values,
-but cross-field searchers are not allowed.  
+name (if the field is indexed, of course).  The behavior is
+conceptually similar to what you'd get from concatenating all the
+field values; the main difference is that phrase searches
+don't work across fields.
 
 \subsection{Accessing Fields in Documents}
 
@@ -201,13 +224,16 @@ simpler method is preferable.
 
 We provide a simple demo class, \code{DocDemo}, which illustrates
 the construction, setting and accessing of fields and documents.
+
+\subsubsection{Code Walkthrough}
+
 The \code{main()} method starts by constructing a document and
 populating it.
 %
 \codeblock{DocDemo.1}
 %
 After constructing the document, we add a sequence of fields,
-includign a title field, two author fields, a field for the name of
+including a title field, two author fields, a field for the name of
 the journal, several fields storing mesh terms, and a field storing
 the document's PubMed identifier.  These terms are all stored
 and analyzed other than the identifier, which is not analyzed.
@@ -249,27 +275,32 @@ of a fields marked as analyzed to a stream of tokens.  At indexing
 time, Lucene is supplied with an implementation of the abstract base
 class \code{Analyzer} in package \code{org.apache.lucene.analysis}.
 An analyzer maps a field name and text value to a \code{TokenStream},
-in the same package, from which the terms to be indexed may be
-retrieved.
+also in the \code{analysis} package, from which the terms to be
+indexed may be retrieved using an iterator-like pattern.
 
 \subsection{Token Streams and Attributes}
 
 Before version 3.0 of Lucene, token streams had a string-position
 oriented tokenization API, much like LingPipe's tokenizers.  Version
 3.0 generalized the interface for token streams and other basic
-objects using a very general pattern based on attributes of other
-objects.
+objects using a very general design pattern based on attributes of
+other objects.
 %
-\footnote{The benefit of this pattern is not in its use, but in the
-  fact that it allows easy extensions to be attached the API in a
-  flexible way without breaking backward compatibility.}
+\footnote{The benefit of this pattern is not in its use, which is less
+  convenient than a direct implementation.  The advantage of Lucene's
+  attribute pattern is that it leaves enormous flexibility for the
+  developers to add new features without breaking backward
+  compatibility.}
+
 
 \subsubsection{Code Walkthrough}
 
 We provide a sample class \code{LuceneAnalysis} that applies an
 analyzer to a field name and text input and prints out the resulting
 tokens.  The work is done in a simple \code{main()} with two
-arguments, the field name and the text to be analyzed.  
+arguments, the field name, set as the string variable
+\code{fieldName}, and the text to be analyzed, set as the string
+variable \code{text}.
 
 The first step is to create the analyzer.
 %
@@ -278,14 +309,29 @@ The first step is to create the analyzer.
 Here we've used Lucene's \code{StandardAnalyzer}, in package
 \code{org.apache.lucene.analysis.standard}, which applies case
 normalization and English stoplisting to the simple tokenizer, which
-pays attention to issues like periods and e-mail addresses.  Note that
-it's constructed with a constant for the Lucene version, as the
-behavior has changed over time.
+pays attention to issues like periods and e-mail addresses (see
+\refchap{tokenization} for an overview of natural language
+tokenization in LingPipe, as well as adapters between Lucene analyzers
+and LingPipe tokenizer factories).  Note that it's constructed with a
+constant for the Lucene version, as the behavior has changed over
+time.
 
 The standard analyzer, like almost all of Lucene's built-in analyzers,
 ignores the name of the field that is passed in.  Such analyzers
 essentially implement simple token stream factories, like LingPipe's
-tokenizer factories.
+tokenizer factories.%
+%
+\footnote{It is unfortunate that Lucene does not present a token
+  stream factory interface to produce token streams from text inputs.
+  Then it would be natural to construct an analyzer by associating
+  token stream factories with field names.  We follow this pattern in
+  adapting LingPipe's tokenizer factories to analyzers in
+  \refsec{tok-adapting-lucene-analyzers}.  Lucene's sister package,
+  Solr, which embeds Lucene in a client-server architecture, includes
+  a token stream factory interface \code{TokenizerFactory}, which is
+  very much like LingPipe's other than operating over readers rather
+  than character sequences and providing Solr-specific initialization
+  and configuration management.}
 
 The next step of the \code{main()} method constructs the token stream
 given the string values of the command-line arguments \code{fieldName}
@@ -294,7 +340,13 @@ and \code{text}.
 \codeblock{LuceneAnalysis.2}
 %
 We first have to create a \code{Reader}, which we do by wrapping the
-input text string in a \code{StringReader} (from \code{java.io}).
+input text string in a \code{StringReader} (from \code{java.io}).%
+%
+\footnote{Unlike the case for documents, there is no alternative to
+  using readers for analysis.  It is common to use string readers
+  because they do not maintain handles on resources other than their
+  string reference.}
+%
 Then we use the analyzer to create a token stream from the field name
 and text reader.  The next three statements attach attributes to the
 token stream, specifically a term attribute, offset attribute and
@@ -307,15 +359,17 @@ fixed sequence of tokens in the given order without intervening
 material}.
 
 The last block of code in the \code{main()} method iterates through
-the tokens tream, printing the attributes of each token it finds.
+the token stream, printing the attributes of each token it finds.
 %
 \codeblock{LuceneAnalysis.3}
 %
 The while loop continually calls \code{incrementToken()} on the token
 stream, which advances to the next token, returning \code{true} if
 there are more tokens.  The body of the loop just pulls out the
-increment, start and end positions, and term for the token.  The
-rest of the code, which isn't shown, just prints these values.
+increment, start and end positions, and term for the token.  The rest
+of the code, which isn't shown, just prints these values.  this
+pattern of increment-then-get is particularly popular for tokenizers;
+LingPipe's tokenizers use a similar model.  
 
 \subsubsection{Running the Demo}
 
@@ -350,20 +404,33 @@ and end (exclusive) positions of the extracted terms is also shown.
 Lucene provides a storage abstraction on top of Java in the abstract
 base class \code{Directory} in the \code{org.apache.lucene.store}
 package.  Directories provide an interface that's similar to an
-operating systems' file system.
+operating system's file system.
 
 \subsection{Types of Directory}
 
-The \code{FSDirectory} abstract base class extends \code{Directory} to
-support implementations based on a file system.  This is the most
-common way to create a directory in Lucene.  The implementation
-\code{RAMDirectory} supports in-memory directories, which are efficient,
-but less scalable than file-system directories.  The \code{DbDirectory}
-class uses Java Database Connectivity (JDBC) to support a transactional
-and persistent directory on top of a database.  There are also more
+The \code{FSDirectory} abstract base class, also in package
+\code{store}, extends \code{Directory} to support implementations
+based on a file system.  This is the most common way to create a
+directory in Lucene.%
+%
+\footnote{The class \code{FileSwitchDirectory}, also in package
+  \code{store}, uses two different on-disk files to store different
+  kinds of files.  This may allow for more efficient merges when
+  multiple physical disk or solid-state drives are available.  The
+  class is still marked as ``new and experimental,'' with a warning
+  that its behavior may change in the future.}
+
+The implementation \code{RAMDirectory}, also in
+\code{store} supports in-memory directories, which are efficient, but
+less scalable than file-system directories.  
+
+The \code{DbDirectory}
+class, in the contributed package \code{org.apache.lucene.store.db},
+uses Java Database Connectivity (JDBC) to support a transactional and
+persistent directory on top of a database.  There are also more
 specialized implementations.
 
-\subsection{Constructing Directories}
+\subsection{Constructing File-System Directories}
 
 An instance of a file-system directory may be created using the
 factory method \code{FSDirectory.open(File)}, which returns an
@@ -386,13 +453,24 @@ over how the bytes in the file are managed.%
 \section{Indexing}
 
 Lucene uses the \code{IndexWriter} class in
-\code{org.apache.lucene.index} to add documents to an index (and
-otherwise manage an index).  Documents do not all need to be added at
+\code{org.apache.lucene.index} to add documents to an index and
+optimize existing indexes.%
+%
+\footnote{Counterintuitively, an instance of \code{IndexReader} is
+required to delete documents.}
+%
+Documents do not all need to be added at
 once --- documents may be added to or removed from an existing index.
 
+\subsection{Indexing Demo}
+
 We provide a demo class \code{LuceneIndexing} that shows how basic
-text indexing works.  The work is all done in the \code{main()} method,
-whcih starts by constructing the index writer.
+text indexing works.  
+
+\subsubsection{Code Walkthrough}
+
+The work is all done in the \code{main()} method, whcih starts by
+constructing the index writer.
 %
 \codeblock{LuceneIndexing.1}
 %
@@ -401,12 +479,18 @@ be indexed are read and the directory to which the Lucene index is
 written.  We create a file-system-based directory using the index
 directory (see \refsec{lucene-directory}).  We then create a standard
 analyzer (see \refsec{lucene-analysis}).  Finally, we create an index
-writer from the directory and analyzer.  The flag \code{UNLIMITED}
-specifies that all of the text in a field will be indexed, not just an
-initial segment of it.  This constructor creates an index if one does
-not exist, or opens an existing index if an index already exists in
-the specified directory.  Another constructor lets you specify that
-even if an index exists, it should be overwritten with a fresh index.
+writer from the directory and analyzer.  
+
+The enum \code{MaxFieldLength}, which is nested in the class
+\code{IndexWriter}, specifies whether to truncate text fields to a
+length (controlled by a static constant) or whether to index all of
+their content.  We use the value \code{MaxFieldLength.UNLIMITED} to
+index all of the text in a field.
+
+The index constructor creates an index if one does not exist, or opens
+an existing index if an index already exists in the specified
+directory.  An alternative constructor lets you specify that even if
+an index exists, it should be overwritten with a fresh index.
 
 Constructing the index may throw all three exceptions listed on the
 \code{main()} method.  The first two exceptions are Lucene's, and both
@@ -419,38 +503,40 @@ index directory.  A plain-old Java \code{IOException} will be thrown
 if there is an underlying I/O error reading or writing from the files
 in the directory.
 
-The second half of the \code{main()} method reads text from files,
-creates a Lucene document, then adds it to the index.
+The second half of the \code{main()} method loops over the files
+in the specified document directory, converting them to documents
+and adding them to the index.
 %
 \codeblock{LuceneIndexing.2}
 %
 We keep a count of the number of characters processed in the variable
 \code{numChars}.  We then loop is over all the files in the specified
-document directory.  For each file, we get its name, as well as the
-text (using LingPipe's \code{readFromFile()} utility method, which
+document directory.  For each file, we get its name and its text
+(using LingPipe's static \code{readFromFile()} utility method, which
 converts the bytes in the file to a string using the specified
-character encoding, here ASCII).  We then create a document and add
-the file name as an unanalyzed field and the text as an analyzed
-field.  With the four-argument \code{Field} constructor, term vectors
-storage is turned off for all fields.
+character encoding, here ASCII).  
 
-After creating the document, we simply use the
-\code{addDocument(Document)} method of the index writer to add it
-to the index.  
+We then create a document and add the file name as an unanalyzed field
+and the text as an analyzed field.  After creating the document, we
+call the \code{addDocument(Document)} method of the index writer to
+add it to the index.
 
-After indexing each file, we call the index writer's \code{optimize()}
-method, which tamps the index down into a minimal file representation
-that's most efficient for indexing speed.  We then close the index
+After we've finished indexing all the files, we call the index
+writer's \code{optimize()} method, which tamps the index down into a
+minimal file representation that's not only optimized for search
+speed, but also compacted for minimal size.  We then close the index
 writer using the \code{close()} method, which may throw an
 \code{IOException}; the \code{IndexWriter} class is declared to
 implement Java's \code{Closeable} interface, so we could've used
-LingPipe's \code{Streams.closeSilently()} utility method to close
-it and swallow any I/O exceptions raised.
+LingPipe's \code{Streams.closeSilently()} utility method to close it
+and swallow any I/O exceptions raised.
 
-We then grab the number of documents and print out aspects of
-the indexing job.
+Finally, we get the number of documents that are in the current index
+using the method \code{numDocs()}; if documents were in the index when
+it was opened, these are included in the count.  We also print out 
+other counts, such as the number of characters.
 
-\subsection{Running the Demo}
+\subsubsection{Running the Demo}
 
 The Ant target \code{lucene-index} runs the indexing demo.  It
 supplies the values of properties \code{doc.dir} and \code{index.dir}
@@ -491,31 +577,24 @@ With the standard analyzer, the index file is only a quarter the size of
 the text file, whereas the stored field file is slightly larger than the
 set of texts indexed.
 
-\subsubsection{Duplicate Documents}
+\subsection{Duplicate Documents}
 
-If we were to run the program again, each of the documents would be
-added to the index a second time, and the number of documents reported
-will be 170 (twice the initial 85).  Although a Lucene index provides
-identifiers for documents that are unique (though not necessarily
-stable over optimizations), nothing in the index enforces uniqueness
-of document contents.  Lucene will happily create another document
-with the same fields and values as another document.  It keeps them
-separate internally using its own identifiers.
+If we were to run the demo program again, each of the documents would
+be added to the index a second time, and the number of documents
+reported will be 170 (twice the initial 85).  Although a Lucene index
+provides identifiers for documents that are unique (though not
+necessarily stable over optimizations), nothing in the index enforces
+uniqueness of document contents.  Lucene will happily create another
+document with the same fields and values as another document.  It
+keeps them separate internally using its own identifiers.
 
 
-\section{Search}
+\section{Queries ande Query Parsing}
 
-Now that we have a Lucene index, we can use it for search.  In
-order to carry out search, we need to be able to construct queries.
-
-\subsection{Queries ande Query Parsing}
-
-Lucene overloads the notion of search, combining exact boolean
-searches with softer vector-space search methods.  This overloading is
-reflected in the queries.  The atomic pieces of queries are also
-complex, allowing phrase searches, fuzzy term searches, range
-searches, and so on.  Furthermore, each atomic search specifying a
-term must also specify the field over which it is to be run.%
+Lucene provides a highly configurable hybrid form of search that
+combines exact boolean searches with softer, more
+relevance-ranking-oriented vector-space search methods.  All searches
+are field-specific.
 %
 \footnote{Unfortunately, there's no way to easily have a query search
   over all fields.  Instead, field-specific queries must be disjoined
@@ -523,40 +602,70 @@ term must also specify the field over which it is to be run.%
   documents by creating synthetic fields that concatenate the value of
   other fields.}
 
-\subsubsection{Constructing Queries Programatically}
+\subsection{Constructing Queries Programatically}
 
 Queries may be constructed programatically using the dozen or so
 built-in implementations of the the \code{Query} abstract base class
 from the package \code{org.apache.lucene.search}.  
 
 The most basic query is over a single term in a single field.  This
-form of query is implemented in Lucene's \code{TermQuery} class in the
-package \code{org.apache.lucene.search}.  A term query is constructed
-from a \code{Term}, which is found in package
-\code{org.apache.lucene.index}.  A term is constructed from a field
-name and text for the term, both specified as strings.
+form of query is implemented in Lucene's \code{TermQuery} class, also
+in the \code{search} package.  A term query is constructed from a
+\code{Term}, which is found in package \code{org.apache.lucene.index}.
+A term is constructed from a field name and text for the term, both
+specified as strings.
 
-Boolean queries are misnamed in that they support both approximate
-vector-space queries and proper boolean queries.  A boolean query may
-be constructed with a no-argument constructor.  Queries are then added
-to the boolean query, with a specification of their polarity through
-an instance of \code{BooleanClause.Occur} (also in the search
-package).  The values of the \code{Occur} enum are \code{MUST},
-\code{MUST\_NOT} and \code{SHOULD}.  The first two are used for proper
-boolean queries, requiring the term to appear or not appear in any
-result.  The last value, \code{SHOULD}, is used for vector-space
-queries.  With this occurrence value, Lucene will prefer results that
-match the query, but may return results that do not match the query.
+The \code{BooleanQuery} class is very misleadingly named; it
+supports both hard boolean queries and relevance-ranked vector-space
+queries, as well as allowing them to be mixed.
 
-\subsubsection{Query Parsing}
+A boolean query may be constructed with the no-argument constructor
+\code{BooleanQuery()} (there is also a constructor that provides extra
+control over similarity scoring by turning off the coordination component
+of scoring).
+
+Other queries may then be added to the boolean query using the method
+\code{add(Query,BooleanClause.Occur)}.  The second argument, an
+instance of the nested enum \code{BooleanClause.Occur} in package
+\code{search}, indicates whether the added query is to be treated as a
+hard boolean constraint or contribute to the relevance ranking of
+vector queries.  Possible values are \code{BooleanClause.MUST},
+\code{BooleanClause.MUST\_NOT}, and \code{BooleanClause.SHOULD}.  The
+first two are used for hard boolean queries, requiring the term to
+appear or not appear in any result.  The last value, \code{SHOULD}, is
+used for vector-space queries.  With this occurrence value, Lucene
+will prefer results that match the query, but may return results that
+do not match the query.%
+
+The recursive nature of the API and the overloading of queries to act
+as both hard boolean and vector-type relevance queries, leads to the
+situation where queries may mix hard and soft constraints.  It appears
+that clauses constrained by hard boolean occurrence constraints,
+\code{MUST} or \code{MUST\_NOT}, do not contribute to scoring.  It's
+less clear what happens when one of these hybrid queries is nested
+inside another boolean query with its own occurrence specification.
+For instance, it's not clear what happens when we nest a query with
+must-occur and should-occur clauses as a must-occur clause in a larger
+query.
+%
+\codeblock{FragmentsLucene.1}
+
+
+\subsection{Query Parsing}
 
 Lucene specifies a language in which queries may be expressed.  
 
-For instance, \code{computer NOT java} produces a query that specifies
-the term \stringmention{computer} must appear in the default field and
-the term \stringmention{java} must not appear.  Queries may specify
-fields, as in \stringmention{text:java}, which requires the term
-\stringmention{java} to appear in the \code{text} field of a document.
+For instance, \searchquery{computer NOT java}%
+%
+\footnote{We display queries \codeVar{Q} as \searchquery{\codeVar{Q}} to
+indicate the scope of the search without using quotes, which are often
+part of the search itself.}
+%
+produces a query that specifies the term \stringmention{computer} must
+appear in the default field and the term \stringmention{java} must not
+appear.  Queries may specify fields, as in \stringmention{text:java},
+which requires the term \stringmention{java} to appear in the
+\code{text} field of a document.
 
 The full syntax specification is available from
 \url{http://lucene.apache.org/java/3_0_2/queryparsersyntax.html}.  The
@@ -572,20 +681,132 @@ Lucene version.  The default field is used for queries that do not
 otherwise specify the field they search over.  It may then be used to
 convert string-based queries into query objects for searching.
 
+The query language in Lucene suffers from a confusion between queries
+over tokens and queries over terms.  Complete queries, must of course,
+be over terms.  But parts of queries are naturally constrained to be
+over tokens in the sense of not mentioning any field values.  For
+instance, if \codeVar{Q} is a well-formed query, then so is
+\code{foo:\codeVar{Q}}.  In proper usage, the query \codeVar{Q} should
+be constrained to not mention any fields.  In other words, \codeVar{Q}
+should be a query over tokens, not a general query.
+
+\subsubsection{Query Language Syntax}
+
+
+In figure \reffig{lucene-query-syntax}, we provide an overview
+of the full syntax available through Lucene's query parser.
+%
+\begin{figure}
+\begin{tabular}{l|lp{0.45\textwidth}}
+\tblhead{Type} & \tblhead{Syntax} & \tblhead{Description}
+\\ \hline
+\tblhead{Term} 
+& \codeVar{t}
+& Search for the specific token in the default field
+\\
+\tblhead{Phrase}
+& \code{"\codeVar{cs}"}
+& Match all of the tokens produced by cs in sequence
+\\ \hline
+\tblhead{Field} 
+& \code{\codeVar{f}:\codeVar{Q}}
+& Match \codeVar{Q} in the specified field
+\\ \hline
+\tblhead{Wildcard Char} 
+& \code{\codeVar{cs1}?\codeVar{cs2}} 
+& Match allowing \code{?} to match any character; \codeVar{cs1} must be non-empty
+\\
+\tblhead{Wildcard Seq}
+& \code{\codeVar{cs1}*\codeVar{cs2}}
+& Matches terms allowing \code{*} to match one or more characters; \codeVar{cs1} must be non-empty
+\\
+\tblhead{Fuzzy}
+& \code{\codeVar{t}$\sim$}
+& Approximately match term \codeVar{t}
+\\
+\tblhead{Fuzzy, Weighted}
+& \code{\codeVar{t}$\mathtt\sim$\codeVar{d}}
+& Approximately match term with minimum similarity \codeVar{d}
+\\ \hline
+\tblhead{Proximity}
+& \code{\codeVar{P}$\sim$\codeVar{n}}
+& Match all terms in phrase within distance \codeVar{n}
+\\ \hline
+\tblhead{Range, Inclusive}
+& \code{\codeVar{f}:[\codeVar{t1} TO \codeVar{t2}]}
+& Match terms lexicographically between the specified terms (inclusive)
+\\
+\tblhead{Range, Exclusive}
+& \code{\codeVar{f}:(\codeVar{t1} TO \codeVar{t2})}
+& Match terms lexicographically between the specified terms (exclusive)
+\\ \hline
+\tblhead{Boosting}
+& \code{\codeVar{P}\^{}\codeVar{d}}
+& Boost matches of term or phrase by specified amount
+\\ \hline
+\tblhead{Disjunction}
+& \code{\codeVar{Q1} OR \codeVar{Q2}}
+& Match \codeVar{Q1} or \codeVar{Q2} (or both)
+\\
+\tblhead{Conjunction}
+& \code{\codeVar{Q1} AND \codeVar{Q2}}
+& Match \codeVar{Q1} and \codeVar{Q2}
+\\
+\tblhead{Difference}
+& \code{\codeVar{Q1} NOT \codeVar{Q2}}
+& Match \codeVar{Q1} but not \codeVar{Q2}
+\\
+\tblhead{Must}
+& \code{+\codeVar{P}}
+& Term or phrase must appear 
+\\
+\tblhead{Mustn't}
+& \code{-\codeVar{P}}
+& Term or phrase must not appear 
+\\ \hline
+\tblhead{Grouping}
+& \code{(\codeVar{Q})}
+& Parser hint, matches same as \codeVar{Q}
+\end{tabular}
+\caption{{\it Lucene's Query Syntax}.  We assume that \codeVar{t} is a token made up of a
+sequence of characters, that \codeVar{f} is a field name made up of a
+sequence of characters, \code{cs1} and \code{cs2} are arbitrary
+sequences of characters, \code{d} is a decimal number and \code{n} is
+a natural number, and that \codeVar{Q} is an arbitrary well-formed
+query and \codeVar{P} is a well-formed phrase query.}\label{fig:lucene-query-syntax}
+\end{figure}
+%
+
+Any character mentioned in the above table and additionally the
+backslash are considered special characters and must be escaped with a
+backslash to be used literally in a query.  The list of special
+characters is:
+%
+\begin{verbatim}
++  -  &  |  !  (  )  {  }  [  ]  ^  "  ~  *  ?  :  \
+\end{verbatim}
+%
+For example, \searchquery{foo:a\bk(c} searches for the three-character
+token \stringmention{a(c} in the field \code{foo}.
+
+
+\section{Search}
+
 \subsection{Index Readers}
 
 In order to perform search, an instance of \code{IndexReader} must be
 available.  This class is complementary to the \code{IndexWriter} we
 used to create an index.  
 
-One nice feature of the reader design in Lucene is that we can
+\subsubsection{Distributed Readers}
+
+A convenient feature of the reader design in Lucene is that we can
 construct an instance from multiple indexes, which will then combine
 their contents at search time.  From the reader's client's
 perspective, the behavior is indistinguishable (other than in terms of
-speed) from a combined and optimized index.  
-
-We can even distribute these indexes over multiple machines on a
-network using Java's Remote Method Invocation (RMI).  
+speed) from a combined and optimized index.  We can even distribute
+these indexes over multiple machines on a network using Java's Remote
+Method Invocation (RMI).
 
 
 \subsection{Index Searchers}
@@ -595,12 +816,19 @@ search.  Every index searcher wraps an index reader to get a handle
 on the indexed data.  Once we have an index searcher, we can supply
 queries to it and enumerate results in order of their score.
 
-\subsection{Demo Code}
+There is really nothing to configure in an index searcher other
+than its reader, so we'll jump straight to the demo code.
+
+\subsection{Search Demo}
 
 We provide a simple implementation of Lucene search based on the index
-we created in the last section.  The code is in the \code{main()}
-method of the demo class \code{LuceneSearch}.  The method starts off
-by reading in command-line arguments.
+we created in the last section.  
+
+\subsubsection{Code Walkthrough}
+
+The code is in the \code{main()} method of the demo class
+\code{LuceneSearch}.  The method starts off by reading in command-line
+arguments.
 %
 \codeblock{LuceneSearch.1}
 %
@@ -647,7 +875,7 @@ operation to its index reader internally).  Finally, with the document
 in hand, we retrieve its file name.  We could've also retrieved the
 text of the document, because we stored it in the index.  
 
-\subsection{Running the Demo}
+\subsubsection{Running the Demo}
 
 The Ant target \code{lucene-search} invokes the demo with command-line
 arguments provided by the value of properties \code{index.dir},

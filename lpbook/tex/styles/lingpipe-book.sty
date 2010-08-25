@@ -121,9 +121,9 @@
 
 % CODE 
 \newcommand{\code}[1]{{\ttfamily #1}}
-\newcommand{\codeBold}[1]{{\bf\ttfamily #1}}
-\newcommand{\codeUser}[1]{{\sl\ttfamily #1}}
-\newcommand{\codeVar}[1]{{\sl\ttfamily #1}}
+\newcommand{\codeBold}[1]{\code{\bf\ttfamily #1}}
+\newcommand{\codeUser}[1]{\codeVar{#1}}
+\newcommand{\codeVar}[1]{\code{\sl\ttfamily #1}}
 \newcommand{\codeString}[1]{\code{"#1"}}
 \SaveVerb{bkslverb}=\=
 \newcommand{\bk}{\protect\UseVerb{bkslverb}}
