@@ -13,10 +13,7 @@ on text values.
 
 Lucene manages a dynamic document index, which supports adding
 documents to the index and retrieving documents from the index using a
-highly expressive search API.  Although Lucene is like a database in
-its storage and indexing of data on disk, it is unlike most database
-implementations in that there are no transactional capabilities built
-into Lucene itself.
+highly expressive search API.  
 
 What actually gets indexed is a set of terms.  A term combines a field
 name with a token that may be used for search.  For instance, a title
@@ -454,13 +451,38 @@ over how the bytes in the file are managed.%
 
 Lucene uses the \code{IndexWriter} class in
 \code{org.apache.lucene.index} to add documents to an index and
-optimize existing indexes.%
-%
-\footnote{Counterintuitively, an instance of \code{IndexReader} is
-required to delete documents.}
-%
-Documents do not all need to be added at
+optimize existing indexes.  Documents do not all need to be added at
 once --- documents may be added to or removed from an existing index.
+We consider deleting documents in \refsec{lucene-delete}.
+
+\subsection{Merging and Optimizing}
+
+Indexing maintains a small buffer of documents in memory,
+occassionally writing the data in that batch of documents out to disk.
+After enough such batches have been written to disk, Lucene
+automatically merges the individual batches into bigger batches.
+Then, after a number of larger chunks of index accumulate, these are
+merged.  You can observe this behavior in your file browser f you're
+using a disk directory for indexing a large batch of documents.  As
+more documents are added, small index segments are continually added.
+Then, at various points, these smaller indexes are merged into larger
+indexes.
+
+It's possible to control the size of the in-memory buffer and the
+frequency of merges.  
+
+It's even possible to programatically merge two indexes from different
+directories.  Lucene's \code{IndexWriter} class provides a handy
+variable-argument-length method \code{addIndexes(IndexReader...)}
+which adds indexes maintained by the specified readers to the index
+writer.  Then, when the writer is optimized, the indexes will all
+be merged into the writer's index directory.  
+
+Being able to merge indexes makes it easy to split the indexing job
+into multiple independent jobs and then either merge the results or
+use all of the indexes together withour merging them (using a
+\code{MultiReader}).
+
 
 \subsection{Indexing Demo}
 
@@ -693,116 +715,150 @@ should be a query over tokens, not a general query.
 \subsubsection{Query Language Syntax}
 
 
-In figure \reffig{lucene-query-syntax}, we provide an overview
+In \reffig{lucene-query-syntax}, we provide an overview
 of the full syntax available through Lucene's query parser.
 %
 \begin{figure}
-\begin{tabular}{l|lp{0.45\textwidth}}
+\begin{tabular}{p{0.15\textwidth}lp{0.55\textwidth}}
 \tblhead{Type} & \tblhead{Syntax} & \tblhead{Description}
 \\ \hline
-\tblhead{Term} 
+\tblhead{Token}
 & \codeVar{t}
-& Search for the specific token in the default field
-\\
+& Match token \codeVar{t} 
+\\[4pt]
 \tblhead{Phrase}
 & \code{"\codeVar{cs}"}
-& Match all of the tokens produced by cs in sequence
-\\ \hline
+& Match tokens in \codeVar{cs} in exact order without gaps
+\\[12pt]
 \tblhead{Field} 
 & \code{\codeVar{f}:\codeVar{Q}}
-& Match \codeVar{Q} in the specified field
-\\ \hline
-\tblhead{Wildcard Char} 
+& Match query \codeVar{Q} in field \codeVar{f}
+\\[12pt]
+\tblhead{Wildcard, Char}
 & \code{\codeVar{cs1}?\codeVar{cs2}} 
-& Match allowing \code{?} to match any character; \codeVar{cs1} must be non-empty
-\\
-\tblhead{Wildcard Seq}
+& Match tokens starting with \codeVar{cs1}, ending with \codeVar{cs2}, with any char between
+\\[4pt]
+\tblhead{Wildcard, Seq}
 & \code{\codeVar{cs1}*\codeVar{cs2}}
-& Matches terms allowing \code{*} to match one or more characters; \codeVar{cs1} must be non-empty
-\\
+& Match tokens starting with \codeVar{cs1}, ending with \codeVar{cs2}, with any char sequence between
+\\[12pt]
 \tblhead{Fuzzy}
 & \code{\codeVar{t}$\sim$}
-& Approximately match term \codeVar{t}
-\\
+& Match token \codeVar{t} approximately
+\\[4pt]
 \tblhead{Fuzzy, Weighted}
 & \code{\codeVar{t}$\mathtt\sim$\codeVar{d}}
-& Approximately match term with minimum similarity \codeVar{d}
-\\ \hline
+& Match token \codeVar{t} within minimum similarity \codeVar{d}
+\\[24pt]
 \tblhead{Proximity}
 & \code{\codeVar{P}$\sim$\codeVar{n}}
-& Match all terms in phrase within distance \codeVar{n}
-\\ \hline
-\tblhead{Range, Inclusive}
+& Match tokens in phrase \codeVar{P} within distance \codeVar{n}
+\\[12pt]
+\tblhead{Range, \mbox{Inclusive}}
 & \code{\codeVar{f}:[\codeVar{t1} TO \codeVar{t2}]}
-& Match terms lexicographically between the specified terms (inclusive)
-\\
-\tblhead{Range, Exclusive}
+& Match tokens lexicographically between tokens \codeVar{t1} and \codeVar{t2} inclusive
+\\[4pt]
+\tblhead{Range, \mbox{Exclusive}}
 & \code{\codeVar{f}:(\codeVar{t1} TO \codeVar{t2})}
-& Match terms lexicographically between the specified terms (exclusive)
-\\ \hline
+& Match tokens lexicographically between tokens \codeVar{t1} and \codeVar{t2} exclusive
+\\[12pt]
 \tblhead{Boosting}
 & \code{\codeVar{P}\^{}\codeVar{d}}
-& Boost matches of term or phrase by specified amount
-\\ \hline
+& Match phrase \codeVar{P}, boosting score by \codeVar{d}
+\\[12pt]
 \tblhead{Disjunction}
 & \code{\codeVar{Q1} OR \codeVar{Q2}}
-& Match \codeVar{Q1} or \codeVar{Q2} (or both)
-\\
+& Match query \codeVar{Q1} or query \codeVar{Q2} (or both)
+\\[4pt]
 \tblhead{Conjunction}
 & \code{\codeVar{Q1} AND \codeVar{Q2}}
-& Match \codeVar{Q1} and \codeVar{Q2}
-\\
+& Match query \codeVar{Q1} and match query \codeVar{Q2}
+\\[4pt]
 \tblhead{Difference}
 & \code{\codeVar{Q1} NOT \codeVar{Q2}}
-& Match \codeVar{Q1} but not \codeVar{Q2}
-\\
+& Match query \codeVar{Q1} but not query \codeVar{Q2}
+\\[12pt]
 \tblhead{Must}
 & \code{+\codeVar{P}}
-& Term or phrase must appear 
-\\
+& Token or phrase \codeVar{P} must appear
+\\[4pt]
 \tblhead{Mustn't}
 & \code{-\codeVar{P}}
-& Term or phrase must not appear 
-\\ \hline
+& Token or phrase \codeVar{P} must not appear 
+\\[12pt]
 \tblhead{Grouping}
 & \code{(\codeVar{Q})}
-& Parser hint, matches same as \codeVar{Q}
+& Match query \codeVar{Q} (disambiguates parsing)
 \end{tabular}
-\caption{{\it Lucene's Query Syntax}.  We assume that \codeVar{t} is a token made up of a
-sequence of characters, that \codeVar{f} is a field name made up of a
-sequence of characters, \code{cs1} and \code{cs2} are arbitrary
-sequences of characters, \code{d} is a decimal number and \code{n} is
-a natural number, and that \codeVar{Q} is an arbitrary well-formed
-query and \codeVar{P} is a well-formed phrase query.}\label{fig:lucene-query-syntax}
+\caption{\it {\bf Lucene's Query Syntax}.  In the table, 
+  \codeVar{t} is a token made up of a sequence of characters, 
+  \codeVar{f} is a field name made up of a sequence of characters,
+  \code{cs1} is a non-empty sequence of characters, \code{cs2} is any
+  sequences of characters, \code{d} is a decimal number, \code{n}
+  is a natural number, \codeVar{Q} is an arbitrary
+  well-formed query, and \codeVar{P} is a well-formed phrase
+  query.}\label{fig:lucene-query-syntax}
 \end{figure}
 %
-
-Any character mentioned in the above table and additionally the
-backslash are considered special characters and must be escaped with a
-backslash to be used literally in a query.  The list of special
-characters is:
+The following characters must be escaped by preceding them
+with a backslash:
 %
 \begin{verbatim}
 +  -  &  |  !  (  )  {  }  [  ]  ^  "  ~  *  ?  :  \
 \end{verbatim}
 %
 For example, \searchquery{foo:a\bk(c} searches for the three-character
-token \stringmention{a(c} in the field \code{foo}.
+token \stringmention{a(c} in the field \code{foo}.  Of course, if the
+queries are specified as Java string literals, further escaping is
+required (see \refsec{character-literals}).
+
+\subsection{Default Fields, Token Queries, and Term Queries}
+
+When we set up a query parser, we will be supplying a default field.
+Unmarked token queries will then be interrpeted as if constrained to
+that field.  For instance, if \code{title} is the default query field,
+then query \searchquery{cell} is the same as the query
+\searchquery{title:cell}.  
+
+Like the programmatic queries, Lucene's query language does not
+clearly separate the role of token-level queries, which match tokens
+or sequences of tokens, and term-level queries, which match tokens
+within a field.  Thus it's possible to write out queries with rather
+unclear structure, such as \searchquery{text:(money AND
+  file:12.ascii.txt)}; this query will actually match (as you can try
+with the cdemo in the next section) because the embedded field
+\code{file} takes precedence over the top-level field \code{text}.
+
+
+\subsection{The \code{QueryParser} Class}
+
+Lucene's \code{QueryParser} class, in package
+\code{org.apache.lucene.queryparser}, converts string-based using
+Lucene's query syntax into \code{Query} objects.  
+
+The constructor \code{QueryParser(Version,String,Analyzer)} requires a
+Lucene version, a string picking out a default field for unmarked
+tokens, and an analyzer with which to break phrasal queries down into
+token sequences.  
+
+Query parsing is accomplished through the method \code{parse(String)},
+which returns a \code{Query}.  The parse method will throw a
+Lucene \code{ParseException}, also in package \code{queryparser}, if
+the query is not well formed.
 
 
 \section{Search}
 
 \subsection{Index Readers}
 
-In order to perform search, an instance of \code{IndexReader} must be
-available.  This class is complementary to the \code{IndexWriter} we
-used to create an index.  
+Lucene uses instances of the aptly named \code{IndexReader} to
+read data from an index.
 
 \subsubsection{Distributed Readers}
 
-A convenient feature of the reader design in Lucene is that we can
-construct an instance from multiple indexes, which will then combine
-their contents at search time.  From the reader's client's
+A convenient feature of the reader design in Lucene is that we may
+construct an index reader from multiple indexes, which will then
+combine their contents at search time.  From the reader's client's
 perspective, the behavior is indistinguishable (other than in terms of
 speed) from a combined and optimized index.  We can even distribute
 these indexes over multiple machines on a network using Java's Remote
@@ -819,7 +875,7 @@ queries to it and enumerate results in order of their score.
 There is really nothing to configure in an index searcher other
 than its reader, so we'll jump straight to the demo code.
 
-\subsection{Search Demo}
+\subsection{Search Demo}\label{section:lucene-search}
 
 We provide a simple implementation of Lucene search based on the index
 we created in the last section.  
@@ -834,46 +890,57 @@ arguments.
 %
 We need the directory for the index, a string representing the query
 in Lucene's query language, and a specification of the maximum number
-of hits to return.  The method is declared to throw exceptions if it
-finds the index is not well formed or if a query is not well formed;
-it also throws general I/O exceptions if there are problems reading or
-writing from the directory.
+of hits to return.  The method is declared to throw a Lucene corrupt
+index exception if the index isn't well formed, a Lucene parse
+exception if the query isn't well formed, and a general Java I/O
+exception if there is a problem reading from or writing to the index
+directory.
 
-We then create a directory, index reader, index searcher, and
+After setting the command-line arguments, the next step is to
+create a Lucene directory, index reader, index searcher and
 query parser.
 %
 \codeblock{LuceneSearch.2}
 %
 It is important to use the same analyzer in the query parser as is
 used in the creation of the index.  If they don't match, queries that
-should succeed will fail because terms won't match.  For instance, if
-we apply stemming in the indexing to reduce \stringmention{codes} to
-\stringmention{code}, then we better do the same thing for the query,
-because we won't find \stringmention{codes} in the index, only its
-stemmed form \code{code}.
+should succeed will fail because the tokens won't match.  For
+instance, if we apply stemming in the indexing to reduce
+\stringmention{codes} to \stringmention{code}, then we better do the
+same thing for the query, because we won't find \stringmention{codes}
+in the index, only its stemmed form \stringmention{code}.
 
-The third block of code in the search demo uses the query parser
-to parse the query, then searches the index and reports the results.
+The last bit of code in the search demo uses the query parser to parse
+the query, then searches the index and reports the results.
 %
 \codeblock{LuceneSearch.3}
 %
 The \code{Query} object is created by using the parser to parse the
 text query.  We then use the searcher instance to search given the
 query and an upper bound on the number of hits to return.  This
-returns an instance of \code{TopDocs}, which encapsulates the results
-of a search (through references back into the index).
+returns an instance of the Lucene class \code{TopDocs}, from package
+\code{search}, which encapsulates the results of a search (through
+references back into the index).
 
-We retrieve an array of \code{ScoreDoc} objects from the
-\code{TopDocs} object.  These are in decreasing order of score, with
-higher scores representing better matches.  We then enumerate over the
-array, and for each \code{ScoreDoc} object, we pull its score out
-using the public member variable \code{score}.  We then pull its
+The \code{TopDocs} result provides access to an array of search
+results.  Each result is an instance of the Lucene class
+\code{ScoreDoc}, also in the \code{search} package, which
+encapsulates a document reference with a floating point score.
+
+The array of search results is sorted in decreasing order of score,
+with higher scores representing better matches.  We then enumerate
+over the array, and for each \code{ScoreDoc} object, we pull its score
+out using the public member variable \code{score}.  We then pull its
 document reference number (Lucene's internal identifier for the doc)
-out with the member variable \code{doc}, and then use this value to
-retrieve the document from the searcher (which just delegates this
-operation to its index reader internally).  Finally, with the document
-in hand, we retrieve its file name.  We could've also retrieved the
-text of the document, because we stored it in the index.  
+out with the member variable \code{doc}.  With the Lucene document
+identifer, we are able to retrieve the document from the searcher
+(which just delegates this operation to its index reader internally).
+Finally, with the document in hand, we retrieve its file name using
+the \code{get()} method on the document; we use \code{get()} here
+rather than \code{getValues()}, which returns an array, because we
+know there is only one file name for each document in the index.  We
+could've also retrieved the text of the document, because we stored it
+in the index.
 
 \subsubsection{Running the Demo}
 
@@ -899,18 +966,22 @@ Hits (rank,score,file name)
 Lucene returns 15 results numbered 0 to 14.  We see that paper 44 is
 the closest match to our query \code{money power united}.  This
 document contains 4 instances of the term \stringmention{money}, over
-40 instances of the term \stringmention{power}, and 8 instances of 
-\stringmention{united}.
+40 instances of the term \stringmention{power}, and 8 instances of
+\stringmention{united}.  This seems like a low score on a 0--1 scale
+for a document which matches all the tokens in the query; the reason
+is because the documents are long, so the percentage of tokens in
+the doucment matching the query tokens is relatively low.
 
-The term \stringmention{food} does not show up in any documents, so
-the query \code{food} returns no hits.  If we consider the query
-\code{money food}, it returns exactly the same hits as the query
-\code{money}, in exactly the same order, but with lower scores.  If we
-use the query \code{money +food}, we are insisting that the term
-\stringmention{food} appear in any matching document.  Because it
-doesn't appear in the corpus at all, the query \code{money +food} has
-zero hits and \code{money -food} has the same hits with the same
-scores as the query \code{money}.
+The token \stringmention{food} does not show up in any documents, so
+the query \searchquery{food} returns no hits.  If we consider the
+query \searchquery{money food}, it returns exactly the same hits as
+the query \searchquery{money}, in exactly the same order, but with
+lower scores.  If we use the query \searchquery{money +food}, we are
+insisting that the token \stringmention{food} appear in any matching
+document.  Because it doesn't appear in the corpus at all, the query
+\stringmention{money +food} has zero hits.  On the other hand, the
+must-not query \searchquery{money -food} has the same hits with the
+same scores as the query \stringmention{money}.
 
 
 \subsection{Ranking}
@@ -921,9 +992,10 @@ package in \code{org.apache.lucene.search}.  If nothing else is
 specified, as in our simple demos, the concrete subclass
 \code{DefaultSimilarity} will be used.
 
-Similarity deals with scoring queries with \code{SHOULD} terms.
-Unless a query term is prefixed with \code{+} (must occur) or \code{-}
-(must not occur), it will be treated as a should-occur term.
+Similarity deals with scoring queries with \code{SHOULD}-occur terms.
+In the search language, all tokens are treated as \code{SHOULD}
+unless prefixed with the must-occur marking plus-sign
+(\code{+}) or must-not occur negation (\code{-}).
 
 The basic idea is that the more instances of query terms in a document
 the better.  Terms are not weighted equally.  A term is weighted based
@@ -941,8 +1013,168 @@ query terms that appear in the document.  All else being equal, we
 prefer documents that cover more terms in the query.
 
 
+\section{Deleting Documents}\label{section:lucene-delete}
+
+Documents may be deleted through an \code{IndexReader} or an
+\code{IndexWriter}, but the methods available and their behavior is
+slightly different.
+
+\subsection{Deleting with an Index Reader}
+
+Given an index reader, the method \code{deleteDocument(int)} deletes a
+document specified by its Lucene index.  The reason this method is in
+the reader is that the standard way to access document identifiers is
+through search, which returns a \code{TopDocs} object consisting of an
+ordered array of \code{ScoreDoc} objects, each of which contains a
+document identifier (see \refsec{lucene-search} for an example).
+
+Index reader also implements a method \code{deleteDocuments(Term)}
+which deletes all documents containing the specified term; recall
+that a term consists of a field name and token. 
+
+In many cases, the documents being indexed have unique identifiers.
+For instance, in our file-based index, the file names are meant to
+be unique.%
+%
+\footnote{Unlike a database, which lets you declare identifiers as
+keys, Lucene requires the programmer to treat fields as keys by
+convention.}
+%
+We can then create a term containing the application's document
+identifier field and delete by term.  For instance, we could call
+\code{deleteDocuments(new Term("file","12.ascii.txt"))} to delete the
+document with file identifier \code{12.ascii.txt}.
+
+\subsection{Deleting with an Index Writer}
+
+Like the index reader, the \code{IndexWriter} class supports the same
+\code{deleteDocuments(Term)} method as an index reader.  It also
+deletes all documents containing the specified term.  Index writers
+also implement the more general method \code{deleteDocuments(Query)}, 
+which removes all documents matching the specified query.  There
+is also a \code{deleteAll()} method to completely clear the index.
+
+\subsection{Visibility of Deletes}
+
+When a delete method is called on a reader or writer based on a term
+or document identifier, the documents are not immediately physically
+deleted from the index.  Instead, their identifiers are buffered and
+they are treated as if virtually deleted.  
+
+This approach to document deletion was made for the same efficiency
+reasons and faces many of the same issues as concurrent sets of
+variables in Java's memory model.  Even when deletes are called on one
+index, not every reader or writer with a handle on that index will be
+able to see the delete.
+
+With an index reader, any deletions are visibile immediately on that
+reader, but not on other readers attached to the same index.  With
+an index writer, any new reader opened on the index after the
+delete will see the deletion.
+
+The storage space for a deleted document in the index directory is
+only reclaimed during a merge step or an optimization, which
+implicitly merges all outstanding small indexes into a single index.
+
+\subsection{Lucene Deletion Demo}
+
+We have implemented an example of deleting documents in the 
+demo class \code{LuceneDelete}.
+
+\subsubsection{Code Walkthrough}
+
+The code is entirely straightforward, with the \code{main()} method
+taking three command-line arguments, the index directory path, along
+with the field name and token used to construct the term to delete.
+%
+\codeblock{LuceneDelete.1}
+%
+We create an index reader slightly differently than we did for
+search.  Here we provide a boolean flag set to \code{false} to
+allow us to delete documents; if the flag is \code{true}, as in
+the default, the reader gets read-only access to the index.
+
+We then construct a term out of the field and token and pass them to
+the reader's delete method.  After the deletion, we close the reader
+using its \code{close()} method.  One side effect of the close
+method is that the deletions are committed to the index.
+
+If we had an index searcher wrapping the index reader, we could
+see how the deletes affect search.
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{lucene-delete} invokes the class, supplying
+the value of properties \code{index.dir}, \code{field.name}, and
+\code{token} as command-line arguments.  
+
+Make sure that before you run this demo, you've run the indexing
+demo exactly once.  You can always delete the index directory and
+rebuild it if it gets messed up.
+%
+\commandlinefollow{ant -Dindex.dir=luceneIndex -Dfield.name=file -Dtoken=12.ascii.txt lucene-delete}
+\begin{verbatim}
+index.dir=C:\lpb\src\applucene\luceneIndex 
+field.name=file    token=12.ascii.txt  
+Num docs < delete=85    Num docs > delete=84   Num deleted docs=1
+\end{verbatim}
+
+After the demo is run, we can look at the index directory again.
+%
+\commandlinefollow{ls -l luceneIndex}
+\begin{verbatim}
+-rwxrwxrwx 1 Admin None  355803 Aug 26 14:13 _0.cfs
+-rwxrwxrwx 1 Admin None 1157101 Aug 26 14:13 _0.cfx
+-rwxrwxrwx 1 Admin None      19 Aug 26 16:40 _0_1.del
+-rwxrwxrwx 1 Admin None      20 Aug 26 16:40 segments.gen
+-rwxrwxrwx 1 Admin None     235 Aug 26 16:40 segments_3
+\end{verbatim}
+%
+There is now an extra file with suffix \code{.del} that holds
+information about which items have been deleted.  These deletes will
+now be visible to other index readers that open (or re-open) their
+indices.  The file containing the deletions will be removed, and the
+actual content deleted, when the index is merged or optimized by an
+index writer.
 
 
+\section{Lucene and Databases}
+
+Lucene is like a database in its storage and indexing of data in a
+disk-like abstraction.  The main difference between Lucene and a
+database is in the type of objects they store.  Databases store
+multiple type-able tables consisting of small data objects in the
+rows.  The Structured Query Language (SQL) is then used to retrieve
+results from a database, often calling on multiple tables to perform
+complex joins and filters.  
+
+Lucene, on the other hand, provides a configurable, but more
+homogeneous interface.  It mainly operates through text search (with
+some lightweight numerical and date-based embellishments), and
+returns entire documents.%
+%
+\footnote{Nothing prevents us from treating paragraphs or even sentences in a
+``real'' document as a document for Lucene's purposes.}
+
+\subsection{Transactional Support}
+
+In enterprise settings, we are usually very concerned with maintaining
+the integrity of our data.  In addition to backups, we want to ensure
+that our indexes don't get corrupted as they are being processed.
+
+A transaction in the database sense, as encapsulated in the Java 2
+Enterprise Edition (J2EE), is a way of grouping a sequence of complex
+operations, such as committing changes to an index, such that they all
+happen or none of them happen.  That is, it's about making complex
+operations behave as if they were atomic in the concurrency sense.
+
+Earlier versions of Lucene were not like databases in not having any
+kind of transactional support.  More recently, Lucene introduced
+configurable commit operations for indexes.  These commit operations
+are transactional in the sense that if they fail, they roll back any
+changes they were in the middle of.  This allows standard
+database-type two-phase commits to be implemented directly with
+fine-grained control over preparing and rolling back.
 
  
 
