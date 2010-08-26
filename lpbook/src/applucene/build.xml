@@ -84,9 +84,24 @@
     </java>
   </target>
 
+  <property name="token" 
+            value="12.ascii.txt"/>
+  <target name="lucene-delete"
+          depends="jar">
+    <java classname="com.lingpipe.book.applucene.LuceneDelete"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${index.dir}"/>
+      <arg value="${field.name}"/>
+      <arg value="${token}"/>
+    </java>
+  </target>
+
+
   <target name="run"
           depends="lucene-analysis,
                    lucene-index,
-                   lucene-search"/>
+                   lucene-search,
+                   lucene-delete"/>
 
 </project>

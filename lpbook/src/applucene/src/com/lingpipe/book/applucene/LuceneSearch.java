@@ -47,7 +47,7 @@ public class LuceneSearch {
     /*x LuceneSearch.2 */
         Directory dir = FSDirectory.open(indexDir);
         IndexReader reader = IndexReader.open(dir);
-        IndexSearcher searcher = new IndexSearcher(dir);
+        IndexSearcher searcher = new IndexSearcher(reader);
 
         Version v = Version.LUCENE_30;
         String defaultField = "text";
@@ -64,7 +64,7 @@ public class LuceneSearch {
 
         for (int n = 0; n < scoreDocs.length; ++n) {
             ScoreDoc sd = scoreDocs[n];
-            double score = sd.score;
+            float score = sd.score;
             int docId = sd.doc;
             Document d = searcher.doc(docId);
             String fileName = d.get("file");
