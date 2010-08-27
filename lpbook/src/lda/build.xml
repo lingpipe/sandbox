@@ -54,6 +54,10 @@
             value="42"/>
   <property name="num.samples"
             value="20000"/>
+  <property name="model.file"
+            value="wormbase.LatentDirichletAllocation"/>
+  <property name="symbol.table.file"
+            value="wormbase.SymbolTable"/>
   <target name="lda-worm"
           depends="jar">
     <java classname="com.lingpipe.book.lda.LdaWorm"
@@ -66,9 +70,10 @@
       <arg value="${word.prior}"/>
       <arg value="${random.seed}"/>
       <arg value="${num.samples}"/>
+      <arg value="${model.file}"/>
+      <arg value="${symbol.table.file}"/>
     </java>
   </target>
-
 
   <target name="lda-topic-sim"
           depends="jar">
@@ -76,6 +81,19 @@
           classpathref="classpath"
           fork="true">
       <arg value="${wormbase.corpus.gz}"/>
+    </java>
+  </target>
+
+  <property name="text" value="The cell-biological events that guide early-embryonic development occur with great precision within species but can be quite diverse across species. How these cellular processes evolve and which molecular components underlie evolutionary changes is poorly understood. To begin to address these questions, we systematically investigated early embryogenesis, from the one- to the four-cell embryo, in 34 nematode species related to C. elegans. We found 40 cell-biological characters that captured the phenotypic differences between these species. By tracing the evolutionary changes on a molecular phylogeny, we found that these characters evolved multiple times and independently of one another. Strikingly, all these phenotypes are mimicked by single-gene RNAi experiments in C. elegans. We use these comparisons to hypothesize the molecular mechanisms underlying the evolutionary changes. For example, we predict that a cell polarity module was altered during the evolution of the Protorhabditis group and show that PAR-1, a kinase localized asymmetrically in C. elegans early embryos, is symmetrically localized in the one-cell stage of Protorhabditis group species. Our genome-wide approach identifies candidate molecules-and thereby modules-associated with evolutionary changes in cell-biological phenotypes."/>
+  <target name="lda-classify"
+          depends="jar">
+    <java classname="com.lingpipe.book.lda.LdaClassifier"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${model.file}"/>
+      <arg value="${symbol.table.file}"/>
+      <arg value="${text}"/>
+      <arg value="${random.seed}"/>
     </java>
   </target>
 

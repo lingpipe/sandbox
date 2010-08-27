@@ -1,4 +1,4 @@
-\chapter{Latent Dirichlet Allocation}\label{chapter:lda}
+chapter{Latent Dirichlet Allocation}\label{chapter:lda}
 
 Latent Dirichlet allocation (LDA) provides a statistical approach to
 document clustering based on the words (or tokens) that appear in a
@@ -796,29 +796,66 @@ topics to generate, \code{topic.prior} and \code{word.prior} for the
 priors, \code{random.seed} for the random seed, and \code{num.samples}
 for the total number of samples to draw.
 %
-\commandline{ant -Dwormbase.corpus.gz=../../data-dist/2007-12-01-wormbase-literature.endnote.gz -Dmin.token.count=5 -Dnum.topics=50 -Dtopic.prior=0.1 -Dword.prior=0.001 -Drandom.seed=42 -Dnum.samples=5000 lda-worm}
+\commandline{ant -Dwormbase.corpus.gz="../../data-dist/2007-12-01-wormbase-literature.endnote.gz" -Dmin.token.count=5 -Dnum.topics=50 -Dtopic.prior=0.1 -Dword.prior=0.001 -Drandom.seed=43 -Dnum.samples=500 -Dmodel.file=wormbase.LatentDirichletAllocation -Dsymbol.table.file=wormbase.SymbolTable lda-worm > temp.txt}
 %
-The output begins by reporting on the parameters and the corpus itself.
+It takes about half an hour to generate the 500 samples on my
+workstation, and quite a bit more time to generate the roughly 50MB of
+output reporting on the topics and the assignment of tokens in
+documents.  Because there's so much output, we redirect the results to
+a file; you can use the command \code{tail -f} to follow along in real
+time.
+
+The output begins by reporting on the parameters and the corpus itself,
+the interesting part of which reports corpus statistics rather than
+what we entered.
 %
 \begin{verbatim}
-???
+...
+#articles=26888 #chars=43343525
+Number of unique words above count threshold=28499
+Tokenized.  #Tokens After Pruning=3731693
 \end{verbatim}
 %
 We see that there are 26,888 total citations, made up of around 43
-million characters.  After tokenization, there are 27,882 distinct
-tokens that each appeared at least 5 times (the minimum token count),
-and a total token count of around 3.8 million instances.  That means
-each Gibbs sampling step is going to reassign all 3.8 million tokens.
+million characters.  After tokenization, there are roughly 28 thousand
+distinct tokens that each appeared at least 5 times (the minimum token
+count), and a total token count of around 3.7 million instances.  That
+means each Gibbs sampling step is going to reassign all 3.7 million
+tokens.
 
-We configured the reporter to only print out each five epochs (not
-in the input parameters, so the output after this looks as follows.
+After the corpus statistics, it reports on the iterator's progress, as
+before.
 %
 \begin{verbatim}
-
+n=     0 t=     :03 x-entropy-rate= 11.6898
+n=     5 t=     :21 x-entropy-rate= 11.3218
+n=    10 t=     :39 x-entropy-rate= 10.9798
+n=    15 t=     :57 x-entropy-rate= 10.8136
+n=    20 t=    1:15 x-entropy-rate= 10.7245
+...
+n=   485 t=   28:50 x-entropy-rate= 10.3250
+n=   490 t=   29:08 x-entropy-rate= 10.3246
+n=   495 t=   29:26 x-entropy-rate= 10.3237
+...
 \end{verbatim}
+%
+We only ran for 500 samples, and at that point, we still haven't
+converged to the lowest cross-entropy rate.  We ran the sampler
+overnight, and it hadn't converged even after 10,000 samples.  Because
+LDA's an approximate statistical process anyway, stopping before
+convergence to retrieve a single sample isn't going to make much
+of a difference in terms of the clustering output.%
+%
+\footnote{On the other hand, if we wanted to estimate posterior variance, or
+  get a very tight estimate on the posterior means, we would have to
+  run to convergence.}
+
+The program then reports the topic distributions and document
+distributions and token topic assignments, all based on the 500th
+sample.
 
 
-\subsection{Code Walkthrough}
+\subsection{Code Walkthrough}\label{section:lda-worm-code}
 
 The code is all in the class \code{LdaWorm}.  The main differences
 from the synthetic demo include the parser for the compressed data and
@@ -883,13 +920,377 @@ ASCII is OK here because the documents were all normalized to ASCII by
 the bibliography curators.)
 
 
-\section{Stability of Samples}
+
+\section{Understanding the LDA Model Parameters}
+
+Given a tokenizer and corpus, there are three key parameters that
+control the behavior the LDA model: the number of topics and the two
+priors.
+
+\subsection{Number of Topics}
+
+The number of topics parameter controls the number of topics into
+which the model factors the data.  The main effect of increasing the
+number of topics is that the topics may become more fine grained.  If
+there are only 10 topics to categorize all the worlds' news, we will
+not discover small topics like American baseball or Australian
+politics.  
+
+As the number of topics increases, the amount of data available
+to estimate each topic goes down.  If the corpus is very large,
+it may be possible to fit a large number of topics effectively.
+
+Which number of topics works best will depend on the application and
+the size and the shape of data.  In the end, like any clustering or
+other exploratory data analysis technique, the best solution is to use
+trial and error.  Explore a range of different topic sizes, such as
+10, 50, 100, and 500.
+
+The time to process each token is proportional to the total number of
+topics.  It takes ten times as long to generate a sample for a
+500-topic model than a 50-topic model.
+
+\subsubsection{Document-Topic and Topic-Word Priors}
+
+The two priors control how diffuse the models are.  Technically,
+as we explain in \refsec{lda-model}, the priors are additive
+smoothing terms for the model of topics in a document and
+the model of words in a topic.
+
+In LDA, each document is modeled as a mixture of different topics.
+When the document-topic prior is low, the model is encouraged to model
+a document using fewer topics than when the document-topic prior is
+high.  What is going on probabilistically is that the prior adds to
+the probability of all topics, bringing the distribution over topics
+in a document closer to uniform (where all topics have equal
+probability).
+
+Similarly, each topic is modeled as a distribution over words.  When
+the topic-word prior is high, each topic is encouraged to be more
+balanced in the probabilities it assigns to each word.  As with the
+document-topic prior, it moves the distribution of words in topics
+closer to the uniform distribution.
+
+As with the number of topics, it will likely take some experimentation
+to find reasonable priors for a problem.  A reasonable starting point
+for both priors is the inverse number of outcomes.  For instance, with
+50 topics, 1/50 is a good starting prior for the document-topic prior,
+and with 30,000 words, 1/30,000 is a reasonable starting point for the
+topic-word prior.  It's unlikely you'll want much smaller priors than
+these, but raising the priors above these levels will lead to smoother
+topic and document models, and may be more reasonable for some
+applications.
+
+
+\section{LDA Instances for Multi-Topic Classification}
+
+We can use instances of the \code{LatentDirichletAllocation}
+class to perform classification on documents that were not
+in the training corpus.   These new documents are classified
+with multiple topics and each word is assigned to a topic
+just as when LDA is applied to a corpus of documents.  
+
+\subsection{Constructing LDA Instances}
+
+An instance of LDA represents a particular parameterization of
+LDA's multi-topic document model.  Specifically, it stores the
+document-topic prior (the ``Dirichlet'' part of LDA) and a set
+of topic models in the form of distributions over words.
+
+\subsubsection{Direct Construction}
+
+The LDA class has a single constructor,
+\code{LatentDirichletAllocation(double,double[])}, which takes a
+document-topic prior and array of topic-word distributions.  You'll
+notice that this does not include a symbol table or tokenizer.  LDA
+runs purely as a multinomial model, and all symbol processing and
+tokenization happen externally.
+
+With an external means of generating distributions over words (say,
+with a traditional naive Bayes classifier or K-means clusterer), we
+can create an LDA instance from the word distributions (and
+document-topic prior).
+
+\subsubsection{Construction from a Sample}
+
+More commonly, we will construct an LDA instance using a Gibbs sample
+generated from a corpus using the static method \code{gibbsSample()}.
+We saw an example of this in the stability evaluate example in
+\refsec{lda-stability}.  
+
+At the end of the Wormbase example in \refsec{lda-worm-code}, after we'd generated
+the Gibbs sample and assigned it to variable \code{sample}, we snuck
+the following lines of code.
+%
+\codeblock{LdaWorm.1}
+%
+This shows the production of an LDA instance from a sample using the
+\code{lda()} method on the sample.  Then we use LingPipe's abstract
+extenalizable utility (see \refsec{io-abstract-externalizable}) to
+write its serialized form to a file.  We also serialize the map symbol
+table to file.
+
+We will be able to deserialize this model from disk and use it to
+classify new documents that were not in the corpus used to generate
+the chain of samples.
+
+\subsection{Demo: Classifying with LDA}
+
+In the sample class \code{LdaClassifier}, we show how a serialized LDA
+model and symbol table We provide a sample program that illustrates
+the procedure for using an LDA model and symbol table for classification.
+
+\subsubsection{Code Walkthrough}
+
+The code is all in the \code{main()} method, and starts by assigning a
+model file \code{modelFile}, symbol table file \code{symbolTableFile},
+text \code{text}, and random seed \code{randomSeed} from the
+command-line parameters.  We then deserialize the two models and
+recreate the tokenizer factory.
+%
+\codeblock{LdaClassifier.1}
+%
+We have to cast the deserialized object and suppress the warnings the
+unchecked cast would otherwise generate.  Deserialize also throws a
+\code{ClassNotFoundException}, which the \code{main()} method is also
+declared to throw in addition to an \code{IOException}.
+
+We next marshal the parameters needed for classification and
+run the clasisfier.
+%
+\codeblock{LdaClassifier.2}
+%
+We use the tokenizer factory and symbol table to convert the text to a
+sequence of token identifiers in the symbol table, using the static
+utility method \code{tokenizeDocument()} built into LDA.  We then set
+parameters of the topic estimation method, including the number of
+samples, burnin, sample lag and random number generator, all of which
+have the same interpretation as for the main LDA Gibbs sampling
+method.  Finally, we call LDA's \code{bayesTopicEstimate()} method
+with the tokens and Gibbs sampling parameters.
+
+What happens under the hood is that we run a chain of Gibbs samples
+just like we did for LDA itself.  But rather than returning an
+iterator over the samples or a single sample, we return an average
+over all the samples.  Because the topics are fixed by the LDA model,
+this produces (an approximation of) the Bayesian estimate of the topic
+distribution for the text.  Usually we don't need many samples because
+we don't need multiple decimal places of accuracy.
+
+What we get back is an array of doubles \code{topicDist}, indexed by
+topic.  Topic \code{k} has probability \code{topicDist[k]}.  The
+rest of the code just prints out the top 10 of these in order of
+probability. 
+
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{lda-classify} runs the classification demo,
+using properties \code{model.file}, \code{symbol.table.file},
+\code{text}, and \code{random.seed} as command-line arguments.
+
+For an example, we chose a MEDLINE citation about C.~elegans that
+was more recent than the corpus used to estimate the LDA model.%
+%
+\footnote{Brauchle M., K.~Kiontke, P.~MacMenamin, D.~H.~Fitch, and F.~Piano. 2009.
+Evolution of early embryogenesis in rhabditid nematodes. {\it Dev Biol.} {\bf 335}(1).
+\doi{10.1016/j.ydbio.2009.07.033}.}
+%
+\begin{quote}\small
+Evolution of early embryogenesis in rhabditid nematodes. The
+cell-biological events that guide early-embryonic development occur
+with great precision within species but can be quite diverse across
+species. How these cellular processes evolve and which molecular
+components underlie evolutionary changes is poorly understood. To
+begin to address these questions, we systematically investigated early
+embryogenesis, from the one- to the four-cell embryo, in 34 nematode
+species related to C. elegans. We found 40 cell-biological characters
+that captured the phenotypic differences between these species. By
+tracing the evolutionary changes on a molecular phylogeny, we found
+that these characters evolved multiple times and independently of one
+another. Strikingly, all these phenotypes are mimicked by single-gene
+RNAi experiments in C. elegans. We use these comparisons to
+hypothesize the molecular mechanisms underlying the evolutionary
+changes. For example, we predict that a cell polarity module was
+altered during the evolution of the Protorhabditis group and show that
+PAR-1, a kinase localized asymmetrically in C. elegans early embryos,
+is symmetrically localized in the one-cell stage of Protorhabditis
+group species. Our genome-wide approach identifies candidate
+molecules—and thereby modules—associated with evolutionary changes in
+cell-biological phenotypes.
+\end{quote}
+%
+
+We set the property \code{text} to this value in the Ant file, but do
+not show it on the command line.  We run the command as follows.
+%
+\commandlinefollow{ant -Dmodel.file=wormbase.LatentDirichletAllocation -Dsymbol.table.file=wormbase.SymbolTable -Drandom.seed=42 lda-classify}
+\begin{verbatim}
+ Topic    Pr           Topic    Pr     
+------ -----          ------ -----
+    20 0.310               3 0.017
+     6 0.254              38 0.015
+    25 0.229              35 0.014
+    21 0.077               7 0.005
+    26 0.024              32 0.004
+\end{verbatim}
+
+Like LDA as a whole (see \refsec{lda-stability}), we get similar
+results for the bigger topics with different random seeds.  Even with
+the small number of samples, 100, we used here.  For instance, using
+seed 195334, we get very similar values for the top 8 topics.
+%
+\commandlinefollow{ant lda-classify -Drandom.seed=195334 ...}
+\begin{verbatim}
+ Topic    Pr           Topic    Pr     
+------ -----          ------ -----
+    20 0.308              26 0.025
+     6 0.252              38 0.015
+    25 0.237              35 0.014
+    21 0.063               9 0.009
+     3 0.027              13 0.007
+\end{verbatim}
+
+Let's take a look at the top words in the top three topics, which
+account for 80\% of the tokens in the document or so.
+%
+\begin{verbatim}
+TOPIC 20  (total count=94511)
+SYMBOL             WORD    COUNT   PROB          Z
+--------------------------------------------------
+ 22828           intron     1527   0.016      35.8
+ 19980         briggsae     1438   0.015      32.7
+ 10114             spec     1911   0.020      29.3
+  8465         splicing     1002   0.011      29.0
+  8619           splice      812   0.009      27.5
+ 15121             exon     1129   0.012      26.3
+  3883        evolution      921   0.010      23.4
+ 13935          sequenc     1599   0.017      23.4
+ 15569          spliced      566   0.006      22.2
+ 10613         sequence     2043   0.022      20.6
+ 21687           leader      482   0.005      20.4
+  7574           operon      435   0.005      20.0
+
+TOPIC 6  (total count=147967)
+SYMBOL             WORD    COUNT   PROB          Z
+--------------------------------------------------
+ 10528            model     2535   0.017      30.7
+ 13442         research      925   0.006      27.2
+ 27073           system     2621   0.018      27.1
+  3378          network     1035   0.007      25.2
+ 22863         organism     1742   0.012      24.5
+ 26328          biology      910   0.006      24.2
+ 11563           review      537   0.004      22.0
+  5439             data     1707   0.012      21.8
+ 18566             tool      654   0.004      21.7
+  8185      information      938   0.006      21.4
+
+
+TOPIC 25  (total count=89810)
+SYMBOL             WORD    COUNT   PROB          Z
+--------------------------------------------------
+ 27843          spindle     2629   0.029      50.1
+ 16152           embryo     4915   0.055      47.0
+ 17879       microtubul      971   0.011      30.4
+  8200       cytokinesi      868   0.010      27.9
+ 20537         polarity     1272   0.014      26.0
+ 23475              par      680   0.008      25.5
+  3098      microtubule      729   0.008      25.1
+ 18067       centrosome      655   0.007      25.0
+ 18114           cortex      640   0.007      24.7
+  7615         cortical      592   0.007      23.3
+ 28153         cleavage      869   0.010      23.0
+ 16794            par-3      546   0.006      22.8
+\end{verbatim}
+%
+These topics are reasonable.  Topic 20 is largely about evolution as
+it relates to splicing and introns, topic 6 is about systems biology
+and this is definitely a systems biology paper, and topic 25 is about
+embryos and the family of \stringmention{par} genes that control them
+(including the gene \stringmention{par-1} mentioned in the article at
+rank 20 or so.
+
+
+\subsection{Bayesian Inference with an LDA Model}\label{section:lda-bayesian-inference}
+
+In the last section, we showed how to provide the Bayesian point
+estimate for the topic distributions.  This is a reasonable estimate
+in that it minimizes the expected difference between the estimates and
+the ``true'' values (given the model).  We could then plug these
+estimates in to reason about the document.  
+
+The basic problem with point estimates is that they do not encode
+the variance of the estimate.  Some of the numbers may be more or
+less certain than others, and this can affect downstream inference.
+
+The LDA class also provides support for full Bayesian inference
+in classification.%
+%
+\footnote{What we discuss uses a point estimate of the LDA model.
+If we used more than one LDA model, we could start producing
+Bayesian estimaes one level back.  The problem with doing that is
+that the topics are not identified in LDA, so we couldn't use multiple
+Gibbs samples of LDA parameters for classification directly.}
+%
+For Bayesian inference, we collect a group of samples, reason
+about each sample, then average the results.  This may seem like
+what we did in the last section, but there we averaged over the
+Gibbs samples before performing inference.  With full Bayesian
+inference, we do the averaging of the result of reasoning with
+over each Gibbs sample.
+
+To retrieve a set of Gibbs samples, the LDA method
+\code{sampleTopics()}, taking exactly the same arguments in the same
+sequence as \code{bayestopicEstimat()}, produces an array of samples,
+each assigning each token to a single topic.  Each member of the
+two-dimensional array assigns each token in the document to
+a topic.
+
+The point estimation method we described in the last section for
+classification could be reconstructed by averaging the result of
+sampling (with the priors used for estimation).  Roughly, we just count
+up all the words assigned to a given topic and divide by the total
+number of words; in reality, we also apply the prior.
+
+
+\section{Comparing Documents with LDA}
+
+After running LDA on a corpus, or on fresh documents using the
+classifier, it's possible to use the output of LDA to compare
+documents to each other.  Each document gets a distribution over
+topics.  These may be compared to each other using KL-divergence in
+exactly the same way as we compared topics to each other (see
+\refsec{lda-stability}).
+
+The benefit of comparing documents this way is that two documents that
+share few or even no words may be considered similar by being about
+the same topic.  For instance, a document mentioning
+\stringmention{p53} (a tumor suppressor gene) will be related to a
+document mentioning \stringmention{tumor} and
+\stringmention{suppressor}, even if the documents have no other words
+in common.  This is because \stringmention{p53} often mentioned in the
+same documents as \stringmention{tumor} and
+\stringmention{suppressor}, so they will belong to similar topics.
+
+Comparing documents is a situation in which we can usefully apply full
+Bayesian inference (see \refsec{lda-bayesian-inference}), because it
+doesn't depend on the identity of topics across samples when comparing
+documents.  
+
+
+\section{Stability of Samples}\label{section:lda-stability}
 
 Because LDA uses a random initialization, the results will not be the
-same each time it is run with a different random seed.  One issue
-that comes up is how stable the set of topics are that are derived.
-It turns out that the bigger topics tend to be relatively stable,
-but the smaller topics tend to vary more.  
+same each time it is run with a different random seed.  For instance,
+a roughly similar topic in two runs may be topic number 17 in one
+run and topic 25 in another run.  The topics may even drift over time
+in very, very long chains of samples.
+
+The issue is then one of whether the topics are stable independent of
+their numbering.  It turns out that across runs, many topics tend to
+be relatively stable, but other topics will vary.  This idea could even
+be used to decide how many topics to select, restricting the number to
+those that are stable.
 
 Steyvers and Griffiths tested the stability of topics by running LDA
 over the same corpus from two different seeds, then comparing the set
@@ -903,7 +1304,7 @@ approach with a demo.  The code is in demo class \code{LdaTopicSimilarity}.
 Because topics are nothing more than probability distributions over
 tokens, to compare topics, we need a way to compare probabiilty
 distributions.  Here, we follow Steyvers and Griffiths in using
-symmetrized KL divergence (see
+symmetrized Kullback-Leibler (KL) divergence (see
 \refsec{stats-symmetrized-kl-divergence} for definitions and
 examples).
 
@@ -922,20 +1323,7 @@ that we always select the least divergent pair of topics to add next
 from among the topics that haven't yet been assigned.
 
 
-\subsection{Runnnig the Demo}
-
-The demo is hard coded for everything but the path to the compressed
-data, which is specified as in the simple LDA example.  The Ant target
-\code{lda-topic-sim} invokes the demo, specifying the path to the
-compressed corpus as the value of the property \code{wormbase.corpus.gz}.
-%
-\commandlinefollow{ant -Dwormbase.corpus.gz="../../data-dist/2007-12-01-wormbase-literature.endnote.gz" lda-topic-sim}
-\begin{verbatim}
-
-\end{verbatim}
-
-
-\subsection{Sample Code}
+\subsection{Code Walkthrough}
 
 The code to run the example is in \code{LdaTopicSimilarity}.  Most of the
 work is done in the \code{main()} method of the command.  It's declared
@@ -961,7 +1349,7 @@ we compute the scores, then print them out.
 The real work's in the runnable and in the similarity method.
 
 The runnable that executes in each thread is defined to simply
-generate 1999 Gibbs samples, then set the 2000th as the value of
+generate 199 Gibbs samples, then set the 200th as the value of
 the member variable \code{mLda}.
 %
 \codeblock{LdaTopicSimilarity.4}
@@ -1006,7 +1394,47 @@ increasing order of divergence, and if both their topics are not
 already assigned, we assign the topics to each other, set the score,
 and set the fact that we've assigned.  Then, we just return the result.
 
-\section{The Generative Model}
+\subsection{Running the Demo}
+
+The demo is hard coded for everything but the path to the compressed
+data, which is specified as in the simple LDA example.  The Ant target
+\code{lda-topic-sim} invokes the demo, specifying the path to the
+compressed corpus as the value of the property \code{wormbase.corpus.gz}.
+%
+\commandline{ant -Dwormbase.corpus.gz="../../data-dist/2007-12-01-wormbase-literature.endnote.gz" lda-topic-sim}
+\begin{verbatim}
+ 0   3.0     14   5.1     29   7.2     44  11.9
+ 1   3.2     15   5.2     31   7.3     45  12.0
+ 2   3.5     16   5.3     32   7.5     46  12.6
+ 3   3.8     17   5.6     33   7.6     47  13.1
+ 4   4.0     18   5.7     34   7.9     48  14.5
+ 5   4.2     19   6.1     35   8.0     49  15.7
+ 6   4.4     20   6.2     36   8.1
+ 7   4.4     21   6.3     37   8.3
+ 8   4.5     22   6.4     38   8.9
+ 9   4.7     23   6.5     39   9.4
+10   4.8     24   6.8     40   9.9
+11   5.0     25   6.9     41   9.9
+12   5.0     26   7.0     42  10.3
+13   5.0     27   7.1     43  11.6
+\end{verbatim}    
+%
+The most closely related topics from the two samples drawn from
+different chains have a KL-divergence of roughly 3 bits, down to
+almost 16 bits for the last pair of topics.  You can also try running
+for more epochs or with different random seeds, though these are
+hard-coded into the demo.  As the estimates converge to their stationary
+states, you'll see the top topics coming closer together and the
+bottom topics moving further apart in this greedy alignment.
+
+If you really care about comparing topics, this program is easily
+modified to print out the identifiers of the topics linked
+this way.  By printing the topics as we did before, you can
+compare them by eye.
+    
+
+
+\section{The LDA Model}\label{section:lda-model}
 
 LDA is a kind of probabilistic model known as a generative model.
 Generative models provide step-by-step characterizations of how to

@@ -17,6 +17,8 @@ import com.aliasi.tokenizer.TokenizerFactory;
 import com.aliasi.symbol.MapSymbolTable;
 import com.aliasi.symbol.SymbolTable;
 
+import com.aliasi.util.AbstractExternalizable;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -42,6 +44,8 @@ public class LdaWorm {
         double wordPrior = Double.parseDouble(args[4]); // 0.01;
         long randomSeed = Long.parseLong(args[5]); //  6474835;
         int numSamples = Integer.parseInt(args[6]);
+        File modelFile = new File(args[7]);
+        File symbolTableFile = new File(args[8]);
         int burninEpochs = 0;
         int sampleLag = 1; // no lag
 
@@ -50,13 +54,16 @@ public class LdaWorm {
         System.out.println("Number of topics=" + numTopics);
         System.out.println("Topic prior in docs=" + topicPrior);
         System.out.println("Word prior in topics=" + wordPrior);
+        System.out.println("Random seed=" + randomSeed);
+        System.out.println("Number of samples=" + numSamples);
         System.out.println("Burnin epochs=" + burninEpochs);
         System.out.println("Sample lag=" + sampleLag);
-        System.out.println("Number of samples=" + numSamples);
+        System.out.println("Model file=" + modelFile);
+        System.out.println("Symbol table file=" + symbolTableFile);
 
         CharSequence[] articleTexts = readCorpus(corpusFile);
         
-        SymbolTable symbolTable = new MapSymbolTable();
+        MapSymbolTable symbolTable = new MapSymbolTable();
         int[][] docTokens
             = LatentDirichletAllocation
             .tokenizeDocuments(articleTexts,WORMBASE_TOKENIZER_FACTORY,symbolTable,minTokenCount);
@@ -75,23 +82,28 @@ public class LdaWorm {
         LatentDirichletAllocation.GibbsSample sample
             = LatentDirichletAllocation
             .gibbsSampler(docTokens,
-
                           numTopics,
                           topicPrior,
                           wordPrior,
-
                           burninEpochs,
                           sampleLag,
                           numSamples,
-
                           new Random(randomSeed),
                           handler);
 
-        int maxWordsPerTopic = 200;
+        /*x LdaWorm.1 */
+        LatentDirichletAllocation lda = sample.lda();
+        AbstractExternalizable.serializeTo(lda,modelFile);
+
+        AbstractExternalizable.serializeTo(symbolTable,symbolTableFile);
+        /*x*/
+
+        int maxWordsPerTopic = 50;
         int maxTopicsPerDoc = 10;
+        int minWordCountToReport = 100;
         boolean reportTokens = true;
         handler.reportParameters(sample);
-        handler.reportTopics(sample,maxWordsPerTopic);
+        handler.reportTopicsByZ(sample,maxWordsPerTopic,minWordCountToReport);
         handler.reportDocs(sample,maxTopicsPerDoc,reportTokens);
 
     }
