@@ -8,6 +8,7 @@ import com.aliasi.corpus.ObjectHandler;
 import com.aliasi.symbol.SymbolTable;
 
 import com.aliasi.util.ObjectToCounterMap;
+import com.aliasi.util.ObjectToDoubleMap;
 import com.aliasi.util.Strings;
 
 import java.util.List;
@@ -92,6 +93,35 @@ public class ReportingLdaSampleHandler
             }
         }
     }
+
+    public void reportTopicsByZ(GibbsSample sample, int maxWords, int minCount) {
+        int numTokens = sample.numTokens();
+        for (int topic = 0; topic < sample.numTopics(); ++topic) {
+            int topicCount = sample.topicCount(topic);
+            ObjectToDoubleMap<Integer> wordToZ = new ObjectToDoubleMap<Integer>();
+            for (int word = 0; word < sample.numWords(); ++word) {
+                int topicWordCount = sample.topicWordCount(topic,word);
+                if (topicWordCount < minCount) continue;
+                int wordCount = sample.wordCount(word);
+                double z = binomialZ(topicWordCount,topicCount,wordCount,numTokens);
+                wordToZ.set(word, z);
+            }
+            List<Integer> topWords = wordToZ.keysOrderedByValueList();
+            System.out.println("\nTOPIC " + topic  + "  (total count=" + topicCount + ")");
+            System.out.println("SYMBOL             WORD    COUNT   PROB          Z");
+            System.out.println("--------------------------------------------------");
+            for (int rank = 0; rank < maxWords && rank < topWords.size();  ++rank) {
+                int wordId = topWords.get(rank);
+                String word = mSymbolTable.idToSymbol(wordId);
+                int topicWordCount = sample.topicWordCount(topic,wordId);
+                double topicWordProb = sample.topicWordProb(topic,wordId);
+                double z = wordToZ.get(wordId);
+                System.out.printf("%6d  %15s  %7d   %4.3f  %8.1f\n",
+                                  wordId, word, topicWordCount, topicWordProb, z);
+            }
+        }
+    }
+
 
     /*x ReportingLdaSampleHandler.6 */
     public void reportDocs(GibbsSample sample, int maxTopics, 

@@ -60,7 +60,7 @@ public class LdaTopicSimilarity {
         double[] scores = similarity(lda0,lda1);
     /*x*/
         for (int i = 0; i < scores.length; ++i)
-            System.out.printf("%4d %15.3f\n",i,scores[i]);
+            System.out.printf("%4d %15.1f\n",i,scores[i]);
     }
 
 
@@ -110,7 +110,7 @@ public class LdaTopicSimilarity {
             short numTopics = 50;
             double topicPrior = 0.1;
             double wordPrior = 0.001;
-            int numSamples = 20;
+            int numSamples = 200;
             Iterator<GibbsSample> it
                 = LatentDirichletAllocation
                 .gibbsSample(mDocTokens,numTopics,topicPrior,
