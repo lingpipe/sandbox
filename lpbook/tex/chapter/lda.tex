@@ -852,8 +852,111 @@ of a difference in terms of the clustering output.%
 
 The program then reports the topic distributions and document
 distributions and token topic assignments, all based on the 500th
-sample.
+sample.  These look different than the ones we saw in the synthetic
+example, because there are many more longer documents (though stil
+short, being based on abstracts) and many more tokens.  
 
+The first few words in the first few topics are.
+%
+\begin{verbatim}
+     [java] TOPIC 0  (total count=70201)
+     [java] SYMBOL             WORD    COUNT   PROB          Z
+     [java] --------------------------------------------------
+     [java]  18616          disease     1136   0.016      30.6
+     [java]  10640        infection      686   0.010      25.7
+     [java]  26059         pathogen      658   0.009      25.2
+     [java]   4513            fatty      576   0.008      23.6
+     [java]   1863         toxicity      638   0.009      23.4
+     [java]  20474             drug      732   0.010      21.2
+     [java]  26758           immune      394   0.006      19.0
+...
+     [java]  23394        alzheimer      163   0.002      10.6
+     [java]   5756            agent      216   0.003      10.6
+     [java]  20684         clinical      128   0.002      10.4
+
+     [java] TOPIC 1  (total count=88370)
+     [java] SYMBOL             WORD    COUNT   PROB          Z
+     [java] --------------------------------------------------
+     [java]  17182    transcription     3813   0.043      51.3
+     [java]   6619           factor     4383   0.050      49.7
+     [java]    717          binding     1913   0.022      25.0
+     [java]  21676  transcriptional     1215   0.014      24.6
+     [java]  17200       regulatory     1347   0.015      24.6
+     [java]  22813          element     1433   0.016      22.7
+     [java]  12394             zinc      594   0.007      20.6
+     [java]  13680           target     1423   0.016      19.7
+     [java]  11864           finger      597   0.007      19.2
+...
+     [java]  11043  tissue-specific      188   0.002       8.2
+     [java]   9171          hypoxia      111   0.001       7.9
+     [java]  22550              dna      829   0.009       7.6
+\end{verbatim}
+%
+Overall, the topics seem coherenent and well separated.  
+
+Blei et al.'s paper analyzing the same data was concerned with seeing
+that topics about genes grouped genes that participate in the same
+pathways to show up in the same topic.  This is easy to see in the data,
+with genes that operate together being highly clustered in the output.
+For instance, topic 10 is about sensory-motor genes,
+%
+\begin{verbatim}
+     [java] TOPIC 10  (total count=37931)
+     [java] SYMBOL             WORD    COUNT   PROB          Z
+     [java] --------------------------------------------------
+     [java]  12604            touch     1785   0.047      41.3
+     [java]  23411            mec-4      926   0.024      30.1
+     [java]  15424           unc-86      620   0.016      24.6
+     [java]  23416            mec-3      577   0.015      23.8
+     [java]  16331          channel     1547   0.041      23.3
+     [java]  20518              ion      771   0.020      22.5
+     [java]  22644              deg      327   0.009      17.9
+     [java]  23421            mec-7      309   0.008      17.4
+
+\end{verbatim}
+%
+whereas topic 21 is about genes that degrade RNA, including top tokens
+such as \stringmention{rnai}, \stringmention{interference},
+\stringmention{dsrna}, \stringmention{silencing} and the gene anmes
+\stringmention{ego-1} and \stringmention{rde-1} and
+\stringmention{rrf-1}, all of which are involved in RNA silencing through
+interference.
+
+The documents are longer and more diverse in topics than in the synthetic
+example.  For instance, here's a document that contains many words assigned
+to topic 10, which was shwon above.
+%
+{\small
+\begin{verbatim}
+DOC 1301
+
+TOPIC    COUNT    PROB     TOPIC    COUNT    PROB
+----------------------     ----------------------
+   10       36   0.354         8        2   0.021
+   44       33   0.325        23        2   0.021
+    2       14   0.138        11        1   0.011
+   31        4   0.040        17        1   0.011
+   20        3   0.030        26        1   0.011
+
+mec-4(10) gene(44) member(10) family(2) gen(10) mutate(10) induce(44)
+neuronal(10) degeneration(10) dominant(10) mutation(10) mec-4(10)
+gene(11) needed(10) mechanosensation(10) cause(10) touch-receptor(10)
+neuron(10) degenerate(10) deg-1(10) another(31) gene(2) mutate(10)
+induce(10) neuronal(10) degeneration(10) similar(2) sequence(20)
+mec-4(10) defin(2) new(2) gene(2) family(2) cross-hybridizing(8)
+sequenc(8) detectable(17) spec(20) raising(44) possibility(2)
+degenerative(10) condition(23) organism(20) caused(10) mutation(31)
+similar(2) gen(10) dominant(10) mec-4(10) mutation(10) affect(10)
+amino(2) acid(2) effect(23) amino-acid(2) substitution(2) position(2)
+suggest(10) steric(10) hindrance(10) induce(44) degenerative(10)
+state(26) ad(44) department(44) biological(44) scienc(44)
+columbia(44) university(44) new(31) york(44) new(31) york(44) fau(44)
+driscoll(10) mau(44) driscoll(10) mfau(44) chalfie(10) mau(44)
+chalfie(10) mla(44) engsi(44) genbank(44) genbank(44) genbank(44)
+genbank(44) genbank(44) genbank(44) genbank(44) genbank(44)
+genbank(44) genbank(44) journal(44) articlecy(44) englandta(44)
+naturejid(44) imsb(44)
+\end{verbatim}}
 
 \subsection{Code Walkthrough}\label{section:lda-worm-code}
 
@@ -1168,8 +1271,6 @@ SYMBOL             WORD    COUNT   PROB          Z
  13935          sequenc     1599   0.017      23.4
  15569          spliced      566   0.006      22.2
  10613         sequence     2043   0.022      20.6
- 21687           leader      482   0.005      20.4
-  7574           operon      435   0.005      20.0
 
 TOPIC 6  (total count=147967)
 SYMBOL             WORD    COUNT   PROB          Z
@@ -1199,8 +1300,6 @@ SYMBOL             WORD    COUNT   PROB          Z
  18067       centrosome      655   0.007      25.0
  18114           cortex      640   0.007      24.7
   7615         cortical      592   0.007      23.3
- 28153         cleavage      869   0.010      23.0
- 16794            par-3      546   0.006      22.8
 \end{verbatim}
 %
 These topics are reasonable.  Topic 20 is largely about evolution as
@@ -1209,6 +1308,12 @@ and this is definitely a systems biology paper, and topic 25 is about
 embryos and the family of \stringmention{par} genes that control them
 (including the gene \stringmention{par-1} mentioned in the article at
 rank 20 or so.
+
+With different random seeds, the LDA models produced from a corpus
+will vary.  This will also affect document similarlity.  It's possible
+to use full Bayesian analysis to average over all this uncertainty
+(see \refsec{lda-bayesian-inference}).
+
 
 
 \subsection{Bayesian Inference with an LDA Model}\label{section:lda-bayesian-inference}
