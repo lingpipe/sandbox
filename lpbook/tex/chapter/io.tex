@@ -1086,7 +1086,7 @@ format for compressing archives consisting of multiple hierarchically
 named streams as an archive.  Java's own Java archive (JAR) files are
 essentially zipped archives, and are also implemented.   
 
-\subsection{GZIP Input and Output Streams}
+\subsection{GZIP Input and Output Streams}\label{section:io-gzip}
 
 The GZIP input and output streams are constructed by wrapping anothr
 stream and optionally specifying a buffer size.  After construction,
@@ -1312,6 +1312,121 @@ the bytes to the stream.  The method \code{setMethod(int)} may be used
 with argument constants \code{STORED} for uncompressed entries
 and \code{DEFLATED} for compressed entries.
 
+
+\section{Tape Archive (Tar) Streams}
+
+The archaically named Tape Archive (tar) format is popular, especially
+among Unix users, for distributing data with a directory structure.
+Tar files themselves are typically compressed using GZIP (see
+\refsec{io-gzip}).  The Ant build library contains classes for
+manipulating tar streams, so we will be importing the Ant jar for
+compiling and running the examples in this section.
+
+\subsection{Reading Tar Streams}
+
+The way in which data may be read out of a tar file is easy to see
+with an example.  
+
+\subsubsection{Code Walkthrough}
+
+We provide a demo class \code{FileTarView} that
+reads from a tar file that has optionally been gzipped.  The \code{main()}
+method is defined to throw an I/O exception and read a file \code{tarFile}
+and boolean flag \code{gzipped} from the first two command-line arguments.
+The code begins by constructing the tar input stream.
+%
+\codeblock{FileTarView.1}
+%
+We first create a file input stream.  Then we wrap it in a GZIP input
+stream if the gzipped flag has been set.  Then, we just wrap the input
+stream in a \code{TarInputStream}, from package
+\code{org.apache.tools.tar}.
+
+We then use a read loop, inside which we access the properties of
+the entries and read the entry data.
+%
+\codeblock{FileTarView.2}
+%
+We use the \code{getNextEntry()} method of the tar input stream to get
+the next instance of \code{TarEntry}, also from
+\code{org.apache.tools.tar}.  If the entry is null, the stream has
+ended and we break out of the loop.
+
+If the tar entry exists, we then access some of its more prominent
+properties including whether or not it's a directory, the name of
+the entry, the name of the user and group for whom it was
+created, the mode (usually specified as octal, so we print it out
+in octal), the date the entry was last modified, and the entry's size.
+
+Finally, we use LingPipe's \code{toByteArray()} utility, from class
+\code{Streams} in \code{com.aliasi.util}, to read the data in the entry.
+Note that like for zip input streams, this is done by reading to the
+end of the tar input stream.  The tar input stream is then reset. 
+
+
+After we're done with the tar input stream, we close it through the
+closeable interface.
+%
+\codeblock{FileTarView.3}
+%
+Tar input streams implement Java's \code{Closeable} interface, so we
+close it through the \code{close()} method.  Although not documented,
+closing a tar input stream will close any contained stream other than
+\code{System.in}.  Here, this closes the GZIP input stream, which in
+turn closes the file input stream.
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{file-tar-view} runs the command, passing the
+value of properties \code{tar.file} and \code{gzipped} as command-line
+arguments.  We use the gzipped 20 newsgroups distribution as an
+example (see \refsec{20-news-corpus} for a description and link).
+%
+\commandlinefollow{ant -Dtar.file=c:/carp/data/20news/20news-bydate.tar.gz -Dgzipped=true file-tar-view}
+\begin{verbatim}
+------------------------------------
+name=20news-bydate-test/    isDirectory=true
+userName=jrennie    groupName=    mode=755
+date=Tue Mar 18 07:24:56 EST 2003
+size=0    #bytes read=0
+------------------------------------
+name=20news-bydate-test/alt.atheism/    isDirectory=true
+userName=jrennie    groupName=    mode=755
+date=Tue Mar 18 07:23:48 EST 2003
+size=0    #bytes read=0
+------------------------------------
+name=20news-bydate-test/alt.atheism/53265    isDirectory=false
+userName=jrennie    groupName=    mode=644
+date=Tue Mar 18 07:23:47 EST 2003
+size=1994    #bytes read=1994
+...
+name=20news-bydate-train/    isDirectory=true
+userName=jrennie    groupName=    mode=755
+date=Tue Mar 18 07:24:55 EST 2003
+size=0    #bytes read=0
+------------------------------------
+name=20news-bydate-train/alt.atheism/     isDirectory=true
+...
+\end{verbatim}
+%
+Note that we first see the directory \code{20news-bydate-test}.  The
+user name is \code{jrennie}, there is no group name, and the mode
+indicating permissions is \code{755} (octal).  The last-modified date
+is in 2003.  The size of the directory is zero, and the number of
+bytes read is zero.  The next directory looks similar, only its name
+is \code{test/alt.atheism}, indicating that it is nested in the
+previous entry.  In this corpus, it also indicates that the directory
+contains postings from the \code{alt.atheism} newsgroup.  The
+\code{TarEntry} object lets you access all the entries for the files
+or directories it contains, but that won't let you read the data.
+
+After the two directories, we see a file, with name
+\code{bydate-test/alt.atheism/53265} and mode 644 (octal).  he
+reported size matches the number of bytes read, 1994.
+
+After the files in the \code{alt.atheism} directory, there
+are 19 more test newsgroup directories.  Then, we see the training
+data, which is organized the same way.
 
 \section{Accessing Resources from the Classpath}
 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/lp-book-corpus-${version}.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
+      <classpath refid="classpath"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <property name="wormbase.corpus.gz"
+            value="../../data-dist/2007-12-01-wormbase-literature.endnote.gz"/>
+  <property name="min.token.count"
+            value="5"/>
+  <property name="num.topics"
+            value="50"/>
+  <property name="topic.prior"
+            value="0.1"/>
+  <property name="word.prior"
+            value="0.001"/>
+  <property name="random.seed"
+            value="42"/>
+  <property name="num.samples"
+            value="20000"/>
+  <property name="model.file"
+            value="wormbase.LatentDirichletAllocation"/>
+  <property name="symbol.table.file"
+            value="wormbase.SymbolTable"/>
+  <target name="lda-worm"
+          depends="jar">
+    <java classname="com.lingpipe.book.lda.LdaWorm"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${wormbase.corpus.gz}"/>
+      <arg value="${min.token.count}"/>
+      <arg value="${num.topics}"/>
+      <arg value="${topic.prior}"/>
+      <arg value="${word.prior}"/>
+      <arg value="${random.seed}"/>
+      <arg value="${num.samples}"/>
+      <arg value="${model.file}"/>
+      <arg value="${symbol.table.file}"/>
+    </java>
+  </target>
+
+  <target name="run"
+          depends="synthetic-lda"/>
+
+
+</project>

@@ -10,6 +10,7 @@
   <path id="classpath">
     <pathelement location="${jar}"/>
     <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+    <pathelement location="../../lib/ant-1.8.1.jar"/>
   </path>
 
   <target name="clean">
@@ -239,6 +240,22 @@
     </java>
   </target>
   
+  <property name="tar.file"
+            value="data/foo.tar"/>
+  <property name="gzipped"
+            value="true"/>
+  <target name="file-tar-view"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FileTarView"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${tar.file}"/>
+      <arg value="${gzipped}"/>
+    </java>
+  </target>
+
+
 
   <target name="run"
           depends="abstract-externalized,
@@ -256,6 +273,8 @@
                    serial-proxied,
                    serialized-singleton,
                    url-properties,
-                   url-read"/>
+                   url-read"/>  
+
+              <!-- file-tar-view -->
 
 </project>
