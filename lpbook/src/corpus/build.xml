@@ -9,6 +9,7 @@
 
   <path id="classpath">
     <pathelement location="${jar}"/>
+    <pathelement location="../../lib/ant-1.8.1.jar"/>
     <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
   </path>
 
@@ -32,43 +33,29 @@
     </jar>
   </target>
 
-  <property name="wormbase.corpus.gz"
-            value="../../data-dist/2007-12-01-wormbase-literature.endnote.gz"/>
-  <property name="min.token.count"
-            value="5"/>
-  <property name="num.topics"
-            value="50"/>
-  <property name="topic.prior"
-            value="0.1"/>
-  <property name="word.prior"
-            value="0.001"/>
-  <property name="random.seed"
-            value="42"/>
-  <property name="num.samples"
-            value="20000"/>
-  <property name="model.file"
-            value="wormbase.LatentDirichletAllocation"/>
-  <property name="symbol.table.file"
-            value="wormbase.SymbolTable"/>
-  <target name="lda-worm"
+  <target name="counting-text-handler"
           depends="jar">
-    <java classname="com.lingpipe.book.lda.LdaWorm"
+    <java classname="com.lingpipe.book.corpus.CountingTextHandler"
           classpathref="classpath"
           fork="true">
-      <arg value="${wormbase.corpus.gz}"/>
-      <arg value="${min.token.count}"/>
-      <arg value="${num.topics}"/>
-      <arg value="${topic.prior}"/>
-      <arg value="${word.prior}"/>
-      <arg value="${random.seed}"/>
-      <arg value="${num.samples}"/>
-      <arg value="${model.file}"/>
-      <arg value="${symbol.table.file}"/>
+    </java>
+  </target>
+
+  <property name="tng.tgz"
+            value=""/>
+  <target name="twenty-newsgroups"
+          depends="jar">
+    <java classname="com.lingpipe.book.corpus.TwentyNewsgroupsCorpus"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${tng.tgz}"/>
     </java>
   </target>
 
   <target name="run"
-          depends="synthetic-lda"/>
+          depends="counting-text-handler"/>
+
+  <!-- twenty-newsgroups -->
 
 
 </project>
