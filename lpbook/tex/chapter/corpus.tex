@@ -1,4 +1,78 @@
 \chapter{Handlers, Parsers, and Corpora}\label{chapter:corpus}
 
+LingPipe uses a parser-handler pattern for parsing objects out of
+files and processing them.  
+
+The basic usage is very much like that of
+the SAX parser for XML built into Java.  A parser is created for the
+format in which the data objects are represented.  Then a handler for
+the data objects is created and attached to the parser.  At this
+point, the parser may be used to parse objects from a file or other
+input specification, and all objects found in the file will be passed
+off to the handler for processing.
+
+Many of LingPipe's modules provide online training through handlers.
+For instance, the dynamic language models implement character sequence
+handlers.  
+
+LingPipe's batch training modules require an entire corpus for
+training.  A corpus represents an entire data set with a built-in
+training and test division.  A corpus has methods that take handlers
+and deliver to them the training data, the test data, or both.
+
+\section{Object Handlers}
+
+The \code{ObjectHandler<E>} interface is used for handling data
+objects of type \code{E}.%
+%
+\footnote{The \code{ObjectHandler} interface is defined to extend the
+  legacy marker interface \code{Handler}.  After LingPipe 4, there is
+  really no reason to use the \code{Handler} interface directly.  It
+  only remains to preserve backward compatibility.}
+%
+It specifies a single method, \code{handle(E)}, which processes a
+single data object of type \code{E}.
+
+\subsection{Demo: Counting Characters}
+
+We define a simple text handler in the demo class
+\code{CountingTextHandler}.  It's so simple that it doesn't
+even need a constructor.
+%
+\codeblock{CountingTextHandler.1}
+%
+We declare the class to implement \code{ObjectHandler<CharSequence>}.
+This contract is satisfied by our implementation of the
+\code{handle(CharSequence)} method.  That method just increments the
+counters for number of characters and sequences it's seen.  
+
+The \code{main()} method in the same class implements a simple
+command-line demo.  It creates a conting text handler, then calls is
+handle method with two strings (recall that \code{String} implements
+\code{CharSequence}).
+%
+\codeblock{CountingTextHandler.2}
+
+The Ant target \code{counting-text-handler} calls the main method,
+which assumes no command-line arguments.  
+%
+\commandlinefollow{ant counting-text-handler}
+\begin{verbatim}
+# seqs=2 # chars=18
+\end{verbatim}
+%
+The output comes from calling the handler's \code{toString()}
+method, which is defined to print the number of sequences
+and characters.
+
+
+
+
+
+\section{Parsers}
+
+
+
+
 \subsection{Demo: 20 Newsgroups Classification Corpus}\label{section:20-news-corpus}
 
