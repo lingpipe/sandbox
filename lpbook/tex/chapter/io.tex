@@ -1313,7 +1313,7 @@ with argument constants \code{STORED} for uncompressed entries
 and \code{DEFLATED} for compressed entries.
 
 
-\section{Tape Archive (Tar) Streams}
+\section{Tape Archive (Tar) Streams}\label{section:io-tar}
 
 The archaically named Tape Archive (tar) format is popular, especially
 among Unix users, for distributing data with a directory structure.
@@ -1380,7 +1380,7 @@ turn closes the file input stream.
 The Ant target \code{file-tar-view} runs the command, passing the
 value of properties \code{tar.file} and \code{gzipped} as command-line
 arguments.  We use the gzipped 20 newsgroups distribution as an
-example (see \refsec{20-news-corpus} for a description and link).
+example (see \refsec{corpora-20-newsgroups} for a description and link).
 %
 \commandlinefollow{ant -Dtar.file=c:/carp/data/20news/20news-bydate.tar.gz -Dgzipped=true file-tar-view}
 \begin{verbatim}

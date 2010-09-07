@@ -319,7 +319,148 @@ VVGJ    VVGN    VVI    VVN    VVNJ    VVZ    ``
 We've skipped the output for most of the tags, where denoted by
 ellipses (\code{...}).
 
+
 \section{Corpora}
 
-\subsection{Demo: 20 Newsgroups Classification Corpus}\label{section:20-news-corpus}
+A corpus, in the linguistic sense, is a body of data.  In the context
+of LingPipe, a corpus of data may be labeled with some kind of
+conceptual or linguistic annotation, or it may consist solely of text
+data.
+
+\subsection{The \code{Corpus} Class}
+
+To represent a corpus, LingPipe uses the abstract base class
+\code{Corpus}, in package \code{com.aliasi.corpus}.  It is
+parameterized generically the same way as a parser, with
+\code{Corpus<H extends Handler>}.  As of LingPipe 4, we only really
+have need of instances of \code{Corpus<ObjectHandler<E>>}, where
+\code{E} is the type of object being represented by the corpus.
+
+The basic work of a corpus class is done by its \code{visitTrain(H)}
+and \code{visitTest(H)} methods, where \code{H} is the handler type.
+Calling these methods sends all the training or testing events to the
+specified handler.  
+
+The method \code{visitCorpus(H)} sends both training and testing
+events to the specified handler and \code{visitCorpus(H,H)} sends the
+training events to the first handler and the test events to the
+second.
+
+In all the LingPipe built ins, these methods will be
+\code{visitTrain(ObjectHandler<E>)} and
+\code{visitTest(ObjectHandler<E>)} for some object \code{E}.
+
+\subsection{Demo: 20 Newsgroups Corpus}
+
+We will use the 20 newsgroups corpus as an example (see
+\refsec{corpora-20-newsgroups}).  The corpus contains around 20,000
+newsgroup posts to 20 different newsgroups.
+
+The demo class \code{TwentyNewsgroupsCorpus} implements a corpus based
+on this data.  
+
+\subsubsection{Code Walkthrough}
+
+The 20 newsgroups corpus class is defined to extend \code{Corpus}.
+%
+\codeblock{TwentyNewsgroupsCorpus.1}
+%
+The handler is an object handler handling objects of type
+\code{Classified<CharSequence>}, which represent character sequences
+with first-best category assignments from a classification.
+In the 20 newsgrops corpus, the categories are the newsgroups from
+which the posts originated and the objects being classified,
+of type \code{CharSequence}, are the texts of the posts themselves.
+
+The constructor takes the corpus file, which is presumed to be
+directory structures that have been tarred and then compressed with
+GZIP (see \refsec{io-tar} and \refsec{io-gzip} for more information on
+tar and GZIP).  The corpus file is saved for later use.  
+
+The \code{visitTrain()} method sends all the classified character
+sequences in the training data to the specified hander.
+%
+\codeblock{TwentyNewsgroupsCorpus.2}
+%
+The \code{visitTest()} method is defined similarly.  
+
+The \code{visitFile()} method which is doing the work, is
+defined as follows.
+%
+\codeblock{TwentyNewsgroupsCorpus.3}
+%
+It takes the string to match against the directories in the tarred
+directory data, and the handler.  It starts by creating an input
+stream for gzipped tar data.  
+
+Next, it walks through the directories and files in he tarred
+data.
+%
+\codeblock{TwentyNewsgroupsCorpus.4}
+%
+We loop, getting the next tar entry, breaking out of the loop if the
+entry is null, indicating we have processed every entry.  If the entry
+is a directory, we skip it.  Otherwise, we get its name, then parse
+out the directory structure using the indexes of the directory
+structure slash (\code{/}) separators, pulling out the name of the
+directory indicating whether we have training or test data.  For
+example, a file tar entry with name
+\path{20news-bydate-test/alt.atheism/53265} uses the top-level
+directory to indicate the training-testing split, here \code{test},
+and the subdirectory to indicate the category, here
+\code{alt.atheism}.  We are not keeping track of the article number,
+though it would make sense to set things up to keep track of it for a
+real application.
+
+
+If the top-level train-test directory doesn't match, we continue.  If
+it does match, we pull out the newsgroup name, then read the actual
+bytes of the entry using LingPipe's \code{Streams.toByteArray()}
+utility method.  We create a string using the ASCII-encoding because
+the 20 newsgroups corpus is in ASCII.  We then create a classification
+with category corresponding to the name of the newsgroup, and use it
+to create the classified cahracter sequence object.  Finally, we give
+the classified character sequence to the object handler, which is
+defined to handle objects of type \code{Classified<CharSequence>}.
+
+When we finish the loop, we close the tar input stream (which closes
+the other streams) and return.
+
+There is a \code{main()} method which is called by the demo,
+converting a single command-line argument into a file
+\code{tngFileTgz}.  The code starts by defining a final set
+of categories, then an anonymous inner class to define a handler.
+%
+\codeblock{TwentyNewsgroupsCorpus.5}
+%
+The handle method extracts the best category from the classification
+and adds it to the category set.  The category set needed to be final
+so that it could be referenced from within the anonymous inner class's
+handle method.
+
+Once the handler is defined, we create a corpus from the gzipped
+tar file, then send the train and testing events to the handler.
+%
+\codeblock{TwentyNewsgroupsCorpus.6}
+%
+The rest of the code just prints out the categories.
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{twenty-newsgroups} invokes the
+\code{TwentyNewsgroupsCorpus} command, sending the value of property
+\code{tng.tgz} as the command-line argument.
+%
+\commandlinefollow{ant -Dtng.tgz=c:/lpb/data/20news-bydate.tar.gz twenty-newsgroups}
+\begin{verbatim}
+Cats= alt.atheism    comp.graphics    comp.os.ms-windows.misc
+...
+talk.politics.mideast    talk.politics.misc    talk.religion.misc
+\end{verbatim}
+%
+We have left out some in the middle, but the result is indeed the
+twenty expected categories, which correspond to the newsgroups.
+
+
+
 
