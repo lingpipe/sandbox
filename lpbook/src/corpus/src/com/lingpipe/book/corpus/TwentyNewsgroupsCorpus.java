@@ -4,6 +4,7 @@ import com.aliasi.classify.Classification;
 import com.aliasi.classify.Classified;
 
 import com.aliasi.corpus.Corpus;
+import com.aliasi.corpus.ListCorpus;
 import com.aliasi.corpus.ObjectHandler;
 
 import com.aliasi.util.Streams;
@@ -16,9 +17,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -27,19 +25,33 @@ import java.util.zip.GZIPInputStream;
 public class TwentyNewsgroupsCorpus
     extends Corpus<ObjectHandler<Classified<CharSequence>>> {
 
-    final List<Classified<CharSequence>> mTrainInstances
-        = new ArrayList<Classified<CharSequence>>();
-    final List<Classified<CharSequence>> mTestInstances
-        = new ArrayList<Classified<CharSequence>>();
-    final Set<String> mCategorySet = new TreeSet<String>();
+    private final File mCorpusFileTgz;
 
-    public TwentyNewsgroupsCorpus(File corpusFileTgz) 
+    public TwentyNewsgroupsCorpus(File corpusFileTgz) {
+        mCorpusFileTgz = corpusFileTgz;
+    }
+
+    @Override
+    public void visitTest(ObjectHandler<Classified<CharSequence>> handler) 
         throws IOException {
-        
-        InputStream in = new FileInputStream(corpusFileTgz);
+
+        visitFile("20news-bydate-test",handler);
+    }
+
+    @Override
+    public void visitTrain(ObjectHandler<Classified<CharSequence>> handler)
+        throws IOException {
+
+        visitFile("20news-bydate-train",handler);
+    }
+    
+    private void visitFile(String trainOrTest,
+                           ObjectHandler<Classified<CharSequence>> handler) 
+        throws IOException {
+
+        InputStream in = new FileInputStream(mCorpusFileTgz);
         GZIPInputStream gzipIn = new GZIPInputStream(in);
         TarInputStream tarIn = new TarInputStream(gzipIn);
-
         while (true) {
             TarEntry entry = tarIn.getNextEntry();
             if (entry == null) break;
@@ -48,55 +60,35 @@ public class TwentyNewsgroupsCorpus
             int n = name.lastIndexOf('/');
             int m = name.lastIndexOf('/',n-1);
             String trainTest = name.substring(0,m);
+            if (!trainOrTest.equals(trainTest)) continue;
             String newsgroup = name.substring(m+1,n);
-            mCategorySet.add(newsgroup);
-            String fileNum = name.substring(n+1);
             byte[] bs = Streams.toByteArray(tarIn);
             CharSequence text = new String(bs,"ASCII");
             Classification c = new Classification(newsgroup);
-            Classified<CharSequence> e
+            Classified<CharSequence> classified
                 = new Classified<CharSequence>(text,c);
-            if ("20news-bydate-test".equals(trainTest))
-                mTestInstances.add(e);
-            else
-                mTrainInstances.add(e);
+            handler.handle(classified);
         }
-            
+        tarIn.close();
     }
 
-    public int testSize() {
-        return mTestInstances.size();
-    }
-
-    public int trainSize() {
-        return mTrainInstances.size();
-    }
-
-    public Set<String> newsgroups() { 
-        return Collections.unmodifiableSet(mCategorySet);
-    }
-
-    @Override
-    public void visitTest(ObjectHandler<Classified<CharSequence>> handler) {
-        for (Classified<CharSequence> c : mTestInstances)
-            handler.handle(c);
-    }
-
-    @Override
-    public void visitTrain(ObjectHandler<Classified<CharSequence>> handler) {
-        for (Classified<CharSequence> c : mTrainInstances)
-            handler.handle(c);
-    }
 
     public static void main(String[] args) throws IOException {
         File tngFileTgz = new File(args[0]);
-        TwentyNewsgroupsCorpus corpus
+        Corpus<ObjectHandler<Classified<CharSequence>>> corpus
             = new TwentyNewsgroupsCorpus(tngFileTgz);
-        System.out.println("# train=" + corpus.trainSize() + " #test=" + corpus.testSize());
-        System.out.println("#cats=" + corpus.newsgroups().size());
-        System.out.println("Cats=");
-        for (String cat : corpus.newsgroups()) 
-            System.out.println("  " + cat);
+        
+        final Set<String> catSet = new TreeSet<String>();
+        ObjectHandler<Classified<CharSequence>> handler
+            = new ObjectHandler<Classified<CharSequence>>() {
+            public void handle(Classified<CharSequence> c) {
+                catSet.add(c.getClassification().bestCategory());
+            }
+        };
+
+        corpus.visitTrain(handler);
+        corpus.visitTest(handler);
+        System.out.println("Cats=" + catSet);
     }
 
 }

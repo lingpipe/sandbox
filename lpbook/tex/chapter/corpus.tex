@@ -1,15 +1,16 @@
 \chapter{Handlers, Parsers, and Corpora}\label{chapter:corpus}
 
 LingPipe uses a parser-handler pattern for parsing objects out of
-files and processing them.  
+files and processing them.  The pattern follows the design of XML's
+SAX parser and content handlers, which are built into Java in package
+\code{org.xml.sax}.
 
-The basic usage is very much like that of
-the SAX parser for XML built into Java.  A parser is created for the
-format in which the data objects are represented.  Then a handler for
-the data objects is created and attached to the parser.  At this
-point, the parser may be used to parse objects from a file or other
-input specification, and all objects found in the file will be passed
-off to the handler for processing.
+A parser is created for the format in which the data objects are
+represented.  Then a handler for the data objects is created and
+attached to the parser.  At this point, the parser may be used to
+parse objects from a file or other input specification, and all
+objects found in the file will be passed off to the handler for
+processing.
 
 Many of LingPipe's modules provide online training through handlers.
 For instance, the dynamic language models implement character sequence
@@ -20,20 +21,28 @@ training.  A corpus represents an entire data set with a built-in
 training and test division.  A corpus has methods that take handlers
 and deliver to them the training data, the test data, or both.
 
-\section{Object Handlers}
 
-The \code{ObjectHandler<E>} interface is used for handling data
-objects of type \code{E}.%
-%
-\footnote{The \code{ObjectHandler} interface is defined to extend the
-  legacy marker interface \code{Handler}.  After LingPipe 4, there is
-  really no reason to use the \code{Handler} interface directly.  It
-  only remains to preserve backward compatibility.}
-%
-It specifies a single method, \code{handle(E)}, which processes a
-single data object of type \code{E}.
+\section{Handlers and Object Handlers}
 
-\subsection{Demo: Counting Characters}
+\subsection{Handlers}
+
+The marker interface \code{Handler} is included in LingPipe 4 only for
+backward compatibility.  The original parser/handler design allowed
+for handlers that implemented arbitrary methods, following the design
+of the SAX content handler interface.
+
+\subsection{Object Handlers}
+
+As of Lingpipe 4, all built-in parser/handler usage is through the
+\code{ObjectHandler<E>} interface, in package
+\code{com.aliasi.corpus}, which extends \code{Handler}.  The
+\code{ObjectHandler<E>} interface specifies a single method,
+\code{handle(E)}, which processes a single data object of type
+\code{E}.  It is like a simplified form of the built-in interface for
+processing a streaming XML document, \code{ContentHandler}, in package
+\code{org.xml.sax}.
+
+\subsection{Demo: Character Counting Handler}
 
 We define a simple text handler in the demo class
 \code{CountingTextHandler}.  It's so simple that it doesn't
@@ -43,8 +52,8 @@ even need a constructor.
 %
 We declare the class to implement \code{ObjectHandler<CharSequence>}.
 This contract is satisfied by our implementation of the
-\code{handle(CharSequence)} method.  That method just increments the
-counters for number of characters and sequences it's seen.  
+\code{handle(CharSequence)} method.  The method just increments the
+counters for number of characters and sequences it's seen.
 
 The \code{main()} method in the same class implements a simple
 command-line demo.  It creates a conting text handler, then calls is
@@ -61,18 +70,256 @@ which assumes no command-line arguments.
 # seqs=2 # chars=18
 \end{verbatim}
 %
-The output comes from calling the handler's \code{toString()}
-method, which is defined to print the number of sequences
-and characters.
-
+The output comes from calling the handler's \code{toString()} method,
+which is defined to print the number of sequences and characters.  In
+most cases, handlers will either hold references to collections they
+update or will make summary statistics or other data accumulated from
+the calls to the \code{handle()} method.  We'll see more examples when
+we discuss parsers and corpora in the following sections.
 
 
 
 
 \section{Parsers}
 
+A parser reads character data from an input source or character
+sequence to produce objects of a specified type.  By attaching a
+handler to a parser, the handler will receive a stream of
+objects produced by the parser.
+
+\subsection{The \code{Parser} Abstract Base Class}
+
+The type hierarchy for a parser is more general than usage in LingPipe
+4 demands.  The abstract base class is specified as \code{Parser<H
+  extends Handler>}, in package \code{com.aliasi.corpus}.  The generic
+specification requires the instantiation of the type parameter
+\code{H} to extend the \code{Handler} interface.  
+
+For use in LingPipe 4, all parsers will use object handler insances,
+so all parsers will actually extend \code{Parser<ObjectHandler<E>>}
+for some arbitrary object type \code{E}.
+
+\subsubsection{Getting and Setting Handlers}
+
+The base parser class implements getters and setters for 
+handlers of the appropriate type; \code{getHandler()}
+returns the handler, and \code{setHandler(H)} sets the
+value of the handler.
+
+\subsubsection{Parsing Methods}
+
+There are a range of parsing methods specified for \code{Parser}.  Two
+of them are abstract, \code{parseString(char[],int,int)} and
+\code{parse(InputSource)}, which read data from a character array
+slice or an input source.  The input source abstraction, borrowed from
+XML's SAX parsers, generalizes the specification of a character
+sequence through a reader or an input stream or URL plus a character
+encoding specification; input sources also conveniently allow a
+relative directory to be specified for finding resources such as DTDs
+for XML parsing.
+
+There are several helper methods specified on top of these.  The
+method \code{parse(CharSequence)} reads directly from a character
+sequence.  The \code{parse(File,String)} method reads the characters
+to parse from a file using the specified character encoding.%
+%
+\footnote{The encoding is set in an \code{InputSource}, which a parser
+  implementation may choose to ignore.  For instance, an XML parser
+  may choose to read the encoding from the header rather than trusting
+  the specification.  The helper implementations in LingPipe all
+  respect the character encoding declaration.}
+%
+The method \code{parse(String,String)} reads from a resource specified
+as a system identifier, such as a URL, using the specified character
+encoding.  There are also two parallel methods, \code{parse(File)} and
+\code{parse(String)}, which do not specify their character encodings.
 
 
+\subsection{Abstract Base Helper Parsers}
+
+There are two helper subclasses of \code{Parser}, both abstract and
+both in package \code{com.aliasi.corpus}.  The class
+\code{StringParser} requires a concrete subclass to implement the
+abstract method \code{parse(char[],int,int)}.  The \code{StringParser}
+class implements the \code{parse(InputSource)} method by reading a
+character array from the input source using LingPipe's static utility
+method \code{Streams.toCharArray(InputSource)}
+
+The second helper subclass is \code{InputSourceParser}, which requires
+subclasses to implement \code{parse(InputSource)}.  It implements
+\code{parse(char[],int,int)} by converting the character array to an
+input source specified through a reader.
+
+\subsection{Line-Based Tagging Parser}
+
+There are two more specialized classes for parsing.  The
+\code{LineTaggingParser}, also in \code{com.aliasi.corpus}, parses
+output for a tagger from a line-oriented format.  This format is
+common due to the simplicity of its parsing and its use in the
+Conference on Natural Language Learning (CoNLL).  
+
+\subsection{XML Parser} 
+
+The \code{XMLParser}, in package \code{com.aliasi.corpus}, extends
+\code{InputSourceParser} to support parsing of XML-formatted data.
+The XML parser requires the method \code{getXMLHandler()} to return an
+instance of \code{DefaultHandler} (built into Java in package
+\code{org.xml.sax.helpers}).  
+
+The parser works by creating an XML reader using the static method
+\code{createXMLReader()} in \code{XMLReaderFactory}, which is in
+\code{org.xml.sax.helpers}.  The XML handler returned by the parser
+method \code{getXMLHandler()} is then set on the reader as the content
+handler, DTD handler, entity resolver, and error handler.  Thus the
+XML handler must actually hold a reference to the LingPipe handler or
+retain a reference to the parser (for instance, by being an inner
+class) and use the \code{getHandler()} method in \code{Parser} to pass
+it data.
+
+
+\subsection{Demo: MedPost Part-of-Speech Tagging Parser}
+
+As an example, we provide a demo class \code{MedPostPosParser}, which
+provides a parser for taggings represented in the MedPost format.  The
+MedPost corpus is a collection of sentences drawn from biomedical
+research titles and abstracts in MEDLINE (see \refsec{corpora-medtag}
+for more information and downloading instructions).  This parser will
+extract instances of type \code{Tagging<CharSequence>} and send them
+to an arbitrary parser specified at run time.
+
+\subsubsection{Corpus Structure}
+
+The MedPost corpus is arranged by line.  For each sentence fragment,
+%
+\footnote{The sentence fragments were extracted automatically by a
+  system that was not 100\% accurate and were left as is for
+  annotation.}
+%
+we have a line indicating its source in MEDLINE followed by a line
+with the tokens and part of speech tags.   Here are the first
+three entries from file \code{tag\_cl.ioc}.
+%
+\begin{verbatim}
+P01282450A01
+Pain_NN management_NN ,_, nutritional_JJ support_NN ,_, ...
+P01350716A05
+Seven_MC trials_NNS of_II beta-blockers_NNS and_CC 15_MC ...
+P01421653A15
+CONCLUSIONS_NNS :_: Although_CS more_RR well-designed_VVNJ ...
+...
+\end{verbatim}
+%
+We have truncated the part-of-speech tagged lines as indicated by the
+ellipses (\code{...}).  The source of the first entry is a MEDLINE
+citation with PubMed ID 01282450, with the rest of the annotation,
+\code{A01}, indicating it was the first fragment from the abstract.
+The first token in the first fragment is \stringmention{Pain}, which
+is assigned a singular noun tag, \code{NN}.  The second token is
+\stringmention{management}, assigned the same tag.  The third token is
+a comma, (\stringmention{,}), assigned a comma (\code{,}) as a
+tag. Note that the string \stringmention{beta-blockers} is analyzed as
+a single token, and assigned the plural noun tag \code{NNS}, as is
+\stringmention{well-designed}, which is assigned a deverbal adjective
+category \code{VVNJ}.
+
+
+\subsubsection{Code Walkthrough}
+
+We define the MedPost parser to extend \code{StringParser}.
+%
+\codeblock{MedPostPosParser.1}
+%
+The generic parameter for the parser's handler is specified to be of
+type \code{ObjectHandler<Tagging<String>>}.  LingPipe's \code{Tagging}
+class, which represents tags applied to a sequence of items, is in
+package \code{com.aliasi.tag}; we gloss over its details here as we
+are only using it as an example for parsing.
+
+Because we extended \code{StringParser}, we must implement the
+\code{parseString()} method, which is done as follows.
+%
+\codeblock{MedPostPosParser.2}
+%
+We construct a string out of the character array slice passed in,
+switching from the start/end notation of LingPipe and later Java to
+the start/length notation of early Java.  We then split it on Unix
+newlines, looking at each line in the for-each loop.  If the line
+doesn't have an underscore character, there are no part-of-speech
+tags, so we ignore it (we also know there are no underscores in the
+identifier lines and that there are no comments).  
+
+We send each line in the training data with an underscore in it to the
+\code{process()} method.
+%
+\codeblock{MedPostPosParser.3}
+%
+In order to construct a tagging, we will collect a list of tokens and
+a list of tags.  We split the line on whitespace, and consider the
+strings representing token/tag pairs in turn.   For instance, the
+first value for \code{pair} we see in processing the fragment above
+is \code{Pain\_NN}.  
+
+We break the token/tag pair down into its token and tag components by
+splitting on the underscore character (again, keeping in mind that
+there are no underscores in the tokens).  We then just add the first
+and second elements derived from the split, which are our token and
+tag pair.
+
+After we add the tokens and tags from all the sentences, we use them
+to construct a tagging.  Then, we use the \code{getHandler()} method,
+which is implemented by the superclass \code{Parser}, to get the
+handler itself.  The handler then gets called with the tagging
+that's just been constructed by calling its \code{handle(Tagging)}
+method.  In this way, the handler gets all the taggings produced
+by parsing the input data.
+
+Even though we've implemented our parser over character array slices,
+through its superclass, we can use it to parse files or input sources.
+The \code{main()} method takes a single command-line argument for
+the directory containing the tagged data, comprising a set of
+files ending in the suffix \code{ioc}.  
+
+The first real work the method does is assign a new tree set of
+strings to the final variable \code{tagSet}. 
+%
+\codeblock{MedPostPosParser.4}
+%
+It is final because it's used in the anonymous inner class defiend to
+create an object to assign to variable \code{handler}.  The anonymous
+inner class implements \code{ObjectHandler<Tagging<String>>}, so it
+must define a method \code{handle(Tagging<String>)}.  All the handle
+method does is add the list of tags found in the tagging to the tag
+set.
+
+Next, we create a parser and set its handler to be the
+handler we just defined.
+%
+\codeblock{MedPostPosParser.5}
+%
+The last thing the main method does before printing out the tag set is
+walk over all the files ending in \code{ioc} and parse each of them,
+declaring the character encoding to be ASCII (see
+\refsec{io-file-extension-filter} for more information on LingPipe's
+file extension filter class).
+
+\subsubsection{Running the Demo}
+
+There is an Ant target \code{medpost-parse} that passes
+the value of property \code{medpost.dir} to the command
+in \code{MedPostPosParser}.  We have downloaded the data
+and unpacked it into the directory given in the command,
+%
+\commandlinefollow{ant -Dmedpost.dir=c:/lpb/data/medtag/medpost medpost-parse}
+\begin{verbatim}
+#Tags=63    Tags=    ''    (    )    ,    .    :    CC    CC+
+... 
+VVGJ    VVGN    VVI    VVN    VVNJ    VVZ    ``
+\end{verbatim}
+%
+We've skipped the output for most of the tags, where denoted by
+ellipses (\code{...}).
+
+\section{Corpora}
 
 \subsection{Demo: 20 Newsgroups Classification Corpus}\label{section:20-news-corpus}
 

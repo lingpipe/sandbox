@@ -41,6 +41,18 @@
     </java>
   </target>
 
+  <property name="medpost.dir"
+            value="c:/lpb/data/medpost"/>
+  <target name="medpost-parse"
+          depends="jar">
+    <java classname="com.lingpipe.book.corpus.MedPostPosParser"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${medpost.dir}"/>
+    </java>
+  </target>
+
+
   <property name="tng.tgz"
             value=""/>
   <target name="twenty-newsgroups"
