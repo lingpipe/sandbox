@@ -22,6 +22,7 @@ import java.util.TreeSet;
 
 import java.util.zip.GZIPInputStream;
 
+/*x TwentyNewsgroupsCorpus.1 */
 public class TwentyNewsgroupsCorpus
     extends Corpus<ObjectHandler<Classified<CharSequence>>> {
 
@@ -30,28 +31,36 @@ public class TwentyNewsgroupsCorpus
     public TwentyNewsgroupsCorpus(File corpusFileTgz) {
         mCorpusFileTgz = corpusFileTgz;
     }
+/*x*/
+
+    /*x TwentyNewsgroupsCorpus.2 */
+    @Override
+    public void visitTrain(ObjectHandler<Classified<CharSequence>> 
+                           handler)
+        throws IOException {
+
+        visitFile("20news-bydate-train",handler);
+    }
+    /*x*/
 
     @Override
-    public void visitTest(ObjectHandler<Classified<CharSequence>> handler) 
+    public void visitTest(ObjectHandler<Classified<CharSequence>> 
+                          handler) 
         throws IOException {
 
         visitFile("20news-bydate-test",handler);
     }
 
-    @Override
-    public void visitTrain(ObjectHandler<Classified<CharSequence>> handler)
-        throws IOException {
-
-        visitFile("20news-bydate-train",handler);
-    }
-    
+    /*x TwentyNewsgroupsCorpus.3 */
     private void visitFile(String trainOrTest,
-                           ObjectHandler<Classified<CharSequence>> handler) 
+              ObjectHandler<Classified<CharSequence>> handler) 
         throws IOException {
 
         InputStream in = new FileInputStream(mCorpusFileTgz);
         GZIPInputStream gzipIn = new GZIPInputStream(in);
         TarInputStream tarIn = new TarInputStream(gzipIn);
+    /*x*/
+        /*x TwentyNewsgroupsCorpus.4 */
         while (true) {
             TarEntry entry = tarIn.getNextEntry();
             if (entry == null) break;
@@ -70,14 +79,14 @@ public class TwentyNewsgroupsCorpus
             handler.handle(classified);
         }
         tarIn.close();
+        /*x*/
     }
 
 
     public static void main(String[] args) throws IOException {
         File tngFileTgz = new File(args[0]);
-        Corpus<ObjectHandler<Classified<CharSequence>>> corpus
-            = new TwentyNewsgroupsCorpus(tngFileTgz);
-        
+
+        /*x TwentyNewsgroupsCorpus.5 */
         final Set<String> catSet = new TreeSet<String>();
         ObjectHandler<Classified<CharSequence>> handler
             = new ObjectHandler<Classified<CharSequence>>() {
@@ -85,10 +94,17 @@ public class TwentyNewsgroupsCorpus
                 catSet.add(c.getClassification().bestCategory());
             }
         };
+        /*x*/
 
+        /*x TwentyNewsgroupsCorpus.6 */
+        Corpus<ObjectHandler<Classified<CharSequence>>> corpus
+            = new TwentyNewsgroupsCorpus(tngFileTgz);
         corpus.visitTrain(handler);
         corpus.visitTest(handler);
-        System.out.println("Cats=" + catSet);
+        /*x*/
+        System.out.println("Cats=");
+        for (String cat : catSet)
+            System.out.println("     " + cat);
     }
 
 }

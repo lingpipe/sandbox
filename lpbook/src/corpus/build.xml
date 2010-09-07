@@ -54,7 +54,7 @@
 
 
   <property name="tng.tgz"
-            value=""/>
+            value="c:/lpb/data/20news-bydate.tar.gz"/>
   <target name="twenty-newsgroups"
           depends="jar">
     <java classname="com.lingpipe.book.corpus.TwentyNewsgroupsCorpus"
