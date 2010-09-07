@@ -357,7 +357,10 @@ We will use the 20 newsgroups corpus as an example (see
 newsgroup posts to 20 different newsgroups.
 
 The demo class \code{TwentyNewsgroupsCorpus} implements a corpus based
-on this data.  
+on this data.  The corpus is implemented so that it doesn't need to
+keep all the data in memory; it reads it in from a compressed tar file
+on each pass.  This approach is highly scalable because only one item
+at a time need reside in memory.
 
 \subsubsection{Code Walkthrough}
 
@@ -462,5 +465,37 @@ We have left out some in the middle, but the result is indeed the
 twenty expected categories, which correspond to the newsgroups.
 
 
+\subsection{The \code{ListCorpus} Class}
 
+LingPipe provides a dynamic, in-memory corpus implementation in the
+class \code{ListCorpus}, in package \code{com.aliasi.corpus}.  The
+class has a generic parameter, \code{ListCorpus<E>}, where \code{E} is
+the type of objects handled.  It is defined to extend
+\code{Corpus<ObjectHandler<E>>}, so the handler will be an object
+handler for type \code{E} objects.
 
+There is a zero-argument constructor \code{ListCorpus()} that
+constructs an initially empty corpus.  The two methods
+\code{addTrain(E)} and \code{addTest(E)} allow training or test items
+to be added to the corpus.
+
+The methods \code{trainCases()} and \code{testCases()} return lists of
+the training and test items in the corpus.  These lists are
+unmodifiable views of the underlying lists.  Although they cannot be
+changed, they will track changes to the lists underlying the corpus.
+
+There is an additional method \code{permuteCorpus(Random)}, that uses
+the specified random number generator to permute the order of the test
+and training items.
+
+\subsubsection{Serialization}
+
+A list-based corpus may be serialized if the underlying objects
+it stores may be serialized.  Upon being reconstituted, the result
+will be a \code{ListCorpus} that may be cast to the appropriate
+generic type.
+
+\subsubsection{Thread Safety}
+
+A list corpus must be read-write synchronized, where the add
+and permute methods are writers, and the visit methods are readers.
