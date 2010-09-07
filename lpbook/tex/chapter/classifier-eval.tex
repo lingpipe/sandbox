@@ -1,0 +1,160 @@
+\chapter{Classifiers and Evaluation}\label{chap:classifier-evaluation}
+
+We are going to introduce the classifier interface, discuss what
+classifiers do, and then show how to evaluate them.  In subsequent
+chapters, we consider a selection of the classifier implementations
+offered in LingPipe.
+
+\section{What is a Classifier?}
+
+A classifier takes inputs, which could be just about anything, and
+return a classification of the input over a finite number of discrete
+categories.  For example, a classifier might take a biomedical
+research paper's abstract and determine if it is about genomics or
+not.  The outputs are ``about genomics'' and ``not about genomics.''
+
+Classifiers can have more than two outputs.  For instance, a
+classifier might take a newswire article and classify whether it is
+politics, sports, entertainment, science and technology, or world or
+local news; this is what Google and Bing's news services do.%
+%
+\footnote{At \url{http://news.google.com} and
+  \url{http://news.bing.com}.}
+%
+Other applications of text classifiers, either alone or in concert
+with other components, range from classifying documents by topic,
+identifying the language of a snippet of text, analyzing whether a
+movie review is postive or negative, linking a mention of a gene name
+in a text to a database entry for that gene, or resolving the sense of
+an ambiguous word like \stringmention{bank} as meaning a savings
+institution or a flowing body of water.  In each of these cases, we
+have a known finite set of outcomes and some evidence in the form of
+text.
+
+\subsection{Exclusive and Exhaustive Categories}
+
+In the standard formulation of classification, which LingPipe follows,
+the categories are taken to be both exhaustive and mutually exclusive.
+Thus every item being classified has exactly one category.
+
+One way to get around the exhaustiveness problem is to include an
+``other'' category that matches any input that doesn't match one of
+the other categories.  The other category is sometimes called a
+``sink'' or ``trash'' category, and may be handled differently than
+the other categories during training.
+
+Exclusivity is more difficult to engineer.  While it is possible to
+allow categories that represent more than one outcome, if we have $n$
+base categories, we'll have ${n \choose 2}$ unique pairs of
+categories.  The combinatorics quickly gets out of hand.
+
+If an item needs to be classified for two cross-cutting
+categorizations, we can use two classifiers, one for each
+categorization.  For instance, we might classify MEDLINE citations as
+being about genomics or not, and about being about clinical trials or
+not.  The two binary classifiers produce four possible outcomes.
+Another example of this would be to use two binary classifiers for
+sentiment, one indicating if a text had positive sentiment or not, and
+another indicating if it had negative sentiment or not.  The result is
+a four-way classification, with a neutral article having neither
+positive nor negative sentiment, a mixed review having both positive
+and negative sentiment, and a positive or negative review having one
+or the other.
+
+The latent Dirichlet allocation (LDA) model we consider in
+\refchap{lda} assigns more than one category to each document, under
+the assumption that every document is a mixture of topics blended
+according to some document-specific ratio that the model infers.
+
+\subsection{First-Best, Ranked and Probabilistic Results}
+
+A simple first-best classifier need only return its best guess for the
+category of each input item.  Some applications only allow a single
+best guess, and thus some evaluations are geared toward evaluating
+only a classifiers' first-best guess for an input.
+
+A ranking classifier returns the possible categories in rank order of
+their match to the input.  The top ranked answer is the first-best
+result.  We still assume exhaustive and exclusive categories, but the
+classfier supplies its second-best guess, third-best guess and so on.
+In cases where there are large numbers of categories, an application
+might return more than one possible answer to a user.
+
+A scoring classifier goes one step further and assigns a (floating
+point) score to each categories.  These may then be sorted to provide
+a ranking and a first-best result, with higher scores taken to be
+better matches.  For example, LingPipe's implementations of averaged
+perceptrons returns scored results.
+
+Scores for categories given an input are often normalized so that they
+represent an estimate of the conditional probability of a category
+given the input.  This is the case for LingPipe's logistic regression
+classifiers and k-nearest neighbors classifiers.  For instance, a
+classifier might see a MEDLINE citation about testing for a disease
+with a known genetic component and estimate a 40\% probability it is
+about genomics and 60\% probability that it is not about genomics.
+Because the outcomes are exhaustive and exclusive, the probabilities
+assigned to the categories must sum to 1.
+
+In the case of generative statistical models, such as naive Bayes
+classifiers or hidden Markov models, the score represents the joint
+probabilty of the output category and the input being classified.
+Given the joint probabilities, we can use the rule of total
+probability to compute conditional probabilities of categories given
+inputs.
+
+\subsection{Reductions to Classification Problems}
+
+Many problems that don't at first blush appear to be classification
+problems may be reduced to classification problems.  For instance, the
+standard document search problem (see \refchap{lucene}) may be recast
+as a classification problem.  Given a user query, such as
+\searchquery{be-bim-bop recipe}, documents may be classified as
+relevant or not-relevant to the search.  
+
+Just about any problem that may be cast in a hypothesize-and-test
+algorithm may use a classifier to do the testing, with a simple binary
+outcome of accept or reject.  For instance, we can generate possible
+named-entity mention chunkings of a text and then use a binary
+classifier to evaluate if they are correct or not.  
+
+Such reductions are often not interpetable probabilistically in the
+sense of assigning probabilities to possible outcomes.
+
+\subsection{Ordinals, Counts, and Scalars}
+
+A classifier is an instance of what statisticians call categorical
+models.  The outcome of a classification is a category, not a number.
+
+Classifiers deal with categorical outcomes.  Ordinal outcomes are like
+categorical outcomes, only they come with an order.  Examples of
+ordinal outcomes include rating movies on a $\{ 1, 2, 3, 4, 5 \}$
+scale, answering a survey question with strongly-disagree, disagree,
+neutral, agree, or strongly agree, and rating a political attitude as
+left, center, or right.
+
+In many cases, we will be dealing with counts, which are non-negative
+natural numbers.  Examples of count variables include the number of
+times a word appears in a document, the length of a document's title
+in characters, and the number of home runs a baseball player gets in a
+season.  Classifiers like naive Bayes convert word count data into
+categorical outcomes based on a probability model for documents (see
+\refchap{naive-bayes}).
+
+Scalar outcomes are typically continuous.  Examples of continuous
+scalar variables include a person's height, the length of the vowel
+sequence in milliseconds in the pronunciation of the word
+\charmention{lion}, or the number of miles between two cities.  Wes
+
+Rating movies on an ordinal 1-5 scale doesn't allow ratings like
+1.793823.  Half-star ratings could be accomodated by including
+additional discrete outcomes like 1.5, 2.5, 3.5 and 4.5, leaving a
+total of 9 possible ratings.  When there are 100 possible ratings, it
+makes less sense to treat the outcome as ordinal.  Often, it is
+approximated by a continuous scalar variable.
+
+Models that predict or estimate the values of ordinal, count and
+scalar values all have different evaluation metrics than categorical
+outcomes.  In this section, we focus exclusively on categorical
+outcomes.
+
