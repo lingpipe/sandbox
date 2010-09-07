@@ -724,29 +724,24 @@ of documents are no problem on desktop machines.
 
 In this section, we consider a larger scale LDA estimation problem, in
 analyzing a collection of biomedical research paper citations related
-to the model organism caenorhabditis elegans (c.~elegans), the
-nematode worm.%
-%
-\footnote{\label{footnote:lda-wormbase-data} We downloaded the data,
-  which consists of MEDLINE citations, from the Wormbase data
-  repository,
-  \url{ftp://ftp.wormbase.org/pub/wormbase/misc/literature/2007-12-01-wormbase-literature.endnote.gz},
-  on 20 August 2010.}
-%
-Similar data from a slightly different source on a smaller scale
-was analyzed by Blei et al.\ in an attempt to relate the topics
-inferred using LDA with those added for genetics by the database
-curators.%
+to the model organism {\it Caenorhabditis elegans} ({C.~elegans}), the
+nematode worm.  The data was downloaded from the WormBase site (see
+\refsec{corpora-wormbase} for mroe information).  Similar data from a
+slightly different source on a smaller scale was analyzed by Blei et
+al.\ in an attempt to relate the topics inferred using LDA with those
+added for genetics by the database curators.%
 %
 \footnote{Blei et al.  analyzed a smaller set of worm citations from
   the Caenorhabditis Genetic Center (CGC) bibliography.  This data is
   available from the WormBook site at \url{http://www.wormbook.org/wli/cgcbib}.  
+%
 \begin{quote}
 Blei, D.~M., K.~Franks, M.~I.~Jordan and
   I.~S.~Mian. 2006. Statistical modeling of biomedical corpora: mining
   the Caenorhabditis Genetic Center Bibliography for genes related to
   life span. {\it BMC Bioinformatics} {\bf 7}:250.
 \end{quote}
+%
 Blei et al.\ considered 50 topics generated from 5225 documents using
 a total of 28,971 distinct words.  }
 %
@@ -783,7 +778,7 @@ There are not actually line breaks in the \code{\%T} and \code{\%X} elements.
 \subsection{Running the Demo}
 
 First, you'll need to download the gzipped data from wormbase; see
-\reffootnote{lda-wormbase-data} in this section for the URL.  It
+\refsec{corpora-wormbase}.  It
 doesn't matter where you put it; the program takes the location as
 a parameter.
 
