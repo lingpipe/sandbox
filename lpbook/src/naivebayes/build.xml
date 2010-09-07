@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/lp-book-naive-bayes-${version}.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
+      <classpath refid="classpath"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="run"
+          depends=""/>
+
+
+</project>
