@@ -499,3 +499,176 @@ generic type.
 
 A list corpus must be read-write synchronized, where the add
 and permute methods are writers, and the visit methods are readers.
+
+\subsection{The \code{DiskCorpus} Class}
+
+The \code{DiskCorpus} class provides an implementation of the
+\code{Corpus} interface based on one directory of files containing
+training cases and one containing test cases.  A parser is used to
+extract data from the files in the training and test directories.
+
+Like our example in the previous section, a disk corpus reads its data
+in dynamically rather than loading it into memory.  Thus, if the data
+changes on disk, the next run through the corpus may produce different
+data.  
+
+The directories are expored recursively, and files with GZIP
+or Zip compression indicated by suffix \code{.gz} or \code{.zip}
+are automatically unpacked.  For zip files, each entry is visited.
+
+At the lowest level, every ordinary file, eithe in the directory
+structure or in a Zip archive is visited and processed. 
+
+\subsubsection{Constructing a Disk Corpus}
+
+An instance of \code{DiskCorpus<H>}, where \code{H} extends or
+implements the marker interface \code{Handler}, is constructed using
+\code{DiskCoropus(Parser<H>,File,File)}, with the two files
+specifying the training and test directories respectively.
+
+Once a disk corpus is constructed, the methods
+\code{setSystemId(String)} and \code{setCharEncoding(String)} may be
+used to configure it.  These settings will be passed to the input
+sources constructed and sent to the parser.
+
+\subsubsection{Thread Safety}
+
+As long as there are no sets and the file system doesn't change,
+it'll be safe to use a single insance of a disk corpus from
+multiple threads.
+
+
+\section{Cross Validation}
+
+Cross validation is a process for evaluating a learning system in such
+a way as to extract as many evaluation points as possible from a fixed
+collection of data.
+
+Cross validation works by dividing a corpus up into a set of
+non-overlapping slices, called folds.  Then, each fold is used for
+evaluation in turn, using the other folds as training data.  For
+instance, if we have 1000 data items, we may divide them into 3 folds
+of 333, 333, and 334 items respectively.  We then evaluate fold 1
+using fold 2 and 3 for training, evaluate on fold 2 using folds 1 and
+3 for training, and evaluate on fold 3 using folds 1 and 2 for
+training.  This way, every item in the corpus is used as a test case.
+
+\subsubsection{Leave-One-Out Evaluation}
+
+At the limit where the number of folds equals the number of data
+items, we have what is called leave-one-out (LOO) evaluation.  For
+instance, with 1000 data items, we have 1000 folds.  This uses as much
+data as possible in the training set.  This is usually too slow to
+implement directly by retraining learning systems for each fold of
+leave-one-out evaluation.
+
+
+\subsubsection{Bias in Cross Validation}
+
+In some sitautions, cross-validation may be very biased.  For
+instance, suppose we have 100 items, 50 of which are ``positive'' and
+50 of which are ``negative'' and we consider leave-one-out evaluation.
+Even though our full training data is balanced, with equal numbers of
+positive and negative items, each fold of leave-one-out evaluation has
+50 examples of the other category, and 49 examples of the category
+being evaluated.  For learners that use this ratio in the training
+data to help with predictions, such as naive Bayes classifiers, there
+will be a noticeable bias against the category being evaluated in a
+leave-one-out evaluation.
+
+\subsection{Permuting the Corpus}
+
+Cross-validation only makes sense theoretically when the items are all
+drawn at random from some large population (or potential population)
+of items.  Very rarely does natural language data satisfy this
+requirement.  Instead, we gather data by document and by date.  If you
+have the choice, by all means take a truly random sample of data.
+
+It is sometimes reasonable to permute the items in a cross-validating
+corpus.  Often, this is because examples of the same item may be
+stored together and should be broken up for evaluation.  
+
+Permuting may make some problems too easy.  For instance, if the items
+are chunkings of sentences for named entities, and more than one
+sentence is drawn from a given document, it makes sense to keep these
+together (or at least not intentionally split them apart).  Otherwise,
+we are much more likely to have been trained no the rare words
+appearing in sentences.
+
+\subsection{The \code{CrossValidatingObjectCorpus} Class}
+
+LingPipe provides a corpus implementation tailored to implementing
+cross validation.  The class \code{CrossValidatingObjectCorpus<E>} has
+a generic parameter \code{E} defining the objects that are handled in
+the corpus.  The class extends \code{Corpus<ObjectHandler<E>>}, so the
+handlers for a cross-validating object corpus will have a
+\code{handle(E)} method.
+
+\subsubsection{Construction}
+
+The cross-validating corpus has a constructor
+\code{CrossValidatingObjectCorpus(int)}, where the number of folds
+must be specified.  These may be changed later using the
+\code{setNumFolds(int)} method.
+
+\subsubsection{Populating the Corpus}
+
+Items are added to the corpus using the method \code{handle(E)}.
+These are all stored in lists in memory.  
+
+For convenience, the cross-validating corpus class is defined to
+implement \code{ObjectHandler<E>} itself, which only requires the
+\code{handle(E)} method.  Thus an entire cross-validating corpus may
+be sent to a parser for population.
+
+The \code{size()} method indicates the total number of objects in the
+corpus.
+
+\subsubsection{Using the Corpus}
+
+The particular fold to use to divide up the data is set using the
+method \code{setFold(int)}.  The current fold is available through the
+method \code{fold()}.  The folds are numbered starting at 0 and ending
+at the number of folds minus one.  The number of folds may also be
+reset at any time using the method \code{setFold(int)}.  The corpus
+may be permuted using a specified pseudorandom number generator with
+the method \code{permuteCorpus(Random)}.
+
+
+
+\subsubsection{Serialization}
+
+A cross-validating corpus will be serializable if the objects
+it contains are serializable.  
+
+
+\subsubsection{Thread Safety and Concurrent Cross-Validation}
+
+Cross-validating corpus instances must be read-write synchronized (see
+\refsec{java-read-write-synchronization}).  The read operations are in
+the handle, permute and set methods.
+
+The obstacle to using a cross-validating corpus across threads is that
+the fold is set on the class itself.  To get around this limitation,
+the method \code{itemView()} returns a ``view'' of the corpus that
+allows the fold number or number of folds to be changed, but not the
+items.  Thus to cross-validate across folds, just create and populate
+and permute a corpus.  Then use \code{itemView()} to produce as
+many virtual copies as you need, setting the folds on each one.  
+
+Note that this does not help with the problem of evaluators being used
+to aggregate scores across folds not being thread safe.  Given that it
+is usually training that is the bottleneck in cross validation,
+explicit synchronization of the evaluators should not cause too much
+of a synchronization bottleneck.
+
+
+
+
+
+
+
+
+
+
+
