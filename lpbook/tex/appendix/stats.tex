@@ -1,9 +1,73 @@
-\chapter{Statistics Utilities}\label{chapter:stats}
+\chapter{Statistics}\label{chapter:stats}
 
 This chapter provides an overview of the basic low-level statistical
 utility classes and methods used by LingPipe.  It may make sense to
 use this chapter more as a reference than to read it on the first
 pass.
+
+\section{Binomial Distribution}
+
+\subsection{Distribution}
+
+The binomial distribution is parameterized by a chance-of-success
+parameter $\theta \in [0,1]$ and a number-of-trials parameter $N \in
+\nats$.  If a random variable $X$ has a binomial distribution with
+parameters $\theta$ and $N$, we write $X \sim \dbin{\theta}{N}$.  The
+probability distribution for $X \sim \dbin{\theta}{N}$ is given by 
+%
+\begin{equation}
+p_X(n) = {N \choose n} \ \theta^{n} \ (1-\theta)^{N-n}.
+\end{equation}
+%
+The term ${N \choose n}$ is the binomial coefficient, defined 
+for $N \geq n \geq 0$ by
+%
+\begin{equation}
+{N \choose n} = \frac{N! \ n!}{(N - n)!}.
+\end{equation}
+%
+Here, the term $n!$ is the factorial operation, defined for $n > 0$ by
+%
+\begin{equation}
+n! = 1 \times 2 \times \cdots \times n = \prod_{m=1}^n m.
+\end{equation}
+%
+The convention is to set $0! = 1$ so that the boundary conditions of
+definitions like the one we provided for the binomial coefficient work
+out properly.
+
+\subsection{Variance}\label{sect:stats-binomial-variance}
+
+The variance and standard deviation of a binomially-distributed random
+variable $X \sim \dbin{\theta}{N}$ are given by
+%
+\begin{equation}
+\hfill
+\var{X} = \frac{\theta (1 - \theta)}{N} 
+\hspace*{0.25in}
+\mbox{and}
+\hspace*{0.25in}
+\sd{X} = \sqrt{\frac{\theta (1 - \theta)}{N}}.
+\hfill
+\end{equation}
+%
+
+We are often more interested in the percentage of the $N$ trials that
+resulted in success, which is given by the random variable $X/N$.  The
+variable $X/N$ is scaled to be between 0 and 1.  With large $N$,
+$X/N$, will be approximately equal to $\theta$ for almost every trial.
+The variance and standard deviation of $X/N$ are derived in the usual
+way, by dividing by the constant $N$,
+%
+\begin{equation}
+\var{X/N} = \theta (1 - \theta) 
+\hspace*{0.25in}
+\mbox{and}
+\hspace*{0.25in}
+\sd{X/N} = \sqrt{\theta (1-\theta)}.
+\end{equation}
+
+
 
 \section{Distribution Divergence Measures}\label{section:stats-divergence}
 
@@ -28,10 +92,10 @@ $Y$ is given by
 %
 \begin{equation}
 \kld{X}{Y}
-= \sum_{n=1}^N p_X(n) \log_2 \frac{p_X(n)}{p_Y(n)}
+= \sum_{n=1}^N p_X(n) \log_2 \frac{p_X(n)}{p_Y(n)}.
 \end{equation}
 %
-Becuase we used base-2 logs, the result is in units of bits.  
+Because we used base-2 logs, the result is in units of bits.  
 
 If there is an outcome $n$ where $p_Y(n) = 0$ and $p_X(n) > 0$, the
 divergence is infinite.  We may allow $p_X(n) = 0$ by interpreting $0
@@ -112,14 +176,14 @@ divergence, we first define a new random variable $Z$ with distribution defined 
 averaging the distributions of $X$ and $Y$,
 %
 \[
-p_Z(n) = \frac{1}{2}(p_X(n) + p_Y(n))
+p_Z(n) = \frac{1}{2}(p_X(n) + p_Y(n)).
 \]
 %
 We then define Jensen-Shannon divergence by taking average divergence
 from $Z$,
 %
 \begin{equation}
-\jsd{X}{Y} = \frac{1}{2}(\kld{X}{Z} + \kld{Y}{Z})
+\jsd{X}{Y} = \frac{1}{2}(\kld{X}{Z} + \kld{Y}{Z}).
 \end{equation}
 %
 As with the symmetrized KL divergence, Jensen-Shannon divergence is
