@@ -158,3 +158,190 @@ scalar values all have different evaluation metrics than categorical
 outcomes.  In this section, we focus exclusively on categorical
 outcomes.
 
+
+\section{Labeled Data, Gold Standards, and Reference Data}
+
+For classification and other natural language tasks, the categories
+assigned to texts are designed and applied by humans, who are
+notoriously noisy in the semantic judgments for natural language.  
+
+For instance, we made up the classification of genomics/non-genomics
+for MEDLINE citations.  In order to gather evaluation data for a
+classifier, we would typically select a bunch of MEDLINE citations at
+random (or maybe look at a subset of interest), and label them
+as to whether they are about genomics or not.
+
+At this point, we have a problem.  If one annotator goes about his or
+her merry way and annotates all the data, everything may seem fine.
+But as soon as you have a second annotator try to annotate the same
+data, you will see a remarkable number of disagreements over what seem
+like reasonably simple notions, like being ``about'' genomics.  For
+instance, what's the status of a citation in which DNA is only
+mentioned in passing?  What about articles that only mention proteins
+and their interactions?  What about an article on the sociology of the
+human genome project?  These boundary cases may seem outlandish, but
+try to label some data and see what happens.
+
+In the Message Understanding Conference evaluations, there were a
+large number of test instances involving the word \stringmention{Mars}
+used to refer to the planet.  The contestants' systems varied in
+whether they treated this as a location or not.  The reference data
+did, but there weren't any planets mentioned in the training data.
+
+\subsection{Majority Rules, Adjudication and Censorship}
+
+Data sets are sometimes created by taking a majority vote on the
+category for items in a corpus.  If there is no majority (for
+instance, if there are two annotators and they disagree), there are
+two options.  First, the data can be censored, meaning that it's
+removed from consideration.  This has the adverse side effect of
+making the actual test cases in the corpus easier than a random
+selection might be because the borderline cases are removed.  Perhaps
+one could argue this is an advantage, because we're not even sure what
+the categories are for those borderline cases, so who cares what the
+system does with them.  
+
+The second approach to disagreements during annotation is
+adjudication.  This can be as simple as having a third judge look at
+the data.  This will break a tie for a binary classification problem,
+but may not make the task any clearer.  It may also introduce noise
+as borderline cases are resolved inconsistently.
+
+A more labor intensive approach is to consider the cases of
+uncertainty and attempt to update the notion of what is being
+annotated.  It helps to do this with batches of examples rather than
+one example at a time.  
+
+The ideal is to have a standalone written coding standard explaining
+how the data was annotated that is so clear that a third party could
+read it and label the data consistently with the reference data.  
+
+
+\section{Confusion Matrices}
+
+One of the fundamental tools for evaluating first-best classifiers is
+the confusion matrix.  A confusion matrix reports on the number of
+agreements between a classifier and the reference (or ``true'')
+categories.  This can be done for classification problems with any
+number of categories.  
+
+\subsection{Example: Blind Wine Classification by Grape}
+
+Confusion matrices are perhaps most easily understood with an example.
+Consider blind wine tasting, which may be viewed as an attempt by a
+taster to classify a wine, whose label is hidden, as to whether it is
+made primarily from the syrah, pinot (noir), or cabernet (sauvignon)
+grape.  We have to assume that each wine is made primarily from one of
+these three grapes so the categories are exclusive and exhaustive.  An
+alternative, binary classification problem would be to determine if
+a wine had syrah in it or not.
+
+Suppose our taster works their way through 27 wines, assigning a
+single grape as a guess for each wine.  For each of the 27 wines,
+we have assumed there is a true answer among the three grapes
+syrah, pinot and cabernet.  The resulting confusion matrix might look
+as follows.
+%
+\begin{center}
+\begin{tabular}{r|r|c|c|c|c}
+\multicolumn{2}{c}{ } & \multicolumn{3}{c}{\tblhead{\bfseries Response}}
+\\ \cline{3-5}
+\multicolumn{2}{c|}{ } & \tblhead{cabernet} & \tblhead{syrah} & \tblhead{pinot}
+\\ \cline{2-5}
+\multirow{3}{0.15\textwidth}{\hfill\tblhead{\bfseries Reference}}
+& \tblhead{cabernet} & 9 & 3 & 0 & {\it 12}
+\\ \cline{2-5}
+& \tblhead{syrah} & 3 & 5 & 1 & {\it 9}
+\\ \cline{2-5}
+& \tblhead{pinot} & 1 & 1 & 4 & {\it 6}
+\\ \cline{2-6}
+\multicolumn{2}{c}{ } & \multicolumn{1}{c}{\it 13} & \multicolumn{1}{c}{\it 9} & \multicolumn{1}{c}{\it 5} & \multicolumn{1}{|c}{\it\bfseries 27}
+\end{tabular}%
+\end{center}
+%
+Each row represents results for a specific reference category.  In the
+example, the first row represents the results for all wines that were
+truly cabernets.  Of the 12 cabernets presented, the taster guessed
+that 9 were cabernets, 3 were syrah, and none were guessed to be a
+pinot.  The total number of items in a row is represented at the end
+in italices, here {\it 12}.  The second row represents the taster's
+resuls for the 9 syrahs in the evaluation.  Of these, 5 were correctly
+classified as syrahs, whereas 3 were misclassified as cabernets and
+one as a pinot.  The last row is the pinots, with 4 correctly
+identified and 1 misclassified as cabernet and 1 as syrah.  Note that
+the table is not symmetric.  One pinot was guessed to be a cabernet,
+but no cabernets were guessed to be pinots.  
+
+The totals along the right are total number of reference items, of
+which there were 12 cabernets, 9 syrahs, and 6 pinots.  The totals
+along the bottom are for responses.  The taster guessed 13 wines were
+cabernets, 9 were syrahs, and 5 were pinots.  The overall total in the
+lower right is 27, which is sum of the values in all the cells, and
+equal to the total number of wines evaluated.
+
+\subsection{Confusion Matrix Statistics}
+
+A number of useful statistics may derived from confusion matrices.  We
+have already seen the basic counts of reference/response pairs, as
+well as reference and response counts by category, as well as the overall counts.
+
+\subsubsection{Total Accuracy}
+
+The overall accuracy is just the number of correct responses divided
+by the total numbe of responses.  A correct response for an item
+occurs when the response category matches the reference category.  The
+count of correct responses are thus on the diagonal of the confusion
+matrix.  There were 9 correct responses for reference cabernets, 5 for
+syrahs, and 4 for pinots, for a total of 18 correct responses.  The
+total accuracy of the classifier is thus $18/27 \approx 0.67$.  
+
+Total accuracy estimates the probability that a classifier will make
+the correct categorization of the next item it faces, assuming the
+items to be evaluated are sampled the same way as the test data.
+
+Because overall accuracy is a simple binomial statistic, we can
+compute a normal approximation to a 95\% confidence interval directly
+(see \refsec{stats-binomial-variance} for an explanation of the
+formula).  In this case, the 95\% interval is approximately plus or
+minus 0.18.  As usual, with so few evaluation cases, we don't get a
+tight estimate of our system's accuracy.  In almost all cases,
+including this one, confidence in our accuracy numbers will be
+inversely proportional to the square root of the number of test cases.
+For instance, with 16 test cases, our confidence interval is sized
+proportionally to $1/\sqrt{16} = 1/4$, and with 64 test cases, it's
+proportional to $1/\sqrt{64} = 1/8$.  So even though we multiply the
+number of cases by 4, the confidence only shrinks by $\sqrt{4}$, or a
+half.
+
+
+\subsection{The \code{ConfusionMatrix} Class}
+
+A confusion matrix is represented in LingPipe as an instance of the
+class \code{ConfusionMatrix}, which is in package
+\code{com.aliasi.classify}.  A confusion matrix is immutable and
+constructed with its categories
+
+
+The confusion matrix class has dozens of methods that return either
+statistics derived from the confusion matrix or views of the confusion
+matrix such as one-versus-all comparisons of a single category versus
+all other categories.
+
+
+
+
+\subsection{Demo: Confusion Matrices}
+
+There is a demo of confusion matrices in the \code{main()} method of
+the class \code{ConfusionMatrixDemo}, and there are no command-line
+arguments.
+%
+\codeblock{ConfusionMatrixDemo.1}
+%
+
+
+
+\subsubsection{One Versus All Comparisons}
+
+
+
