@@ -103,24 +103,6 @@ Given the joint probabilities, we can use the rule of total
 probability to compute conditional probabilities of categories given
 inputs.
 
-\subsection{Reductions to Classification Problems}
-
-Many problems that don't at first blush appear to be classification
-problems may be reduced to classification problems.  For instance, the
-standard document search problem (see \refchap{lucene}) may be recast
-as a classification problem.  Given a user query, such as
-\searchquery{be-bim-bop recipe}, documents may be classified as
-relevant or not-relevant to the search.  
-
-Just about any problem that may be cast in a hypothesize-and-test
-algorithm may use a classifier to do the testing, with a simple binary
-outcome of accept or reject.  For instance, we can generate possible
-named-entity mention chunkings of a text and then use a binary
-classifier to evaluate if they are correct or not.  
-
-Such reductions are often not interpetable probabilistically in the
-sense of assigning probabilities to possible outcomes.
-
 \subsection{Ordinals, Counts, and Scalars}
 
 A classifier is an instance of what statisticians call categorical
@@ -159,7 +141,44 @@ outcomes.  In this section, we focus exclusively on categorical
 outcomes.
 
 
-\section{Labeled Data, Gold Standards, and Reference Data}
+\subsection{Reductions to Classification Problems}
+
+Many problems that don't at first blush appear to be classification
+problems may be reduced to classification problems.  For instance, the
+standard document search problem (see \refchap{lucene}) may be recast
+as a classification problem.  Given a user query, such as
+\searchquery{be-bim-bop recipe}, documents may be classified as
+relevant or not-relevant to the search.  
+
+Another popular reduction is that for ranking.  If we want to rank a
+set of items, we can build a binary classifier for assessing whether
+one item is greater than another in the ordering.  In this case, it is
+then a challenge to piece back together all these binary decisions to
+get a final rank ordering.
+
+Ordinal classification problems may also be reduced to
+classifications.  Suppose we have a three-outcome ordered result, say
+$N \in \{ 1, 2, 3 \}$.  We can develop a pair of binary classifiers
+and use them as an ordinal three-way classifier.  The first classifier
+will test if $N < 2$ and the second if $N < 3$.  If the first
+classifier returns true, the response is 1, else if the second
+classifier returns true the response is 2, else the response is 3.
+Note that if the first classifier returns true and the second false,
+we have an inconsistent situation, which we have resolved by returning
+1.
+
+Just about any problem that may be cast in a hypothesize-and-test
+algorithm may use a classifier to do the testing, with a simple binary
+outcome of accept or reject.  For instance, we can generate possible
+named-entity mention chunkings of a text and then use a binary
+classifier to evaluate if they are correct or not.  
+
+Such reductions are often not interpetable probabilistically in the
+sense of assigning probabilities to possible outcomes.
+
+
+
+\section{Gold Standards, Annotation, and Reference Data}
 
 For classification and other natural language tasks, the categories
 assigned to texts are designed and applied by humans, who are
@@ -187,6 +206,26 @@ large number of test instances involving the word \stringmention{Mars}
 used to refer to the planet.  The contestants' systems varied in
 whether they treated this as a location or not.  The reference data
 did, but there weren't any planets mentioned in the training data.
+
+\subsection{Evaluating Annotators}
+
+The simplest way to compare a pair of annotations is to look at
+percentage of agreement between the annotators.  
+
+Given more than two annotators, pairwise statistics may be calculated.
+These may then be aggregated, most commonly by averaging, to get an
+overall agreement statistic.  It is also worth inspecting the counts
+assigned to categories to see if any annotators are biased toward
+too many or too few assignments to a particular category.
+
+In general, pairs of annotators may be evaluated as if they were
+themselves classifiers.  One is treated as the reference (gold
+standard) and one as the response (system guess), and the response
+is evaluated against the reference.  
+
+It is common to see Cohen's $\kappa$ statistic used to evaluate
+annotators; see \refsec{classifier-eval-kappa} for more information.
+
 
 \subsection{Majority Rules, Adjudication and Censorship}
 
@@ -279,13 +318,13 @@ cabernets, 9 were syrahs, and 5 were pinots.  The overall total in the
 lower right is 27, which is sum of the values in all the cells, and
 equal to the total number of wines evaluated.
 
-\subsection{Confusion Matrix Statistics}
+\subsection{Accuracy}
 
 A number of useful statistics may derived from confusion matrices.  We
 have already seen the basic counts of reference/response pairs, as
 well as reference and response counts by category, as well as the overall counts.
 
-\subsubsection{Total Accuracy}
+\subsubsection{Overall Accuracy}
 
 The overall accuracy is just the number of correct responses divided
 by the total numbe of responses.  A correct response for an item
@@ -299,19 +338,161 @@ Total accuracy estimates the probability that a classifier will make
 the correct categorization of the next item it faces, assuming the
 items to be evaluated are sampled the same way as the test data.
 
+\subsubsection{Accuracy Confidence Intervals} 
+
 Because overall accuracy is a simple binomial statistic, we can
 compute a normal approximation to a 95\% confidence interval directly
 (see \refsec{stats-binomial-variance} for an explanation of the
 formula).  In this case, the 95\% interval is approximately plus or
-minus 0.18.  As usual, with so few evaluation cases, we don't get a
-tight estimate of our system's accuracy.  In almost all cases,
-including this one, confidence in our accuracy numbers will be
-inversely proportional to the square root of the number of test cases.
-For instance, with 16 test cases, our confidence interval is sized
-proportionally to $1/\sqrt{16} = 1/4$, and with 64 test cases, it's
-proportional to $1/\sqrt{64} = 1/8$.  So even though we multiply the
-number of cases by 4, the confidence only shrinks by $\sqrt{4}$, or a
-half.
+minus 0.18 and the 99\% interval approximately plus or minus 0.23.  As
+usual, with so few evaluation cases, we don't get a tight estimate of
+our system's accuracy.
+
+In almost all cases, including this one, confidence in our accuracy
+numbers will be inversely proportional to the square root of the
+number of test cases.  For instance, with 16 test cases, our
+confidence interval is sized proportionally to $1/\sqrt{16} = 1/4$,
+and with 64 test cases, it's proportional to $1/\sqrt{64} = 1/8$.  So
+even though we multiply the number of cases by 4, the confidence only
+shrinks by $\sqrt{4}$, or a half.
+
+
+\subsection{$\kappa$ Statistics for Chance-Adjusted Agreement}\label{section:classifier-eval-kappa}
+
+\subsubsection{Random Accuracy}
+
+Suppose that the response is chosen randomly according to the
+distribution of response answers.  In our running example, the taster
+responded cabernet 13 times out of 27, syrah 9 of 27, and pinot 5 of
+27.  We could choose a response randomly by choosing cabernet 13/27
+times, syrah 9/27, and pinot 5/27.  
+
+If we assume test cases appear in the proportions they do in the test
+set, we have cabernet 12/27 times, syrah 9/27, and pinot 6/27 times.
+
+Now if the responses are chosen randomly, our probabilty of getting
+the right answer is 
+%
+\begin{equation}
+\left(\frac{13}{27} \times \frac{12}{27}\right)
++ \left(\frac{9}{27} \times \frac{9}{27}\right)
++ \left(\frac{5}{27} \times \frac{6}{27}\right)
+\approx 0.3663.
+\end{equation}
+%
+(We use so many decimal places here to compare two different versions
+of $\kappa$ below.)  The best possible random accuracy is achieved
+when the distribution of responses matches that of the references.
+
+\subsubsection{Cohen's $\kappa$ Statistic}
+
+Cohen's $\kappa$ statistic uses the random accuracy for a
+classification problem to adjust accuracy for chance.%
+%
+\footnote{Cohen, Jacob. 1960. A coefficient of agreement for nominal
+  scales. {\it Educational And Psychological Measurement} {\bf
+    20}:37-46.}
+%
+The basic idea is that performance evaluations should be discounted
+based on what could be achieved by randomly guessing (in proportions
+based on the marginal response categories of a responder).  Cohen
+defined $\kappa$ for a specific classification problem, reference
+answers and responses as
+%
+\begin{equation}\label{eq:kappa-statistic}
+\kappa = \frac{a - e}{1 - e}
+\end{equation}
+%
+where $a$ is a response's total accuracy, and $e$ is the random
+accuracy, computed as above.  The notation involves an $e$ because its
+value is also the expected accuracy from guessing randomly (according
+to the response's own proportions).  Thus we expect a system that only
+does as well as random, so that $a = e$, to have a $\kappa$ score of
+0.  The maximum possible value of $\kappa$ is 1, which occurs only for
+perfectly accurate systems where $a = 1$.  The minimum possible value,
+for a perfectly innacurate system with $a = 0$ is $-e/(1-e)$, which is
+coincidentally the (negative) odds for a randomly chosen item to be
+guessed correctly with a random guess.
+
+Cohen's $\kappa$ is often used to evaluate the agreement between a
+pair of annotators for a data labeling task.  Because accuracy only
+depends on the diagonal items, the $\kappa$ statistic provides the
+same result no matter which annotator is treated as the reference and
+which as the response.  LingPipe's confusion matrix class can compute
+$\kappa$, as we see in the demo in the next section.
+
+\subsubsection{Siegel and Castellan's $\kappa$ Statistic}
+
+Depending on how expected accuracy is calculated, the result of the
+$\kappa$ calculation, as given in \refeq{kappa-statistic}, varies.
+
+A popular alternative to Cohen's version is Siegel and Castellan's
+$\kappa$, 
+%
+\footnote{Siegel, Sidney and N.~John Castellan, Jr. 1988.  {\it
+    Nonparametric Statistics for the Behavioral Sciences}. McGraw
+  Hill.}
+%
+which uses the average of the reference and response
+proportions to compute the chance accuracy.  
+
+Continuing our wine example, recall that the reference had 12/27
+cabernet and the response 13/27 cabernet.  In the Siegel and Castellan
+version of $\kappa$, we average these two to get 12.5/27; for syrah,
+averaging 9/27 and 9/27 yields 9/27, and for pinot, 5/27 and 6/27 make
+5.5/27.  The average of values summing to 1 also sums to 1, so we use
+them as probabilities to compute expected accuracy as
+%
+\begin{equation}
+\left( \frac{12.5}{27} \right)^2
++ \left( \frac{9}{27} \right)^2
++ \left( \frac{5.5}{27} \right)^2
+\approx 0.3669.
+\end{equation}
+%
+In general, Siegel and Castellan's expected agreement will be higher
+than with Cohen's calculation.
+
+Given this definition of expected accuracy, we just plug it into the
+definition of the $\kappa$ statistic, $\kappa = (a - e)/(1 - e)$.
+
+
+\subsubsection{Byrt et al.'s $\kappa$ Statistic}
+
+Redefining $\kappa$ is a popular sport, the most recent widely cited
+version being provided by Byrt, Bishop and Carlin.%
+%
+\footnote{Byrt, Ted, Janet Bishop and John B. Carlin. 1993. Bias,
+  prevalence, and kappa. {\it Journal of Clinical Epidemiology}
+  {\bf 46}(5):423--429.}
+%
+In this version, $\kappa$ is computed directly as
+%
+\begin{equation}
+\kappa = 2 a - 1
+\end{equation}
+%
+where $a$ is the accuracy.  The minimum value, for 0\% accuracy,
+is -1, the maximum value, for 100\% accuracy is 1, and the
+breakeven poin is 50\% accuracy, yielding a $\kappa$ value of 0.
+
+
+\subsection{Entropy Measures}
+
+
+
+A good classifier will produce decisions whose decision matrices show
+very low entropy.  Low entropy arises when the uncertainty in the
+category of an item given the classifier's decision is low.  The
+minimal entropy is 0, which occurs when the classifier is perfect in
+the sense that given the classifiers decision, there was no
+uncertainty at all about the actual category.
+
+Like variance and standard deviation, entropy is a measure of the
+randomness of a variable.  If the outcomes are predictable, the entropy 
+of a variable is low.
+
+We can measure the 
 
 
 \subsection{The \code{ConfusionMatrix} Class}
