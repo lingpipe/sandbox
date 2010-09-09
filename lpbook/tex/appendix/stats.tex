@@ -4,9 +4,13 @@ This chapter provides an overview of the statistics used
 in LingPipe as well as the statistical utilities provided
 as classes and methods by LingPIpe.  
 
-\section{Binomial Distribution}
 
-\subsection{Distribution}
+\section{Discrete Probability Distributions}
+
+
+\subsection{Binomial Distribution}
+
+\subsubsection{Distribution}
 
 The binomial distribution is parameterized by a chance-of-success
 parameter $\theta \in [0,1]$ and a number-of-trials parameter $N \in
@@ -35,7 +39,7 @@ The convention is to set $0! = 1$ so that the boundary conditions of
 definitions like the one we provided for the binomial coefficient work
 out properly.
 
-\subsection{Variance}\label{section:stats-binomial-variance}
+\subsubsection{Variance}\label{section:stats-binomial-variance}
 
 The variance and standard deviation of a binomially-distributed random
 variable $X \sim \dbin{\theta}{N}$ are given by
@@ -52,11 +56,12 @@ variable $X \sim \dbin{\theta}{N}$ are given by
 %
 
 We are often more interested in the percentage of the $N$ trials that
-resulted in success, which is given by the random variable $X/N$.  The
-variable $X/N$ is scaled to be between 0 and 1.  With large $N$,
-$X/N$, will be approximately equal to $\theta$ for almost every trial.
-The variance and standard deviation of $X/N$ are derived in the usual
-way, by dividing by the constant $N$,
+resulted in success, which is given by the random variable $X/N$ (note
+that $N$ is a constant here).  The variable $X/N$ is scaled to be
+between 0 and 1.  With large $N$, $X/N$, will be approximately equal
+to $\theta$ for almost every trial.  The variance and standard
+deviation of $X/N$ are derived in the usual way, by dividing by the
+constant $N$,
 %
 \begin{equation}
 \var{X/N} = \theta (1 - \theta) 
@@ -68,10 +73,16 @@ way, by dividing by the constant $N$,
 
 
 
-\section{Entropy}
+\section{Information Theory}
+
+\subsection{Entropy}\label{section:stats-entropy}
 
 Entropy is an information-theoretic measure of the randomness of a
-distribution.  Suppose we have a discrete random variable $X$ taking
+distribution.  
+
+\subsubsection{Entropy of a Discrete Random Variable}
+
+Suppose we have a discrete random variable $X$ taking
 on values in $\nats$.  The entropy of $X$, $\entropy{X}$, is defined by
 %
 \begin{equation}
@@ -88,24 +99,68 @@ variable $Y \sim \dbern{\theta}$, its entropy is
 \\
 &= \theta \log_2 \theta + (1 - \theta) \log_2 (1 - \theta).
 \end{align}
+%
+A plot of $\entropy{Y}$ for $Y \sim \dbern{\theta}$ is provided
+in \reffig{bern-entropy}.
+%
+\begin{figure}
+\begin{center}
+\includegraphics[height=1.75in]{pdfs/bern-entropy.pdf}
+\end{center}%
+\vspace*{-18pt}
+\caption{Entropy of a random variable distributed as $\dbern{\theta}$.}\label{fig:bern-entropy}
+\end{figure}
+%
+The graph makes it clear that when $\theta=0$ or $\theta=1$, the
+outcome is certain, and therefore the entropy is 0.  The maximum
+entropy possible for a Bernoulli distribution is 1 bit, achieved at
+$\theta = 0.5$.  
 
-Entropy may also be expressed as expected log probability,
+\subsubsection{Entropy of a Continuous Random Variable}
+
+As usual, to move to the continous domain, we replace our summations
+with integrals and proceed as usual.  For entropy, suppose we
+have a continuous random variable $X$ taking on values in $\reals$.
+The entropy of $X$, also written as for the discrete case as $\entropy{X}$,
+is defined by
+%
+\begin{equation}
+\entropy{X} = \int_{-\infty}^{\infty} p_X(x) \ \log_2 p_X(x) \ dx
+\end{equation}
+
+
+\subsubsection{Entropy as an Expectation}
+
+Entropy may also be expressed, in both the discrete and continous cases,
+as the expectation of the log probability.  Specifically, we have
 %
 \begin{equation}
 \entropy{X} = \expect{\log_2 p_X(X)}.
 \end{equation}
 
-\includegraphics[height=2.5in]{c:/lpb/tex/entropy.pdf}
 
-Entropy has a natural interpretation in terms of compression.  If we
-want to send the value of a message $X$ taking on values in $\nats$.
-If the sender and receiver both know the distribution $p_X$ of
-outcomes, the expected cost to send the message is $\entropy{X}$ bits.
+\subsubsection{Entropy and Compression}
+
+Entropy has a natural interpretation in terms of compression.  Suppose
+we want to send the a message $X$ which might take on values in
+$\nats$.%
+%
+\footnote{We can always code sequences of characters as numbers, as
+originally noted by Kurt G\"odel, and as explained in any introductory
+computer science theory text.  Just think of a string as representing
+a fraction in the base of the number of characters.}
+%
+If the sender and receiver both know the distribution $p_X$
+of outcomes, the expected cost to send the message is $\entropy{X}$
+bits.  For instance, if we need to send a bit with value 0 or 1, and
+each outcome is equally likely, it will require 1 bit to send the
+message.  On the other hand, if one outcome is more likely than the
+other, we can save space (if we have repeated messages to send;
+otherwise, we must round up).
 
 
 
-
-\section{Distribution Divergence Measures}\label{section:stats-divergence}
+\subsection{Divergence}\label{section:stats-divergence}
 
 Kullback-Leibler (KL) divergence is the standard method to compare the
 distributions of two random variables.  Pairs of topic distributions
@@ -117,7 +172,7 @@ Steyvers used in their experiments.  We'll consider the continuous
 case, and specifically consider the Dirichlet distributions underlying
 the LDA models.
 
-\subsection{Defining KL Divergence}
+\subsubsection{Defining KL Divergence}
 
 As is standard, our definition will use random variables, but we point
 out ahead of time that only the distributions of the variables matter,
@@ -183,7 +238,7 @@ $\entropy{X} = \expect{\log_2 p_X(X)}$.  Another way of interpreting
 KL divergence is as the expected penalty in bits for using $p_Y$ to
 model values of $X$ rather than $p_X$.}
 
-\subsection{Symmetrized KL Divergence}\label{section:stats-symmetrized-kl-divergence}
+\subsubsection{Symmetrized KL Divergence}\label{section:stats-symmetrized-kl-divergence}
 
 KL divergence is not symmetric in the sense that there exist pairs of
 random variables $X$ and $Y$ such that $\kld{X}{Y} \neq \kld{Y}{X}$.
@@ -204,7 +259,7 @@ and of $Y$ from $X$,
 Obviously, $\skld{X}{Y} = \skld{Y}{X}$, so the measure is symmetric.
 
 
-\subsection{Jensen-Shannon Divergence}
+\subsubsection{Jensen-Shannon Divergence}
 
 Another widely used symmetric divergence measure derived from KL divergence
 is the Jensen-Shannon divergence.  To compare $X$ and $Y$ using Jensen-Shannon
@@ -226,7 +281,7 @@ As with the symmetrized KL divergence, Jensen-Shannon divergence is
 symmetric by definition.
 
 
-\subsection{LingPipe KL-Divergence Utilities}
+\subsubsection{LingPipe KL-Divergence Utilities}
 
 KL-divergence is implemented as a static utility method in the
 \code{Statistics} utility class in package \code{com.aliasi.stats}.

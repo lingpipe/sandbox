@@ -1,0 +1,5 @@
+pdf(file="bern-entropy.pdf",pointsize=18)
+curve(H,ylim=c(0,1),xlim=c(0,1),cex.axis=1.5,cex.lab=1.5,xlab="theta",ylab="H[Bern(theta)]",xaxt="n",yaxt="n",bty="n")
+axis(1,at=c(0,0.5,1))
+axis(2,at=c(0,0.5,1))
+dev.off()

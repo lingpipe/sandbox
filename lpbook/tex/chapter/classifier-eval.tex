@@ -279,8 +279,9 @@ Suppose our taster works their way through 27 wines, assigning a
 single grape as a guess for each wine.  For each of the 27 wines,
 we have assumed there is a true answer among the three grapes
 syrah, pinot and cabernet.  The resulting confusion matrix might look
-as follows.
+as in \reffig{blind-wine-confusion}.
 %
+\begin{figure}
 \begin{center}
 \begin{tabular}{r|r|c|c|c|c}
 \multicolumn{2}{c}{ } & \multicolumn{3}{c}{\tblhead{\bfseries Response}}
@@ -297,6 +298,14 @@ as follows.
 \multicolumn{2}{c}{ } & \multicolumn{1}{c}{\it 13} & \multicolumn{1}{c}{\it 9} & \multicolumn{1}{c}{\it 5} & \multicolumn{1}{|c}{\it\bfseries 27}
 \end{tabular}%
 \end{center}
+\caption{Confusion matrix for responses of a taster guessing the grape
+  of 27 different wines.  The actual grapes in the wines make up the
+  reference against which the taster's responses are judged.  Values
+  within the table indicate the number of times a reference grape was
+  guessed as each of the three possibilities. Italicized values
+  outside the box are totals, and the bold italic 27 in the lower
+  right corner is the total number of test cases.}\label{fig:blind-wine-confusion}
+\end{figure}
 %
 Each row represents results for a specific reference category.  In the
 example, the first row represents the results for all wines that were
@@ -479,11 +488,10 @@ breakeven poin is 50\% accuracy, yielding a $\kappa$ value of 0.
 
 \subsection{Entropy Measures}
 
-
-
 A good classifier will produce decisions whose decision matrices show
-very low entropy.  Low entropy arises when the uncertainty in the
-category of an item given the classifier's decision is low.  The
+very low entropy (we define entropy mathematically in
+\refsec{stats-entropy}).  Low entropy arises when the uncertainty in
+the category of an item given the classifier's decision is low.  The
 minimal entropy is 0, which occurs when the classifier is perfect in
 the sense that given the classifiers decision, there was no
 uncertainty at all about the actual category.
@@ -492,7 +500,7 @@ Like variance and standard deviation, entropy is a measure of the
 randomness of a variable.  If the outcomes are predictable, the entropy 
 of a variable is low.
 
-We can measure the 
+
 
 
 \subsection{The \code{ConfusionMatrix} Class}
