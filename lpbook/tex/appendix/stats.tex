@@ -4,6 +4,61 @@ This chapter provides an overview of the statistics used
 in LingPipe as well as the statistical utilities provided
 as classes and methods by LingPIpe.  
 
+\section{Useful Functions}
+
+
+\subsection{The Factorial Function}\label{section:stats-factorial}
+
+The factorial function computes the number of different ordered
+permutations there are of a list of a given (non-negative) number of
+distinct objects.  The factorial function is written $n!$
+and defined for $n \in \nats$ by
+%
+\begin{equation}
+n! = 1 \times 2 \times \cdots \times n = \prod_{m=1}^n m.
+\end{equation}
+%
+The convention is to set $0! = 1$ so that the boundary conditions of
+definitions like the one we provided for the binomial coefficient work
+out properly.
+
+
+\subsection{Binomial Coefficients}\label{section:stats-binomial-coefficient}
+
+The binomial coefficient has many uses.  We're mainly interested in
+combinatorics, so we think of it as providing the number of ways to
+select a subset of a given size from a superset of a given size.  The
+binomial coefficient is written ${m choose n}$, prounced ``$m$
+choose $n$,'' and defined for $m, n \in \nats$ with $n \geq m$ by
+%
+\begin{equation}
+{n \choose m} = \frac{n!}{m! \ (n-m)!}.
+\end{equation}
+
+
+\subsection{The $\Gamma$ Function}\label{section:stats-gamma-function}
+
+The $\Gamma$ function is the complex generalization of the factorial
+function (see \refsec{stats-factorial}).  It is written $\Gamma(x)$, 
+and we're only concerned with real $x \in [0,\infty)$, where its value
+is defined by 
+%
+\begin{equation}
+\Gamma(x) = \int_0^{\infty} t^{x-1} \ \exp(-t) \ dt.
+\end{equation}
+%
+In general, we have
+%
+\begin{equation}
+\Gamma(x+1) = x \times \Gamma(x).
+\end{equation}
+%
+Because $\Gamma(1) = 1$, for all $n \in \nats, n > 0$, we also have
+%
+\begin{equation}
+\Gamma(n) = (n-1)!.
+\end{equation}
+
 
 \section{Discrete Probability Distributions}
 
@@ -22,22 +77,7 @@ probability distribution for $X \sim \dbin{\theta}{N}$ is given by
 p_X(n) = {N \choose n} \ \theta^{n} \ (1-\theta)^{N-n}.
 \end{equation}
 %
-The term ${N \choose n}$ is the binomial coefficient, defined 
-for $N \geq n \geq 0$ by
 %
-\begin{equation}
-{N \choose n} = \frac{N!}{n! \ (N-n)!}
-\end{equation}
-%
-Here, the term $n!$ is the factorial operation, defined for $n > 0$ by
-%
-\begin{equation}
-n! = 1 \times 2 \times \cdots \times n = \prod_{m=1}^n m.
-\end{equation}
-%
-The convention is to set $0! = 1$ so that the boundary conditions of
-definitions like the one we provided for the binomial coefficient work
-out properly.
 
 \subsubsection{Variance}\label{section:stats-binomial-variance}
 
@@ -72,6 +112,45 @@ constant $N$,
 \end{equation}
 
 
+\subsection{Normal Distribution}\label{section:stats-normal-distribution}
+
+
+
+\subsection{$\chi^2$ Distribution}\label{section:stats-chi-squared-distribution}
+
+The $\chi^2$ distribution with $n$ degrees of freedom arises as the
+sum of the squares of $n$ independent unit normal distributions (see
+\refsec{stats-normal-distribution}).  In symbols, if $X_n \sim \dnorm(0,1)$
+for $n \in 1{:}N$, then 
+%
+\begin{equation}
+Y = \sum_{n=1}^N X_n^2
+\end{equation}
+%
+has a $\chi^2$ distribution with $N$ degrees of freedom.
+
+If a variable $X$ has a $\chi^2$ distribution with $N$ degrees of
+freedom, we write $X \sim \dchisq{N}$.  The probability distribution
+for $X$ is defined for $x \in [0,\infty)$ by
+%
+\begin{equation}
+p_X(x) = \frac{1}{2^{N/2} \ \Gamma(n/2)} \ x^{N/2-1} \ \exp(-x/2).
+\end{equation}
+%
+
+If $X \sim \dchisq{N}$, then the mean of $X$ is
+%
+\begin{equation}
+\expect{X} = N.
+\end{equation}
+%
+The variance and standard deviation are equally simple, being
+%
+\begin{equation}
+\var{X} = 2n \ \ \ \ \mbox{and} \ \ \ \  \sd{X} = \sqrt{2n}.
+\end{equation}
+
+
 
 \section{Information Theory}
 
@@ -86,7 +165,7 @@ Suppose we have a discrete random variable $X$ taking
 on values in $\nats$.  The entropy of $X$, $\entropy{X}$, is defined by
 %
 \begin{equation}
-\entropy{X} = \sum_{n \in \nats} p_X(n) \ \log_2 p_X(n).
+\entropy{X} = - \sum_{n \in \nats} p_X(n) \ \log_2 p_X(n).
 \end{equation}
 %
 Because we use base 2 for the logs, the units are bits.  
@@ -95,9 +174,9 @@ For example, if we have a Bernoulli-distributed random
 variable $Y \sim \dbern{\theta}$, its entropy is
 %
 \begin{align}
-\entropy{Y} &= p_Y(1) \log_2 p_Y(1) + p_Y(0) \log_2 p_Y(0)
+\entropy{Y} &= - p_Y(1) \log_2 p_Y(1) - p_Y(0) \log_2 p_Y(0)
 \\
-&= \theta \log_2 \theta + (1 - \theta) \log_2 (1 - \theta).
+&= - \theta \log_2 \theta - (1 - \theta) \log_2 (1 - \theta).
 \end{align}
 %
 A plot of $\entropy{Y}$ for $Y \sim \dbern{\theta}$ is provided
@@ -125,17 +204,17 @@ The entropy of $X$, also written as for the discrete case as $\entropy{X}$,
 is defined by
 %
 \begin{equation}
-\entropy{X} = \int_{-\infty}^{\infty} p_X(x) \ \log_2 p_X(x) \ dx
+\entropy{X} = - \int_{-\infty}^{\infty} p_X(x) \ \log_2 p_X(x) \ dx
 \end{equation}
 
 
 \subsubsection{Entropy as an Expectation}
 
 Entropy may also be expressed, in both the discrete and continous cases,
-as the expectation of the log probability.  Specifically, we have
+as the expectation of the negative log probability.  Specifically, we have
 %
 \begin{equation}
-\entropy{X} = \expect{\log_2 p_X(X)}.
+\entropy{X} = \expect{- \log_2 p_X(X)}.
 \end{equation}
 
 
@@ -148,7 +227,7 @@ $\nats$.%
 \footnote{We can always code sequences of characters as numbers, as
 originally noted by Kurt G\"odel, and as explained in any introductory
 computer science theory text.  Just think of a string as representing
-a fraction in the base of the number of characters.}
+a number in the base of the number characters.}
 %
 If the sender and receiver both know the distribution $p_X$
 of outcomes, the expected cost to send the message is $\entropy{X}$
@@ -158,6 +237,63 @@ message.  On the other hand, if one outcome is more likely than the
 other, we can save space (if we have repeated messages to send;
 otherwise, we must round up).
 
+\subsubsection{Joint Entropy}\label{section:stats-joint-entropy}
+
+We can measure the entropy of two variables $X$ and $Y$ by measuring
+the entropy of their joint distribution $p_{X,Y}$, generalizing our definition
+to
+%
+\begin{equation}
+\entropy{X,Y} = - \sum_{x,y} p_{X,Y}(x,y) \ \log_2 p_{X,Y}(x,y).
+\end{equation}
+%
+This is just what we'd get by computing the entropy of the outcomes
+of the multivariate random variable $Z = (X,Y)$.
+
+\subsubsection{Conditional Entropy}\label{section:stats-conditional-entropy}
+
+We can measure the entropy of a variable $X$ conditional on knowing
+the value of another variable $Y$.  We do this by measuring the
+entropy of the conditional distribution $p_{X|Y}$, weighting
+over the marginal distribution $p_Y$, giving us
+%
+\begin{equation}
+\condentropy{X}{Y} = - \sum_y p_Y(y) \sum_x p_{X|Y}(x|y) \ \log_2 p_{X|Y}(x|y).
+\end{equation}
+%
+
+Conditional entropy, joint entropy and entropy are related as for
+probabilty distributions, with
+%
+\begin{equation}
+\condentropy{X}{Y} = \entropy{X,Y} - \entropy{Y}.
+\end{equation}
+
+
+\subsubsection{Mutual Information}\label{section:stats-mutual-information}
+
+The mutual information between a pair of variables $X$ and $Y$ measures how
+much more information there is in knowing their joint distribution than their
+individual distributions for prediction.  The definition for the discrete case is
+%
+\begin{equation}
+\mutualinfo{X}{Y} = \sum_{x,y} p_{X,Y}(x,y) \ \log_2 \frac{p_{X,Y}(x,y)}{p_X(x) \ p_Y(y)}.
+\end{equation}
+%
+As with the other definitions, it may be expressed as an expectation, with
+%
+\begin{equation}
+\mutualinfo{X}{Y} = \expect{\log_2 \frac{p_{X,Y}(x,y)}{p_X(x) \ p_Y(y)}}
+\end{equation}
+
+Mutual inforamtion is symmetric.  It's related to conditional and joint entropies by
+%
+\begin{align}
+\mutualinfo{X}{Y} &= \entropy{X} + \entropy{Y} - \entropy{X,Y}
+\\
+&= \entropy{X} - \condentropy{X}{Y}.
+\end{align}
+%
 
 
 \subsection{Divergence}\label{section:stats-divergence}
@@ -171,6 +307,21 @@ We will start with the discrete case, as it is what Griffiths and
 Steyvers used in their experiments.  We'll consider the continuous
 case, and specifically consider the Dirichlet distributions underlying
 the LDA models.
+
+\subsubsection{Cross Entropy}\label{section:stats-cross-entropy}
+
+Cross entropy measures the ability of one distribution to represent
+results drawn from another distribution.  Given two discrete random
+variables $X$ and $Y$ with outcomes ranging from 1 to $N$, we define
+the cross entropy of $X$ with respect to $Y$ as
+%
+\begin{equation}
+\xentropy{X}{Y} = \sum_{n=1}^N p_X(n) \ \log_2 p_Y(n).
+\end{equation}
+%
+This value measures the number of bits required, on average, to
+transmit a value of $X$ using the distribution of $Y$ for coding.
+
 
 \subsubsection{Defining KL Divergence}
 
@@ -186,7 +337,9 @@ $Y$ is given by
 = \sum_{n=1}^N p_X(n) \log_2 \frac{p_X(n)}{p_Y(n)}.
 \end{equation}
 %
-Because we used base-2 logs, the result is in units of bits.  
+Because we used base-2 logs, the result is in units of bits.  Note
+that this value is just the entropy of $X$ minus the cross entropy
+of $X$ with respect to $Y$
 
 If there is an outcome $n$ where $p_Y(n) = 0$ and $p_X(n) > 0$, the
 divergence is infinite.  We may allow $p_X(n) = 0$ by interpreting $0

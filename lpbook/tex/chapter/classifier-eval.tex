@@ -486,19 +486,127 @@ is -1, the maximum value, for 100\% accuracy is 1, and the
 breakeven poin is 50\% accuracy, yielding a $\kappa$ value of 0.
 
 
-\subsection{Entropy Measures}
+\subsection{Information-Theoretic Measures}
 
-A good classifier will produce decisions whose decision matrices show
-very low entropy (we define entropy mathematically in
-\refsec{stats-entropy}).  Low entropy arises when the uncertainty in
-the category of an item given the classifier's decision is low.  The
-minimal entropy is 0, which occurs when the classifier is perfect in
-the sense that given the classifiers decision, there was no
-uncertainty at all about the actual category.
+A good classifier will produce decisions whose decision matrices imply
+low entropy in the decision making process (we define entropy
+precisely in \refsec{stats-entropy}).  Low entropy arises when the
+uncertainty in the category of an item given the classifier's decision
+is low.  The minimal entropy is 0, which occurs when the classifier is
+perfect in the sense that given the classifiers decision, there was no
+uncertainty at all about the actual category.  
 
-Like variance and standard deviation, entropy is a measure of the
-randomness of a variable.  If the outcomes are predictable, the entropy 
-of a variable is low.
+In all of the information-theoretic measures, we look at the received
+distribution of data in the confusion matrix to estimate a reference
+and response distribution.  For instance, in the reference, 12/27
+wines were cabernets, 9/27 syrahs, and 6/27 pinots.  We can use these
+frequencies computed from the data to produce probability
+distributions, which can then be measured information theoretically.%
+%
+\footnote{These are essentially maximum likelihood estimates.  The
+  distributions could be given a prior and maximum a posterior
+  estimates or Bayesian point estimates could be used, or we could
+  even use full Bayesian posteriors.  This goes not just for the
+  information-theoretic measures, but also the other measures based on
+  received data.}
+
+
+\subsubsection{Reference Entropy}
+
+If we treat the references and responses as data from which to
+estimate probability distributions, we can evaluate the entropy of the
+reference and response distributions on their own.  We did this before
+taking the reference to be distributed with 12/27 cabernet, 9/27
+syrah, and 6/27 pinot.  The reference entropy is just the entropy of
+the three-outcome discrete probability distribution with probabilty
+12/27 of cabernet, 9/27 of syrah, and 6/27 of pinot.  The entropy for
+these values is computed as
+%
+\begin{equation}
+\left( \frac{12}{27} \times \log_2 \frac{12}{27} \right)
++ \left( \frac{9}{27} \times \log_2 \frac{9}{27} \right)
++ \left( \frac{6}{27} \times \log_2 \frac{6}{27} \right)
+\approx 1.53.
+\end{equation}
+
+The entropy of the reference measures how well we can do by randomly
+guessing according to the distrubiton of the reference.
+Unfortunately, the reference distribution is rarely known; instead, we
+have to work with estimates of the reference distribution derived from
+data.  Distributions that are highly skewed have lower entropy than
+uniform distributions where all outcomes are equally likely.
+
+\subsubsection{Conditional Entropy}
+
+In evaluating a classifier, we are really interested in how much the
+classifier reduces the undertainty in the outcome.  Without the classfier,
+the uncertainty is measured by the entropy of the reference distribution,
+as calculated above.  With the classifier in place, we need to measure
+the entropy of the outcome given the response of the classifier.  
+
+Let's focus on the response in the case of wines whose reference
+category is pinot.  In those cases, of which there were 6, the
+classifier classified 1 as cabernet, 1 as syrah, and 4 as pinot.  
+This corresponds to a discrete distribution with probabilities
+1/6, 1/6 and 4/6.  Calculating the entropy for this outcome, we
+get
+%
+\begin{equation}
+\left( \frac{1}{6} \times \log_2 \frac{1}{6} \right)
++ \left( \frac{1}{6} \times \log_2 \frac{1}{6} \right)
++ \left( \frac{4}{6} \times \log_2 \frac{4}{6} \right)
+\approx 1.25.
+\end{equation}
+%
+We will refer to this value as the conditional entropy of the outcome
+given the reference category is pinot and observing the classifer's
+response.
+
+To get the overall conditional entropy, we just weight these
+by-reference-category conditional entropies by the fraction of
+outcomes they represent.  For instance, we weight the 1.25 conditional
+entropy of pinot by multiplying by 6/27, because there are 6 wines
+whose reference grape is pinot in the evaluation.
+
+\subsubsection{Cross Entropy}
+
+Cross entropy is a measurement of how well one distribution predicts
+another one (see \refsec{stats-cross-entropy}.  For classifiers, this
+measures just the distributions of the references and responses.  For
+our example, the reference has 12/27 cabernet, 9/27 syrah, and 6/27
+pinot, whereas the response had 13/27 cabernet, 9/27 syrah, and 5/27
+pinot.  If we take these response ratios as probability distributions,
+the cross-entropy evaluation measures how well the response
+distribution matches the reference distribution.  Note that this is
+not a measure of classification accuracy.  The lowest cross entropy
+possible is the entropy of the reference distribution, and occurs when
+the response distribution exacty matches the reference distribution.
+
+\subsubsection{KL Divergence}
+
+In addition to cross entropy, the classifier evaluators compute the KL
+divergence of the response distribution from the reference
+distribution (see \refsec{stats-divergence}).  This is also known as
+relative entropy, or information gain, and it's a measure of how much
+information the response distribution provides about the reference
+distribution.
+
+\subsubsection{Mutual Information}
+
+Classifier evaluators are also able to compute the mutual information
+between the reference and response distributions (see
+\refsec{stats-mutual-information}).  This is just entropy of the
+responses minus the conditional entropy of the reference given the
+response.
+
+\subsection{$\chi^2$ Independence Tests}
+
+The $\chi^2$ independence test assesses whether the results are likely
+to have been generated by the reference and response being generated
+independently according to their basic distributions.  (This is the same
+kind of random guessing underlying Cohen's $\kappa$ statistic.)
+
+
 
 
 
