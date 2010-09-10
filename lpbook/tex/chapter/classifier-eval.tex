@@ -256,13 +256,39 @@ how the data was annotated that is so clear that a third party could
 read it and label the data consistently with the reference data.  
 
 
+\section{Precision-Recall Evaluation}
+
+We start by considering the evaluation of a first-best classifier on a
+two-category classification problems; we consider first-best
+classifiers for classification problems in
+\refsec{classifier-eval-confusion-matrix}.  We treat these
+classification problems asymmetrically by labeling one catgory
+``positive'' and the other ``negative'' (equivalently
+``accept''/''reject'' or ``true''/''false'').
+
+\subsection{$2 \times 2$ Confusion Matrices}
+
+Suppose we are evaluating a first-best classifier on a two-category
+classification problem for which we have reference answers.  These
+reference answers are usually taken to be whatever is considered
+the ``true'' answer, but this is not a requirement.  We can evaluate
+two classifiers against each other, for instance, or two annotators
+who labeled the same corpus.  In many of these cases, it doesn't
+matter which system is taken as the reference and the response.  The
+statistics we report are almost all either symmetric or implemented
+in both directions.
+
+
+
+
+
 \section{Confusion Matrices}\label{section:classifier-eval-confusion-matrix}
 
 One of the fundamental tools for evaluating first-best classifiers is
 the confusion matrix.  A confusion matrix reports on the number of
 agreements between a classifier and the reference (or ``true'')
 categories.  This can be done for classification problems with any
-number of categories.  
+number of categories.
 
 \subsection{Example: Blind Wine Classification by Grape}
 
