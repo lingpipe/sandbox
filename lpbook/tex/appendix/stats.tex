@@ -112,6 +112,9 @@ constant $N$,
 \end{equation}
 
 
+
+\section{Continuous Probability Distributions}
+
 \subsection{Normal Distribution}\label{section:stats-normal-distribution}
 
 
@@ -189,21 +192,43 @@ outside of the central probabiilty interval of $1-p$.
 
 \section{Information Theory}
 
+Information theory, as developed by Shannon,% 
+%
+\footnote{Claude Shannon. 1948.  A mathematical theory of communication.  {\it Bell System Technical Journal} {\bf 27}:379--423, 623--656.}
+%
+was originally developed to model the transmission of messages over
+noisy channels.  
+
+
 \subsection{Entropy}\label{section:stats-entropy}
 
 Entropy is an information-theoretic measure of the randomness of a
 distribution.  
 
-\subsubsection{Entropy of a Discrete Random Variable}
 
-Suppose we have a discrete random variable $X$ taking
-on values in $\nats$.  The entropy of $X$, $\entropy{X}$, is defined by
+The entropy of a random variable $X$ is most easily expressed as the
+expectation of the negative log probability of the variable,
+%
+\begin{equation}
+\entropy{X} = \expect{- \log_2 p_X(X)}.
+\end{equation}
+%
+Because we use base 2, the results are in units of binary digits,
+otherwise known as bits.
+
+For a discrete random variable $X$, unfolding the expectation notation
+yields
 %
 \begin{equation}
 \entropy{X} = - \sum_{n \in \nats} p_X(n) \ \log_2 p_X(n).
 \end{equation}
 %
-Because we use base 2 for the logs, the units are bits.  
+For a continous random variable $X$, we replace the summations
+over natural numbers with integration over the real numbers,
+%
+\begin{equation}
+\entropy{X} = - \int_{-\infty}^{\infty} p_X(x) \ \log_2 p_X(x) \ dx
+\end{equation}
 
 For example, if we have a Bernoulli-distributed random
 variable $Y \sim \dbern{\theta}$, its entropy is
@@ -230,28 +255,6 @@ outcome is certain, and therefore the entropy is 0.  The maximum
 entropy possible for a Bernoulli distribution is 1 bit, achieved at
 $\theta = 0.5$.  
 
-\subsubsection{Entropy of a Continuous Random Variable}
-
-As usual, to move to the continous domain, we replace our summations
-with integrals and proceed as usual.  For entropy, suppose we
-have a continuous random variable $X$ taking on values in $\reals$.
-The entropy of $X$, also written as for the discrete case as $\entropy{X}$,
-is defined by
-%
-\begin{equation}
-\entropy{X} = - \int_{-\infty}^{\infty} p_X(x) \ \log_2 p_X(x) \ dx
-\end{equation}
-
-
-\subsubsection{Entropy as an Expectation}
-
-Entropy may also be expressed, in both the discrete and continous cases,
-as the expectation of the negative log probability.  Specifically, we have
-%
-\begin{equation}
-\entropy{X} = \expect{- \log_2 p_X(X)}.
-\end{equation}
-
 
 \subsubsection{Entropy and Compression}
 
@@ -272,36 +275,55 @@ message.  On the other hand, if one outcome is more likely than the
 other, we can save space (if we have repeated messages to send;
 otherwise, we must round up).
 
-\subsubsection{Joint Entropy}\label{section:stats-joint-entropy}
+
+\subsection{Joint Entropy}\label{section:stats-joint-entropy}
 
 We can measure the entropy of two variables $X$ and $Y$ by measuring
-the entropy of their joint distribution $p_{X,Y}$, generalizing our definition
-to
+the entropy of their joint distribution $p_{X,Y}$, generalizing our
+definition to
 %
 \begin{equation}
-\entropy{X,Y} = - \sum_{x,y} p_{X,Y}(x,y) \ \log_2 p_{X,Y}(x,y).
+\entropy{X,Y} = \expect{\log_2 p_{X,Y}(x,y)}.
 \end{equation}
 %
-This is just what we'd get by computing the entropy of the outcomes
-of the multivariate random variable $Z = (X,Y)$.
+For instance, with discrete $X$ and $Y$, this works out to
+%
+\begin{equation}
+\entropy{X,Y} = - \sum_{x} \sum_{y} p_{X,Y}(x,y) \ \log_2 p_{X,Y}(x,y).
+\end{equation}
+%
 
-\subsubsection{Conditional Entropy}\label{section:stats-conditional-entropy}
+Joint entropy is symmetric, so that
+%
+\begin{equation}
+\entropy{X,Y} = \entropy{Y,X}.
+\end{equation}
+
+\subsection{Conditional Entropy}\label{section:stats-conditional-entropy}
 
 We can measure the entropy of a variable $X$ conditional on knowing
-the value of another variable $Y$.  We do this by measuring the
-entropy of the conditional distribution $p_{X|Y}$, weighting
-over the marginal distribution $p_Y$, giving us
+the value of another variable $Y$.  The expectation-based definition
+is thus 
 %
 \begin{equation}
-\condentropy{X}{Y} = - \sum_y p_Y(y) \sum_x p_{X|Y}(x|y) \ \log_2 p_{X|Y}(x|y).
+\condentropy{X}{Y} = \expect{-\log_2 p_{X|Y}(X|Y)}.
 \end{equation}
+%
+In the case of discrete $X$ and $Y$, this works out to
+%
+\begin{align}
+\condentropy{X}{Y} 
+&= - \sum_y \sum_x p_{X,Y}(x,y) \ \log_2 p_{X|Y}(x|y)
+\\
+&= - \sum_y p_Y(y) \sum_x p_{X|Y}(x|y) \ \log_2 p_{X|Y}(x|y).
+\end{align}
 %
 
 Conditional entropy, joint entropy and entropy are related as for
 probabilty distributions, with
 %
 \begin{equation}
-\condentropy{X}{Y} = \entropy{X,Y} - \entropy{Y}.
+\entropy{X,Y} = \condentropy{X}{Y} + \entropy{Y}.
 \end{equation}
 
 
@@ -309,19 +331,30 @@ probabilty distributions, with
 
 The mutual information between a pair of variables $X$ and $Y$ measures how
 much more information there is in knowing their joint distribution than their
-individual distributions for prediction.  The definition for the discrete case is
+individual distributions for prediction.  Using expectations, mutual information
+between variables $X$ and $Y$ is defined to be
+%
+\begin{align}
+\mutualinfo{X}{Y} 
+&= \expect{-\log_2 \frac{p_{X,Y}(x,y)}{p_X(x) \ p_Y(y)}}
+&= \expect{-\log_2 p_{X,Y}(x,y)} + \expect{\log_2 p_X(x)} + \expect{\log_2 p_Y(y)}
+\end{align}
+%
+In the discrete case, this unfolds to
 %
 \begin{equation}
-\mutualinfo{X}{Y} = \sum_{x,y} p_{X,Y}(x,y) \ \log_2 \frac{p_{X,Y}(x,y)}{p_X(x) \ p_Y(y)}.
+\mutualinfo{X}{Y} = - \sum_{x,y} p_{X,Y}(x,y) \ \log_2 \frac{p_{X,Y}(x,y)}{p_X(x) \ p_Y(y)}.
 \end{equation}
 %
-As with the other definitions, it may be expressed as an expectation, with
-%
-\begin{equation}
-\mutualinfo{X}{Y} = \expect{\log_2 \frac{p_{X,Y}(x,y)}{p_X(x) \ p_Y(y)}}
-\end{equation}
 
-Mutual inforamtion is symmetric.  It's related to conditional and joint entropies by
+Mutual information is symmetric, so that
+%
+\begin{equation}
+\mutualinfo{X}{Y} = \mutualinfo{Y}{X}.
+\end{equation}
+%
+It's related to conditional and joint entropies by the unfolding
+in the second step of the definition as 
 %
 \begin{align}
 \mutualinfo{X}{Y} &= \entropy{X} + \entropy{Y} - \entropy{X,Y}

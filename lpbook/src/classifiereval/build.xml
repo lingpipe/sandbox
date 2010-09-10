@@ -32,8 +32,18 @@
     </jar>
   </target>
 
+  <target name="confusion-matrix"
+          depends="jar">
+    <java classname="com.lingpipe.book.classifiereval.ConfusionMatrixDemo"
+          fork="true">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+  
+
   <target name="run"
-          depends=""/>
+          depends="confusion-matrix"/>
 
 
 </project>
