@@ -424,9 +424,6 @@ when the distribution of responses matches that of the references.
 Cohen's $\kappa$ statistic uses the random accuracy for a
 classification problem to adjust accuracy for chance.%
 %
-\footnote{Cohen, Jacob. 1960. A coefficient of agreement for nominal
-  scales. {\it Educational And Psychological Measurement} {\bf
-    20}:37-46.}
 %
 The basic idea is that performance evaluations should be discounted
 based on what could be achieved by randomly guessing (in proportions
@@ -464,9 +461,6 @@ $\kappa$ calculation, as given in \refeq{kappa-statistic}, varies.
 A popular alternative to Cohen's version is Siegel and Castellan's
 $\kappa$, 
 %
-\footnote{Siegel, Sidney and N.~John Castellan, Jr. 1988.  {\it
-    Nonparametric Statistics for the Behavioral Sciences}. McGraw
-  Hill.}
 %
 which uses the average of the reference and response
 proportions to compute the chance accuracy.  
@@ -497,10 +491,7 @@ definition of the $\kappa$ statistic, $\kappa = (a - e)/(1 - e)$.
 Redefining $\kappa$ is a popular sport, the most recent widely cited
 version being provided by Byrt, Bishop and Carlin.%
 %
-\footnote{Byrt, Ted, Janet Bishop and John B. Carlin. 1993. Bias,
-  prevalence, and kappa. {\it Journal of Clinical Epidemiology}
-  {\bf 46}(5):423--429.}
-%
+xo%
 In this version, $\kappa$ is computed directly as
 %
 \begin{equation}
@@ -638,7 +629,6 @@ taster's distribution of answers.%
 \footnote{This random guessing is the same kind that underlies the
 expected correct answers by chance used in the definition of
 Cohen's $\kappa$ statistic in \refsec{classifier-eval-kappa}.}
-%
 
 The number of degrees of freedom is just the square of the number of
 categories minus one.  We can use the $\chi^2$ distribution with this
@@ -666,75 +656,10 @@ is known as mean square contingency.  It's defined by dividing the
 $X^2$ statistic underlying the $\chi^2$ test by the number of test
 items. 
 
-Cram\'er's V statistic%
-%
-\footnote{H. Cramér. 1999. {\it Mathematical Methods of
-    Statistics}. Princeton University Press.}
-%
-is designed to measure the degree of association between the
-rows and columns in a general contingency table.  Here, we apply
-it to the square confusion matrix case
-%
-\begin{equation}
-V^2 = \frac{\varphi^2}{K-1},
-\end{equation}
-%
-where $K$ is the number of categories.   In the case of two categories,
-$K=2$, this reduces to the $\varphi$ statistic.
 
 
 \subsection{Index of Predictive Association}
 
-Goodman and Kruskal defined an assymmetric measure of predictive
-association which they called $\lambda_B$.%
-%
-\footnote{Goodman and Kruskal wrote three papers in the same journal analyzing
-  cross-classified data such as is found in confusion matrices,
-  starting with Goodman, L.~A. and W.~H.~Kruskal. 1954. Measures of
-  association for cross classifications. Part I. {\it Journal of the
-    American Statistical Association} {\bf 49}:732–-764.  Part II
-was published in 1959 in volume {\bf 53}, pages 123--163, and
-Part III in 1963 in volumne {\bf 58}, pages 310--364.}
-%
-The value of $\lambda_B$ is (an estimate of) the reduction in error
-likelihood from knowing the response category and using it to predict
-the reference category.  It takes on values between 0 and 1, with
-higher values being better, 0 indicating independence and 1 perfect
-assocaition.  Suppose we have a confusion matrix $X$ of dimensions $M
-\times M$, where $X_{m,n}$ is the count for the $m$-th response
-category and $n$-th reference category.  The index is defined by
-%
-\begin{equation}
-\lambda_A 
-= \frac{\left(\sum_m R_m\right) - S}
-       {T - S}
-\end{equation}
-%
-where $T$ is just the total count in the matrix,
-%
-\begin{equation}
-T = \sum_{i = 1}^M \sum_{j=1}^M X_{i,j},
-\end{equation}
-%
-$S$ is the maximum count assigned to any reference item in the
-response,
-%
-\begin{equation}
-S = \max_m \sum_{n=1}^M X_{n,m},
-\end{equation}
-%
-and $R_m$ is the maximum count assigned by the response to reference
-item $m$,
-%
-\begin{equation}
-R_m = \max_n X_{n,m}.
-\end{equation}
-%
-
-The $\lambda_A$ index of predictive association is not symmetric
-between the reference and response.  If we reverse the roles of
-reference and response, we get the $\lambda_B$ statistic, which tells
-us how much the reference helps us predict the response.
 
 
 \subsection{The \code{ConfusionMatrix} Class}

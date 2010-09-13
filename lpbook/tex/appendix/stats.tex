@@ -1,10 +1,54 @@
 \chapter{Statistics}\label{chapter:stats}
 
-This chapter provides an overview of the statistics used
-in LingPipe as well as the statistical utilities provided
-as classes and methods by LingPIpe.  
+This chapter provides an overview of the statistics used in LingPipe
+as well as the statistical utilities provided as classes and methods
+by LingPipe.  Without the space to repeat an entire calculus, matrix
+and math stats curriculum, we use this appendix more as a reminder for
+the definitions we use in the book.
 
 \section{Useful Functions}
+
+
+\subsection{Logarithms and Exponents}
+
+The exponential function $\exp(x)$ is defined as the unique non-zero
+solution to the differential equation
+%
+\begin{equation}
+\frac{d}{dx}f = f.
+\end{equation}
+%
+That is, $\exp(x)$ is the unique function satisfying this equation.
+The exponential function may be applied to any real number, but its
+value is always positive.  The exponential function has some
+convenient properties, such as
+%
+\begin{equation}
+\exp(a + b) = \exp(a) \times \exp(b), \mbox{ and}
+\end{equation}
+%
+\begin{equation}
+\exp(a \times b) = \exp(a)^b.
+\end{equation}
+
+The natural logarithm, $\log x$ is defined as the inverse of $\exp(x)$,
+taking
+%
+\begin{equation}
+\log \exp(x) = x.
+\end{equation}
+%
+For all $y > 0$, we also have $\exp(\log y) = y$.  Logarithms convert
+multiplication into addition and exponentiation into multiplication, with
+%
+\begin{equation}
+\log (x \times y) = \log x + \log y, \mbox{ and}
+\end{equation}
+%
+\begin{equation}
+\log x^y = y \log x.
+\end{equation}
+
 
 
 \subsection{The Factorial Function}\label{section:stats-factorial}
@@ -155,8 +199,8 @@ If $X \sim \dchisq{N}$, then the mean, variance and standard deviation of $X$ ar
 \section{Contingency Tables}
 
 A contingency table is an $M \times N$ matrix $C$ of counts
-\ie{$C_{m,n} \in \nats$}.  A generic contingency table is shown
-in \reffig{stats-generic-contingency-table}.
+\ie{$C_{m,n} \in \nats$}.  A generic contingency table is shown in
+\reffig{stats-generic-contingency-table}.
 %
 \begin{figure}
 \begin{center}
@@ -196,7 +240,7 @@ C_{+,+} = \sum_{m=1}^M \sum_{n=1}^N C_{m,n}.
 
 
 
-\subsection{$\chi^2$ Tests of Independence}
+\subsection{$\chi^2$ Tests of Independence}\label{section:stats-chi-square-independence}
 
 The $\chi^2$ distribution may be used to test the null hypothesis that
 that a pair of categorical random variables are generated
@@ -243,8 +287,8 @@ maximum likelihood estimates $\theta^*, \phi^*$ of $\theta,\phi$
 given $C$ are
 %
 \begin{equation}
-\theta^*_m = \frac{C_{m,+}}{C_{+,+}}, \mbox{ and}
-\ \ \ \ \
+\theta^*_m = \frac{C_{m,+}}{C_{+,+}} 
+\ \ \ \ \ \mbox{and} \ \ \ \ \ 
 \phi^*_n = \frac{C_{+,n}}{C_{+,+}}.
 \end{equation}
 
@@ -269,7 +313,8 @@ If $A_k$ and $B_k$ are independent, the distribution of the statistic
 $X^2$ is approximately $\chi^2$ with $(M-1) \times (N-1)$ degrees of
 freedom (see \refsec{stats-chi-squared-distribution}).%
 %
-\footnote{We have $MN$ cells, so have $MN-1$ degrees of freedom, of
+\footnote{The proof is too complex, but we provide some hints as to
+  its form.  We have $MN$ cells, so have $MN-1$ degrees of freedom, of
   which we lose $M-1$ and $N-1$ because we are estimating $\theta^*$
   and $\phi^*$, which have one less than their dimensionality degrees
   of freedom, $M-1$ and $N-1$, for a total of $MN-1 - (M + N -2) =
@@ -290,6 +335,241 @@ As usual, the classical hypothesis test rejects the null hypothesis with
 $p$-value $\alpha$ if the value of the test statistic $X^2$ is outside
 of the central and columns are independent if the $X^2$ statistic is
 outside of the central probabiilty interval of $1-p$.
+
+\subsection{Further Contingency and Association Statistics}
+
+\subsubsection{Pearson's Mean Square Contingency}
+Dividing Pearson's $\chi^2$ statistic $X^2$ by the number of cases
+yields Pearson's $\varphi^2$ statistic.
+%
+\begin{equation}
+\varphi^2 =\frac{X^2}{C_{+,+}}
+\end{equation}
+%
+The $\varphi^2$ statistic is known as the mean square contingency for
+the table $C$.  As with $X^2$, larger values indicate more contingency.
+
+\subsubsection{Cramér's Degree of Association}
+
+Cramér's V statistic%
+%
+\footnote{H. Cramér. 1999. {\it Mathematical Methods of
+    Statistics}. Princeton University Press.}
+%
+is designed to measure the degree of association between the
+rows and columns in a general contingency table.   The square of
+$V$ is defined by dividing $\varphi^2$ by the minimum of the number
+of rows and columns minus 1,
+%
+\begin{equation}
+V^2 = \frac{\varphi^2}{\min(M,N)-1}.
+\end{equation}
+%
+Obviously, the definition only makes sense if $M,N \geq 2$, and if
+$M=2$ or $N=2$, $V^2$ reduces to $\varphi^2$.  As with $\varphi^2$ and
+$X^2$, larger values of $V^2$ indicate stronger associations.
+
+\subsubsection{Goodman And Kruskal's Index of Predictive Association}
+
+Goodman and Kruskal defined an asymmetric measure of predictive
+association which they called $\lambda_B$.%
+%
+\footnote{Goodman and Kruskal wrote three papers in the same journal analyzing
+  cross-classified data such as is found in contingency matrices,
+  starting with Goodman, L.~A. and W.~H.~Kruskal. 1954. Measures of
+  association for cross classifications. Part I. {\it Journal of the
+    American Statistical Association} {\bf 49}:732–-764.  Part II
+was published in 1959 in volume {\bf 53}, pages 123--163, and
+Part III in 1963 in volumne {\bf 58}, pages 310--364.}
+%
+The value of $\lambda_B$ is (an estimate of) the reduction in error
+likelihood from knowing the response category and using it to predict
+the reference category.  It takes on values between 0 and 1, with
+higher values being better, 0 indicating independence and 1 perfect
+assocaition.  
+
+Suppose we have a confusion matrix $X$ of dimensions $M
+\times M$, where $X_{m,n}$ is the count for the $m$-th response
+category and $n$-th reference category.  The index is defined by
+%
+\begin{equation}
+\lambda_A 
+= \frac{\left(\sum_m R_m\right) - S}
+       {C_{+,+} - S}
+\end{equation}
+%
+where $S$ and $R$ are defined by 
+%
+\begin{equation}
+S = \max_m \ C_{m,+}
+\ \ \ \ \ \mbox{and} \ \ \ \ \
+R_m = \max_n \ C_{n,m}.
+\end{equation}
+%
+These statistics are unusual in using the maximum rather than
+matching.  Dividing through by $C_{+,+}$ reveals a structure very much
+like the $\kappa$ statistic (see \refsec{stats-kappa}), with $e$
+replaced by $S/C_{+,+}$ and with $a$ replaced by $\sum_m R_M /
+C_{+,+}$.
+
+The $\lambda_A$ statistic is not symmetric between the rows and
+columns.  If we transpose the matrix and compute the same statistic,
+we get $\lambda_B$.
+
+
+\subsection{Confusion Matrices}
+
+A confusion matrix is just a square ($N \times N$) contingency table
+where the variable represented by the rows and columns has the same
+set of categorical outcomes.  Confusion matrices are often used to
+evaluate classifiers, taking the rows to represent reference
+categories and columns to represent system responses.
+
+There is a wide range of statistics that have been applied to
+evaluating the performance of classifiers using confusion matrices.
+
+\subsection{$\kappa$ Statistics for Chance-Adjusted Agreement}\label{section:stats-kappa}
+
+Suppose we have an $N \times N$ confusion matrix $C$.  
+
+Cohen's $\kappa$ statistic%
+\footnote{Cohen, Jacob. 1960. A coefficient of agreement for nominal
+  scales. {\it Educational And Psychological Measurement} {\bf
+    20}:37-46.}
+%
+is defined by
+%
+\begin{equation}
+\kappa = \frac{a - e}{1 - e},
+\end{equation}
+%
+where
+%
+\begin{equation}
+a = \frac{\sum_{n=1}^N C_{n,n}}{C_{+,+}}
+\ \ \mbox{ and } \ \ 
+e = \sum_{n=1}^N \theta^*_n \ \times \ \phi^*_n = \frac{E_{n,n}}{C_{+,+}}.
+\end{equation}
+%
+In words, $a$ is the percentage of cases in which there was agreement,
+in other words the total accuracy, and $e$ is the expected accuracy if
+the reference and response are independent.
+
+Siegel and Castellan's $\kappa$ statistic%
+\footnote{Siegel, Sidney and N.~John Castellan, Jr. 1988.  {\it
+    Nonparametric Statistics for the Behavioral Sciences}. McGraw
+  Hill.}
+%
+has the same definitional form as Cohen's, but the calculation of the
+expectation is based on averaging the reference and response to define
+%
+\begin{equation}
+e = \sum_{n=1}^N \left( \frac{\theta^*_n + \phi^*_n}{2} \right)^2.
+\end{equation}
+
+Byrt et al.'s $\kappa$ statistic%
+%
+\footnote{Byrt, Ted, Janet Bishop and John B. Carlin. 1993. Bias,
+  prevalence, and kappa. {\it Journal of Clinical Epidemiology}
+  {\bf 46}(5):423--429.}
+%
+completely ignores the adjustment for
+category prevalence found in $e$, taking an arbitrary 50\% chance of
+agreement, corresponding to $e=1/2$, and resulting in a definition of
+$\kappa = 2a - 1$.
+
+
+\subsection{Sensitivity-Specificity Matrices}
+
+A sensitivity-specificity matrix is a $2 \times 2$ confusion matrix
+where the binary categories are distinguished as ``positive'' and
+``negative'' (or ``true'' and ``false'' or ``accept'' and ``reject'').
+The cells have conventional names in a sensitivity-specificy matrix,
+which we show in \reffig{generic-sensitivity-specificity-matrix}.
+%
+\begin{figure}
+\begin{center}
+\begin{tabular}{rr|cc}
+\multicolumn{2}{c}{ } & \multicolumn{2}{c}{\tblhead{\bfseries Response}}
+\\
+\multicolumn{2}{c|}{ } & \tblhead{Positive} & \tblhead{Negative}
+\\
+\cline{2-4}
+\multirow{2}{0.15\textwidth}{\tblhead{\bfseries Reference}}
+& \tblhead{Positive} & TP & FN
+\\
+& \tblhead{Negative} & FP & TN
+
+\end{tabular}
+\end{center}
+\caption{A generic sensitivity-specificity matrix is a $2 \times 2$
+  confusion matrix with columns and rows labeled with ``positive'' and
+  ``negative.''.  The code P (positive) is assigned to reference
+  positives and N (negative) to reference negatives, with T (true)
+  assigned to correct responses and F (false) to incorrect
+  responses.}\label{fig:generic-sensitivity-specificity-matrix}
+\end{figure}
+%
+The true positives (TP), false positives (FP) are for correct and
+incorrect responses when the reference category is positive, and true
+negative (TN) and false negative (FN) for correct and incorrect
+responses when the reference category is negative.
+
+\subsubsection{Precision and Recall}
+
+For search and many classification evaluations, precision and recall
+are the most commonly reported metrics.  Given a
+sensitivity-specificity matrix, precision and recall are calculated as
+%
+\begin{equation}
+\mbox{precision} = \frac{TP}{TP+FP}
+\ \ \ \ \ \mbox{and} \ \ \ \ \ 
+\mbox{recall} = \frac{TP}{TP+FN}.
+\end{equation}
+%
+Precision is the percentage of positive responses
+($\mbox{TP}+\mbox{FN}$) that are correct, whereas and recall the
+percentage of positive reference items ($\mbox{TP}+\mbox{FP}$) that
+were assigned a positive response.  Looking at the matrix, we see that
+recall is based on the top row and precision on the left column.  In
+the next sections, we'll fill in the dual statistics.
+
+Precision is sometimes called positive predictive accuracy, because
+it's the accuracy for items that get a positive prediction.
+
+\subsubsection{Sensitivity and Specificity}
+
+Sensitivity and specificity are more commonly used to evaluate
+sensitivity-specificity matrices (hence the name we gave them). 
+These are defined by 
+%
+\begin{equation}
+\mbox{sensitivity} = \frac{TP}{TP+FN}
+\ \ \ \ \ \mbox{and} \ \ \ \ \ 
+\mbox{specificity} = \frac{TN}{TN+FP}
+\end{equation}
+%
+Sensitivity is the same statistic as recall, being based on the top
+row of the matrix.  
+
+The easiest way to think of sensitivity and specificity is as
+accuracies on reference positives ($\mbox{TP}+\mbox{FN}$) and
+reference negatives ($\mbox{TN}+\mbox{FP}$), respectively.
+
+Sensitivity and specificity are based on all four cells of the matrix,
+whereas precision and recall do not use the true negative count.
+
+The final statistic in this family is the dual to precision based
+on the rightmost column, which we call rejection precision, and
+define by
+%
+\begin{equation}
+\mbox{rejection-precision}
+= \frac{TN}{TN+FP}.
+\end{equation}
+%
+This is the percentage of negative responses that are truly negative,
+and is also known as negative predictive accuracy.
 
 
 \section{Information Theory}
