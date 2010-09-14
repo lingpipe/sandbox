@@ -12,13 +12,14 @@ the definitions we use in the book.
 \subsection{Logarithms and Exponents}
 
 The exponential function $\exp(x)$ is defined as the unique non-zero
-solution to the differential equation
+solution to the differential equation $f' = f$.  Thus we have
 %
 \begin{equation}
-\frac{d}{dx}f = f.
+\frac{d}{dx}\exp(x) = \exp(x)
+\ \ \ \ \ \mbox{and} \ \ \ \ \ 
+\int \exp(x) \ dx = \exp(x).
 \end{equation}
-%
-That is, $\exp(x)$ is the unique function satisfying this equation.
+
 The exponential function may be applied to any real number, but its
 value is always positive.  The exponential function has some
 convenient properties, such as
@@ -32,14 +33,17 @@ convenient properties, such as
 \end{equation}
 
 The natural logarithm, $\log x$ is defined as the inverse of $\exp(x)$,
-taking
+so that for all $x \in (-\infty,\infty)$ and all $y \in (0,\infty)$ we have
 %
 \begin{equation}
-\log \exp(x) = x.
+\log \exp(x) = x
+\ \ \ \ \ \mbox{and} \ \ \ \ \ 
+\exp(\log y) = y.
 \end{equation}
 %
-For all $y > 0$, we also have $\exp(\log y) = y$.  Logarithms convert
-multiplication into addition and exponentiation into multiplication, with
+
+Logarithms convert multiplication into addition and exponentiation
+into multiplication, with
 %
 \begin{equation}
 \log (x \times y) = \log x + \log y, \mbox{ and}
@@ -374,13 +378,14 @@ $X^2$, larger values of $V^2$ indicate stronger associations.
 Goodman and Kruskal defined an asymmetric measure of predictive
 association which they called $\lambda_B$.%
 %
-\footnote{Goodman and Kruskal wrote three papers in the same journal analyzing
+\footnote{Goodman and Kruskal wrote three papers analyzing
   cross-classified data such as is found in contingency matrices,
-  starting with Goodman, L.~A. and W.~H.~Kruskal. 1954. Measures of
-  association for cross classifications. Part I. {\it Journal of the
-    American Statistical Association} {\bf 49}:732–-764.  Part II
-was published in 1959 in volume {\bf 53}, pages 123--163, and
-Part III in 1963 in volumne {\bf 58}, pages 310--364.}
+  starting with Goodman, L.~A. and W.~H.~Kruskal, 1954, Measures of
+  association for cross classifications, Part I, {\it Journal of the
+    American Statistical Association} {\bf 49}:732–-764.  With the
+  same journal and title, Part II was
+  published in 1959 in volume {\bf 53}, pages 123--163, and Part III
+  in 1963 in volumne {\bf 58}, pages 310--364.}
 %
 The value of $\lambda_B$ is (an estimate of) the reduction in error
 likelihood from knowing the response category and using it to predict
@@ -388,33 +393,79 @@ the reference category.  It takes on values between 0 and 1, with
 higher values being better, 0 indicating independence and 1 perfect
 assocaition.  
 
-Suppose we have a confusion matrix $X$ of dimensions $M
-\times M$, where $X_{m,n}$ is the count for the $m$-th response
-category and $n$-th reference category.  The index is defined by
+Given our $M \times N$ confusion matrix $C$, Goodman and Kruskal's
+index of predictive association $\lambda_B$ is defined by
 %
 \begin{equation}
 \lambda_A 
-= \frac{\left(\sum_m R_m\right) - S}
+= \frac{\left(\sum_n R_n\right) - S}
        {C_{+,+} - S}
 \end{equation}
 %
-where $S$ and $R$ are defined by 
+where $S$ and $R_n$ are defined by 
 %
 \begin{equation}
-S = \max_m \ C_{m,+}
+S = \max_n \ C_{+,n}
 \ \ \ \ \ \mbox{and} \ \ \ \ \
-R_m = \max_n \ C_{n,m}.
+R_n = \max_m \ C_{n,m}.
 \end{equation}
 %
 These statistics are unusual in using the maximum rather than
 matching.  Dividing through by $C_{+,+}$ reveals a structure very much
 like the $\kappa$ statistic (see \refsec{stats-kappa}), with $e$
-replaced by $S/C_{+,+}$ and with $a$ replaced by $\sum_m R_M /
+replaced by $S/C_{+,+}$ and with $a$ replaced by $\sum_n R_n /
 C_{+,+}$.
 
-The $\lambda_A$ statistic is not symmetric between the rows and
+The $\lambda_B$ statistic is not symmetric between the rows and
 columns.  If we transpose the matrix and compute the same statistic,
-we get $\lambda_B$.
+we get $\lambda_Ap$.
+
+
+\subsection{Information-Theoretic Measures}
+
+If we use the counts in $C$ to estimate probability distributions
+using maximum likelihood, we may use any of the information-theoretic
+measures available to compare distributions (see
+\refsec{stats-information-theory} for definitions).  
+
+For example, suppose we define random variables $X$ and $Y$ for the
+rows and columns, with joint distribution given by the maximum
+likelihood estimate given the contingency table $C$, which entails
+%
+\begin{equation}
+p_{X,Y}(m,n) = \frac{C_{m,n}}{C_{+,+}}.
+\end{equation}
+%
+Given this defintion, the marginal distributions for $X$ and $Y$ are
+%
+\begin{equation}
+p_X(m) = \frac{C_{m,+}}{C_{+,+}}
+\ \ \ \ \ \mbox{and} \ \ \ \ \
+p_Y(n) = \frac{C_{+,n}}{C_{+,+}}.
+\end{equation}
+%
+The conditional distributions for $X$ given $Y$ and vice-versa are
+%
+\begin{equation}
+p_{X|Y}(m|n) = \frac{C_{m,n}}{C_{m,+}}
+\ \ \ \ \ \mbox{and} \ \ \ \ \
+p_{Y|X}(m|n) = \frac{C_{m,n}}{C_{+,n}}.
+\end{equation}
+
+With all of these definitions in hand, we can easily compute the
+various information theoretic measures, which are defined in
+\refsec{stats-information-theory}.
+
+For instance, we can compute the entropy corresponding to the rows of
+the contingency table as $\entropy{X}$ and to the columns as
+$\entropy{Y}$.  We can also compute the KL-divergences, symmetrized
+divergences and Jensen-Shannon divergence based on the marginal
+distributions $p_X$ and $p_Y$ implied by the contingency table.
+
+With the joint and conditional estimates, we can tabulate the joint
+entropy $\entropy{X,Y}$, conditional entropies $\condentropy{X}{Y}$
+and $\condentropy{Y}{X}$, as well as and mutual information
+$\mutualinfo{X}{Y}$.
 
 
 \subsection{Confusion Matrices}
@@ -477,6 +528,7 @@ completely ignores the adjustment for
 category prevalence found in $e$, taking an arbitrary 50\% chance of
 agreement, corresponding to $e=1/2$, and resulting in a definition of
 $\kappa = 2a - 1$.
+
 
 
 \subsection{Sensitivity-Specificity Matrices}
@@ -559,9 +611,14 @@ reference negatives ($\mbox{TN}+\mbox{FP}$), respectively.
 Sensitivity and specificity are based on all four cells of the matrix,
 whereas precision and recall do not use the true negative count.
 
-The final statistic in this family is the dual to precision based
-on the rightmost column, which we call rejection precision, and
-define by
+\subsubsection{Transpose Duals and Rejection Precision}
+
+If we transpose the roles of the reference and response, we swap FN
+and FP counts, but TP and TN remain the same.  Precision becomes
+recall and vice versa in the transposed matrix.  Specificity, on
+the other hand, does not have a dual defined yet.  To complete the
+picture, we introduce a statistic we call rejection precision,
+which is defined by
 %
 \begin{equation}
 \mbox{rejection-precision}
@@ -569,10 +626,165 @@ define by
 \end{equation}
 %
 This is the percentage of negative responses that are truly negative,
-and is also known as negative predictive accuracy.
+and could also be called negative predictive accuracy.  
+
+To use terminology to match rejection precision, we could call
+specificity rejection recall.  Rejection precision and rejection
+recall swap when the matrix is transposed in the same way as precision
+and recall.  The dualities are clearest when viewed in table form,
+as laid out in \reffig{precision-recall-duality}.
+%
+\begin{figure}
+\begin{center}
+\small
+\begin{tabular}{r|c|c}
+\multicolumn{3}{l}{\tblhead{\bfseries Recall}}
+\\
+\multicolumn{1}{c}{}  & \tblhead{Pos} & \tblhead{Neg}
+\\ \cline{2-3}
+\tblhead{Pos} & {\bfseries +} & {\bfseries --}
+\\ \hline
+\tblhead{Neg} & & 
+\end{tabular}
+%
+\hfill
+%
+\begin{tabular}{r|c|c}
+\multicolumn{3}{l}{\tblhead{\bfseries Precision}}
+\\
+\multicolumn{1}{c}{}  & \tblhead{Pos} & \tblhead{Neg}
+\\ \cline{2-3}
+\tblhead{Pos} & {\bfseries +} & 
+\\ \hline
+\tblhead{Neg} & {\bfseries --} & 
+\end{tabular}
+%
+\hfill
+%
+\begin{tabular}{r|c|c}
+\multicolumn{3}{l}{\tblhead{\bfseries Rej.~Recall}}
+\\
+\multicolumn{1}{c}{}  & \tblhead{Pos} & \tblhead{Neg}
+\\ \cline{2-3}
+\tblhead{Pos} & & 
+\\ \hline
+\tblhead{Neg} & {\bfseries --} & {\bfseries +}
+\end{tabular}
+%
+\hfill
+%
+\begin{tabular}{r|c|c}
+\multicolumn{3}{l}{\tblhead{\bfseries Rej.~Precicision}}
+\\
+\multicolumn{1}{c}{}  & \tblhead{Pos} & \tblhead{Neg}
+\\ \cline{2-3}
+\tblhead{Pos} & & {\bfseries --}
+\\ \hline
+\tblhead{Neg} & & {\bfseries +}
+\end{tabular}
+\end{center}
+\caption{A graphical illustration of the transposition dualities
+  involved in the definitions of recall (sensitivity) and precision
+  (positive predictive accuracy) and in the definitions of rejection
+  recall (specificity) and rejection precision (negative predictive
+  accuracy).  The symbol {\bfseries +} indicates successfull attempts
+  and {\bfseries --} failed attempts.  The statistic labeing the table
+  is calculated as the percentage of attempts that were successful
+  based on the value of the cells (see
+  \reffig{generic-sensitivity-specificity-matrix}).}\label{fig:precision-recall-duality}
+\end{figure}
+
+\subsubsection{$F$ Measure}
+
+A common measure used in information retrieval research is $F$ measure,
+which is defined as the harmonic mean of precision and recall,
+%
+\begin{equation}\label{eq:f-measure}
+F
+= \left( \mbox{precision}^{-1} + \mbox{recall}^{-1} \right)^{-1}
+= \frac{2 \times \mbox{precision} \times \mbox{recall}}
+         {\mbox{precision} + \mbox{recall}}.
+\end{equation}
+
+Sometimes, this measure is generalized with a weighting $\beta$
+to be
+%
+\begin{equation}
+F_{\beta} = \frac{(1 + \beta^2) \times \mbox{precision} \times \mbox{recall}}
+                {\mbox{recall} + (\beta^2 \times \mbox{precision})}.
+\end{equation}
+%
+With this generalization, the original $F$ measure in
+\refeq{f-measure} corresonds to the generalized $F$ measure with
+$\beta=1$.  
+
+$F$ measure has the property, because it is based on a harmonic mean,
+of always being less than the simple average of precision and recall.
+
+For some reason, $F$ measure is the only commonly applied statistic
+based on the harmonic mean.  You don't see people compute the harmonic
+mean of sensitivity and specificity or of rejection recall and
+rejection precision.
+
+\subsubsection{Jaccard Similarity Coefficient}
+
+The Jaccard similarity coefficient%
+%
+\footnote{Jaccard, Paul. 1901. Étude comparative de la distribution
+  florale dans une portion des Alpes et des Jura. {\it Bulletin de la
+  Société Vaudoise des Sciences Naturelles} {\bf 37}:547--579.}
+%
+provides a single measure of the quality of match between a response
+and a reference.  Teh similarity coefficient $J$ is defined by
+%
+\begin{equation}
+J = \frac{\mbox{TP}}{\mbox{TP} + \mbox{FP} + \mbox{FN}}.
+\end{equation}
+%
+It turns out to be very closely related to $F$ measure, 
+which may be rewritten by unfolding the defintion of precision
+and recall to
+%
+\begin{equation}
+F = \frac{2 \times \mbox{precision} \times \mbox{recal}}
+          {\mbox{precision} + \mbox{recall}}
+%= \frac{2 \times \left( \frac{\mbox{TP}}{\mbox{TP} + \mbox{FP}} \right)
+%           \times \left( \frac{\mbox{TP}}{\mbox{TP} + \mbox{FN}} \right)}
+%        {\left( \frac{\mbox{TP}}{\mbox{TP} + \mbox{FP}} \right)
+%         + \left( \frac{\mbox{TP}}{\mbox{TP} + \mbox{FN}} \right) }
+= \frac{(2 \times \mbox{TP})}
+        {(2 \times \mbox{TP}) + \mbox{FP} + \mbox{FN}}.
+\end{equation}
+%
+This formulation reveals the relation of $F$ measure to the Jaccard
+similarity coefficient; the difference is a factor of 2 boost to the
+true positives for $F$ measure.  The Jaccard similarity coefficient is
+less than $F$ for non-degenerate matrices.  Specifically, we will have
+$F > J$ if both $\mbox{TP} > 0$ and $\mbox{FP} + \mbox{FN} > 0$.
 
 
-\section{Information Theory}
+
+\subsubsection{Other Statistics}
+
+Fowlkes and Mallows presented a measure of similarity for clusterings
+that may be adapted to sensitivity-specific matrices.
+%
+\footnote{Fowlkes E.~B. and C.~L.~Mallows. 1983. A method for
+  comparing two hierarchical clusterings. {\it Journal of the American
+  Statistical Association} {\bf 78}(384):553--584. \doi{10.2307/2288117}}.
+%
+Their measure is defined as the geometric mean of precision and recall
+%
+\begin{equation}
+B 
+= \sqrt{\mbox{precision} \times \mbox{recall}}
+= \frac{\mbox{TP}}{\sqrt{(\mbox{TP} + \mbox{FN}) \times (\mbox{TP} + \mbox{FP})}}.
+\end{equation}
+%
+
+
+
+\section{Information Theory}\label{section:stats-information-theory}
 
 Information theory was originally developed by Claude Shannon to model
 the transmission of messages over noisy channels such as telephones
