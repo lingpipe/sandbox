@@ -764,16 +764,25 @@ $F > J$ if both $\mbox{TP} > 0$ and $\mbox{FP} + \mbox{FN} > 0$.
 
 
 
-\subsubsection{Other Statistics}
+\subsubsection{Fowlkes-Mallows Similarity Measure}
 
 Fowlkes and Mallows presented a measure of similarity for clusterings
-that may be adapted to sensitivity-specific matrices.
+that may be adapted to sensitivity-specific matrices.%
 %
 \footnote{Fowlkes E.~B. and C.~L.~Mallows. 1983. A method for
   comparing two hierarchical clusterings. {\it Journal of the American
   Statistical Association} {\bf 78}(384):553--584. \doi{10.2307/2288117}}.
 %
-Their measure is defined as the geometric mean of precision and recall
+\footnote{They first reduce hierarchical clusterings to flat
+  clusterings (by setting a threshold on dendrogram height) then these
+  flat clusterings to a sensitivity-specificity matrix.  The set of
+  cases is all pairs of objects being clustered.  One clustering is
+  set as the reference and one as the response.  Reference positives
+  are then defined as pairs of objects in the same cluster in the
+  reference clustering and similarly for responses.}
+%
+With a sensitivity-specificity matrix in hand, Fowlkes and Mallows
+used the geometric mean of precision and recall as their statistic,
 %
 \begin{equation}
 B 
@@ -781,6 +790,68 @@ B
 = \frac{\mbox{TP}}{\sqrt{(\mbox{TP} + \mbox{FN}) \times (\mbox{TP} + \mbox{FP})}}.
 \end{equation}
 %
+
+\subsubsection{Yule's $Q$}
+
+Yule's $Q$ statistic of association is based on the odds ratio
+%
+\begin{equation}
+\rho 
+= \frac{\mbox{sens}/(1 - \mbox{sens})}
+       {(1 - \mbox{spec})/\mbox{spec}}
+= \frac{\left( \frac{\mbox{TP}}{\mbox{TP}+\mbox{FN}} \right) \Big/ \left( \frac{\mbox{FN}}{\mbox{TP}+\mbox{FN}} \right) }
+       {\left( \frac{\mbox{FP}}{\mbox{FP}+\mbox{TN}} \right) \Big/ \left( \frac{\mbox{TN}}{\mbox{FP}+\mbox{TN}} \right) }
+= \frac{\mbox{TP}/\mbox{FN}}{\mbox{FP}/\mbox{TN}}
+= \frac{\mbox{TP} \times \mbox{TN}}{\mbox{FN} \times \mbox{FP}}.
+\end{equation}
+%
+The numerator is the odds of a positive item being correctly
+classified ($\mbox{sens}$) versus being incorrectly classified ($1 -
+\mbox{sens}$), and the denominator is the odds of a negative item
+being incorrectly classified ($1 - \mbox{spec}$) versus being
+correctly classified ($\mbox{spec}$).  The numerator is the odds of
+the response being positive given that the reference is positive.  The
+denominator is the odds of the response being positive given that the
+reference is negative.  The ratio gives the increase in the odds
+of the response being negative given that the reference is negative.
+
+Yule's $Q$ statistic transforms the odds ratio $\rho$ to the $[-1,1]$
+scale by
+%
+\begin{equation}
+Q 
+= \frac{\rho - 1}{\rho + 1}
+= \frac{\left( \mbox{TP} \times \mbox{TN} \right) 
+        - \left( \mbox{FN} \times \mbox{FP} \right)}
+       {\left( \mbox{TP} \times \mbox{TN} \right) 
+        + \left( \mbox{FN} \times \mbox{FP} \right)}.
+\end{equation}
+
+Yule's $Y$ statistic dampens all these effects with square roots,
+%
+\begin{equation}
+Y
+= \frac{\sqrt{\left( \mbox{TP} \times \mbox{TN} \right)}
+        - \sqrt{\left( \mbox{FN} \times \mbox{FP} \right)}}
+       {\sqrt{\left( \mbox{TP} \times \mbox{TN} \right)}
+         + \sqrt{\left( \mbox{FN} \times \mbox{FP} \right)}}.
+\end{equation}
+
+
+\subsection{Received Curves for Ranked and Scored Responses}
+
+In natural language processing applications, especially ones related
+to search, system responses often take the form of ranked n-best
+lists.  For instance, when we give a traditional web search engine a
+query, we get bank a ranked list of web pages that might be relevant
+to our search.  The ranking is based on the search engine's analysis
+of our search intentions and the results are presumably in order
+from most likely to be relevant to least likely.%
+%
+\footnote{In practice for search, there is some benefit to providing a
+  diverse set of results rather than just the results most likely to
+  be relevant.  The most relevant documents are likely to be highly
+  redundant.}
 
 
 
@@ -790,9 +861,9 @@ Information theory was originally developed by Claude Shannon to model
 the transmission of messages over noisy channels such as telephones
 or telegraphs.%
 %
-\footnote{Claude Shannon. 1948.  A mathematical theory of communication.  {\it Bell System Technical Journal} {\bf 27}:379--423 and {\bf 27}:623--656.}
-%
-
+\footnote{Claude Shannon. 1948.  A mathematical theory of
+  communication.  {\it Bell System Technical Journal} {\bf
+    27}:379--423 and {\bf 27}:623--656.}
 
 \subsection{Entropy}\label{section:stats-entropy}
 
@@ -931,6 +1002,7 @@ between variables $X$ and $Y$ is defined to be
 \begin{align}
 \mutualinfo{X}{Y} 
 &= \expect{-\log_2 \frac{p_{X,Y}(x,y)}{p_X(x) \ p_Y(y)}}
+\\
 &= \expect{-\log_2 p_{X,Y}(x,y)} + \expect{\log_2 p_X(x)} + \expect{\log_2 p_Y(y)}
 \end{align}
 %
@@ -948,7 +1020,7 @@ Mutual information is symmetric, so that
 \end{equation}
 %
 It's related to conditional and joint entropies by the unfolding
-in the second step of the definition as 
+in the second step of the definition through
 %
 \begin{align}
 \mutualinfo{X}{Y} &= \entropy{X} + \entropy{Y} - \entropy{X,Y}
@@ -957,139 +1029,119 @@ in the second step of the definition as
 \end{align}
 %
 
+\subsection{Cross Entropy}\label{section:stats-cross-entropy}
+
+Cross-entropy measures the number of bits required, on average, to
+transmit a value of $X$ using the distribution of $Y$ for coding.
+Using expectation notation, the definition reduces to
+%
+\begin{equation}
+\xentropy{X}{Y} = \expect{-\log_2 p_Y(X)}.
+\end{equation}
+
+In the case of discrete random variables $X$ and $Y$, this works out to
+%
+\begin{equation}
+\xentropy{X}{Y} = - \sum_n p_X(n) \ \log_2 p_Y(n).
+\end{equation}
+%
+
+
 
 \subsection{Divergence}\label{section:stats-divergence}
 
-Kullback-Leibler (KL) divergence is the standard method to compare the
-distributions of two random variables.  Pairs of topic distributions
-that have similar probability assignments to words will have low KL
-divergences from each other.
+Kullback-Leibler (KL) divergence is the standard method to compare two
+distributions.  Pairs of distributions that have similar probabilities
+will have low divergence from each other.  Because KL divergence is
+not symmetric, we also consider two standard symmetric variants.
 
-We will start with the discrete case, as it is what Griffiths and
-Steyvers used in their experiments.  We'll consider the continuous
-case, and specifically consider the Dirichlet distributions underlying
-the LDA models.
+Following the standard convention, our previous infomration
+definitions were all in terms of random variables $X$ and $Y$, even
+though the definitions only dependeded on their corresponding
+probability distributions $p_X$ and $p_Y$.  Divergence is
+conventionally defined directly on distributions, mainly to avoid the
+case of comparing two different random variables $X$ and $Y$ with the
+same distribution $p_X = p_Y$.
 
-\subsubsection{Cross Entropy}\label{section:stats-cross-entropy}
+\subsubsection{KL Divergence}
 
-Cross entropy measures the ability of one distribution to represent
-results drawn from another distribution.  Given two discrete random
-variables $X$ and $Y$ with outcomes ranging from 1 to $N$, we define
-the cross entropy of $X$ with respect to $Y$ as
+Given two discrete distributions $p_X$ and $p_Y$, the KL divergence of
+$p_Y$ from $p_X$ is given by
 %
 \begin{equation}
-\xentropy{X}{Y} = \sum_{n=1}^N p_X(n) \ \log_2 p_Y(n).
-\end{equation}
-%
-This value measures the number of bits required, on average, to
-transmit a value of $X$ using the distribution of $Y$ for coding.
-
-
-\subsubsection{Defining KL Divergence}
-
-As is standard, our definition will use random variables, but we point
-out ahead of time that only the distributions of the variables matter,
-not the outcomes.  Suppose that $X$ and $Y$ are two random variables
-with possible outcomes ranging from 1 to $N$ and probabilty
-distributions $p_X(n)$ and $p_Y(n)$.  The KL divergence of $X$ from
-$Y$ is given by
-%
-\begin{equation}
-\kld{X}{Y}
+\kld{p_X}{p_Y}
 = \sum_{n=1}^N p_X(n) \log_2 \frac{p_X(n)}{p_Y(n)}.
 \end{equation}
 %
-Because we used base-2 logs, the result is in units of bits.  Note
-that this value is just the entropy of $X$ minus the cross entropy
-of $X$ with respect to $Y$
-
 If there is an outcome $n$ where $p_Y(n) = 0$ and $p_X(n) > 0$, the
 divergence is infinite.  We may allow $p_X(n) = 0$ by interpreting $0
 \log_2 \frac{0}{p_Y(n)} = 0$ by convention (even if $p_Y(n) > 0$).
 
-Although we do not provide a proof, we note that $\kld{X}{Y} \geq 0$
-for all random variables $X$ and $Y$.  We further note without proof
-that $\kld{X}{Y} = 0$ if and only if $p_X = p_Y$.
-
-For example, suppose we have three discrete random variables, $X$, $Y$
-and $Z$, each with the same two outcomes, and distributions defined by
-$p_X(1) = 0.2$, $p_X(2) = 0.8$ and $p_Y(1) = 0.4$, $p_Y(2) = 0.6$.  We
-calculate 
-%
-\[
-\kld{X}{Y} = 0.2 \log_2 (0.2/0.4) + 0.8 \log_2 (0.8/0.6) \approx 0.13.
-\]
-%
-Consider a third random variable, $Z$, with $p_Z(1) = 0.5$ and
-$p_Z(2) = 0.5$.  The KL-divergence calculation is 
-%
-\[
-\kld{X}{Z} = 0.2 \log_2 (0.2/0.5) + 0.8 \log_2 (0.8/0.5) \approx 0.27.
-\]
-As we'd expect, $Z$ diverges further from $X$ than $Y$.  
-Comparing $X$ to itself, we get
-%
-\[
-\kld{X}{X} = 0.2 \log_2 (0.2/0.2) + 0.8 \log_2(0.8/0.8) = 0.
-\]  
-%
-From this example, it's easy to see why $\kld{X}{X}$ is always 0.
-
-KL divergence may expressed using expectation notation as
+If we assume $p_X$ and $p_Y$ arose from random variables $X$ and $Y$,
+KL divergence may expressed using expectations as
 %
 \begin{align}
-\kld{X}{Y} 
+\kld{p_X}{p_Y} 
 &= \expect{\log_2 \frac{p_X(X)}{p_Y(X)}}
 \\
-&= \expect{\log_2 p_X(X)} - \expect{\log_2 p_Y(X)}.
+&= \expect{\log_2 p_X(X)} - \expect{\log_2 p_Y(X)}
+\\
+&= \expect{-\log_2 p_Y(X)} - \expect{-\log_2 p_X(X)}
+\\
+&= \xentropy{X}{Y} - \entropy{X}.
 \end{align}
 %
-As usual, unmarked expectation notation presupposes the natural
-distributions for random variables, here using the distribution $p_X$
-for the random variable $X$.%
-%
-\footnote{The first term is just the entropy of $X$,
-$\entropy{X} = \expect{\log_2 p_X(X)}$.  Another way of interpreting
-KL divergence is as the expected penalty in bits for using $p_Y$ to
-model values of $X$ rather than $p_X$.}
+This definition makes clear that KL divergence may be viewed as as the
+expected penalty in bits for using $p_Y$ to transmit values drawn from
+$X$ rather than $p_X$ itself.  In other words, KL divergence is just
+the cross-entropy minus the entropy.
+
+Although we do not provide a proof, we note that $\kld{p_X}{p_Y} \geq 0$
+for all distributions $p_X$ and $p_Y$.  We further note without proof
+that $\kld{p_X}{p_Y} = 0$ if and only if $p_X = p_Y$.
+
 
 \subsubsection{Symmetrized KL Divergence}\label{section:stats-symmetrized-kl-divergence}
 
 KL divergence is not symmetric in the sense that there exist pairs of
-random variables $X$ and $Y$ such that $\kld{X}{Y} \neq \kld{Y}{X}$.
-We have an example to hand.  Consider our example $X$ and $Y$ above,
-for which we noted $\kld{X}{Y} \approx 0.13$.  The other way around,
-$\kld{Y}{X} = 0.4 \log_2 0.4/0.2 + 0.6 \log_2 0.6/0.8 \approx 0.15$.
+random variables $X$ and $Y$ such that $\kld{p_X}{p_Y} \neq \kld{p_Y}{p_X}$.
 
 There are several divergence measures derived from KL divergence that
-are symmetric.  The simplest approach is just to introduce symmetry
-by brute force.  The symmetrized KL-divergence between random variables
-$X$ and $Y$ is defined by averaging KL divergence of $X$ from $Y$
-and of $Y$ from $X$,
+are symmetric.  The simplest approach is just to introduce symmetry by
+brute force.  The symmetrized KL-divergence $\skld{p_X}{p_Y}$ between
+distributions $p_X$ and $p_Y$ is defined by averaging the divergence
+of $p_X$ from $p_Y$ and the divergence of $p_Y$ from $p_X$, yielding
+gives us
 %
 \begin{equation}
-\skld{X}{Y} = \frac{1}{2}(\kld{X}{Y} + \kld{Y}{X}).
+\skld{p_X}{p_Y} = \frac{1}{2}(\kld{p_X}{p_Y} + \kld{p_Y}{p_X}).
 \end{equation}
 %
-Obviously, $\skld{X}{Y} = \skld{Y}{X}$, so the measure is symmetric.
-
+Obviously, $\skld{p_X}{p_Y} = \skld{p_Y}{p_X}$ by definition, so the
+measure is symmetric.  As with KL divergence, symmetrized KL
+divergence so that, in general, $\skld{p_X}{p_Y} \geq 0$ with
+$\skld{p_X}{p_Y} = 0$ if and only if $p_X = p_Y$.
 
 \subsubsection{Jensen-Shannon Divergence}
 
 Another widely used symmetric divergence measure derived from KL divergence
 is the Jensen-Shannon divergence.  To compare $X$ and $Y$ using Jensen-Shannon
-divergence, we first define a new random variable $Z$ with distribution defined by
-averaging the distributions of $X$ and $Y$,
+divergence, we first define a new distribution $p_{Z}$ by averaging
+the distributions $p_X$ and $p_Y$, by
 %
-\[
+\begin{equation}\label{eq:jensen-shannon-averge-distro}
 p_Z(n) = \frac{1}{2}(p_X(n) + p_Y(n)).
-\]
+\end{equation}
 %
-We then define Jensen-Shannon divergence by taking average divergence
-from $Z$,
+If $X$ and $Y$ are random variables and $Z$ is defined to be
+$(X+Y)/2$, then $p_X$, $p_Y$ and $p_Z$ satisfy the above definition.
+
+Given the average distribution $p_Z$, we can define Jensen-Shannon
+divergence by taking average divergence of $p_X$ and $p_Y$ from $p_Z$
+as defined in \refeq{jensen-shannon-averge-distro}, setting
 %
 \begin{equation}
-\jsd{X}{Y} = \frac{1}{2}(\kld{X}{Z} + \kld{Y}{Z}).
+\jsd{p_X}{p_Y} = \frac{1}{2}(\kld{p_X}{p_Z} + \kld{p_Y}{p_Z}).
 \end{equation}
 %
 As with the symmetrized KL divergence, Jensen-Shannon divergence is
