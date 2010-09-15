@@ -838,20 +838,34 @@ Y
 \end{equation}
 
 
-\subsection{Received Curves for Ranked and Scored Responses}
+\subsection{Received Curves for Ranked Responses}
 
 In natural language processing applications, especially ones related
 to search, system responses often take the form of ranked n-best
-lists.  For instance, when we give a traditional web search engine a
-query, we get bank a ranked list of web pages that might be relevant
-to our search.  The ranking is based on the search engine's analysis
-of our search intentions and the results are presumably in order
-from most likely to be relevant to least likely.%
+lists.  
+
+The most common example arises in the traditional evaluation of web
+search engine a query, we get bank a ranked list of web pages that
+might be relevant to our search.  The ranking is based on the search
+engine's analysis of our search intentions and the results are
+presumably in order from most likely to be relevant to least likely.%
 %
 \footnote{In practice for search, there is some benefit to providing a
   diverse set of results rather than just the results most likely to
   be relevant.  The most relevant documents are likely to be highly
   redundant.}
+
+We will assume that we have a system producing a ranked list of
+responses.  Each of these will be judged correct or incorrect.
+Mathematically, this is just a boolean vector $y$. 
+
+If we know that the list is complete in the sense that every possible
+
+
+ We will further
+assume that the list is exhaustive, so that all of the correct
+responses
+
 
 
 
