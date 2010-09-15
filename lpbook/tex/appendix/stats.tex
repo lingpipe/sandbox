@@ -565,7 +565,9 @@ which we show in \reffig{generic-sensitivity-specificity-matrix}.
 The true positives (TP), false positives (FP) are for correct and
 incorrect responses when the reference category is positive, and true
 negative (TN) and false negative (FN) for correct and incorrect
-responses when the reference category is negative.
+responses when the reference category is negative.  False positives
+are also known as type-I errors or false alarms, and false negatives
+as misses or type-II errors.
 
 \subsubsection{Precision and Recall}
 
@@ -602,7 +604,7 @@ These are defined by
 \end{equation}
 %
 Sensitivity is the same statistic as recall, being based on the top
-row of the matrix.  
+row of the matrix.  One minus specificity is sometimes called fallout.
 
 The easiest way to think of sensitivity and specificity is as
 accuracies on reference positives ($\mbox{TP}+\mbox{FN}$) and
@@ -838,35 +840,313 @@ Y
 \end{equation}
 
 
-\subsection{Received Curves for Ranked Responses}
+\subsection{Collapsing Confusion Matrices for One-Versus-All}
+
+In evaluating classifiers and related systems, we often want to focus
+our analysis on a single category.  We can do that by looking at that
+category in a confusion matrix.  The alternative presented in this
+section instead reduces the confusion matrix to a
+sensitivity-specificity matrix for a single category.  This is done by
+collapsing all the other categories by treating them as if they were
+the same.
+
+Supose we have an $N \times N$ confusion matrix $C$, where $C_{n,m}$
+is the count of the number of items with reference category $n$ and
+response category $m$.  We can pick a category $n \in 1{:}N$ and
+collapse the confusion matrix to a sensitivity-specificity matrix by
+making the following definitions.  True positives and false positives
+are
+%
+\begin{equation}
+\mbox{TP} = C_{n,n}
+\ \ \ \ \ \mbox{and} \ \ \ \ \
+\mbox{FP} = C_{+,n} - C_{n,n}.
+\end{equation}
+%
+In words, the true positives correspond to reference instances of
+category $n$ categorized as being category $n$.  The false positives
+are items with response $n$ and reference category other than $n$.
+
+On the negative side, we have
+%
+\begin{equation}
+\mbox{FN} = C_{n,+} - C_{n,n}
+\ \ \ \ \ \mbox{and} \ \ \ \ \
+\mbox{TN} = C_{+,+} - C_{n,+} - C_{+,n} + C_{n,n}.
+\end{equation}
+%
+Here, the false negatives correspond to items which are of category
+$n$ in the reference, but not in the response.  The true negatives
+include all other cases, and works out to $\mbox{TN} = C_{+,+} -
+\mbox{TP} - \mbox{FP} - \mbox{FN}$.
+
+
+\subsubsection{Macro-Averaged Results}
+
+Statistics like overall accuracy computed on confusion matrices
+constitute what are known as micro-averaged results.  The defining
+characteristic of micro-averaged statistics is that they are
+weighted by item, so that each item being evaluated contributes
+equally to the final statistics.
+
+Macro averaging attempts to weight results so that each category has
+the same weight instead of every instance.  The way this is usually
+carried out is to average one-versus-all results. 
+
+Suppose we have the following confusion matrix, 
+%
+\begin{equation}
+C = 
+\left[
+\begin{array}{ccc}
+85 & 5 & 10
+\\ 
+3  & 20 & 2
+\\ 
+1  & 1  & 3
+\end{array}
+\right],
+\end{equation}
+%
+where as usual the rows are the reference and the columsn the response.
+This collapses into the three one-versus-all matrices.  
+%
+\begin{equation}
+%
+D_1 = \left[ 
+\begin{array}{cc}
+85 & 15 \\
+ 4 & 26
+\end{array}
+\right],
+%
+\ \ \ \ \
+%
+D_2 = \left[ 
+\begin{array}{cc}
+20 & 5 \\
+ 6 & 99
+\end{array}
+\right], \mbox{ and}
+%
+\ \ \ \ \
+%
+D_3 = \left[ 
+\begin{array}{cc}
+ 3 & 2 \\
+ 12 & 113
+\end{array}
+\right].
+%
+\end{equation}
+%
+To compute the micro-averaged values, we just sum the three one-versus-all
+matrices position-wise to get
+%
+\begin{equation}
+D_+ = \left[ 
+\begin{array}{cc}
+108 & 22 \\
+22 & 238
+\end{array}
+\right].
+\end{equation}
+%
+The combined matrix always has the property that the false positive
+value is the same as the false negative count (here 22).  
+
+
+Micro-averaged statistics are calcluated directly from $D_+$.
+Macro-averaged statistics are calculated by first calculating
+the statistic on each $D_n$ then averaging the results.
+
+We can now compare micro- and macro-averaged statistics.  For example,
+micro-averaged precision is $108/130$ and micro-averaged recall is
+also $108/130$, yielding a micro-averaged $F$ measure of $108/130$, or
+about 83\%.  Macro-averaged precision is the average of $85/100$
+(85\%), $20/25$ (80\%) and $3/5$ (60%), or about 75\%.  The low-count
+category 3 brings down the averages from the high count cases.  This
+can work out the other way around, with macro-averaged values being
+higher than their micro-averaged counterparts.
+
+
+\subsection{Ranked Response Statistics}
 
 In natural language processing applications, especially ones related
-to search, system responses often take the form of ranked n-best
+to search, system responses often take the form of ranked $N$-best
 lists.  
 
-The most common example arises in the traditional evaluation of web
-search engine a query, we get bank a ranked list of web pages that
-might be relevant to our search.  The ranking is based on the search
-engine's analysis of our search intentions and the results are
-presumably in order from most likely to be relevant to least likely.%
+For instance, a traditional web search engine might return the
+top $N$ results, ranked in order of estimated relevance to the user's
+query
 %
-\footnote{In practice for search, there is some benefit to providing a
-  diverse set of results rather than just the results most likely to
-  be relevant.  The most relevant documents are likely to be highly
-  redundant.}
+\footnote{In practice for search, there is some benefit to balancing
+  relevance and diversity in results.}
+%
+Another example is a named-entity system that takes a biomedical
+journal article and returns a ranked list of identifiers for genes
+that were mentioned in the article.  Yet another example would be
+automatically assigning keywords or tags to a blog entry or assigning
+MeSH terms to untagged MEDLINE citations.
 
-We will assume that we have a system producing a ranked list of
-responses.  Each of these will be judged correct or incorrect.
-Mathematically, this is just a boolean vector $y$. 
+\subsubsection{Mathematical Formulation}
 
-If we know that the list is complete in the sense that every possible
+In order to carry out ranked evaluations, we only need a ranked list
+of $N$ responses along with an indication of whether they are correct
+or not.  Mathematically, this is just a boolean vector $y \in \{ 0, 1
+\}^N$.  Very often the ordering is defined from an underlying score,
+which we might also have available as a parallel vector $x \in
+\reals^N$.
+
+\subsubsection{Exhaustiveness for Evaluating Sensitivity}
+
+If we want to evaluate ranked sensitivity or recall, it's critical
+that we know how many positive answers there are in total.  If we want
+to evaluate speicificity, we also need to know how many negative
+answers there are in total.
+
+For example, suppose there is a set $T$ of 10 tags that might apply to
+a document.  Now suppose we have a document and we know the relevant
+tags are $\setext{T_2, T_3, T_8}$ of the total set of tags.  Now
+suppose an automatic tagging system returns a ranked list of responses
+$\vecext{T_3, T_4, T_7, T_8}$.  Because the first and fourth ranked
+responses $T_3$ and $T_8$ are actually relevant, we take our boolean
+vector representation to be $y = \vecext{1, 0, 0, 1}$.  
+
+By knowing that there is one additional reference tag not in the
+response, namely $T_2$, we are able to tell what percentage of all
+tags are found at each rank in the list of results.
+
+We could complete the response pessimistically (as far as evaluation
+goes) to $\vecext{1,0,0,1,0,0,0,1}$, by placing the correct response
+at the last possible rank.  It might be better to average a bunch of
+random samples, but it's a lot of work.  Instead, we will just
+truncate our evaluations at the extent of the user input.
+
+\subsubsection{Statistics at Rank $n$}
+
+Suppose we have an evaluated rank vector $y = \setext{0,1}^J$
+and we know that there are a total of $T$ possible correct
+responses and $F$ possible incorrect responses altogether.
+
+The statistics at rank $n \in \nats$, defined for $n < N$, are
+calcluated by converting the first $n$ responses into a
+sensitivity-specificity matrix.  The response positive cases
+have the obvious definitions
+%
+\begin{equation}
+\mbox{TP}_n = \sum_{i=1}^n y_i
+\ \ \ \ \ \mbox{and} \ \ \ \ \
+\mbox{FP}_n = \sum_{i=1}^n (1-y_i).
+\end{equation}
+%
+To fill in the rest of the matrix, we know that everything we missed
+is a false negative and the rest are true negatives, giving us
+%
+\begin{equation}
+\mbox{FN}_n = T - \mbox{TP}_n
+\ \ \ \ \ \mbox{and} \ \ \ \ \
+\mbox{TN}_n = F - \mbox{FP}_n
+\end{equation}
+%
+As expected, we have $T+F = \mbox{TP} + \mbox{FP} + \mbox{FN} +
+\mbox{TN}$.
+
+\subsubsection{ROC and PR Curves}
+
+We now have a way to calculate a sensitivity-specificity matrix for
+each rank.  The recieved operating characteristic (ROC) curve is
+defined to be the plot of sensitivity (on the vertical axis) versus
+one minus specificity (on the horizontal axis).
+
+In addition to the ROC curves, it is common to see precision versus
+recall plotted in the same way, though there is less of a convention
+as to which value goes on which axis.  We will call such plots PR
+curves.
+
+We feel that presenting ROC and PR curves directly is the best way to
+understand performance for systems that allow precision to be traded
+for recall (or sensitivity for specificity).
+
+\subsubsection{Convex Hulls of ROC and PR Curves}
+
+It is common in the information retrieval literature to see PR curves
+pruned down to the points lying on the convex hull of the curve.  This
+practice is referred to as interpolation, because the assumption
+is that you can always produce a system that is a mixture of two
+operating points by randomly blending them.
+
+An interpolated curve is calculated by reducing the set of all
+precision/recall pairs to just those lying the convex hull.  More
+explicitly, we remove an operating point $\vecext{r,p}$ correspoding
+to recall $r$ and precision $p$ if there is an operating point
+$\vecext{r',p'}$ such that $r' \geq r$ and $p' \geq p$.  
+
+For example, only points calculated at ranks corresponding to 1 values
+in the data vector $y$ can lie on the convext hull.  Each 0 point
+corresponds to a decrease in precision without any increase in recall.  
+
+By the same reasoning, we typically include operating points for 0\%
+recall and 100\% precision and for 100\% recall and 0\% precision.
+These may not in fact lie on the convex hull of the ROC or PR curve,
+in which case they will be pruned out by interpolation.
+
+\subsubsection{Area under ROC and PR Curves}
+
+In order to reduce performance to a single statistic, it is common to
+see the area under the curve (AUC) reported.  
+
+We typically compute these areas by linearly interpolating all of the
+operating points we have (either raw or interpolated).  In this way,
+each operating point and the next point produce a trapezoid, the areas
+of which we can easily compute and sum.
+
+The area under the ROC curve has a probabilistic interpretation as the
+estimate of the probability that a classifier will rank a random
+positive intstance ahead of a randomly chosen negative instance.
+
+\subsubsection{Averages on ROC and PR Curves}
+
+The average value of precision is often reported for PR curves.  This
+is conventionally done over all operating points, not just the ones on
+the convex hull, though it may be calculated either way.  
+
+When we have a whole set of evaluations, resulting in multiple PR
+curves, it's common to see mean average precision (MAP) reported,
+which simply averages the average precision precision values across
+the different PR curves.
 
 
- We will further
-assume that the list is exhaustive, so that all of the correct
-responses
+\subsubsection{Special Points on the Curves}
+
+Several points on these curves are often called out for special
+attention.  For PR curves, the precision-recall breakeven point (BEP)
+is the point on the curve for which precision equals recall.  This
+statistic typically needs to be computed by interpolating the
+operating points under consideration to find the crossing point.  This
+interpolation can either be done either on the raw curve or the curve
+restricted to points on the convex hull of the curve.
+
+The second point that is often reported is the point in the PR curve
+with maximum F measure.  In fact, we can compute any of the statistics
+applicable to sensitivity-specificity matrices and find the operating
+point that maximizes (or minimizes) it.
+
+For information retrieval applications, it is common to see
+precision-at-$N$ numbers reported, where we see what the precision is
+for the top $N$ results.  This statistic is relevant because we often
+present only $N$ results to users.
 
 
+\subsubsection{Reciprocal Rank of First True Positive}
+
+The reciprocal rank statistic for ranked results is just the inverse
+$1/n$ of the rank $n$ at which the first true positive appears int he
+list.  Because we start counting from 1, $1/n$ will always fall
+between 0 and 1, with 1 being best.  
+
+As for average precision, it is common to report the average
+value of reciprocal rank across a number of evaluations.  
 
 
 \section{Information Theory}\label{section:stats-information-theory}
