@@ -1,0 +1,87 @@
+
+\section{Differential Calculus}
+
+\subsection{Derivatives}
+
+Derivatives measure the slope of a function.  They have a simple
+definition as a limit of the slope between two points $x$ and
+$x+\delta$ as $\delta \rightarrow 0$.  Given a function $f:\reals
+\rightarrow \reals$, we write its derivative using Leibniz's notation
+as $\frac{d}{dx}f(x)$ and using Lagrange's notation as $f'(x)$.  The definition is
+%
+\begin{equation}
+f'(x)
+= \frac{d}{dx} f(x) 
+= \lim_{\delta \rightarrow 0} 
+    \frac{f(x+\delta) - f(x)}{\delta}.
+\end{equation}
+%
+If this limit converges at a point $x$, the function $f$ is
+said to be differentiable at $x$.
+
+We provide a table of common derivative forms in 
+
+\subsection{Derivates of Common Functions}
+
+
+%
+\begin{equation}
+f'(x^n) =
+\= n \ x^{n-1}.
+\end{equation}
+%
+
+For exponential functions, we have
+%
+\begin{equation}
+\frac{d}{dx} \exp(x) = \exp(x).
+\end{equation}
+
+For logarithms, we have 
+%
+\begin{equation}
+\frac{d}{dx} \log x = 1/x 
+\ \ \ \ \  [\mbox{ for} x > 0] \hfill
+\end{equation}
+
+For sums of two functions, we have
+%
+\begin{equation}
+\frac{d}{dx}(f(x) + g(x)) = \frac{d}{dx}f(x) + \frac{d}{dx}g(x)
+\end{equation}
+
+For the product of two functions, we have
+%
+\begin{equation}
+\frac{d}{dx} f(x)g(x) = g(x) \frac{d}{dx} f(x) + f(x) \frac{d}{dx}g(x).
+\end{equation}
+
+For the composition of two functions, it's easier to resort to
+prime notation, 
+%
+\begin{equation}
+\frac{d}{dx} f(g(x)) = \frac{d}{dx} g(x) \times (\frac{d}{dx} h(x))(g(x)).
+\end{equation}
+%
+This latter formula is most naturally expressed using Lagrange's
+notation and function composition as $(f \circ g)'(x) = g'(x)
+h'(g(x))$.
+
+Multiplication by a constant distributes through differentiation, so
+that
+%
+\begin{equation}
+\frac{d}{dx} k f(x) = k \frac{d}{dx} f(x)
+\end{equation}
+%
+Similarly, addition 
+
+
+
+
+
+\begin{equation}
+\frac{d}{dx} c = 0 \mbox{ for any constant } c
+\end{equation}
+
+
