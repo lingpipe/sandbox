@@ -1,0 +1,165 @@
+\chapter{Mathematics}\label{chapter:maths}
+
+This appendix provides a refresher in some of the mathematics
+underlying machine learning and natural language processing.
+
+\section{Basic Notation}
+
+\subsection{Summation}
+
+We use summation notation throughout, writing $\sum_{n \in N}
+x_n$ for the sum of the $x_n$ values for all $n \in N$.  For instance,
+if $N = \setext{1,5,7}$, then $\sum_{n \in N} x_n = x_1 + x_5 + x_7$.
+
+We also write $\sum_{n=a}^b x_n$ for the sum $x_a + x_{a+1}, \ldots,
+x_{b-1}, x_{b}$.  If $a = -\infty$ or $b = \infty$, the sums are open
+ended.  For instance, we write $\sum_{n=a}^{\infty} x_n$ for the
+infinite sum $x_a + x_{a+1} + x_{a+2} + \cdots$.
+
+The boundary condition of $\sum_{n \in N} x_n$ when $N$ is the empty
+set is 0, because 0 is the additive unit \ie{$0+n = n+0 = n$}.
+
+
+\subsection{Multiplication}
+
+We use product notation just like summation notation, swapping the
+product symbol $\prod$ for the summation symbol $\sum$.  For instance,
+we write $\prod_{n \in N} x_n$ for the product of all the $x_n$ values
+for $n \in N$.  We use bounded and infinite products in exactly the
+same way as for summation.
+
+The boundary condition for $\prod_{n \in N} x_n$ in the case where $N$
+is empty is 1, because 1 is the multiplicative unit \ie{$1 \times n =
+  n \times 1 = n$}.
+
+
+
+
+\section{Useful Functions}
+
+
+\subsection{Exponents}
+
+The exponential function $\exp(x)$ is defined as the unique non-zero
+solution to the differential equation $f' = f$.  Thus we have
+%
+\begin{equation}
+\frac{d}{dx}\exp(x) = \exp(x)
+\ \ \ \ \ \mbox{and} \ \ \ \ \ 
+\int \exp(x) \ dx = \exp(x).
+\end{equation}
+%
+It turns out the solution is $\exp(x) = e^x$, where $e$, known as
+Euler's number, is approximately 2.718.
+
+The exponential function may be applied to any real number, but its
+value is always positive.  The exponential function has some
+convenient properties, such as
+%
+\begin{equation}
+\exp(a + b) = \exp(a) \times \exp(b), \mbox{ and}
+\end{equation}
+%
+\begin{equation}
+\exp(a \times b) = \exp(a)^b.
+\end{equation}
+
+
+\subsection{Logarithms}
+
+The natural logarithm, $\log x$ is defined as the inverse of
+$\exp(x)$.  That is, $\log x$ is defined to be the $y$ such that
+$\exp(y) = x$.  Thus for all $x \in (-\infty,\infty)$ and all $y \in
+(0,\infty)$ we have
+%
+\begin{equation}
+\log \exp(x) = x
+\ \ \ \ \ \mbox{and} \ \ \ \ \ 
+\exp(\log y) = y.
+\end{equation}
+%
+
+Logarithms convert multiplication into addition and exponentiation
+into multiplication, with
+%
+\begin{equation}
+\log (x \times y) = \log x + \log y, \mbox{ and}
+\end{equation}
+%
+\begin{equation}
+\log x^y = y \log x.
+\end{equation}
+
+We can define logarithms in different bases, where $\log_b x$ is defined
+to be the $y$ such that $b^y = x$.  In terms of natural logs, we have
+%
+\begin{equation}
+\log_b x = \log x / \log b.
+\end{equation}
+
+\subsection{The Factorial Function}\label{section:stats-factorial}
+
+The factorial function computes the number of different ordered
+permutations there are of a list of a given (non-negative) number of
+distinct objects.  The factorial function is written $n!$
+and defined for $n \in \nats$ by
+%
+\begin{equation}
+n! = 1 \times 2 \times \cdots \times n = \prod_{m=1}^n m.
+\end{equation}
+%
+The convention is to set $0! = 1$ so that the boundary conditions of
+definitions like the one we provided for the binomial coefficient work
+out properly.
+
+
+\subsection{Binomial Coefficients}\label{section:stats-binomial-coefficient}
+
+The binomial coefficient has many uses.  We're mainly interested in
+combinatorics, so we think of it as providing the number of ways to
+select a subset of a given size from a superset of a given size.  The
+binomial coefficient is written ${m choose n}$, prounced ``$m$
+choose $n$,'' and defined for $m, n \in \nats$ with $n \geq m$ by
+%
+\begin{equation}
+{n \choose m} = \frac{n!}{m! \ (n-m)!}.
+\end{equation}
+
+
+\subsection{Multinomial Coefficients}\label{section:maths-multinomial-coefficient}
+
+The multinomial coefficient generalizes the binomial coefficient to
+choosing more than one item.  It tells us how many ways there are to
+partition a set into subsets of fixed sizes.  For a set of size $n$,
+the number of ways partition it into subsets of sizes
+$m_1,\ldots,m_K$, where $m_k \in \nats$ and $n = \sum_{k=1}^K m_k$, is
+%
+\begin{equation}
+{n \choose {m_1, \ldots, m_K}}
+= \frac{n!}{\prod_{k=1}^K m_k!}.
+\end{equation}
+
+
+\subsection{The $\Gamma$ Function}\label{section:stats-gamma-function}
+
+The $\Gamma$ function is the complex generalization of the factorial
+function (see \refsec{stats-factorial}).  It is written $\Gamma(x)$, 
+and we're only concerned with real $x \in [0,\infty)$, where its value
+is defined by 
+%
+\begin{equation}
+\Gamma(x) = \int_0^{\infty} t^{x-1} \ \exp(-t) \ dt.
+\end{equation}
+%
+In general, we have
+%
+\begin{equation}
+\Gamma(x+1) = x \ \Gamma(x).
+\end{equation}
+%
+Because we have $\Gamma(1) = 1$, we also have for all $n \in \nats, n > 0$, 
+%
+\begin{equation}
+\Gamma(n) = (n-1)!.
+\end{equation}
+
