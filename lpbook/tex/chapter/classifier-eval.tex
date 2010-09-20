@@ -330,7 +330,7 @@ equal to the total number of wines evaluated.
 
 Contingency matrices are particular kinds of contingency tables which
 happen to be square and have the same outcome labels on the rows and
-columns.  In \refsec{classifier-eval-stats-contingency-table}, we
+columns.  In \refsec{classifier-eval-contingency-table}, we
 suvey the most popular techniques culled from a vast literture
 concerning the statistical analysis of contingency tables in general
 and confusion matrices in particular.  
@@ -566,11 +566,28 @@ statistic is 15.5, which is quite high.
 To compute $p$ values, we need to determine where $X^2$ falls in the
 cumulative distribution of $\chi^2_{\nu}$, where $\nu$ is the degrees
 of freedom (here $(K-1)^2$ for $K$ categories).  For our example, the
-chi square statistic $X^2$ is 15.5.  The R function function \code{1 -
-  pchisq(15.5,df=4)} can be used to produce the $p$ value, which in
-this case is 0.0037.  This $p$ value means that there is less than
-a 0.4\% chance of results in as good agreement as what we saw to
-have arisen from independently generating reference and response values.
+chi square statistic $X^2$ is 15.5.  The R function function
+\code{phchisq()} for the cumulative density of $\chi^2$ may be used to
+compute $p$-values by:
+%
+\commandlinefollow{1 - pchisq(15.5,df=4)}
+\begin{verbatim}
+[1] 0.003768997
+
+\end{verbatim}
+%
+The way to interpret a $p$ value is as the probability under the null
+hypothesis (here independence) of seeing as extreme a value as was
+seen (here 15.5) in the distribution at hand (here the $\chi^2$
+distribution with 4 degrees of freedom).  In other words, our $p$
+value of 0.0038 means that there is less than a 0.4\% chance that
+two independent distributions were in as good agreement as what we
+observed in our table.  This is usually considered a low enough
+$p$ value to reject the null hypothesis that the two results
+were independent.%
+%
+\footnote{We never accept the null hypothesis.  With a high $p$ value
+  we simply fail to reject it.}
 
 LingPipe is also able to report Pearson's mean-square contingency
 statistic $\varphi^2$, Cramér's $V$ statistic of association, and
@@ -622,7 +639,7 @@ matrix class also supports one-versus-all evaluations, as
 discussed in \refsec{classifier-eval-one-versus-all}.
 
 
-\subsubsection{Demo: Confusion Matrices}
+\subsection{Demo: Confusion Matrices}
 
 In the rest of this section, we will illustrate the use of confusion
 matrices to compute the statistics defined earlier in this section.
@@ -655,10 +672,13 @@ Finally, we have the $\chi^2$ and related statistics and the $\lambda$ statistic
 %
 \codeblock{ConfusionMatrixDemo.5}
 
+All of these statistics are explained in \refsec{classifier-eval-contingency-table}.
+
 
 \subsubsection{Running the Demo}
 
-The Ant target \code{confusion-matrix} runs the demo.
+The Ant target \code{confusion-matrix} runs the demo.  There are no command-line
+arguments, so there's nothing else to provide.  
 %
 \commandlinefollow{ant confusion-matrix}
 \begin{verbatim}
@@ -699,7 +719,6 @@ lambdaB=0.35714285714285715
 \end{verbatim}
 
 
-
 \subsection{One-Versus-All Evaluations}\label{section:classifier-eval-one-versus-all}
 
 We often want to evaluate the performance of a classifier on a single
@@ -707,10 +726,10 @@ reference category.  LingPipe's confusion matrix classes support this
 kind of single-category evaluation by projecting a confusion matrix
 down to a $2 \times 2$ confusion matrix comparing a single category to
 all other categories.  Because our categories are exhaustive and
-exclsuive, the reduced matrix compares a single category to its
+exclusive, the reduced matrix compares a single category to its
 complement.
 
-\subsection{Example: Blind Wine (cont.)}
+\subsection{Example: Blind Wine Classification (continued)}
 
 Going back to our sample confusion matrix in
 \reffig{blind-wine-confusion}, we can render the results for the three
@@ -733,9 +752,9 @@ matrices, which we show in \reffig{blind-wine-one-versus-all}.
 \begin{tabular}{|r|c|c|}
 \multicolumn{1}{c}{ } & \multicolumn{2}{c}{\tblhead{\bfseries Resp}}
 \\ \cline{2-3}
-\multicolumn{1}{c}{\tblhead{\bfseries Ref}} & \multicolumn{1}{|c|}{\tblhead{syr}} & \tblhead{not}
+\multicolumn{1}{c}{\tblhead{\bfseries Ref}} & \multicolumn{1}{|c|}{\tblhead{syrah}} & \tblhead{not}
 \\ \cline{1-3}
-\tblhead{syr} & 5 & 4
+\tblhead{syrah} & 5 & 4
 \\ \cline{1-3}
 \tblhead{not} & 4 & 14
 \\ \cline{1-3}
@@ -744,9 +763,9 @@ matrices, which we show in \reffig{blind-wine-one-versus-all}.
 \begin{tabular}{|r|c|c|}
 \multicolumn{1}{c}{ } & \multicolumn{2}{c}{\tblhead{\bfseries Resp}}
 \\ \cline{2-3}
-\multicolumn{1}{c}{\tblhead{\bfseries Ref}} & \multicolumn{1}{|c|}{\tblhead{pin}} & \tblhead{not}
+\multicolumn{1}{c}{\tblhead{\bfseries Ref}} & \multicolumn{1}{|c|}{\tblhead{pinot}} & \tblhead{not}
 \\ \cline{1-3}
-\tblhead{pin} & 4 & 2
+\tblhead{pinot} & 4 & 2
 \\ \cline{1-3}
 \tblhead{not} & 1 & 20
 \\ \cline{1-3}
@@ -778,6 +797,66 @@ original three-way categorization scheme.  Here, the 11
 classifications of non-cabernets as non-cabernets are treated as
 correct.  The other two tables, for syrah-versus-all and
 pinot-versus-all are calculated in the same way.
+
+\subsection{Micro-Averaged Evaluations}
+
+Now that we have a $2 \times 2$ one-versus-all matrix for each
+category, we may sum them into a single matrix, which will be used for
+what are known as micro-averaged evaluations.  The $2 \times 2$
+micro-averaged confusion matrix for our running blind-wine tasting
+example is given in \reffig{blind-wine-micro}.
+%
+\begin{figure}
+\begin{center}
+\begin{tabular}{|r|c|c|}
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{\tblhead{\bfseries Resp}}
+\\ \cline{2-3}
+\multicolumn{1}{c}{\tblhead{\bfseries Ref}} & \multicolumn{1}{|c|}{\tblhead{positive}} & \tblhead{negative}
+\\ \cline{1-3}
+\tblhead{positive} & 18 & 9
+\\ \cline{1-3}
+\tblhead{negative} & 9 & 45
+\\ \cline{1-3}
+\end{tabular}
+\end{center}
+%
+\caption{The micro-averaged confusion matrix resulting from summing
+  the one-versus-all matrices in
+  \reffig{blind-wine-one-versus-all}.}\label{fig:blind-wine-micro}
+\end{figure}
+%
+The micro-average confusion matrix is closely related to our original
+matrix (here \reffig{blind-wine-confusion}).  The total count will be
+the number of categories (here 3) times the number of test cases (here
+27, for a total count of 81).  The number of true positives is just
+the number of correct classifications in the original matrix (here 18,
+for the three diagonal elements $9+5+4$).  The number of false
+positives and false negatives will be the same, and each will be equal
+to the sum of the off-diagonal elements, here $3+1+1+3+0+1$).  The
+true negative slot gets the rest of the total, which is just triple
+the original count (here $3 \times 27 = 81$) minus the number of
+correct answers in the original matrix (here 18) minus twice the
+number of errors in the original matrix (here $2 \times 9 =18$, for a
+total of 45).
+
+
+\subsection{The \code{ConfusionMatrix} Class (continued)}
+
+The method \code{oneVsAll(int)} in \code{ConfusionMatrix} returns the
+one-versus-all statistics for the category with the specified index
+(recall that \code{getIndex(String)} converts a category name to its
+index).  The method \code{microAverage()} returns the micro-averaged
+confusion matrix.  For our example, these are the three one-versus-all
+confusion matrices shown \reffig{blind-wine-one-versus-all} and the
+micro-averaged matrix shown in \reffig{blind-wine-micro}.
+
+These statistics are returned as an instance of
+\code{PrecisionRecallEvaluation}, which is also in the package
+\code{com.aliasi.classify}.  A precision-recall matrix implements many
+of the same statistics as are found in a general confusion matrix,
+as well as a number of methods specific to $2 \times 2$ matrices with
+a distinguished positive and negative category.  We turn to these
+in the next section.
   
 
 
@@ -809,7 +888,11 @@ in both directions.
 
 
 
-\section{Contingency Tables}\label{section:classifier-eval-stats-contingency-table}
+\section{Contingency Tables and Derived Statistics}\label{section:classifier-eval-contingency-table}
+
+In this section, we provide a precise definition of contingency tables and
+discuss the computation and interpretation of statistics on contingency tables.
+through contingency tables.
 
 A contingency table is an $M \times N$ matrix $C$ of counts
 \ie{$C_{m,n} \in \nats$}.  A generic contingency table is shown in
