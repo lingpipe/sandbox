@@ -372,11 +372,68 @@ Netbeans is free, and may be downloaded from its home page,
 %
 Its licensing is rather complex, being released under a dual license
 consisting of the Common Development and Distribution License (CDDL)
-and version 2 of the GNU Public License version (GPLv2).  Full details
+and version 2 of the GNU Public License version 2 (GPLv2).  Full details
 are at
 %
 \urldisplay{http://netbeans.org/about/legal/license.html}
 
+
+\subsection{Statistical Computing Environment}\label{section:intro-R}
+
+Although not strictly necessary, if you want to draw nice plots of
+your data or results, or compute $p$ values for some of the statistics
+LingPipe reports, it helps to have a statistical computing language on
+hand.  Such languages are typically interpreted, supported interactive
+data analysis and plotting.  
+
+In some cases, we will provide R code for operations not supported in
+LingPipe.  All of the graphs drawn in the book were rendered as PDFs
+in R and included as vector graphics.
+
+\subsubsection{R Project for Statistical Computing}
+
+The most popular open-source statistical computing language is still
+the R Project for Statistical Computing (R).  R runs under all the
+major operating systems, though the Windows installers and
+compatibility with libraries seem to be a bit more advanced than those
+for Linux or Mac OS X.
+
+R implements a dialect of the S programming language for matrices and
+statistics.  It has good built-in functionality for standard
+distributions and matrix operations.  It also allows linking to C or
+Fortran back-end implementations.  There are also plug ins (of varying
+quality) for just about everything else you can imagine.  The
+officially sanctioned plug ins are available from the Comprehensive R
+Archive Network (CRAN).
+
+R is available from its home page,
+%
+\urldisplay{http://www.r-project.org/}
+%
+The CRAN mirrors are also linked from the page and usually the first
+web search results for statistics-related queries in R.
+
+R is distributed under the GNU Public License version 2 (GPLv2).  
+
+
+
+\subsubsection{SciPy and NumPy}
+
+The Python programming/scripting language is becoming more and more
+popular for both preprocessing data and analyzing statistics.  The
+library NumPy provides a matrix library on top of Python and SciPy
+a scientific library including statistics and graphing.  The place
+to get started is the home page,
+%
+\urldisplay{http://numpy.scipy.org/}
+%
+NumPy and SciPy and Python itself are distributed under the much more
+flexible BSD License.  
+
+Like R, Python is interpreted and not very fast at operations like
+looping.  NumPy helps by allowing some operations to be vectorized (as
+does R).  Like R, Python also allows linking C and Fortran back-end
+packages for efficiency.
 
 \subsection{Full LingPipe Distribution}
 

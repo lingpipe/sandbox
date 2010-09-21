@@ -40,10 +40,39 @@
     </java>
   </target>
 
+  <property name="tp" value="9"/>
+  <property name="fn" value="3"/>
+  <property name="fp" value="4"/>
+  <property name="tn" value="11"/>
+  <target name="precision-recall"
+          depends="jar">
+    <java classname="com.lingpipe.book.classifiereval.PrecisionRecallDemo"
+          fork="true">
+      <classpath refid="classpath"/>
+      <arg value="${tp}"/>
+      <arg value="${fn}"/>
+      <arg value="${fp}"/>
+      <arg value="${tn}"/>
+    </java>
+  </target>
+
+
+
+  <target name="micro-macro-avg"
+          depends="jar">
+    <java classname="com.lingpipe.book.classifiereval.MicroMacroAvg"
+          fork="true">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+
   
 
   <target name="run"
-          depends="confusion-matrix"/>
+          depends="confusion-matrix,
+                   precision-recall,
+                   micro-macro-avg"/>
 
 
 </project>
