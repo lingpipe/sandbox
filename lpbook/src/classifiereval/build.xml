@@ -67,12 +67,22 @@
   </target>
 
 
+  <target name="scored-precision-recall"
+          depends="jar">
+    <java classname="com.lingpipe.book.classifiereval.ScoredPrecisionRecallDemo"
+          fork="true">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+
   
 
   <target name="run"
           depends="confusion-matrix,
                    precision-recall,
-                   micro-macro-avg"/>
+                   micro-macro-avg,
+                   scored-precision-recall"/>
 
 
 </project>

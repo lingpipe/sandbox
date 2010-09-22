@@ -1247,7 +1247,384 @@ we get the same result,
 \begin{equation}
 0.667 = \frac{(12 \times 0.750) + (9 \times 0.556) + (6 \times 0.667)}{12 + 9 + 6}.
 \end{equation}
+%
+In most evaluations, micro-averaged results tend to be better, because
+performance is usually better on high-count categories than low-count
+ones.  Macro-averaged results will be higher than micro-averaged ones
+if low count categories perform relatively better than high count
+categories.
 
+\subsection{Generalized Precision-Recall Evaluations for Information Extraction}
+
+Precision-recall evaluations are applicable to broader classes of
+problems than simple classifiers.  In fact, the most popular
+applications of precision-recall evaluations are to
+information-finding problems.  A typical example of this is named
+entity mention recognition.  A named-entity mention is a sequence of
+text that refers to some object in the real world by name.  For
+example, \stringmention{Detroit} might refer to a city,
+\stringmention{Denny McClain} to a person, and \stringmention{Tigers}
+to an organization in the sentence \stringmention{Denny McClain played
+  for the Tigers in Detroit}.
+
+Suppose we have a reference corpus of named entity mentions.  We
+evaluate a named-entity mention chunking system by running it over the
+text and returning all the entity mentions found by the system.  Given
+the reference answers, it's easy to classify each mention returned by
+the system as a true positive if the response matches a mention in the
+reference or a false positive if the response doesn't match a mention
+in the reference.  Then, each mention in the reference that's not in
+the response is marked as a false negative.  With the TP, FP, and FN
+statistics, it's straightforward to compute precision and recall.
+
+We have so far said nothing about true negatives.  The problem with
+true negatives for a named entity mention finding task is that any
+span of text may potentially refer to any type of entity, so there are
+vast numbers of true negatives.  For instance, \stringmention{played},
+\stringmention{McClain played}, \stringmention{played for},
+\stringmention{McClain played for}, and so on, are all true negatives
+in our example for any type of entity to which they're assigned.
+
+This explains why precision is a more popular measure of information
+extraction systems than specificity.  For specificity, we need to know
+about the true negatives, whereas precision and recall are based only
+on the combined set of positive reference items and positive response
+items.
+
+Similar precision-recall evaluations are applied to information
+retrieval (IR) systems.  In the standard Cranfield evaluation model%
+%
+\footnote{Developed around the Cranfield test collection of 1400
+documents in aeronautics in the 1960s.}
+%
+for evaluating IR systems, a test (or reference) corpus consists of a
+sequence of queries and for each query, the set of relevant documents
+from a collection.  A system then returns a number of documents for a
+query.  Each of these returned document will be either a true positive
+(if it's marked as relevant in the reference corpus) or a false
+positive (if it's not marked as relevant).  The relevant documents not
+returned are false negatives and the rest are true negatives.  These
+evaluations are often extended to systems that provide ranked and
+scored results, as we discuss in the next section.
+
+
+\section{Scored Precision-Recall Evaluations}
+
+So far, we have assumed that the system's response to a classification
+problem is a single first-best guess at a category.  In many cases,
+particularly in LingPipe's implementations, classifiers can be
+configured to return more than a single result.  These multiple
+results will always be ranked from best guess to worst guess.  In
+almost all cases, each result will also get a score.  In many cases,
+the results are associated with conditional probability estimates of
+the response category given the item being classified.
+
+\subsection{Ranks, Scores and Conditional Probability Estimates}
+
+For instance, given our blind-wine grape-guessing task, a taster may
+be presented with a wine, and respond that their first guess is
+cabernet, their second guess syrah, and their third guess pinot noir.
+That's a ranked response.  Instead, they might say cabernet has a
+score of -1.2, syrah a score of -1.3, and pinot a score of -2.0 (yes,
+scores may be negative; they still get sorted from largest (-1.2) to
+smallest (-2.0)).  That's what we call a scored response.  Even
+better, the response may contain a probability estimate, such as 55\%
+cabernet, 35\% syrah, and 10\% pinot noir.  That's a conditional
+probability response.%
+%
+\footnote{There are also joint probability responses, from which
+  conditional probabilities may be defined.  The joint probabilities
+  are less useful for evaluation, so we put off considering them 
+  until we see a classifier that uses them.}
+
+\subsection{Comparing Scores across Items}
+
+Ranks only entail that we can rank categories within the response to a
+single item being classified, such as a single wine.  For instance, I
+may be guessing the grapes in two wines, and rank the first one syrah,
+cabernet, and pinot, and the second one syrah, pinot and cabernet.
+Without scores, there's no way to tell if the taster is more confident
+about the guess of syrah for the first wine or syrah for the second
+wine.
+
+With scores, we are sometimes able to compare a classifier's response
+across items.  Usually we can't, though, because the scores will only
+be calibrated among the category responses for a single item.  For
+instance, it doesn't usually make sense to compare scores for
+different documents across different searches in an information
+retrieval system like Lucene (see \refchap{lucene}), because of all
+the document- and query-specific intricacies of scoring.
+
+Conditional probabilities, on the other hand, are by their very nature
+calibrated to be comparable across runs.  If I have two wines, and for
+the first one respond 55\% cabernet, 35\% syrah and 10\% pinot, and
+for the second, 90\% cabernet, 8\% syrah, and 2\% pinot, I can rank my
+choices.  My best guess is that wine 2 is a cabernet, because I've
+estimated a 90\% chance of being right.  My second best guess is that
+wine 1 is a cabneret (55\%), my third-best guess that wine 1 is a
+syrah (35\%), my fourth-best guess that wine 1 is pinot (10\%), my
+fifth-best that wine 2 is syrah (8\%), and my least likely guess is
+that wine 2 is a pinot (2\%).  
+
+In this section, we will assume that we're evaluating system responses
+in a situation where the scores (or conditional probabilities) are
+calibrated across different items.  This lets us arrange all of our
+guesses for all of our items in order.  It is this ordering, an example
+of which we saw in the last paragraph, that forms the basis for
+scored precision recall evaluations.
+
+\subsection{The \code{ScoredPrecisionRecallEvaluation} Class}
+
+There are a number of evaluations for systems that return scores for
+each possible outcome that are calibrated across the items being
+classified.  These are implemented in LingPipe's class
+\code{ScoredPrecisionRecallEvaluation}, in package
+\code{com.aliasi.classify}.
+
+\subsubsection{Construction and Population}
+
+Most often, like precision-recall evaluations, scored precision-recall
+evaluations will be constructed automatically by encapsulated testing
+classes for each kind of system.  LingPipe generates scored
+precision-recall evaluations when given appropriately probabilistic
+taggers, chunkers, spelling correctors, or classifiers.  For now, we
+consider direct construction and manipulation to get a feeling for the
+evaluation class itself.
+
+There is a single no-arg constructor,
+\code{ScoredPrecisionRecallEvaluation()}.  The evaluation initially
+starts out with no data.
+
+Responses are added to the evaluation using the method
+\code{addCase(boolean,double)}, which takes two arguments, the first
+being whether the result was correct, and second what the score was.
+Note that we are not keeping track of the individual categories, just
+their scores and whether they are correct or not.
+
+Going back to our example, of the previous section, suppose the first
+wine was a syrah, and the second a cabernet.  Here we repeat the
+responses along with an indication of whether the response was true or
+not.  For the first wine, we have 55\% cabernet (false), 35\% syrah
+(true), and 10\% pinot noir (false), and for the second wine, 90\%
+cabernet (true), 8\% syrah (false), and 2\% pinot noir (false).  We
+just call \code{addCase()} with these values, as in
+\code{addCase(false,0.55)}, \code{addCase(true,0.35)}, and so on down
+to \code{addCase(false,0.02)}.
+
+If the responses are exhaustive for each item, this is all we have to
+do.  The key is that the correct answers will show up in every set of
+responses.  Unfortunately, this is often not the case.  For instance,
+consider a named-entity chunker that returns the 100-best potential
+entity mentions for each sentence.  If we know the true entity
+mentions, we can rank each of these results as true or false, based on
+whether the entity mention is in the reference standard or not.  But
+there's no guarantee that the system will find all the entities in a
+sentence, even if it returns its 100-best guesses.
+
+In the case where not every positive reference item is included in the
+system response, the method \code{addMisses(int)} lets you add in the
+number of positive reference items that were missed by the system's
+responses.  For instance, suppose we have the following sentence, marked
+for named entities.
+%
+\begin{verbatim}
+Johan van der Dorp took the train to den Haag.
+01234567890123456789012345678901234567890123456
+0         1         2         3         4
+(0,18):PER   (37,45):LOC
+\end{verbatim}
+%
+The entities are marked by character offsets, with \code{(0,18):PER}
+indicating that the text spanning from character 0 (inclusive) to
+character 18 (exclusive), namely \stringmention{Johan van der Dorp},
+mentions a person.  Simiarly, the other entity indicates that
+\stringmention{den Haag} refers to a location.  This is a tricky
+sentence for a system trained on English data without an extensive
+list of names or locations, because both names have lower-case
+letters.  Given the input, a named-entity mention chunker might return
+the following six-best ranked guesses (for instance, returning all
+found chunks with estimated probability above 0.01),
+%
+\begin{verbatim}
+( 4, 8):LOC  0.89     (41,45):PER  0.21
+( 0, 5):PER  0.46     (41,45):LOC  0.09
+(41,45):ORG  0.43     ( 0,18):PER  0.02
+\end{verbatim}
+%
+In this case, only the guess \code{(0,18):PER} is correct, with the
+other five being wrong.  We call \code{addScore()} for each response,
+including the probability estimate and correctness, the latter of
+which is false for the first five responses and true for the last one.
+After adding the scores, we must call \code{addMisses(1)}, indicating
+that one of the reference entities (namely \code{(37,45):LOC}), was
+not included.
+
+The same issues of applying \code{addScore()} to all positive
+responses and \code{addMisses()} for the total count of false
+negatives also applies to ranked information retrieval evaluations.
+
+
+\subsection{Demo: Scored Precision-Recall}
+
+We provide a demo of the scored precision-recall evaluation class in
+\code{ScoredPrecisionRecallDemo}.  All of the work is in the
+\code{main()} method, which has no command-line arguments.  It
+starts by constructing an evaluation and populating it.
+%
+\codeblock{ScoredPrecisionRecallDemo.1}
+%
+After construction, we add ten scored results, four of which are true
+positives, and six of which are false positivies.  We then add a
+single miss representing a reference positive that was not returned by
+the system.
+
+The evaluation is most easily understood by considering the sorted
+table of evaluated responses, which may be found in
+\reffig{scored-pr-example}.
+%
+\begin{figure}
+\begin{center}
+\begin{tabular}{rrcrrrrrrr}
+\tblhead{Rank} & \tblhead{Score} & \tblhead{Correct} & \tblhead{TP} & \tblhead{TN} & \tblhead{FP} & \tblhead{FN} 
+  & \tblhead{Rec} & \tblhead{Prec} & \tblhead{Spec}
+\\ \hline
+0 & $-1.21$ & no & 0 & 5 & 1 & 5 & 0.00   & 0.00   & 0.83
+\\
+1 & $-1.27$ & {\bf yes} & 1 & 5 & 1 & 4 & {0.20}  & 0.50  & {0.83}
+\\
+2 & $-1.39$ & no  & 1 & 4 & 2 & 4 & 0.20  & 0.33  & 0.67
+\\
+3 & $-1.47$ & {\bf yes} & 2 & 4 & 2 & 3 & {0.40}  & 0.50  & 0.67
+\\
+4 & $-1.60$ & {\bf yes} & 3 & 4 & 2 & 2 & {0.60}  & {0.60}  & {0.67}
+\\
+5 & $-1.65$ & no & 3 & 3 & 3 & 2 & 0.60  & 0.50  & 0.50
+\\
+6 & $-1.79$ & no & 3 & 2 & 4 & 2 & 0.60  & 0.43  & 0.33
+\\
+7 & $-1.80$ & no & 3 & 1 & 5 & 2 & 0.60  & 0.38  & 0.17
+\\
+8 & $-2.01$ & {\bf yes} & 4 & 1 & 5 & 1 & {0.80}  & {0.44}  & {0.17}
+\\
+9 & $-3.70$ & no & 4 & 0 & 6 & 1 & 0.80  & 0.40  & 0.00
+\\ \hline
+10 & miss & {\bf yes} & 5 & 0 & 6 & 0 & 1.00 & 0.45 & 0.00
+\end{tabular}
+\end{center}
+\caption{Example of scored precision-recall evaluation.  The responses
+  are shown with their correctness, sorted by score.  There is a
+  single missed positive item for which there was no response, so we
+  include it at the bottom of the table without a score.  In total,
+  the number of positive cases is 5 and the total number of negative
+  cases is 5.  The ranks, numbered from 0, are determined by score.
+  The counts of TP, TN, FP and FN and the corresponding recall
+  ($\mbox{TP}/(\mbox{TP}+\mbox{FN})$), precision
+  ($\mbox{TP}/(\mbox{TP}+\mbox{FP})$), and specificity
+  ($\mbox{TN}/(\mbox{TN}+\mbox{FP})$) are
+  shown.}\label{fig:scored-pr-example}
+\end{figure}
+%
+The first column of the table indicates the rank of the response
+(numbering from zero), the second the score of the response, and the
+third whether it was a correct (true) response or not.  For example,
+the top-ranked response has a score of $-1.21$ and is incorrect,
+whereas the second-best response (rank 1) has a score of $1.27$ and
+is correct.  
+
+The next four columns represent the counts in the various cells of a
+precision-recall matrix, TP, TN, FP, and FN.  These are the basis for
+the computation of the next three columns, which are recall,
+precision, and specificity (at rank $N$).  These values are available
+through the evaluation API, as are many other statistics.  For recall,
+this is the fraction of all reference positive items that have been
+retrieved at the specified rank or before.  The highest recall
+achieved is only 0.80 because we added a missed item, for a total of
+five reference positive items.  Every time we hit a correct answer,
+the recall (sensitivity) and precision go up and specificity stays the
+same.
+
+Precision is calculated slightly differently, being the fraction of
+results returned so far that are correct.  Thus the first value is
+zero, because we have $\mbox{TP}=0$ and $\mbox{FP}=1$ at this point,
+for a precision of $\mbox{TP}/(\mbox{TP}+\mbox{FP}) = 0$.  At rank 1,
+we have $\mbox{TP}=1$ and $\mbox{FP}=1$, for a precision of 0.5.  By
+the time we get down to rank 9, we have $\mbox{TP}=4$ and
+$\mbox{FP}=6$, for a precision of 0.4.
+
+Specificity (or rejection recall) is calculated more like recall than
+precision.  Specifically, we assume that at each rank, we have
+correctly rejected all the items we haven't mentioned.  So at rank 0,
+we have $\mbox{TN} = 6$ and $\mbox{FP}=1$.
+
+After constructing and populating the evaluation, the code in the
+\code{main()} method goes on to print out the precision-recall curve
+implied by the data.
+%
+\codeblock{ScoredPrecisionRecallDemo.2}
+%
+We have set the interpolation flag to false, and then walked over the
+resulting curve pulling out recall/precision operating points (and
+then printing them in code not shown).  LingPipe follows the
+convention of only including points at which the system was correct,
+which means values chosen from the lines in the table corresponding to
+ranks 1, 3, 4, and 8.
+
+The Ant target \code{scored-precision-recall} runs the demo, which
+takes no command-line arguments.  If we run it, the following shows
+the results for uninterpolated and interpolated precision-recall
+curves (the code is repeated with the interpolate flag set to
+\code{true}).  
+%
+\commandlinefollow{ant scored-precision-recall}
+\begin{verbatim}
+Uninterpolated P/R      Interpolated P/R
+prec=0.50 rec=0.20      prec=0.60 rec=0.60
+prec=0.50 rec=0.40      prec=0.44 rec=0.80
+prec=0.60 rec=0.60
+prec=0.44 rec=0.80
+\end{verbatim}
+%
+We have also shown the interpolated results.  Interpolation discards a
+precision-recall if there is another pair with higher precision and
+higher recall.  Here the $\vecext{0.5, 0.2}$ and $\vecext{0.5, 0.4}$
+operating points are removed, because the they have lower precision
+and recall than the $\vecext{0.6, 0.6}$ operating point.  Of the two
+remaining operating points, $\vecext{0.6,0.6}$ and $\vecext{0.44,0.8}$
+are not comparable, because the first has higher precsion and the
+second higher recall.  
+
+The precision-recall curve method does not return values for the final
+row(s), corresponding to positive reference items with no positive
+response \ie{the misses added with \code{addMisses(int)}}.  This is
+because there may be implicit false positives that were also not added
+as cases.
+
+The code for retrieving ROC curves is identical to that for
+precision/recall curves, only it uses the method
+\code{rocCurve(boolean)} rather than \code{prCurve(boolean)} and
+returns sensitivity/specificity pairs instead of recall/precision
+pairs.
+%
+\codeblock{ScoredPrecisionRecallDemo.3}
+%
+The output from this block of code for the current example is as follows.
+%
+\begin{verbatim}
+Uninterpolated Specificity/Sensitivity
+spec=0.60 sens=0.60
+spec=0.44 sens=0.80
+\end{verbatim}
+%
+The \code{rocCurve()} method is misleadingly named, because it returns
+sensitivity/specificity pairs.  The standard definition of an ROC
+curve is a plot of sensitivity versus $1 - \mbox{specificity}$.  
+
+Although we have a method \code{addMisses(int)} to add overall false
+positive counts, we do not have a similar arrangement for ROC curves
+to add overall false negative counts, as we'd require to compute
+proper ROC curves in the face of partial system responses.  
+Thus use of ROC curves should be restricted to situations in which
+all possible categories have responses.  
 
 
 
@@ -1255,7 +1632,7 @@ we get the same result,
 
 In this section, we provide a precise definition of contingency tables
 and discuss the computation and interpretation of statistics on
-contingency tables.  through contingency tables.
+contingency tables.  
 
 A contingency table is an $M \times N$ matrix $C$ of counts
 \ie{$C_{m,n} \in \nats$}.  A generic contingency table is shown in
@@ -1278,6 +1655,7 @@ $M$ & $C_{M,1}$ & $C_{M,2}$ & $\cdots$ & $C_{M,N}$ & $C_{M,+}$
 \tblhead{Total} & $C_{+,1}$ & $C_{+,2}$ & $\cdots$ & $C_{+,N}$& $C_{+,+}$
 \end{tabular}
 \end{center}
+\vspace*{-12pt}
 \caption{A generic $M \times N$ contingency table $C$.  Each entry
   $C_{m,n}$ represents a cell count.  The values along the bottom and
   on the right side are totals of their respective columns and rows.
