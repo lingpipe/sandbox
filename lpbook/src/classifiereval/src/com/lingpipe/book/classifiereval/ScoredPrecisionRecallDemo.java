@@ -38,7 +38,6 @@ public class ScoredPrecisionRecallDemo {
         for (double[] pr : prCurve) {
             double recall = pr[0];
             double precision = pr[1];
-        /*x*/
             System.out.printf("prec=%4.2f rec=%4.2f\n", 
                               precision, recall);
         }
@@ -52,16 +51,46 @@ public class ScoredPrecisionRecallDemo {
 
         System.out.println("\nUninterpolated Specificity/Sensitivity");
         /*x ScoredPrecisionRecallDemo.3 */
-        interpolate = true;
+        interpolate = false;
         double[][] rocCurve = eval.rocCurve(interpolate);
-        for (double[] pr : prCurve) {
+        for (double[] pr : rocCurve) {
             double sensitivity = pr[0];
             double specificity = pr[1];
         /*x*/
             System.out.printf("spec=%4.2f sens=%4.2f\n", 
                               specificity, sensitivity);
         }
-        
+
+        // cut and paste again, this time for ROC interpolated
+        System.out.println("\nInterpolated Specificity/Sensitivity");
+        interpolate = true;
+        rocCurve = eval.rocCurve(interpolate);
+        for (double[] pr : rocCurve) {
+            double sensitivity = pr[0];
+            double specificity = pr[1];
+            System.out.printf("spec=%4.2f sens=%4.2f\n", 
+                              specificity, sensitivity);
+        }
+
+        System.out.println();
+        /*x ScoredPrecisionRecallDemo.4 */
+        for (int n = 1; n <= eval.numCases(); ++n) {
+            double precisionAtN = eval.precisionAt(n);
+        /*x*/
+            System.out.printf("Precision at %2d=%4.2f\n",
+                              n,precisionAtN);
+        }
+            
+        /*x ScoredPrecisionRecallDemo.5 */
+        double maximumFMeasure = eval.maximumFMeasure();
+        double bep = eval.prBreakevenPoint();
+        /*x*/
+
+        System.out.printf("Maximum F Measure=%4.2f\n",
+                          maximumFMeasure);
+        System.out.printf("Precision/Recall Break-Even Point (BEP)=%4.2f\n",
+                          bep);
+
     }
 
 
