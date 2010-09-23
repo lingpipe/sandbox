@@ -1446,9 +1446,8 @@ the following six-best ranked guesses (for instance, returning all
 found chunks with estimated probability above 0.01),
 %
 \begin{verbatim}
-( 4, 8):LOC  0.89     (41,45):PER  0.21
-( 0, 5):PER  0.46     (41,45):LOC  0.09
-(41,45):ORG  0.43     ( 0,18):PER  0.02
+( 4, 8):LOC  0.89     (41,45):ORG  0.43     (41,45):LOC  0.09
+( 0, 5):PER  0.46     (41,45):PER  0.21     ( 0,18):PER  0.02
 \end{verbatim}
 %
 In this case, only the guess \code{(0,18):PER} is correct, with the
@@ -1468,8 +1467,12 @@ negatives also applies to ranked information retrieval evaluations.
 
 We provide a demo of the scored precision-recall evaluation class in
 \code{ScoredPrecisionRecallDemo}.  All of the work is in the
-\code{main()} method, which has no command-line arguments.  It
-starts by constructing an evaluation and populating it.
+\code{main()} method, which has no command-line arguments.
+
+\subsubsection{Construction and Population of Results}
+
+The \code{main()} method starts by constructing an evaluation and
+populating it.
 %
 \codeblock{ScoredPrecisionRecallDemo.1}
 %
@@ -1478,13 +1481,15 @@ positives, and six of which are false positivies.  We then add a
 single miss representing a reference positive that was not returned by
 the system.
 
+\subsubsection{Statistics at Ranks}
+
 The evaluation is most easily understood by considering the sorted
 table of evaluated responses, which may be found in
 \reffig{scored-pr-example}.
 %
 \begin{figure}
 \begin{center}
-\begin{tabular}{rrcrrrrrrr}
+\begin{tabular}{rrcccccccc}
 \tblhead{Rank} & \tblhead{Score} & \tblhead{Correct} & \tblhead{TP} & \tblhead{TN} & \tblhead{FP} & \tblhead{FN} 
   & \tblhead{Rec} & \tblhead{Prec} & \tblhead{Spec}
 \\ \hline
@@ -1511,10 +1516,10 @@ table of evaluated responses, which may be found in
 10 & miss & {\bf yes} & 5 & 0 & 6 & 0 & 1.00 & 0.45 & 0.00
 \end{tabular}
 \end{center}
-\caption{Example of scored precision-recall evaluation.  The responses
-  are shown with their correctness, sorted by score.  There is a
-  single missed positive item for which there was no response, so we
-  include it at the bottom of the table without a score.  In total,
+\caption{Example of a scored precision-recall evaluation.  The
+  responses are shown with their correctness, sorted by score.  There
+  is a single missed positive item for which there was no response, so
+  we include it at the bottom of the table without a score.  In total,
   the number of positive cases is 5 and the total number of negative
   cases is 5.  The ranks, numbered from 0, are determined by score.
   The counts of TP, TN, FP and FN and the corresponding recall
@@ -1531,17 +1536,22 @@ the top-ranked response has a score of $-1.21$ and is incorrect,
 whereas the second-best response (rank 1) has a score of $1.27$ and
 is correct.  
 
-The next four columns represent the counts in the various cells of a
-precision-recall matrix, TP, TN, FP, and FN.  These are the basis for
-the computation of the next three columns, which are recall,
-precision, and specificity (at rank $N$).  These values are available
-through the evaluation API, as are many other statistics.  For recall,
-this is the fraction of all reference positive items that have been
-retrieved at the specified rank or before.  The highest recall
-achieved is only 0.80 because we added a missed item, for a total of
-five reference positive items.  Every time we hit a correct answer,
-the recall (sensitivity) and precision go up and specificity stays the
-same.
+We use this table to generate precision-recall matrices for all of the
+results up to that rank.  The next four columns represent the counts
+in the cells of the precision-recall matrix, TP, TN, FP, and FN, for
+each rank.  These are the basis for the computation of the next three
+columns, which are recall, precision, and specificity at rank $N$.
+%
+\footnote{LingPipe numbers ranks from zero for the purpose of
+precision-recall and ROC curves, but numbers them from one for the
+precision-at-rank method.}
+%
+For recall, this is the fraction of all reference positive items that
+have been retrieved at the specified rank or before.  The highest
+recall achieved is only 0.80 because we added a missed item, for a
+total of five reference positive items.  Every time we hit a correct
+answer, the recall (sensitivity) and precision go up and specificity
+stays the same.
 
 Precision is calculated slightly differently, being the fraction of
 results returned so far that are correct.  Thus the first value is
@@ -1555,6 +1565,8 @@ Specificity (or rejection recall) is calculated more like recall than
 precision.  Specifically, we assume that at each rank, we have
 correctly rejected all the items we haven't mentioned.  So at rank 0,
 we have $\mbox{TN} = 6$ and $\mbox{FP}=1$.
+
+\subsubsection{Inspecting Precision-Recall and ROC Curves}
 
 After constructing and populating the evaluation, the code in the
 \code{main()} method goes on to print out the precision-recall curve
@@ -1607,24 +1619,85 @@ pairs.
 %
 \codeblock{ScoredPrecisionRecallDemo.3}
 %
-The output from this block of code for the current example is as follows.
+The output from this block of code, and from the next block, which is
+identical other than setting the interpolation flag, is as follows.
 %
 \begin{verbatim}
-Uninterpolated Specificity/Sensitivity
-spec=0.60 sens=0.60
-spec=0.44 sens=0.80
+Uninterpolated Spec/Sens    Interpolated Spec/Sens
+spec=0.83 sens=0.20         spec=0.83 sens=0.20
+spec=0.67 sens=0.40         spec=0.67 sens=0.60
+spec=0.67 sens=0.60         spec=0.17 sens=0.80
+spec=0.17 sens=0.80
 \end{verbatim}
 %
 The \code{rocCurve()} method is misleadingly named, because it returns
 sensitivity/specificity pairs.  The standard definition of an ROC
-curve is a plot of sensitivity versus $1 - \mbox{specificity}$.  
+curve is a plot with $1 - \mbox{specificity}$ on the $x$ axis and
+sensitivity on the $y$ axis.  The interpolated version removes the
 
-Although we have a method \code{addMisses(int)} to add overall false
-positive counts, we do not have a similar arrangement for ROC curves
-to add overall false negative counts, as we'd require to compute
-proper ROC curves in the face of partial system responses.  
-Thus use of ROC curves should be restricted to situations in which
-all possible categories have responses.  
+The method \code{addNegativeMisses(int)} adds to the overall count of
+reference negative items.  Because these will all be correctly
+rejected by not being returned, adding negative misses will primarily
+boost the specificity in ROC cuves.  
+
+We believe the precision-recall and ROC curves provide the best view
+of how a classifier works.  It shows how tradeoffs may be made between
+precision and recall by setting different operating points for
+accepting a result.
+
+
+\subsubsection{$F$ Measure at Rank}
+
+LingPipe only returns the precision-recall operating points, not the
+$F$ measure.  To compute $F$ measure, the static utility method
+\code{fMeasure(double,double,double)} may be used to compute the $F$
+measure of any two operating points.  The three arguments are for the
+precision weight (which should be 1 as we have defined $F$ measure
+here; see the next section for generalizations), and for precision and
+recall (though the order doesn't matter).
+
+\subsubsection{Other Ranked Precision-Recall Statistics}
+
+In addition to precision-recall and ROC curves, there are a wide range
+of commonly reported statistics for scored evaluations that are
+implemented in LingPipe's scored precision-recall evaluation class.
+
+Continuing with the demo, recalling that \code{eval} is our populated
+instance of \code{ScoredPrecisionRecallEvaluation}, we show how to
+extract other common statistics.
+
+The scored precision-recall evaluation implements a method
+\code{precisionAt(int)}, which returns the precision at a specified
+rank.  This method is indexed as precision at rank is normally
+indexed, starting from 1.  The precision at every rank is printed
+out with the following code.
+%
+\codeblock{ScoredPrecisionRecallDemo.4}
+%
+The output corresponds to the table (adjusting for indexing from one
+rather than zero).
+%
+\begin{verbatim}
+Prec at  1=0.00     Prec at  5=0.60    Prec at  9=0.44
+Prec at  2=0.50     Prec at  6=0.50    Prec at 10=0.40
+Prec at  3=0.33     Prec at  7=0.43
+Prec at  4=0.50     Prec at  8=0.38
+\end{verbatim}
+%
+
+\subsubsection{Maximum $F$ Measure and BEP}
+
+Two other commonly reported operating points derived from the
+precision-recall curve are the maximum $F$ measure and
+precision-recall breakeven point (BEP).  Continuing our example,
+these are extracted as follows.
+%
+\codeblock{ScoredPrecisionRecallDemo.5}
+%
+Their values are output (code not shown) as 
+\begin{verbatim}
+Maximum F =0.60      Prec/Rec BEP=0.44
+\end{verbatim}
 
 
 
