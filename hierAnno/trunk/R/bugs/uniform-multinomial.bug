@@ -1,0 +1,14 @@
+model {
+    pi ~ ddirch(beta[1:K])
+    for (i in in 1:I) {
+        z[i] ~ dcat(pi[])  }
+    }
+    for (j in 1:J) {
+        for (k in 1:K) {
+            theta[j,k] ~ ddirch(alpha[k,1:K])
+        }
+    }
+    for (n in 1:N) {
+        y[n] ~ ddisc(theta[jj[n],z[ii[n]]])
+    }
+}
