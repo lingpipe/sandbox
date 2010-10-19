@@ -42,7 +42,7 @@
 \sf%
 \vspace*{18pt}
 \noindent
-\spc{\huge Models of Annotation} {\Large (II)}
+\spc{\huge Models of Annotation (II)}
 \\[24pt]
 \spc{\large Bob Carpenter,} \ \ {\it LingPipe, Inc.}
 \\[8pt]
@@ -188,6 +188,7 @@ Buick-Cadillac, Moon, erstwhile Phineas Foggs}
 \begin{itemize}
 \footnotesize
 \item e.g. RTE-1 400/800 = 50\%  \ [artificially ``balanced'']
+\item e.g. Sports articles (among all news articles): 15\%
 \item e.g. Bridging anaphors (among all anaphors): 6\%
 \item e.g. Person named entity tokens 4K / 190K = 2.1\%
 \item e.g. Zero (tennis) sense of ``love'' in newswire: 0.5\% 
@@ -204,7 +205,7 @@ Buick-Cadillac, Moon, erstwhile Phineas Foggs}
 \item Choose the subset randomly from all unlabeled data
 \item Otherwise, may result in biased estimates
 \end{itemize}
-\item Use proportion of 1 labels for prevalence $\pi$
+\item Use proportion of 1 labels for prevalence $\pi$ \ [MLE]
 \item More data produces more accurate estimates
 \begin{itemize}
 \footnotesize
@@ -220,7 +221,8 @@ Buick-Cadillac, Moon, erstwhile Phineas Foggs}
 \begin{itemize}
 \item Assumes binary categories (0 =``FALSE'', \ 1 = ``TRUE'')
 \item Reference is gold standard, Response from coder
-\item 
+\item Contingency Matrix \hspace*{10pt}
+{\footnotesize
 \begin{tabular}{|r|l|l|}
 \hline
       & Resp=1 & Resp=0 \\ 
@@ -229,7 +231,7 @@ Ref=1 & TP     & FN  \\
 \hline
 Ref=0 & FP     & TN \\ 
 \hline
-\end{tabular}
+\end{tabular}}
 \item Sensitivity = $\theta_1$ = TP/(TP+FN) \ \ {\footnotesize = Recall}
 \begin{itemize}
 \footnotesize
@@ -249,8 +251,8 @@ Ref=0 & FP     & TN \\
 \item Choose random set of negative (category 0) examples
 \item Does \underline{not} need to be balanced according to prevalence
 \item Have annotator label the subsets
-\item Use agreement on negatives for specificity $\theta_{0}$
-\item Use agreement on positives for sensitivity $\theta_{1}$
+\item Use agreement on negatives for specificity $\theta_{0}$ \ [MLE]
+\item Use agreement on positives for sensitivity $\theta_{1}$ \ [MLE]
 \item Again, more data means more accurate estimates
 \end{itemize}
 
@@ -260,7 +262,7 @@ Ref=0 & FP     & TN \\
 \begin{itemize}
 \item Item $i$'s category $c_i \in \{ 0, 1 \}$
 \item Coder $j$'s specificity $\theta_{0,j} \in [0,1]$; \ sensitivity $\theta_{1,j} \in [0,1]$
-\item Coder $j$'s label for item $i$: $x_{i,j} \in \{ 0, 1 \}$
+\item Coder $j$'s label for item $i$: \ $x_{i,j} \in \{ 0, 1 \}$
 \item If category $c_i=1$,
 \begin{itemize}
 \footnotesize
@@ -310,7 +312,7 @@ p(c_i|x_i,\theta,\pi)
 \\[8pt]
 \hspace*{-12pt}$\begin{array}{rcl}
 \footnotesize
-\mbox{\rm Pr}(c_i=1|\theta,x) 
+\mbox{\rm Pr}(c_i=1|\theta,x_i) 
 & \propto & \pi \ \mbox{\rm Pr}(x_i=\langle 1,1,0 \rangle | \theta,c_i=1)
 \\[4pt]
 & = & 0.2 \cdot 0.75 \cdot 0.65 \cdot (1 - 0.90) = 0.00975
@@ -319,16 +321,51 @@ p(c_i|x_i,\theta,\pi)
 \hspace*{-12pt}
 $\begin{array}{rcl}
 \footnotesize
-\mbox{\rm Pr}(c_i=0|\theta,x) 
+\mbox{\rm Pr}(c_i=0|\theta,x_i) 
 & \propto & (1 - \pi) \ \mbox{\rm Pr}(x_i=\langle 1,1,0 \rangle | \theta,c_i=0)
 \\[4pt]
 & = & (1 - 0.2) \cdot (1 - 0.6) \cdot (1 - 0.7) \cdot 0.8 = 0.0768 
 \end{array}$
 \\[8pt]
-\hspace*{-8pt}$\mbox{\rm Pr}(c_i=1|\theta,x) = \frac{\displaystyle 0.00975}{\displaystyle 0.00975+0.0768} = 0.1126516$
+\hspace*{-8pt}$\mbox{\rm Pr}(c_i=1|\theta,x_i) = \frac{\displaystyle 0.00975}{\displaystyle 0.00975+0.0768} = 0.1126516$
 \end{itemize}
 
+
 \mypart{Bayesian Estimates \\[12pt]\hspace*{12pt}Example}
+
+\sld{Estimates Everything}
+\begin{itemize}
+\item What if you don't have a gold standard?
+\item We can estimate everything from annotations
+\begin{itemize}
+\footnotesize
+\item True category labels
+\item Prevalence
+\item Annotator sensitivities and specificities
+\item Mean sensitivity and specificity for pool of annotators
+\item Variability of annotator sensitivities and specificities
+\item (Individual item labeling difficulty)
+\end{itemize}
+\end{itemize}
+
+\sld{Analogy to Epidemiology and Testing}
+\begin{itemize}
+\item Commonly used models for epidemiology
+\begin{itemize}
+\footnotesize
+\item Tests (e.g. blood, saliva, exam, x-ray, MRI, biopsy) like annotators
+\item Prevalence of disease in population
+\item Diagnosis of individual patient like item labeling
+\end{itemize}
+\item Commonly used models in educational testing
+\begin{itemize}
+\footnotesize
+\item Annotators like test takers
+\item Items like test questions
+\item Accuracies like test scores; error patterns are confusions
+\item Interesed in difficulty and discriminativeness of questions
+\end{itemize}
+\end{itemize}
 
 \sld{Five Dentists Diagnosing Caries}
 
@@ -416,6 +453,143 @@ $\begin{array}{rcl}
 \item Accounting for item difficulty provides even tighter fit
 \end{itemize}
 }
+
+
+\mypart{Applications}
+
+\sld{Is the Truth Out There?}
+\begin{itemize}
+\item Or are the ``gold standards'' just fool's gold?
+\item Evaluate uncertainty in item category with $\mbox{\rm Pr}(c_i = 1)$
+\item Do all items even have true categories?
+\begin{itemize}
+\footnotesize
+\item Coding standard may be vague (e.g. ``Mars'' as location [MUC-6])
+\item Distinguishing author/speaker intent from interpretation
+\end{itemize}
+\item Items often don't have clear interpretation
+\begin{itemize}
+\footnotesize
+\item Some items hard to distinguish categorically (esp. metonymy)
+\item e.g. ``New York'' as team or location or political entity
+\item e.g. ``p53'' as gene/protein, wild/mutant, human/mouse
+\end{itemize}
+\end{itemize}
+
+\sld{Evaluating Annotators}
+\begin{itemize}
+\item Not all annotators have the same accuracy
+\item Ideally, annotators have high sensitivity and specificity
+\item Ideally annotators are unbiased 
+\begin{itemize}
+\footnotesize
+\item Bias indicated by sensitivity $>>$ specificity or vice-versa
+\end{itemize}
+\item Provide feedback to help annotators improve
+\item Filter annotators to contribute to coding
+\item Deciding how many annotators needed for an item
+\end{itemize}
+
+\sld{Evaluating ``Gold'' Labels}
+\begin{itemize}
+\item Get probabilities $\mbox{\rm Pr}(c_i=1)$
+\item Middling probabilities mean annotators uncertain
+\item Find items for which annotators having difficulty
+\begin{itemize}
+\footnotesize
+\item Refine coding standard by adjudicating examples
+\end{itemize}
+\item (Alternative to explicitly modeling item difficulty)
+\end{itemize}
+
+\sld{Speed versus Accuracy}
+\begin{itemize}
+\item Assume all we have goal for ``gold standard'' accuracy
+\item May be beneficial to trade accuracy for speed
+\begin{itemize}
+\footnotesize
+\item e.g. 150 items at 80\% accuracy vs.\ 100 items at 90\%
+\item Former may be better with voting with adjustment for accuracies
+\end{itemize}
+\item Less-than-perfect gold standard acceptable for some tasks
+\begin{itemize}
+\footnotesize
+\item Many machine learning procedures robust to noise
+\item More problematic for evaluating ``state of the art''
+\end{itemize}
+\end{itemize}
+
+\sld{New Items versus New Labels}
+\begin{itemize}
+\item Evaluate whether to generate
+\begin{itemize}
+\footnotesize
+\item A new label for an uncertainly labeled item, or
+\item a new label for currently unlabeled item
+\item (Sheng, Provost and Ipeirotis 2009)
+\end{itemize}
+\item Choose which annotator to label item
+\begin{itemize}
+\footnotesize
+\item Can measure expected gain in certainty given annotator accuracy
+\item Like active learning, only for annotators rather than items
+\end{itemize}
+\end{itemize}
+
+
+\sld{Evaluating Coding Standard Difficulty}
+\begin{itemize}
+\item Replacement for $\kappa$ with predictive power for new annotators
+\item Allows inference on correctness of gold standard
+\item Sensitivity and Specificity priors $(\alpha,\beta)$ model:
+\begin{itemize}
+\footnotesize
+\item Mean annotator accuracy
+\item Annotator variation
+\item Annotator bias
+\end{itemize}
+\item Low mean accuracy indicates a problematic coding standard
+\end{itemize}
+
+\sld{Probabilistic Training and Testing}
+\begin{itemize}
+\item Use probabilistic item posteriors for training
+\begin{itemize}
+\footnotesize
+\item Easy to generalize most probabilistic models 
+\item e.g. naive Bayes or HMMs: \ proportional train (as for EM)
+\item e.g. logistic regression or CRFs: \ modify log loss
+\item Generalize arbitrary model with posterior samples (e.g. SVMs)
+\end{itemize}
+\item Use probabilistic item posteriors for testing
+\begin{itemize}
+\footnotesize
+\item Penalizes overconfidence of models on uncertain items
+\item Easy generalization with log loss evaluation
+\item Not so clear with first-best accuracy or F-measure
+\end{itemize}
+\item Demonstrated theoretical effectiveness (Smyth 1995)
+\end{itemize}
+
+
+\sld{Bayesian {\Large $\kappa$} Estimates}
+\begin{itemize}
+\item Given estimated sensitivity, specificity and prevalence:
+\begin{itemize}
+\footnotesize
+\item Calculate expected $\kappa$ for two annotators
+\item Don't even need to annotate common items
+\item Calculate expected $\kappa$ for two new annotators
+\item Calcluate confidence/posterior uncertainty of $\kappa$
+\item May formulate hypothesis tests
+\item e.g. $\kappa$ for given standard above 0.8
+\item e.g. $\kappa$ for coding standard 1 higher than for standard 2
+\end{itemize}
+\item Always a good idea to measure posterior uncertainty
+\item May estimate Bayesian posteriors (or frequentist confidence intervals) without annotation model
+\end{itemize}
+
+
 
 \mypart{Hierarchical Bayesian \\[12pt]\hspace*{12pt}Annotation Model}
 \vfill
@@ -526,6 +700,10 @@ p(c,x,\theta_0,\theta_1,\pi,\alpha_0,\beta_0,\alpha_1,\beta_1)
 \\[4pt]
 {} \ \ \ \ \ \ \ {} \times \mathsf{Pareto}(\alpha_1+\beta_1|1.5)
 \end{array}$
+\begin{itemize}
+\footnotesize
+\item Marginals: \ $p(x) = \int p(x,y) \ dy$; \ \ Conditionals: \ $p(y|x) = p(x,y)/p(x)$
+\end{itemize}
 
 
 \mypart{Gibbs Sampling}
@@ -541,17 +719,23 @@ $(c^{(n)}, x^{(n)}, \theta_0^{(n)}, \theta_1^{(n)}, \pi^{(n)}, \alpha_0^{(n)}, \
 \item It's a continuous Markov process, unlike n-gram LMs or HMMs
 \end{itemize}
 \item Typically randomly initialize with ``reasonable'' values
+\item Next state samples each var given current value of other vars
 \item Reduces sampling of joint model to conditionals
 \begin{itemize}
 \item Requires sampler for each variable given all others
 \item We explicitly calculated $p(c_i|x,\pi,\theta_0,\theta_1)$ as example
-\item Next state samples each var given current value of other vars
 \end{itemize}
 \end{itemize}
 
 \sld{Gibbs Sampling (cont.)}
 \begin{itemize}
 \item Works for any model where dependencies form directed acyclic graph
+\begin{itemize}
+\footnotesize
+\item Such models called ``directed graphical models''
+\item Variables with no priors are hyperparameters
+\item All otehr variables inferred
+\end{itemize}
 \item BUGS automatically computes all conditional distributions
 \item Convergences to stationary process sampling from posterior
 \begin{itemize}
@@ -574,6 +758,7 @@ $(c^{(n)}, x^{(n)}, \theta_0^{(n)}, \theta_1^{(n)}, \pi^{(n)}, \alpha_0^{(n)}, \
 \sld{Gibbs Samples for Bayesian Estimation}
 \begin{itemize}
 \item Bayesian parameter estimate for variable $\phi$ given $N$ samples $\phi^{(n)}$
+\item Approximate by averaging over collection of Gibbs samples
 \\[8pt]
 $\begin{array}{rcl}
 \hat{\phi} 
@@ -585,13 +770,13 @@ $\begin{array}{rcl}
 \end{array}$
 \vspace*{4pt}
 \item Provides unbiased estimate (equal to expected parameter value)
-\item Works for any marginal or joint estimate
+\item Works for any marginal or joint distribution of parameters
 \end{itemize}
 
 
 \sld{Gibbs Samples For Inference}
 \begin{itemize}
-\item Samples $\phi^{(n)}$ support plug-in inference (like the bootstrap)
+\item Samples $\phi^{(n)}$ support plug-in inference
 \begin{itemize}
 \item E.g. Predictive Posterior Inference
 \\[4pt]
@@ -608,6 +793,7 @@ $\mbox{\rm Pr}(j \mbox{ best specificity}) \approx \frac{1}{N} \ \sum_{n=1}^N \ 
 \end{itemize}
 \item Latter statistic can be used to compare systems (the `E' in ``LREC'')
 \item More samples provide more accurate approximations
+\item Plug-in estimates like (frequentist) bootstrap estimates
 \end{itemize}
 
 
@@ -671,7 +857,7 @@ $\mbox{\rm Pr}(j \mbox{ best specificity}) \approx \frac{1}{N} \ \sum_{n=1}^N \ 
 \begin{itemize}
 \footnotesize
 \item Posterior samples $(\alpha^{(n)},\beta^{(n)})$ scatterplot
-\item Cross-hairs at simulated values
+\item Cross-hairs at simulated values; estimates at sample averages
 \\[4pt]
 \begin{tabular}{ll}
 \includegraphics[width=0.40\textwidth]{pdf/beta-binomial-anno-scatter-sens.pdf}
@@ -679,7 +865,7 @@ $\mbox{\rm Pr}(j \mbox{ best specificity}) \approx \frac{1}{N} \ \sum_{n=1}^N \ 
 \includegraphics[width=0.40\textwidth]{pdf/beta-binomial-anno-scatter-spec.pdf}
 \end{tabular}%
 \item Observe typical skew to high scale (low variance)
-\item Estimates match sample averages; more variance on sensitivity 
+\item More variance on sensitivity (lower counts)
 \end{itemize}
 
 
@@ -786,7 +972,7 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 
 \sld{Gold-Standard Estimation (Again)}
 \begin{itemize}
-\item Used published gold standard as gold standard
+\item Snow et al.\ used published gold standard as gold standard
 \item Inferred categories agreed closely with gold standard
 \item Snow et al.\ showed 3--5 Turkers as good as experts in most tasks
 \item Ten Turkers better than pair of ``experts''
@@ -887,7 +1073,8 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 \begin{itemize}
 \item 39\% of annotators no better than chance
 \item more than 50\% of annotations from spammers
-\item has little effect on inference
+\item very little effect on category inference 
+\item has strong effect on mean and variability of annotators
 \end{itemize}
 \end{itemize}
 
@@ -906,6 +1093,163 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 \begin{itemize}\footnotesize
 \item Most residual errors in gold std (extremes of top graphs), not Turkers
 \item Pruning bad annotators improves voting more than model estimates
+\end{itemize}
+
+
+\mypart{Modeling Item Difficulty}
+
+\sld{Item Difficulty}
+
+\begin{itemize}
+\item Clear that some items easy and some hard
+\item Assuming all same leads to suboptimal marginal fit
+\item Hard to estimate even with 10 annotators/item
+\begin{itemize}
+\footnotesize
+\item Posterior intervals too wide for good read on difficulty
+\item Fattens posteriors on annotator accuracies
+\item Better marginal fits (by $\chi^2$)
+\end{itemize}
+\item Problem is multiple explanations
+\begin{itemize}
+\item Good annotator accuracy, but hard items
+\item Mediocre annotator accuracy, medium difficulty items
+\item Poor annotator accuracy, but easy items
+\end{itemize}
+\end{itemize}
+
+\sld{Mixture Item Difficulty}
+\begin{itemize}
+\item Assume some items easy in sense all annotators agree
+\item Simple mixture model over items
+\item Easy to estimate
+\vfill
+\item (Espeland and Handelman 1989; Beigman-Klebanov, Beigman, and Diermeier 2008)
+\end{itemize}
+
+\sld{Modeling Scalar Item Difficulty}
+
+\begin{itemize}
+\item Assume item difficulties vary on continuous scale
+\item Logistic Item-Response or Rasch models
+\item Used in social sciences to model educational testing and voting
+\item Use logistic scale (maps $(-\infty,\infty)$ to $[0,1]$)
+\item $\alpha_j$: annotator $j$'s bias (ideally 0)
+\item $\delta_j$: annotator $j$'s discriminativeness (ideally $\infty$)
+\item $\beta_i$: item $i$'s ``location'' (true category and difficulty)
+\item $x_i \sim \mbox{logit}^{-1}(\delta_j(\alpha_i - \beta_j))$
+\item Many variants of this model in epidemiology and testing
+\vfill
+\item (Uebersax and Grove 1993; Qu, Tan and Kutner 1996; Carpenter 2008)
+\end{itemize}
+
+\sld{Hierarchical Item Difficulty Model}
+
+\begin{itemize}
+\item Place normal (or other) priors on coefficients,
+\\[4pt]
+e.g. \ $\beta_i \sim \mathsf{Norm}(0,\sigma^2)$, \ \ \ $\sigma^2 \sim \mathsf{Unif}(0,100)$
+\item
+Priors may be estimated as before; leads to pooling of item difficulties.
+\item Harder to estimate computationally in BUGS
+\item Same posterior inferences when converted back to linear scale
+\item e.g. average annotator accuracies, average item difficulties
+\end{itemize}
+
+
+\mypart{Extensions}
+
+\sld{Extending Coding Types}
+\begin{itemize}
+\item Multinomial responses (Dirichlet-multinomial)
+\item Ordinal responses (ordinal logistic model)
+\item Scalar responses (continuos responses)
+\end{itemize}
+
+\sld{Hierarchical and Multilvel Models}
+\begin{itemize}
+\item Assume several coding tasks
+\begin{itemize}
+\footnotesize
+\item e.g. multiple part-of-speech corpora 
+\item e.g. multiple named-entity corpora (see Finkel and Manning 2009)
+\item e.g. multiple language newswire categorization
+\item e.g. coref corpora in different genres or languages
+\end{itemize}
+\item Estimate another level of priors 
+\begin{itemize}
+\footnotesize
+\item e.g. for prevalence
+\item e.g. for priors on accuracy priors
+\end{itemize}
+\item Common approach in social science models
+\item Even better pooled estimates if corpora are similar
+\item Multilevel models allow cross-cutting ``hierarchies''
+\end{itemize}
+
+\sld{Semi-Supervision}
+\begin{itemize}
+\item Easy to add in supervised cases with Bayesian models
+\begin{itemize}
+\footnotesize
+\item Gibbs sampling skips sampling for supervised cases
+\end{itemize}
+\item May go half way by mixing in ``gold standard'' annotators
+\begin{itemize}
+\footnotesize
+\item e.g. fixed values from gold standard, or
+\item e.g. fixed high, but non-100\% accuracies, or
+\item e.g. stronger high accuracy prior
+\end{itemize}
+\item With accurate supervision, improves estimates
+\begin{itemize}
+\item for prevalence
+\item for annotator accuracies
+\item for pool of annotators
+\end{itemize}
+\end{itemize}
+
+\sld{Multimodal (Mixture) Priors}
+\begin{itemize}
+\item Model Mechanical Turk as mixture of spammers and hammers
+\item This is what the Mechanical Turk data suggests
+\item May also model covariance of sensitivity/specificity
+\begin{itemize}
+\item Use multivariate normal or T distribution 
+\item with covariance matrix
+\item Covariance may also be estimated hierarchically (see Lafferty and Blei 2007)
+\end{itemize}
+\end{itemize}
+
+\sld{Annotator and Item Random Effects}
+\begin{itemize}
+\item May add random effects for annotators
+\begin{itemize}
+\footnotesize
+\item amount of annotator training
+\item number of items annotated
+\item annotator native language
+\item annotator field of expertise
+\item intern, random undergrad, grad student, task designer
+\end{itemize}
+\item Also for Items
+\begin{itemize}
+\footnotesize
+\item difficulty (already discussed)
+\item type of item being annotated
+\item frequency of item in a large corpus
+\item capitalization in named entity detection
+\end{itemize}
+\item Use logistic regression with these predictors to model accuracies
+\end{itemize}
+
+\sld{Jointly Estimate Model and Annotations}
+\begin{itemize}
+\item Can train a model with inferred (probabilistic) gold standard
+\item May use trained model like another annotator
+\item May be beneficial to train multiple different annotators
+\vfill
+\item (Raykar, Yu, Zhao, Jerebko, Florin, Hermosillo-Valadez, Bogoni, and Moy 2009)
 \end{itemize}
 
 
@@ -1117,213 +1461,6 @@ p(\theta|y) & \propto & p(y|\theta) \ p(\theta)
 \end{array}$
 \item i.e. add data counts $A$ and $B$ to prior counts $\alpha-1$ and $\beta-1$
 \item Concrete example of incremental updates -- just addition
-\end{itemize}
-
-\mypart{Modeling Item Difficulty}
-
-\sld{Item Difficulty}
-
-\begin{itemize}
-\item Clear that some items easy and some hard
-\item Assuming all same leads to suboptimal marginal fit
-\item Hard to estimate even with 10 annotators/item
-\begin{itemize}
-\footnotesize
-\item Posterior intervals too wide for good read on difficulty
-\item Fattens posteriors on annotator accuracies
-\item Better marginal fits (by $\chi^2$)
-\end{itemize}
-\item Problem is multiple explanations
-\begin{itemize}
-\item Good annotators but hard items
-\item Mediocre annotators with average difficulty items
-\item Bad annotators but easy items
-\end{itemize}
-\end{itemize}
-
-\sld{Mixture Item Difficulty}
-\begin{itemize}
-\item Assume some items easy in sense all annotators agree
-\item Simple mixture model over items
-\item Easy to estimate
-\vfill
-\item (Espeland and Handelman 1989; Beigman-Klebanov, Beigman, and Diermeier 2008)
-\end{itemize}
-
-\sld{Modeling Scalar Item Difficulty}
-
-\begin{itemize}
-\item Assume item difficulties vary on continuous scale
-\item Logistic Item-Response or Rasch models
-\item Used in social sciences to model educational testing and voting
-\item Use logistic scale (maps $(-\infty,\infty)$ to $[0,1]$)
-\item $\alpha_j$: annotator $j$'s bias (ideally 0)
-\item $\delta_j$: annotator $j$'s discriminativeness (ideally $\infty$)
-\item $\beta_i$: item $i$'s ``location'' plus ``difficulty''
-\item $x_i \sim \mbox{logit}^{-1}(\delta_j(\alpha_i - \beta_j))$
-\item Other alternatives for discriminativeness and not
-\vfill
-\item (Uebersax and Grove 1993; Qu, Tan and Kutner 1996; Carpenter 2008)
-\end{itemize}
-
-\sld{Hierarchical Item Difficulty Model}
-
-\begin{itemize}
-\item Place normal (or other) priors on coefficients,
-\\[4pt]
-e.g. \ $\beta_i \sim \mathsf{Norm}(0,\sigma^2)$, \ \ \ $\sigma^2 \sim \mathsf{Unif}(0,100)$
-\item
-Priors may be estimated as before; leads to pooling of item difficulties.
-\item Harder to estimate computationally in BUGS
-\end{itemize}
-
-\mypart{Applications}
-
-\sld{Is the Truth Out There?}
-\begin{itemize}
-\item Evaluate uncertainty in item category with $\mbox{\rm Pr}(c_i = 1)$
-\item Do items all have true categories
-\begin{itemize}
-\item Vague coding standard
-\item Marginal items
-\end{itemize}
-\end{itemize}
-
-\sld{Evaluating Annotators}
-\begin{itemize}
-\item For accuracy 
-\item Ideally, annotators have high sensitivity and specificity
-\item Ideally annotators are unbiased 
-\begin{itemize}
-\item Bias indicated by sensitivity $>>$ specificity or vice-versa
-\end{itemize}
-\end{itemize}
-
-\sld{Evaluating ``Gold'' Standard}
-\begin{itemize}
-\item Get probabilities $\mbox{\rm Pr}(c_i=1)$
-\item Middling probabilities mean annotators uncertain
-\item Find items for which annotators having difficulty
-\begin{itemize}
-\item May indicate problem with coding standard
-\end{itemize}
-\item Alternative to explicitly modeling difficulty
-\end{itemize}
-
-\sld{Speed versus Accuracy}
-\begin{itemize}
-\item Assume all we want accurate gold standard
-\item May be beneficial to trade accuracy for speed
-\begin{itemize}
-\item e.g. 150 items at 80\% accuracy vs.\ 100 items at 90\%
-\item Former may be better with voting with adjustment for accuracies
-\end{itemize}
-\end{itemize}
-
-\sld{New Items versus New Labels}
-\begin{itemize}
-\item Evaluate whether to generate
-\begin{itemize}
-\item New label for uncertainly labeled item
-\item Label for currently unlabeled item
-\item (Sheng, Provost and Ipeirotis 2009)
-\end{itemize}
-\item Choose which annotator to label item
-\end{itemize}
-
-
-\sld{Evaluating Coding Standard Difficulty}
-\begin{itemize}
-\item Replacement for $\kappa$ with predictive power
-\item Sensitivity and Specificity priors $(\alpha,\beta)$ model
-\begin{itemize}
-\item Average annotator accuracy
-\item Annotator variation
-\end{itemize}
-\end{itemize}
-
-\sld{Probabilistic Training and Testing}
-\begin{itemize}
-\item Use probabilistic item posteriors for training
-\item Use probabilistic item posteriors for testing
-\item Directly with most probabilistic models (e.g. logistic regression, multinomial)
-\item Or, train/test with posterior samples
-\item Penalizes overconfidence of estimators (in log loss)
-\item Demonstrated theoretical effectiveness 
-\item Need to test in practice
-\vfill
-(Smyth 1995)
-\end{itemize}
-
-
-\sld{Bayesian {\Large $\kappa$} Estimates}
-\begin{itemize}
-\item Given estimates of sensitivity, specificity and prevalence, may
-\begin{itemize}
-\item Calculate expected $\kappa$ for two annotators
-\item Calculate expected $\kappa$ for two new annotators from pool
-\item Calcluate confidence/posterior uncertainty of $\kappa$
-\end{itemize}
-\item May estimate confidence intervals for $\kappa$ w/o model
-\end{itemize}
-
-\mypart{Extensions}
-
-\sld{Extending Coding Types}
-\begin{itemize}
-\item Multinomial responses (Dirichlet-multinomial)
-\item Ordinal responses (ordinal logistic model)
-\item Scalar responses (continuos responses)
-\end{itemize}
-
-\sld{Semi-Supervision}
-\begin{itemize}
-\item Easy to add in supervised cases with Bayesian models
-\begin{itemize}
-\footnotesize
-\item Gibbs sampling skips sampling for supervised cases
-\end{itemize}
-\item May go half way by mixing in ``gold standard'' annotators
-\begin{itemize}
-\footnotesize
-\item Fixed high, but non-100\% accuracies
-\item Stronger high accuracy prior
-\end{itemize}
-\end{itemize}
-
-\sld{Multimodal (Mixture) Priors}
-\begin{itemize}
-\item Model Mechanical Turk as mixture of spammers and hammers
-\item This is what the Mechanical Turk data suggests
-\item May also model covariance of sensitivity/specificity
-\end{itemize}
-
-\sld{Annotator and Item Random Effects}
-\begin{itemize}
-\item May add random effects for annotators
-\begin{itemize}
-\footnotesize
-\item amount of annotator training
-\item number of items annotated
-\item annotator native language
-\item annotator field of expertise
-\end{itemize}
-\item Also for Items
-\begin{itemize}
-\footnotesize
-\item difficulty (already discussed)
-\item type of item being annotated
-\item frequency of item in a large corpus
-\end{itemize}
-\end{itemize}
-
-
-\sld{Jointly Estimate Model and Annotations}
-\begin{itemize}
-\item Can train a model with inferred (probabilistic) gold standard
-\item Can use trained model like another annotator
-\vfill
-\item (Raykar, Yu, Zhao, Jerebko, Florin, Hermosillo-Valadez, Bogoni, and Moy 2009)
 \end{itemize}
 
 
