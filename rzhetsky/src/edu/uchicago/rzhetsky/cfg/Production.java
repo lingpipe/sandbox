@@ -113,7 +113,6 @@ public abstract class Production implements Comparable<Production> {
      * @return Less than zero if this production is smaller, greater
      * than zero if it is bigger and zero if they are the same.
      */
-    @Override
     public int compareTo(Production that) {
         int c = mother().compareTo(that.mother());
         if (c != 0) return c;

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <project name="Rzhetsky Lab Projects"
-         default="compile" 
+         default="jar" 
          basedir=".">
 
   <property name="project"
@@ -12,7 +12,8 @@
             value="${project}-${version}.jar"/>
 
   <path id="classpath.standard">
-    <pathelement location="build/classes"/>
+    <pathelement location="${jar}"/>
+    <pathelement location="lib/lingpipe-4.0.1.jar"/>
   </path>
 
   <target name="clean">
@@ -62,10 +63,22 @@
   </target>
 
   <target name="demo"
-          depends="compile">
+          depends="jar">
     <java classname="edu.uchicago.rzhetsky.cfg.DemoCfg"
           fork="true">
       <classpath refid="classpath.standard"/>
+    </java>
+  </target>
+
+  <property name="dir.genetag"
+            value="e:/data/medtag/unpacked/medtag/genetag"/>
+  <target name="genetag-ne"
+          depends="jar">
+    <java classname="edu.uchicago.rzhetsky.ne.GeneTagChunkerCompiler"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="${dir.genetag}/Gold.format"/>
+      <arg value="${dir.genetag}/genetag.sent"/>
     </java>
   </target>
 
