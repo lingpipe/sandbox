@@ -1014,7 +1014,7 @@ as a function of recall and precision.
 %
 \begin{figure}
 \begin{center}
-\includegraphics[height=2in,width=2in]{pdfs/f-measure-contour.pdf}
+\includegraphics[height=2.5in]{pdfs/f-measure-contour.pdf}
 \end{center}
 \vspace*{-24pt}
 \caption{Contour plot of $F$ measure as a function of recall and
@@ -1311,31 +1311,34 @@ scored results, as we discuss in the next section.
 \section{Scored Precision-Recall Evaluations}
 
 So far, we have assumed that the system's response to a classification
-problem is a single first-best guess at a category.  In many cases,
-particularly in LingPipe's implementations, classifiers can be
-configured to return more than a single result.  These multiple
-results will always be ranked from best guess to worst guess.  In
-almost all cases, each result will also get a score.  In many cases,
+problem is a single first-best guess at a category.  Many different
+kinds of classifiers support returning more than one guess, typically
+with a score for each result determining a rank order.  In many cases,
 the results are associated with conditional probability estimates of
-the response category given the item being classified.
+the response category given the item being classified; in other cases,
+scores have a geometric interpretation, such as the margin from the
+classification hyperplane for a perceptron or the cosine for TF/IDF
+rankings.
+
 
 \subsection{Ranks, Scores and Conditional Probability Estimates}
 
 For instance, given our blind-wine grape-guessing task, a taster may
 be presented with a wine, and respond that their first guess is
 cabernet, their second guess syrah, and their third guess pinot noir.
-That's a ranked response.  Instead, they might say cabernet has a
-score of -1.2, syrah a score of -1.3, and pinot a score of -2.0 (yes,
-scores may be negative; they still get sorted from largest (-1.2) to
-smallest (-2.0)).  That's what we call a scored response.  Even
+That's a ranked response.  In addition, they might further specify
+that cabernet has a score of $-1.2$, syrah a score of $-1.3$, and
+pinot a score of $-2.0$ (yes, scores may be negative; they still get
+sorted from largest, here $-1.2$, to smallest, $-2.0$, for
+purposes of ranking).  That's what we call a scored response.  Even
 better, the response may contain a probability estimate, such as 55\%
 cabernet, 35\% syrah, and 10\% pinot noir.  That's a conditional
 probability response.%
 %
 \footnote{There are also joint probability responses, from which
-  conditional probabilities may be defined.  The joint probabilities
-  are less useful for evaluation, so we put off considering them 
-  until we see a classifier that uses them.}
+  conditional probabilities can be derived.  The joint probabilities
+  are less useful for evaluation, so we put off considering them until
+  we see a classifier that uses them.}
 
 \subsection{Comparing Scores across Items}
 
@@ -1353,18 +1356,18 @@ be calibrated among the category responses for a single item.  For
 instance, it doesn't usually make sense to compare scores for
 different documents across different searches in an information
 retrieval system like Lucene (see \refchap{lucene}), because of all
-the document- and query-specific intricacies of scoring.
+the document- and query-specific effects built into scoring.
 
-Conditional probabilities, on the other hand, are by their very nature
-calibrated to be comparable across runs.  If I have two wines, and for
-the first one respond 55\% cabernet, 35\% syrah and 10\% pinot, and
-for the second, 90\% cabernet, 8\% syrah, and 2\% pinot, I can rank my
+Conditional probabilities, on the other hand, are naturally calibrated
+to be comparable across runs.  If I have two wines, and for the first
+one respond 55\% cabernet, 35\% syrah and 10\% pinot, and for the
+second, 90\% cabernet, 8\% syrah, and 2\% pinot, I can rank my
 choices.  My best guess is that wine 2 is a cabernet, because I've
 estimated a 90\% chance of being right.  My second best guess is that
 wine 1 is a cabneret (55\%), my third-best guess that wine 1 is a
 syrah (35\%), my fourth-best guess that wine 1 is pinot (10\%), my
 fifth-best that wine 2 is syrah (8\%), and my least likely guess is
-that wine 2 is a pinot (2\%).  
+that wine 2 is a pinot (2\%).
 
 In this section, we will assume that we're evaluating system responses
 in a situation where the scores (or conditional probabilities) are
@@ -1375,11 +1378,9 @@ scored precision recall evaluations.
 
 \subsection{The \code{ScoredPrecisionRecallEvaluation} Class}
 
-There are a number of evaluations for systems that return scores for
-each possible outcome that are calibrated across the items being
-classified.  These are implemented in LingPipe's class
-\code{ScoredPrecisionRecallEvaluation}, in package
-\code{com.aliasi.classify}.
+The LingPipe class \code{ScoredPrecisionRecallEvaluation}, in package
+\code{com.aliasi.classify}, implements precision-recall type
+statistics based on scored results.  
 
 \subsubsection{Construction and Population}
 
@@ -1406,20 +1407,23 @@ wine was a syrah, and the second a cabernet.  Here we repeat the
 responses along with an indication of whether the response was true or
 not.  For the first wine, we have 55\% cabernet (false), 35\% syrah
 (true), and 10\% pinot noir (false), and for the second wine, 90\%
-cabernet (true), 8\% syrah (false), and 2\% pinot noir (false).  We
-just call \code{addCase()} with these values, as in
-\code{addCase(false,0.55)}, \code{addCase(true,0.35)}, and so on down
-to \code{addCase(false,0.02)}.
+cabernet (true), 8\% syrah (false), and 2\% pinot noir (false).  To
+populate the evaluation with these results requires six calls to
+\code{addCase()}, \code{addCase(false,0.55)},
+\code{addCase(true,0.35)}, \code{addCase(false,0.10)}, for the three
+responses for the first wine, and similarly for the three results from
+the second wine.
 
 If the responses are exhaustive for each item, this is all we have to
-do.  The key is that the correct answers will show up in every set of
-responses.  Unfortunately, this is often not the case.  For instance,
-consider a named-entity chunker that returns the 100-best potential
-entity mentions for each sentence.  If we know the true entity
-mentions, we can rank each of these results as true or false, based on
-whether the entity mention is in the reference standard or not.  But
-there's no guarantee that the system will find all the entities in a
-sentence, even if it returns its 100-best guesses.
+do.  The key observation is that the correct answers will show up in
+every set of responses.  Unfortunately, this is often not the case.
+For instance, consider a named-entity chunker that returns the
+100-best potential entity mentions for each sentence.  If we know the
+true entity mentions, we can rank each of these results as true or
+false, based on whether the entity mention is in the reference
+standard or not.  But there's no guarantee that the system will find
+all the entities in a sentence, even if it returns its 100-best
+guesses.
 
 In the case where not every positive reference item is included in the
 system response, the method \code{addMisses(int)} lets you add in the
@@ -1440,8 +1444,10 @@ character 18 (exclusive), namely \stringmention{Johan van der Dorp},
 mentions a person.  Simiarly, the other entity indicates that
 \stringmention{den Haag} refers to a location.  This is a tricky
 sentence for a system trained on English data without an extensive
-list of names or locations, because both names have lower-case
-letters.  Given the input, a named-entity mention chunker might return
+list of names or locations, because both names contain tokens that are
+not capitalized.  
+
+<p>Given the input text, a named-entity mention chunker might return
 the following six-best ranked guesses (for instance, returning all
 found chunks with estimated probability above 0.01),
 %
@@ -1455,12 +1461,13 @@ other five being wrong.  We call \code{addScore()} for each response,
 including the probability estimate and correctness, the latter of
 which is false for the first five responses and true for the last one.
 After adding the scores, we must call \code{addMisses(1)}, indicating
-that one of the reference entities (namely \code{(37,45):LOC}), was
-not included.
+that one of the reference entities, namely \code{(37,45):LOC}, was not
+included among the system responses.
 
-The same issues of applying \code{addScore()} to all positive
-responses and \code{addMisses()} for the total count of false
-negatives also applies to ranked information retrieval evaluations.
+To evaluate information retrieval results, the system is used in the
+same way, with the method \code{addScore()} being called for each
+system response and \code{addMisses()} for the results that the
+system didn't return.
 
 
 \subsection{Demo: Scored Precision-Recall}
@@ -1477,7 +1484,7 @@ populating it.
 \codeblock{ScoredPrecisionRecallDemo.1}
 %
 After construction, we add ten scored results, four of which are true
-positives, and six of which are false positivies.  We then add a
+positives and six of which are false positivies.  We then add a
 single miss representing a reference positive that was not returned by
 the system.
 
@@ -1493,7 +1500,7 @@ table of evaluated responses, which may be found in
 \tblhead{Rank} & \tblhead{Score} & \tblhead{Correct} & \tblhead{TP} & \tblhead{TN} & \tblhead{FP} & \tblhead{FN} 
   & \tblhead{Rec} & \tblhead{Prec} & \tblhead{Spec}
 \\ \hline
-0 & $-1.21$ & no & 0 & 5 & 1 & 5 & 0.00   & 0.00   & 0.83
+0 & $-1.21$ & no & 0 & 5 & 1 & 5 & 0.00   & 1.00   & 0.83
 \\
 1 & $-1.27$ & {\bf yes} & 1 & 5 & 1 & 4 & {0.20}  & 0.50  & {0.83}
 \\
@@ -1515,8 +1522,9 @@ table of evaluated responses, which may be found in
 \\ \hline
 10 & miss & {\bf yes} & 5 & 0 & 6 & 0 & 1.00 & 0.45 & 0.00
 \end{tabular}
+\vspace*{-8pt}
 \end{center}
-\caption{Example of a scored precision-recall evaluation.  The
+\caption{\small\it Example of a scored precision-recall evaluation.  The
   responses are shown with their correctness, sorted by score.  There
   is a single missed positive item for which there was no response, so
   we include it at the bottom of the table without a score.  In total,
@@ -1525,7 +1533,7 @@ table of evaluated responses, which may be found in
   The counts of TP, TN, FP and FN and the corresponding recall
   ($\mbox{TP}/(\mbox{TP}+\mbox{FN})$), precision
   ($\mbox{TP}/(\mbox{TP}+\mbox{FP})$), and specificity
-  ($\mbox{TN}/(\mbox{TN}+\mbox{FP})$) are
+  ($\mbox{TN}/(\mbox{TN}+\mbox{FP})$) values are
   shown.}\label{fig:scored-pr-example}
 \end{figure}
 %
@@ -1533,18 +1541,18 @@ The first column of the table indicates the rank of the response
 (numbering from zero), the second the score of the response, and the
 third whether it was a correct (true) response or not.  For example,
 the top-ranked response has a score of $-1.21$ and is incorrect,
-whereas the second-best response (rank 1) has a score of $1.27$ and
-is correct.  
+whereas the second-best response has a score of $1.27$ and is correct.
 
 We use this table to generate precision-recall matrices for all of the
 results up to that rank.  The next four columns represent the counts
 in the cells of the precision-recall matrix, TP, TN, FP, and FN, for
 each rank.  These are the basis for the computation of the next three
-columns, which are recall, precision, and specificity at rank $N$.
+columns, which are recall, precision, and specificity at rank $N$.%
 %
 \footnote{LingPipe numbers ranks from zero for the purpose of
-precision-recall and ROC curves, but numbers them from one for the
-precision-at-rank method.}
+  precision-recall and ROC curves, but numbers them from one for the
+  purposes of computing the conventional precision-at-rank and
+  reciprocal rank statistics.}
 %
 For recall, this is the fraction of all reference positive items that
 have been retrieved at the specified rank or before.  The highest
@@ -1566,7 +1574,7 @@ precision.  Specifically, we assume that at each rank, we have
 correctly rejected all the items we haven't mentioned.  So at rank 0,
 we have $\mbox{TN} = 6$ and $\mbox{FP}=1$.
 
-\subsubsection{Inspecting Precision-Recall and ROC Curves}
+\subsubsection{Inspecting Precision-Recall Curves}
 
 After constructing and populating the evaluation, the code in the
 \code{main()} method goes on to print out the precision-recall curve
@@ -1584,38 +1592,54 @@ ranks 1, 3, 4, and 8.
 The Ant target \code{scored-precision-recall} runs the demo, which
 takes no command-line arguments.  If we run it, the following shows
 the results for uninterpolated and interpolated precision-recall
-curves (the code is repeated with the interpolate flag set to
-\code{true}).  
+curves (the repeated code to print out the interpolated results
+is not shown here; it only differs in setting the interpolation
+flag to \code{true}).
 %
 \commandlinefollow{ant scored-precision-recall}
 \begin{verbatim}
-Uninterpolated P/R      Interpolated P/R
-prec=0.50 rec=0.20      prec=0.60 rec=0.60
-prec=0.50 rec=0.40      prec=0.44 rec=0.80
-prec=0.60 rec=0.60
+Uninterpolated P/R     Interpolated P/R
+prec=1.00 rec=0.00     prec=1.00 rec=0.00
+prec=0.50 rec=0.20     prec=0.60 rec=0.20
+prec=0.33 rec=0.20     prec=0.60 rec=0.40
+prec=0.50 rec=0.40     prec=0.60 rec=0.60
+prec=0.60 rec=0.60     prec=0.44 rec=0.80
+prec=0.50 rec=0.60     prec=0.00 rec=1.00
+prec=0.43 rec=0.60
+prec=0.38 rec=0.60
 prec=0.44 rec=0.80
+prec=0.40 rec=0.80
+prec=0.00 rec=1.00
 \end{verbatim}
 %
-We have also shown the interpolated results.  Interpolation discards a
-precision-recall if there is another pair with higher precision and
-higher recall.  Here the $\vecext{0.5, 0.2}$ and $\vecext{0.5, 0.4}$
-operating points are removed, because the they have lower precision
-and recall than the $\vecext{0.6, 0.6}$ operating point.  Of the two
-remaining operating points, $\vecext{0.6,0.6}$ and $\vecext{0.44,0.8}$
-are not comparable, because the first has higher precsion and the
-second higher recall.  
+The uninterpolated results are just the precision and recall values
+from our table.  Interpolation has the effect of setting the precision
+at a given recall point $r$ to be the maximum precision at any
+operating point of the same or higher recall.
 
-The precision-recall curve method does not return values for the final
-row(s), corresponding to positive reference items with no positive
-response \ie{the misses added with \code{addMisses(int)}}.  This is
-because there may be implicit false positives that were also not added
-as cases.
+A graph of the uninterpolated and interpolated precision-recall
+curves are shown in \reffig{pr-curves}.
+%
+\begin{figure}
+\begin{center}
+\includegraphics[height=2.5in]{pdfs/pr-curves.pdf}
+\vspace*{-24pt}
+\end{center}
+\caption{\it Uninterpolated and interpolated precision-recall curves
+  for the data in \reffig{scored-pr-example}.  In both graphs, the filled
+  circles are the points on the curve.  In the interpolated graphs,
+  the diamonds correspond to points on the original, uninterpolated,
+  curve.}\label{fig:pr-curves}
+\end{figure}
 
-The code for retrieving ROC curves is identical to that for
-precision/recall curves, only it uses the method
-\code{rocCurve(boolean)} rather than \code{prCurve(boolean)} and
-returns sensitivity/specificity pairs instead of recall/precision
-pairs.
+
+\subsubsection{Inspecting ROC Curves}
+
+The code for retrieving receiver operating characteristic (ROC) curves
+is identical to that for precision/recall curves, only it uses the
+method \code{rocCurve(boolean)} rather than \code{prCurve(boolean)}
+and returns $1-\mbox{specificity}$/sensitivity pairs instead of
+recall/precision pairs.
 %
 \codeblock{ScoredPrecisionRecallDemo.3}
 %
@@ -1623,17 +1647,40 @@ The output from this block of code, and from the next block, which is
 identical other than setting the interpolation flag, is as follows.
 %
 \begin{verbatim}
-Uninterpolated Spec/Sens    Interpolated Spec/Sens
-spec=0.83 sens=0.20         spec=0.83 sens=0.20
-spec=0.67 sens=0.40         spec=0.67 sens=0.60
-spec=0.67 sens=0.60         spec=0.17 sens=0.80
-spec=0.17 sens=0.80
+Uninterpolated ROC        Interpolated ROC
+1-spec=0.00 sens=0.00     1-spec=0.00 sens=0.00
+1-spec=0.17 sens=0.00     1-spec=0.17 sens=0.20
+1-spec=0.17 sens=0.20     1-spec=0.33 sens=0.60
+1-spec=0.33 sens=0.20     1-spec=0.50 sens=0.60
+1-spec=0.33 sens=0.40     1-spec=0.67 sens=0.60
+1-spec=0.33 sens=0.60     1-spec=0.83 sens=0.80
+1-spec=0.50 sens=0.60     1-spec=1.00 sens=1.00
+1-spec=0.67 sens=0.60
+1-spec=0.83 sens=0.60
+1-spec=0.83 sens=0.80
+1-spec=1.00 sens=0.80
+1-spec=1.00 sens=1.00
 \end{verbatim}
 %
-The \code{rocCurve()} method is misleadingly named, because it returns
-sensitivity/specificity pairs.  The standard definition of an ROC
-curve is a plot with $1 - \mbox{specificity}$ on the $x$ axis and
-sensitivity on the $y$ axis.  The interpolated version removes the
+Interpolation works the same way as for precision-recall curves,
+removing dominated points with the same $x$-axis value.  
+Graphs of the uninterpolated and interpolated ROC curves are shown in 
+\reffig{roc-curves}.
+%
+\begin{figure}
+\begin{center}
+\includegraphics[height=2.5in]{pdfs/roc-curves.pdf}
+\vspace*{-24pt}
+\end{center}
+\caption{\it Uninterpolated and interpolated receiver-operating
+  characteristic curves for the data in \reffig{scored-pr-example}.  In
+  both graphs, the filled circles are the points on the curve.  In the
+  interpolated graph, the diamonds correspond to points on the
+  original, uninterpolated, curve.  The dashed diagonal line is
+  at chance performance.}\label{fig:roc-curves}
+\end{figure}
+
+
 
 The method \code{addNegativeMisses(int)} adds to the overall count of
 reference negative items.  Because these will all be correctly
@@ -1654,33 +1701,30 @@ $F$ measure.  To compute $F$ measure, the static utility method
 measure of any two operating points.  The three arguments are for the
 precision weight (which should be 1 as we have defined $F$ measure
 here; see the next section for generalizations), and for precision and
-recall (though the order doesn't matter).
+recall (though the order of precision and recall doesn't matter for
+computing $F$ measure).
 
-\subsubsection{Other Ranked Precision-Recall Statistics}
-
-In addition to precision-recall and ROC curves, there are a wide range
-of commonly reported statistics for scored evaluations that are
-implemented in LingPipe's scored precision-recall evaluation class.
-
-Continuing with the demo, recalling that \code{eval} is our populated
-instance of \code{ScoredPrecisionRecallEvaluation}, we show how to
-extract other common statistics.
+\subsubsection{Precision at Rank $N$}
 
 The scored precision-recall evaluation implements a method
 \code{precisionAt(int)}, which returns the precision at a specified
-rank.  This method is indexed as precision at rank is normally
-indexed, starting from 1.  The precision at every rank is printed
-out with the following code.
+rank.  For example, with the data in \reffig{scored-pr-example},
+the precision at rank $N$ is determined by looking up the precision
+for that rank.  Ranks are conventionally counted from 1, so
+that is how we count for the \code{precisionAt()} method.
+
+The precision at every rank is calculated with the following code.
 %
 \codeblock{ScoredPrecisionRecallDemo.4}
 %
-The output corresponds to the table (adjusting for indexing from one
-rather than zero).
+Note that our loop starts from 1 and uses a less-than-or-equal bound
+test to adjust for the fact that precision-at ranks start at 1.  The
+output corresponds to the precisions in \reffig{scored-pr-example}.
 %
 \begin{verbatim}
-Prec at  1=0.00     Prec at  5=0.60    Prec at  9=0.44
-Prec at  2=0.50     Prec at  6=0.50    Prec at 10=0.40
-Prec at  3=0.33     Prec at  7=0.43
+Prec at  1=0.00     Prec at  5=0.60     Prec at  9=0.44
+Prec at  2=0.50     Prec at  6=0.50     Prec at 10=0.40
+Prec at  3=0.33     Prec at  7=0.43     Prec at 11=0.36
 Prec at  4=0.50     Prec at  8=0.38
 \end{verbatim}
 %
@@ -1698,6 +1742,15 @@ Their values are output (code not shown) as
 \begin{verbatim}
 Maximum F =0.60      Prec/Rec BEP=0.44
 \end{verbatim}
+
+These values are both computed from the uninterpolated curves and
+correspond to real points on the operating curve.
+
+Break-even point is also known as $R$-precision, because it is
+equivalent to the precision at $R$, where $R$ is the number of
+reference positive results.  That's because if we have $n$ true
+positives after $R$ results, the the precision and recall are both
+$n/R$.
 
 
 
@@ -2575,38 +2628,50 @@ We feel that presenting ROC and PR curves directly is the best way to
 understand performance for systems that allow precision to be traded
 for recall (or sensitivity for specificity).
 
-\subsubsection{Convex Hulls of ROC and PR Curves}
+\subsubsection{Interpolated ROC and PR Curves}
 
 It is common in the information retrieval literature to see PR curves
-pruned down to the points lying on the convex hull of the curve.  This
-practice is referred to as interpolation, because the assumption
-is that you can always produce a system that is a mixture of two
-operating points by randomly blending them.
+calculated by interpolation.  Interpolation for both kinds of
+curves means adjusting the value for a given point on the $x$ axis
+to be the maximum value for any point at that position or higher.
 
-An interpolated curve is calculated by reducing the set of all
-precision/recall pairs to just those lying the convex hull.  More
-explicitly, we remove an operating point $\vecext{r,p}$ correspoding
-to recall $r$ and precision $p$ if there is an operating point
-$\vecext{r',p'}$ such that $r' \geq r$ and $p' \geq p$.  
-
-For example, only points calculated at ranks corresponding to 1 values
-in the data vector $y$ can lie on the convext hull.  Each 0 point
-corresponds to a decrease in precision without any increase in recall.  
+Note that this does not quite correspond to computing the convex
+hull, because the results may still not be convex.  
 
 By the same reasoning, we typically include operating points for 0\%
 recall and 100\% precision and for 100\% recall and 0\% precision.
 These may not in fact lie on the convex hull of the ROC or PR curve,
 in which case they will be pruned out by interpolation.
 
-\subsubsection{Area under ROC and PR Curves}
+\subsubsection{Area under PR and ROC Curves}
 
 In order to reduce performance to a single statistic, it is common to
 see the area under the curve (AUC) reported.  
 
-We typically compute these areas by linearly interpolating all of the
-operating points we have (either raw or interpolated).  In this way,
-each operating point and the next point produce a trapezoid, the areas
-of which we can easily compute and sum.
+The conventional approach to calculating these areas differs
+between PR and ROC curves.  For PR curves, the usual approach is
+to use flat interpolation.  In this case, area under the PR
+curve corresponds exactly to the average of the precision values
+at operating points corresponding to true positives.  These will
+be evenly spaced, and thus correspond to area.
+
+For ROC curves, the usual approach is to report the area under the
+curve defined by connecting the points in the uninterpolated ROC
+curve.%
+%
+\footnote{The following article contains an excellent introduction to
+  ROC curves and estimating the area under them: 
+\begin{quote}
+Lasko, Thomas A., Jui
+  G. Bhagwat, Kelly H. Zou, and Lucila Ohno-Machado.  2005. The use
+  of receiver operating characteristic curves in biomedical
+  informatics.  {\it Journal of Biomedical Informatics}
+  {\bf 38}:404–-415.
+\end{quote}}
+%
+The area-under methods in LingPipe compute actual area by using the
+resulting parallelograms.  Areas may be computed under interpolated
+and uninterpolated curves.
 
 The area under the ROC curve has a probabilistic interpretation as the
 estimate of the probability that a classifier will rank a random
@@ -2628,13 +2693,11 @@ the different PR curves.
 
 Several points on these curves are often called out for special
 attention.  For PR curves, the precision-recall breakeven point (BEP)
-is the point on the curve for which precision equals recall.  This
-statistic typically needs to be computed by interpolating the
-operating points under consideration to find the crossing point.  This
-interpolation can either be done either on the raw curve or the curve
-restricted to points on the convex hull of the curve.
+is the point on the curve for which precision equals recall.  As
+we noted above, this value is equal to precision-at-$R$, where
+$R$ is the number of reference positive results.
 
-The second point that is often reported is the point in the PR curve
+The second point that is often reported is the point on the PR curve
 with maximum F measure.  In fact, we can compute any of the statistics
 applicable to sensitivity-specificity matrices and find the operating
 point that maximizes (or minimizes) it.

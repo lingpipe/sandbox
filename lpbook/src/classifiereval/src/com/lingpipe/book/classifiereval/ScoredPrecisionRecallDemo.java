@@ -42,34 +42,28 @@ public class ScoredPrecisionRecallDemo {
                               precision, recall);
         }
 
-        double precisionAt0 = eval.precisionAt(1);
-        double precisionAt1 = eval.precisionAt(2);
-        double precisionAt2 = eval.precisionAt(3);
 
-        System.out.printf("precision @1=%4.2f  @2=%4.2f  @3=%4.2f\n",
-                          precisionAt0, precisionAt1, precisionAt2);
-
-        System.out.println("\nUninterpolated Specificity/Sensitivity");
+        System.out.println("\nUninterpolated ROC");
         /*x ScoredPrecisionRecallDemo.3 */
         interpolate = false;
         double[][] rocCurve = eval.rocCurve(interpolate);
-        for (double[] pr : rocCurve) {
-            double sensitivity = pr[0];
-            double specificity = pr[1];
+        for (double[] ss : rocCurve) {
+            double oneMinusSpecificity = ss[0];
+            double sensitivity = ss[1];
         /*x*/
-            System.out.printf("spec=%4.2f sens=%4.2f\n", 
-                              specificity, sensitivity);
+            System.out.printf("1-spec=%4.2f sens=%4.2f\n", 
+                              oneMinusSpecificity,sensitivity);
         }
 
         // cut and paste again, this time for ROC interpolated
-        System.out.println("\nInterpolated Specificity/Sensitivity");
+        System.out.println("\nInterpolated ROC");
         interpolate = true;
         rocCurve = eval.rocCurve(interpolate);
-        for (double[] pr : rocCurve) {
-            double sensitivity = pr[0];
-            double specificity = pr[1];
-            System.out.printf("spec=%4.2f sens=%4.2f\n", 
-                              specificity, sensitivity);
+        for (double[] ss : rocCurve) {
+            double oneMinusSpecificity = ss[0];
+            double sensitivity = ss[1];
+            System.out.printf("1-spec=%4.2f sens=%4.2f\n", 
+                              oneMinusSpecificity,sensitivity);
         }
 
         System.out.println();
@@ -86,9 +80,9 @@ public class ScoredPrecisionRecallDemo {
         double bep = eval.prBreakevenPoint();
         /*x*/
 
-        System.out.printf("Maximum F Measure=%4.2f\n",
+        System.out.printf("\nMaximum F Measure=%4.2f\n",
                           maximumFMeasure);
-        System.out.printf("Precision/Recall Break-Even Point (BEP)=%4.2f\n",
+        System.out.printf("\nPrecision/Recall Break-Even Point (BEP)=%4.2f\n",
                           bep);
 
     }

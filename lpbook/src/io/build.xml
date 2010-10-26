@@ -9,7 +9,7 @@
 
   <path id="classpath">
     <pathelement location="${jar}"/>
-    <pathelement location="../../lib/lingpipe-4.0.0.jar"/>
+    <pathelement location="../../lib/lingpipe-4.0.1.jar"/>
     <pathelement location="../../lib/ant-1.8.1.jar"/>
   </path>
 
