@@ -1,35 +1,22 @@
-var pi[K], z[I], theta[J,K], alpha[K], phi[K], tau, y[N], unitK[K], preferK[K,K];
-data {
-    for (k in 1:K) {
-        unitK[k] = 1
-    }
-    for (k in 1:K) {
-        for (k2 in 1:(k-1)) {
-           prefer[k,k2] = 1
-        }
-        for (k2 in (k+1):K) {
-            prefer[k,k2] = 1
-        }
-        prefer[k,k] = K
-    }
-}
-
 model {
 
     pi ~ ddirch(unitK)
     for (i in 1:I) {
-        z[i] ~ dcat(pi)
+        z[i] ~ dcat(pi);
     }
 
     for (j in 1:J) {
         for (k in 1:K) {
-            theta[j,k,] ~ ddirch(preferK[k])
+            theta[j,k,] ~ ddirch(alpha[k]);
         }
     }
-    alpha <- tau * phi
-    phi ~ ddirch(UNIT_K)
-    tau ~ dpar(1.5,0.1)
-    
+
+    for (k in 1:K) {
+        alpha[k] <- tau[k] * phi[k];
+        phi[k] ~ ddirch(preferK[k])
+        tau[k] ~ dpar(1.5,0.1)
+    }
+
     for (n in 1:N) {
         y[n] ~ dcat(theta[jj[n],z[n]])
     }
