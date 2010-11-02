@@ -1330,8 +1330,10 @@ That's a ranked response.  In addition, they might further specify
 that cabernet has a score of $-1.2$, syrah a score of $-1.3$, and
 pinot a score of $-2.0$ (yes, scores may be negative; they still get
 sorted from largest, here $-1.2$, to smallest, $-2.0$, for
-purposes of ranking).  That's what we call a scored response.  Even
-better, the response may contain a probability estimate, such as 55\%
+purposes of ranking).  That's what we call a scored response.  
+
+An even more refined response contains a conditional probability
+estimate of the output category given the input, such as 55\%
 cabernet, 35\% syrah, and 10\% pinot noir.  That's a conditional
 probability response.%
 %
@@ -1342,12 +1344,12 @@ probability response.%
 
 \subsection{Comparing Scores across Items}
 
-Ranks only entail that we can rank categories within the response to a
+Ranked results support ranking categories within the response to a
 single item being classified, such as a single wine.  For instance, I
 may be guessing the grapes in two wines, and rank the first one syrah,
-cabernet, and pinot, and the second one syrah, pinot and cabernet.
+cabernet, and pinot, and the second one pinot, syrah, and cabernet.
 Without scores, there's no way to tell if the taster is more confident
-about the guess of syrah for the first wine or syrah for the second
+about the guess of syrah for the first wine or pinot for the second
 wine.
 
 With scores, we are sometimes able to compare a classifier's response
@@ -1364,7 +1366,7 @@ one respond 55\% cabernet, 35\% syrah and 10\% pinot, and for the
 second, 90\% cabernet, 8\% syrah, and 2\% pinot, I can rank my
 choices.  My best guess is that wine 2 is a cabernet, because I've
 estimated a 90\% chance of being right.  My second best guess is that
-wine 1 is a cabneret (55\%), my third-best guess that wine 1 is a
+wine 1 is a cabernet (55\%), my third-best guess that wine 1 is a
 syrah (35\%), my fourth-best guess that wine 1 is pinot (10\%), my
 fifth-best that wine 2 is syrah (8\%), and my least likely guess is
 that wine 2 is a pinot (2\%).
@@ -1410,7 +1412,7 @@ not.  For the first wine, we have 55\% cabernet (false), 35\% syrah
 cabernet (true), 8\% syrah (false), and 2\% pinot noir (false).  To
 populate the evaluation with these results requires six calls to
 \code{addCase()}, \code{addCase(false,0.55)},
-\code{addCase(true,0.35)}, \code{addCase(false,0.10)}, for the three
+\code{addCase(true,0.35)}, and \code{addCase(false,0.10)} for the three
 responses for the first wine, and similarly for the three results from
 the second wine.
 
@@ -1447,9 +1449,9 @@ sentence for a system trained on English data without an extensive
 list of names or locations, because both names contain tokens that are
 not capitalized.  
 
-<p>Given the input text, a named-entity mention chunker might return
-the following six-best ranked guesses (for instance, returning all
-found chunks with estimated probability above 0.01),
+Given the input text, a named-entity mention chunker might return all
+found chunks with estimated probability above 0.01, which might lead
+to the following six chunks, for example.
 %
 \begin{verbatim}
 ( 4, 8):LOC  0.89     (41,45):ORG  0.43     (41,45):LOC  0.09
@@ -1462,7 +1464,11 @@ including the probability estimate and correctness, the latter of
 which is false for the first five responses and true for the last one.
 After adding the scores, we must call \code{addMisses(1)}, indicating
 that one of the reference entities, namely \code{(37,45):LOC}, was not
-included among the system responses.
+included among the system responses.%
+%
+\footnote{These low-level adds, for both found chunks and misses, is
+  automated in the chunker evaluation classes.  We're just using named
+  entity spotting as an example here.}
 
 To evaluate information retrieval results, the system is used in the
 same way, with the method \code{addScore()} being called for each
@@ -1520,7 +1526,7 @@ table of evaluated responses, which may be found in
 \\
 9 & $-3.70$ & no & 4 & 0 & 6 & 1 & 0.80  & 0.40  & 0.00
 \\ \hline
-10 & miss & {\bf yes} & 5 & 0 & 6 & 0 & 1.00 & 0.45 & 0.00
+10 & miss & {\bf yes} & 5 & 0 & 6 & 0 & 1.00 & 0.00 & 0.00
 \end{tabular}
 \vspace*{-8pt}
 \end{center}
@@ -1531,9 +1537,9 @@ table of evaluated responses, which may be found in
   the number of positive cases is 5 and the total number of negative
   cases is 5.  The ranks, numbered from 0, are determined by score.
   The counts of TP, TN, FP and FN and the corresponding recall
-  ($\mbox{TP}/(\mbox{TP}+\mbox{FN})$), precision
-  ($\mbox{TP}/(\mbox{TP}+\mbox{FP})$), and specificity
-  ($\mbox{TN}/(\mbox{TN}+\mbox{FP})$) values are
+  $(\mbox{TP}/(\mbox{TP}+\mbox{FN}))$, precision
+  $(\mbox{TP}/(\mbox{TP}+\mbox{FP}))$, and specificity
+  $(\mbox{TN}/(\mbox{TN}+\mbox{FP}))$ values are
   shown.}\label{fig:scored-pr-example}
 \end{figure}
 %
@@ -1541,13 +1547,14 @@ The first column of the table indicates the rank of the response
 (numbering from zero), the second the score of the response, and the
 third whether it was a correct (true) response or not.  For example,
 the top-ranked response has a score of $-1.21$ and is incorrect,
-whereas the second-best response has a score of $1.27$ and is correct.
+whereas the second-best response has a score of $-1.27$ and is correct.
 
-We use this table to generate precision-recall matrices for all of the
-results up to that rank.  The next four columns represent the counts
-in the cells of the precision-recall matrix, TP, TN, FP, and FN, for
-each rank.  These are the basis for the computation of the next three
-columns, which are recall, precision, and specificity at rank $N$.%
+We use this table to generate confusion matrices for precision/recall for
+all of the results up to that rank.  The next four columns represent
+the counts in the cells of the confusion matrix, TP, TN, FP,
+and FN, for each rank.  These are the basis for the computation of the
+next three columns, which are recall, precision, and specificity, at
+rank $N$.%
 %
 \footnote{LingPipe numbers ranks from zero for the purpose of
   precision-recall and ROC curves, but numbers them from one for the
@@ -1556,10 +1563,10 @@ columns, which are recall, precision, and specificity at rank $N$.%
 %
 For recall, this is the fraction of all reference positive items that
 have been retrieved at the specified rank or before.  The highest
-recall achieved is only 0.80 because we added a missed item, for a
-total of five reference positive items.  Every time we hit a correct
-answer, the recall (sensitivity) and precision go up and specificity
-stays the same.
+recall achieved for non-zero precision is only 0.80 because we added
+a missed item, for a total of five reference positive items.  Every
+time we hit a correct answer, the recall (sensitivity) and precision
+go up and specificity stays the same.
 
 Precision is calculated slightly differently, being the fraction of
 results returned so far that are correct.  Thus the first value is
@@ -1567,7 +1574,10 @@ zero, because we have $\mbox{TP}=0$ and $\mbox{FP}=1$ at this point,
 for a precision of $\mbox{TP}/(\mbox{TP}+\mbox{FP}) = 0$.  At rank 1,
 we have $\mbox{TP}=1$ and $\mbox{FP}=1$, for a precision of 0.5.  By
 the time we get down to rank 9, we have $\mbox{TP}=4$ and
-$\mbox{FP}=6$, for a precision of 0.4.
+$\mbox{FP}=6$, for a precision of 0.4.  We pin the precision and
+specificity of results corresponding to calls to \code{addMisses()} to
+0, because there is no indication of the number of false positives
+that may show up ahead of the misses.
 
 Specificity (or rejection recall) is calculated more like recall than
 precision.  Specifically, we assume that at each rank, we have
@@ -1578,16 +1588,14 @@ we have $\mbox{TN} = 6$ and $\mbox{FP}=1$.
 
 After constructing and populating the evaluation, the code in the
 \code{main()} method goes on to print out the precision-recall curve
-implied by the data.
+implied by the data and represented in the instance \code{eval} of
+a scored precision-recall evaluation.
 %
 \codeblock{ScoredPrecisionRecallDemo.2}
 %
 We have set the interpolation flag to false, and then walked over the
 resulting curve pulling out recall/precision operating points (and
-then printing them in code not shown).  LingPipe follows the
-convention of only including points at which the system was correct,
-which means values chosen from the lines in the table corresponding to
-ranks 1, 3, 4, and 8.
+then printing them in code not shown).  
 
 The Ant target \code{scored-precision-recall} runs the demo, which
 takes no command-line arguments.  If we run it, the following shows
@@ -1615,7 +1623,9 @@ prec=0.00 rec=1.00
 The uninterpolated results are just the precision and recall values
 from our table.  Interpolation has the effect of setting the precision
 at a given recall point $r$ to be the maximum precision at any
-operating point of the same or higher recall.
+operating point of the same or higher recall.  For instance, the
+precision at recall point 0.4 is interpolated to 0.6, becaus ethe
+precision at recall point 0.6 is 0.6.
 
 A graph of the uninterpolated and interpolated precision-recall
 curves are shown in \reffig{pr-curves}.
@@ -1690,7 +1700,11 @@ boost the specificity in ROC cuves.
 We believe the precision-recall and ROC curves provide the best view
 of how a classifier works.  It shows how tradeoffs may be made between
 precision and recall by setting different operating points for
-accepting a result.
+accepting a result.  It is important to keep in mind, though, that
+these results are on evaluation data, and represent only an estimate
+of what results will be on unseen data.  In practice, if results were
+achieved through tuning by cross-validation, the precision-recall and
+ROC curves will be overly optimistic.
 
 
 \subsubsection{$F$ Measure at Rank}
@@ -1702,16 +1716,19 @@ measure of any two operating points.  The three arguments are for the
 precision weight (which should be 1 as we have defined $F$ measure
 here; see the next section for generalizations), and for precision and
 recall (though the order of precision and recall doesn't matter for
-computing $F$ measure).
+computing $F$ measure). So the call looks like
+\code{fMeasure(1.0,p,r)}, where the \code{1.0} just indicates that
+precision and recall are balanced, \code{p} is precision, and \code{r}
+is recall.
 
 \subsubsection{Precision at Rank $N$}
 
-The scored precision-recall evaluation implements a method
-\code{precisionAt(int)}, which returns the precision at a specified
-rank.  For example, with the data in \reffig{scored-pr-example},
-the precision at rank $N$ is determined by looking up the precision
-for that rank.  Ranks are conventionally counted from 1, so
-that is how we count for the \code{precisionAt()} method.
+For scored precision-recall evaluations, the method
+\code{precisionAt(int)} returns the precision at a specified rank.
+For example, with the data in \reffig{scored-pr-example}, the
+precision at rank $N$ is determined by looking up the precision for
+that rank.  Ranks are conventionally counted from 1, so that is how we
+count for the \code{precisionAt()} method.
 
 The precision at every rank is calculated with the following code.
 %
@@ -2538,7 +2555,7 @@ lists.
 
 For instance, a traditional web search engine might return the
 top $N$ results, ranked in order of estimated relevance to the user's
-query
+query.%
 %
 \footnote{In practice for search, there is some benefit to balancing
   relevance and diversity in results.}
@@ -2624,36 +2641,38 @@ recall plotted in the same way, though there is less of a convention
 as to which value goes on which axis.  We will call such plots PR
 curves.
 
-We feel that presenting ROC and PR curves directly is the best way to
-understand performance for systems that allow precision to be traded
-for recall (or sensitivity for specificity).
-
 \subsubsection{Interpolated ROC and PR Curves}
 
 It is common in the information retrieval literature to see PR curves
 calculated by interpolation.  Interpolation for both kinds of
 curves means adjusting the value for a given point on the $x$ axis
-to be the maximum value for any point at that position or higher.
-
-Note that this does not quite correspond to computing the convex
-hull, because the results may still not be convex.  
+to be the maximum value for any point at that position or higher.%
+%
+\footnote{As can be seen in the examples earlier, this does not quite
+  correspond to computing the convex hull, because the results may
+  still not be convex.  The convex hull is an even more agressive
+  interpolation that makes sense in some conditions where a system
+  may probabilistically interpolate between results.}
 
 By the same reasoning, we typically include operating points for 0\%
 recall and 100\% precision and for 100\% recall and 0\% precision.
-These may not in fact lie on the convex hull of the ROC or PR curve,
-in which case they will be pruned out by interpolation.
+Interpolation may modify these operating points, so they may not
+appear as is in interpolated results.
+
 
 \subsubsection{Area under PR and ROC Curves}
 
 In order to reduce performance to a single statistic, it is common to
 see the area under the curve (AUC) reported.  
 
-The conventional approach to calculating these areas differs
-between PR and ROC curves.  For PR curves, the usual approach is
-to use flat interpolation.  In this case, area under the PR
-curve corresponds exactly to the average of the precision values
-at operating points corresponding to true positives.  These will
-be evenly spaced, and thus correspond to area.
+The conventional approach to calculating these areas differs between
+PR and ROC curves.  For PR curves, the usual approach is to use
+step-functions based on interpolation rather than connecting the
+operating points.  In this case, area under the PR curve corresponds
+exactly to the average of the precision values at operating points
+corresponding to true positives.  These will be evenly spaced in the
+interval between 0 and 1, and hence their average will correspond to
+the area under the curve.
 
 For ROC curves, the usual approach is to report the area under the
 curve defined by connecting the points in the uninterpolated ROC
@@ -2675,9 +2694,16 @@ and uninterpolated curves.
 
 The area under the ROC curve has a probabilistic interpretation as the
 estimate of the probability that a classifier will rank a random
-positive intstance ahead of a randomly chosen negative instance.
+positive intstance ahead of a randomly chosen negative instance.  This
+is because the area under the curve will be the average specificity
+at true positive points, which is the average specificity at each
+true positive, and hence an estimate of the probability that a random
+negative item is ranked below a random positive item.  In the continuous
+curve setting, this average becomes an integral, but the idea remains
+the same.
 
-\subsubsection{Averages on ROC and PR Curves}
+
+\subsubsection{Averages on ROC and P-R Curves}
 
 The average value of precision is often reported for PR curves.  This
 is conventionally done over all operating points, not just the ones on
@@ -2689,7 +2715,7 @@ which simply averages the average precision precision values across
 the different PR curves.
 
 
-\subsubsection{Special Points on the Curves}
+\subsubsection{Special Points on the P-R and ROC Curves}
 
 Several points on these curves are often called out for special
 attention.  For PR curves, the precision-recall breakeven point (BEP)
@@ -2723,12 +2749,75 @@ value of reciprocal rank across a number of evaluations.
 
 \section{Bias Correction}
 
+Suppose that when we evaluate a classifier on held-out data, it has a
+bias toward one category or the other.  For instance, suppose we have
+a binary classifier with a sensitivity (accuracy on reference positive
+cases) of $\theta_1 = 0.8$ and a specificity (accuracy on negative
+reference cases) of $\theta_0 = 0.9$.  If there are $I = 200$ positive
+reference cases and $J = 100$ negative cases, the classifier is
+expected to return an estimate of the number $M$ of positive cases
+of 
+
+\begin{equation}
+M = \theta_1 I + (1-\theta_0) J = 0.8 \times 200 + (1 - 0.9) \times 100 = 170,
+\end{equation}
+%
+and an estimate of the number $N$ of negative cases of
+%
+\begin{equation}
+N = (1-\theta_1) I + \theta_0 J = (1-0.8) \times 200 +  0.9 \times 100 = 130.
+\end{equation}
+
+We will assume that we've evaluated our classifier so that we have an estimate of its
+sensitivity $\theta_1$ and specificity $\theta_0$.%
+%
+\footnote{In practice, there is uncertainty associated with these
+estimates which translates into downstream uncertainty in our adjusted
+estimates, but we'll take our Bayesian hats off for the time being and
+pretend our point estimates are correct.}
+%
+In practice, we
+don't know the values of $I$ or $J$, but we will know $M$ and $N$.  So
+we get a pair of equations:
+%
+\begin{align}
+\theta_1 I + (1-\theta_0) J &= M, \mbox{ and}
+\\[4pt]
+(1-\theta_1) I + \theta_0 J &= N,
+\end{align}
+%
+which allows us to solve for $I$ and $J$ in terms of $M, N, \theta_0$,
+and $\theta_1$.  This allows us to estimate the prevalence of positive
+responses, even though we have a biased classifier.
+
 
 \section{Post-Stratification}\label{section:classifier-eval-post-stratification}
 
 If the data are not in the same proportion in held out data as in test
 data, but we know the test data proportions, we could use
-post-stratification to predict overall accuracy on new test data.
+post-stratification to predict overall accuracy on new test data.  
+
+This situation most commonly arises when we have artificially
+``balanced'' training data.  For instance, suppose we have 1000
+positive and 1000 negative training examples for a binary classifier.
+Suppose we know our system has a sensitivity (accuracy on reference
+positive items) of 0.8 and a specificity (accuracy on reference
+negative items) of 0.9.   On the test data, the overall accuracyw
+will be $(0.8 \times 1000 + 0.9 \times 1000)/2000$, which is 0.85.
+
+But what if we know our test set is balanced completely differently,
+with 50 positive test items and 500 negative test items.  If we don't
+know the proportion of each item in the test set, we could sample and
+annotate until we do.  For instance, we know that about 15\% of the
+5000 or so articles released each day in MEDLINE are about genomics.
+But we might have training data with 1000 articles on genomics
+and 1000 items not on genomics.  
+
+Knowing the sensitivity $\theta_1$, specificity $\theta_0$, and
+prevalence $\pi$, which is the percentage of positive test items,
+we can predict our system's accuracy on the test data as
+$\pi \theta_1 + (1-\pi)\theta_0$.
+
 
 
 
