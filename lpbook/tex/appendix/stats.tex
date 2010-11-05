@@ -54,11 +54,11 @@ variable $X \sim \dbin{\theta}{N}$ are given by
 %
 \begin{equation}
 \hfill
-\var{X} = \frac{\theta (1 - \theta)}{N} 
+\var{X} = N \theta (1 - \theta)
 \hspace*{0.25in}
 \mbox{and}
 \hspace*{0.25in}
-\sd{X} = \sqrt{\frac{\theta (1 - \theta)}{N}}.
+\sd{X} = \sqrt{N \theta (1 - \theta)}.
 \hfill
 \end{equation}
 %
@@ -66,17 +66,21 @@ variable $X \sim \dbin{\theta}{N}$ are given by
 We are often more interested in the percentage of the $N$ trials that
 resulted in success, which is given by the random variable $X/N$ (note
 that $N$ is a constant here).  The variable $X/N$ is scaled to be
-between 0 and 1.  With large $N$, $X/N$, will be approximately equal
-to $\theta$ for almost every trial.  The variance and standard
-deviation of $X/N$ are derived in the usual way, by dividing by the
-constant $N$,
+between 0 and 1.  With large $N$, $X/N$ is expected to be close to to
+$\theta$.  The variance and standard deviation of $X/N$ are derived in
+the usual way, by dividing by the constant $N$,
 %
 \begin{equation}
-\var{X/N} = \theta (1 - \theta) 
+\var{X / N}
+= \frac{1}{N^2} \var{X} 
+= \frac{\theta (1 - \theta)}{N},
 \hspace*{0.25in}
 \mbox{and}
+\end{equation}
+%
+\begin{equation}
 \hspace*{0.25in}
-\sd{X/N} = \sqrt{\theta (1-\theta)}.
+\sd{X/N} = \sqrt{\frac{\theta (1-\theta)}{N}}.
 \end{equation}
 
 
