@@ -313,9 +313,9 @@ concatenation syntax.  For instance, \code{[aeiou]} is the character
 class picking out the ASCII vowels.  It is composed of the union of
 character class expressions \code{a}, \code{e}, \ldots, \code{u}.  
 %
-\commandlinefollow{ant -Dregex="[aeiou]" -Dtext=i regex-match}
+\commandlinefollow{ant -Dregex=[aeiou] -Dtext=i regex-match}
 \begin{verbatim}
-Regex=|[abc]|    Text=|i|    Matches=true
+Regex=|[aeiou]|    Text=|i|    Matches=true
 \end{verbatim}
 %
 Class escapes may be used, so that \code{[{\bk}p\{Lu\}{\bk}p\{N\}]}
@@ -356,8 +356,8 @@ Character classes may also be intersected.  The syntax is the same as
 for logical conjunction, with \code{[\codeVar{A}\&\&\codeVar{B}]}
 picking out the characters that are in the classes denoted by both
 \codeVar{A} and \codeVar{B}.  For instance, we could write
-\code{[[a-z]\&\&[\^{}aeiou]]} to pick out all ASCII characters other
-than the vowels,
+\code{[[a-z]\&\&[\^{}aeiou]]} to pick out all lowercase ASCII
+characters other than the vowels,
 %
 \commandlinefollow{ant -Dregex="[[a-z]\&\&[\^{}aeiou]]" -Dtext=i regex-match}
 \begin{verbatim}
@@ -399,15 +399,15 @@ together to form a regular expression that matches the string.  This
 is not the same operation as character classes, which confusingly
 uses the same notation.  
 
-With a list of objects being concatenated, the boundary condition is
-an empty list, which is why we start this section with a discussion of
-the empty regex.
-
 \subsection{Empty Regex}
+
+With a list of characters (or strings) being concatenated, the
+boundary case is the concatenation of an empty list, which is why we
+start this section with a discussion of the empty regex.
 
 The simplest regular expression is the empty regular expression.  It
 only matches the empty string.  For example, the expression
-\code{Pattern.compile("").matcher("").matches()} would evaluate to
+\code{Pattern.compile("").matcher("").matches()} evaluates to
 \code{true}.  Using our test code from the command-line proves tricky,
 because we have to escape the quotes if we want to assign environment
 variables, as in 

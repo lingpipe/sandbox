@@ -260,9 +260,9 @@ with UTF-32, UTF-16BE is the big-endian order and UTF-16LE the
 little-endian order.
 
 In UTF-16, code points below \unicode{10000} are represented using a
-single byte in the natural base-2 encodings.  For instance, our old
-friend \unicode{0041} (capital A) is represented in big endian as
-the sequence of bytes 0x00, 0x41.  
+pair of bytes using the natural unsigned encodings.  For instance, our
+old friend \unicode{0041} (capital A) is represented in big endian as
+the sequence of bytes \code{0x00}, \code{0x41}.
 
 Code points at or above \unicode{10000} are represented using four
 bytes arranged in two pairs.  Calculating the two pairs of bytes
@@ -588,11 +588,11 @@ we could write
 \u0069\u006E\u0074\u0020\u006E\u0020\u003D\u0020\u0031\u003B
 \end{verbatim}
 %
-and it would behave exactly the same way, because
-\charmention{i} is \unicode{0069}, \charmention{n} is
-\unicode{006E}, \charmention{t} is \unicode{0074},
-the space character is \unicode{0020}, and so on, up
-through\charmention{;}, which is \unicode{003B}.
+and it would behave exactly the same way, because \charmention{i} is
+\unicode{0069}, \charmention{n} is \unicode{006E}, \charmention{t} is
+\unicode{0074}, the space character is \unicode{0020}, and so on, up
+through the semicolon character (\charmention{;}), which is
+\unicode{003B}.
 
 As popular as Unicode is, it's not widely enough supported in
 components like text editors and not widely enough understood among
@@ -775,7 +775,7 @@ using a byte, because the class predates enums.  For instance, the
 general category ``Pe'' in the Unicode specification is represented by
 the constant \code{END\_PUNCTUATION} and the general category of
 mathematical symbols, ``Sm'' in Unicode, is represented by the
-constant\code{MATH\_SYMBOL}.
+constant \code{MATH\_SYMBOL}.
 
 For many of these constants, there are corresponding methods.  For
 instance, the method \code{getDirectionality(char)} returns the
@@ -1320,21 +1320,15 @@ to any other equal string that has also been interned.
 
 For example,  suppose we call
 %
-\begin{verbatim}
-String s = new String("abc");   
-String t = new String("abc");   
-\end{verbatim}
+\codeblock{FragmentsChars.1}
 %
 The expression \code{s.equals(t)} will be true, but
 \code{s == t} will be false.  The constructor \code{new} always
 constructs new objects.  Next, consider calling
 %
-\begin{verbatim}
-String sIn = s.intern();  
-String tIn = t.inern();
-\end{verbatim}
+\codeblock{FragmentsChars.2}
 %
-Afterwards, \code{sIn == tIn} will return true, as will
+Afterwards, \code{sIn == tIn} will evaluate to true, as will
 \code{sIn.equals(tIn)}.  The interned strings are equal to their
 originals, so that \code{sIn.equals(s)} and \code{tIn.equals(t)} also
 return true.
@@ -1347,13 +1341,14 @@ reproduce behavior available elsewhere.
 
 \subsubsection{Regular Expression Utilities}
 
-The string class contains various \code{split()} and
-\code{replace}\codeVar{X}\code{()} methods based on regular expressions.
-For instance, \code{split(String)} interprets its argument as a
-regular expression and returns an array of strings containing the
-sequences of text between matches of the specified pattern.
-Matching is defined as in the regular expression method
-\code{Matcher.find()}.
+The string class contains various split and replace methods based on
+regular expressions.  For instance, \code{split(String)} interprets
+its argument as a regular expression and returns an array of strings
+containing the sequences of text between matches of the specified
+pattern.  The method \code{replaceFirst(String,String)} replaces the
+first match of a regular expression (the first argument) with a given
+string (the second argument).  In both cases, matching is defined as
+in the regular expression method \code{Matcher.find()}.
 
 \subsubsection{String Representations of Primitives}
 
@@ -1536,27 +1531,20 @@ is 0x10000.
 Like many builder implementations, string builders let you chain
 arguments.  Thus it's legal to write
 %
-\begin{verbatim}
-int n = 7;  String s = "ABC";  boolean b = true;  
-char c = 'C';  Object z = null;
-String s = new StringBuilder().append(n).append(s).append(b)
-               .append(c).append(z).toString();
-\end{verbatim}
+\codeblock{FragmentsChars.3}
 %
-with the reslt that string \code{s} has a value equal to the
+with the reslt that string \code{t} has a value equal to the
 literal \code{"7ABCtrueCnull"}.
 
 In fact, this is exactly the behavior underlying Java's heavily
 overloaded addition (\code{+}) operator.  When one of the arguments to
 addition is a string, the other argument is converted to a string as
-if by the appropriate \code{String.valueOf()} method.  Thus an
-equivalent way to write the chaining build above is
+if by the appropriate \code{String.valueOf()} method.  For example,
+the variables \code{u} and \code{v} will have equivalent values after
+executing the following pair of statements.
 %
-\begin{verbatim}
-String s = 7 + " foo";
-\end{verbatim}
-%
-Multiple additions of strings just get unfolded to multiple appends.
+\codeblock{FragmentsChars.4}
+
 
 
 \subsection{Equality and Hash Codes}
@@ -1693,14 +1681,7 @@ the values in an array, we might use%
 because its size doesn't need to be set in advance like a
 \code{CharBuffer}'s.}%
 %
-\begin{verbatim}
-String[] xs = ...;
-CharBuffer cb = CharBuffer.allocate(1000);
-for (String s : ss)
-    cb.put(s);
-flip();
-String s = cb.toString();
-\end{verbatim}
+\codeblock{FragmentsChars.5}
 %
 After the \code{put()} operations in the loop, the position is
 after the last character.  If we were to dump to a string at this
@@ -1709,16 +1690,6 @@ sets the position back to zero and the limit to the current
 position.  Then when we call \code{toString()}, we get the values
 between zero and the limit, namely all the characters we appended.
 The call to \code{toString()} does not modify the buffer.
-
-
-
-
-
-
-
- 
-
-
 
 
 
@@ -2126,7 +2097,7 @@ Hiragana, there are also transforms based on Unicode itself.  For
 instance, the \code{Any-Remove} transliteration removes combining
 characters, and thus may be used to convert accented characters to
 their deaccented forms across all the scripts in Unicode.  There
-areal so conversions to hexadecimal representation; for instance
+are also conversions to hexadecimal representation; for instance
 \code{Any-Hex/Java} converts to hexadecimal \code{char} escapes
 suitable for inclusion in a Java program.  The normalizations are
 also avaialble through \code{Any-NFC} and so on. 
