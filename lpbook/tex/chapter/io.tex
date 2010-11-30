@@ -7,13 +7,19 @@ Data may be transferred among memory with memory-backed streams, the
 file system via file streams or memory mapped files, the terminal via
 standard input and output streams, and remote servers via sockets.
 Stream filters may be put in place to compress or decompress data.
-Streams that block awaiting input or output may be dealt with in
-threads.
+
+Some streams block awaiting input or output.  For instance, file
+(network) input streams will block while waiting for the file system
+(network), which is much slower than Java code.  Read requests from a
+console representing standard input will block awaiting the next input
+from a user.  To handle pipes, which allow an input stream to read
+from an output stream, Java uses threads to allow reads to wait until
+writes are ready or vice-versa.  
 
 Bytes may encode anything, but we are particularly interested in the
 case of natural language text data, with or without document
 structure.  To support streams of \code{char} values, Java provides
-\code{char} streams as byte streams.  In order to crete a character
+\code{char} streams as byte streams.  In order to create a character
 stream from byte stream, the character encoding must be known.
 
 We are also interested in sequences of bytes that encode Java objects
@@ -173,7 +179,7 @@ canonical path is not used for equality (see \refsec{io-files-equality}).
 \subsection{Exploring File Properties}
 
 There are many methods on \code{File} objects which explore the type
-of a file.  The method \code{exists()} tests whehter it exists,
+of a file.  The method \code{exists()} tests whether it exists,
 \code{isAbsolute()} tests whether it
 denotes an absolute path, \code{isDirectory()} whether it's directory,
 \code{isFile()} whether it's an ordinary file, and
@@ -213,29 +219,41 @@ available for file name listings.
 
 \subsubsection{LingPipe's \code{FileExtensionFilter}}\label{section:io-file-extension-filter}
 
-LingPipe provides a convenience class \code{FileExtensionFilter}, which
-implements a \code{FileFilter} based on the extension of a file.  A
-file's extension is here defined to mean the string after the final
-period (\code{.}) in the file's name.  This is purely a convention for
-naming files, which is especially useful in Windows or web browsers,
-where each extension may be associated with a program to open or view
-files with that extesnion.
+LingPipe provides a convenience class \code{FileExtensionFilter} in
+package \code{com.aliasi.io}, which implements Java's interface
+\code{FileFilter} based on the extension of a file.  A file's
+extension is here defined to mean the string after the final period
+(\code{.}) in the file's name.  This is purely a convention for naming
+files, which is especially useful in Windows or web browsers, where
+each extension may be associated with a program to open or view files
+with that extesnion.
 
-A file extension filter takes a single or multiple strings
-specified as an array.
+A file extension filter takes a single string or multiple strings
+specified as an array or using variable length arguments.  The filter
+will match files ending with any of the extensions.
 
 A file extension filter is configured with a flag indicating
 whether it should automatically accept directories or not, which
 is convenient for recursive descents through a file system.  The
 default for the unmarked constructors is to accept directories.
 
-File extension filters would implement \code{FilenameFilter}
-directly if they could, but it causes a conflict with the
-polymorphic file method \code{listFiles(FilenameFilter)} and
-\code{listFiles(FileFilter)}.  Instead, a file extension filter
-provides a method \code{fileNameFilter()} which returns the
-corresponding file name filter.  This is only necessary if you want to
-test or list files by name rather than as files.
+File extension filters work on \code{File} objects through Java's
+\code{FileFilter} interface.  File extension filters do not implement
+the Java interface \code{FilenameFilter} because it produces an
+ambiguity when calling the methods on Java \code{File} objects
+\code{listFiles(FilenameFilter)} and \code{listFiles(FileFilter}).%
+%
+\footnote{In general, if there are methods \code{foo(A)} and
+  \code{foo(B)} in a class taking arguments specified by interfaces
+  \code{A} and \code{B}, and there is an object \code{x} that
+  implements both \code{A} and \code{B}, then you cannot write
+  \code{foo(x)}, because the compiler doesn't know which
+  implementation of \code{foo()} to use.}
+%
+Although it's not usually necessary, if you need to filter files based
+on name, file extension filters implement a method
+\code{fileNameFilter()} which returns the corresponding file name
+filter implementing \code{FilenameFilter}.
 
 There are two static utility methods in the class \code{Files} in
 \code{com.aliasi.util} that break file names apart into their suffix
@@ -416,10 +434,9 @@ go wrong with their method calls.
 In general, it's a good idea to catch subclasses of exceptions
 separately so that error handling and error messages may be as
 specific as possible.  If the methods called in the \code{try} block
-are declared to throw the more general \code{IOException}, you'll
-
-To do so, you need to declare the more specific catches first.  For
-example, it's legal to write
+are declared to throw the more general \code{IOException}, you'll want
+to catch the \code{FileNotFoundException} first.  For example, it's
+legal to write
 %
 \begin{verbatim}
 try {
@@ -431,8 +448,10 @@ try {
 }
 \end{verbatim}
 %
-but if you try to catch the I/O exception first, the compiler will gripe that the
-\code{FileNotFoundException} has already been caught.
+In general, you have to order the catches from more specific to mroe
+general.  If you try to catch the I/O exception before the file not
+found exception, the compiler will gripe that the file not found
+exception has already been caught.
 
 
 
@@ -709,7 +728,7 @@ stream.
 
 \subsection{The \code{InputStreamReader} Class}\label{section:io-inputstreamreader}
 
-Given an input stream and a characte encoding, an instance
+Given an input stream and a character encoding, an instance
 of \code{InputStreamReader} may be constructed to read characters.
 The usual idiom is
 %
