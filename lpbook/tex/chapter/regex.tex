@@ -597,15 +597,18 @@ string spanning from 3 to 3.  It then starts at position 4, finding
 \code{find()} is implemented cleverly enough that it only returns the
 empty string once.  
 
-Kleene star may also be understood in terms of disjunction, though
-recursion is required.  The greedy Kleene star regex
-\code{\codeVar{A}*} behaves like \code{(\codeVar{A}(\codeVar{A}*))|}.
+Kleene star may also be understood in terms of disjunction.  The
+greedy Kleene star regex \code{\codeVar{A}*} behaves like the
+disjunction of \code{\codeVar{A}(\codeVar{A}*)} and the empty regex.
 Thus it first tries to match \codeVar{A} followed by another match of
-\code{\codeVar{A}*}, and only failing that tries to match the
-empty string.
+\code{\codeVar{A}*}, and only failing that tries to match the empty
+string.  For instance, the two regexes in the following patterns match
+exactly the same strings.
+%
+\codeblock{RegexFragments.1}
 
 Kleene star interacts with disjunction in the expected way.  For
-example, matching may match an entire string, as with
+example, matching consumes an entire string, as with
 %
 \commandlinefollow{ant -Dregex="(ab|abc)*" -Dtext=abcab regex-match}
 \begin{verbatim}
@@ -829,10 +832,10 @@ are regexes \code{{\bk}A} for the beginning of the input and
 and end of the input no matter what the match mode is.  For
 instance,
 %
-\commandlinefollow{ant -Dregex={\bk}A(xyz){\bk}z -Dtext=xyz regex-group}
+\commandlinefollow{ant -Dregex={\bk}A(mnp){\bk}z -Dtext=mnp regex-group}
 \begin{verbatim}
-regex=|\A(xyz)\z|    text=|xyz|
-Group  0=|xyz| at (0,3)    Group  1=|xyz| at (0,3)
+regex=|\A(mnp)\z|    text=|mnp|
+Group  0=|mnp| at (0,3)    Group  1=|mnp| at (0,3)
 \end{verbatim}
 %
 
@@ -1010,12 +1013,12 @@ is a regex, then \code{(?:\codeVar{X})} matches the same things as
 
 \section{Back References}\label{section:regex-back-references}
 
-The regex \code{\bk\codeVar{n}} is a back reference to the match of
+The regex \code{\bk\codeVar{n}}\, is a back reference to the match of
 the \codeVar{n}-th capturing group before it.  We can use matching
 references to find pairs of duplicate words in text.  For instance,
 consider
 %
-\commandlinefollow{ant -Dregex="(\d+).*({\bk}1)" -Dtext="12 over 12" regex-group}
+\commandlinefollow{ant -Dregex="({\bk}d+).*({\bk}1)" -Dtext="12 over 12" regex-group}
 \begin{verbatim}
 Group  0=|12 over 12| at (0,10)    Group  1=|12| at (0,2)
 Group  2=|12| at (8,10)
@@ -1027,8 +1030,8 @@ match the expression \stringmention{12}, only at different places.
 You can see that the text \stringmention{12 over 13} would not
 have matched.  
 
-If the match index is out of bound, matching fails without raising an
-exception.
+If the match index is out of bounds for the number of groups, matching
+fails without raising an exception.
 
 
 \section{Pattern Match Flags}\label{section:pattern-modes}
