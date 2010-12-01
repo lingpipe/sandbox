@@ -1,7 +1,335 @@
 \chapter{Naive Bayes Classifiers}\label{chap:naive-bayes}
 
-So-called naive Bayes classifiers are neither naive nor, in their
-usual application, Bayesian.  LingPipe has two naive Bayes
-implementations, and in this section we focus on the traditional
-implementation in \code{TradNaiveBayes}.
+So-called naive Bayes classifiers are neither naive nor, under their
+usual realization, Bayesian.  In this chapter, we will focus on
+LingPipe's implementation of the traditional naive Bayes classifier.
+
+\section{Naive Bayes Basics}
+
+\subsection{Texts as Bags of Words}
+
+Although naive Bayes may be applied to arbitrary multivariate count
+data, LingPipe implements text classifiers, where the objects being
+classified are implementations of Java's \code{CharSequence} interface
+\eg{\code{String} or \code{StringBuilder}}.
+
+For LingPipe's naive Bayes implementations, texts are represented as
+so-called bags of words.%
+%
+\footnote{In general, these ``words'' will be arbitrary tokens, but
+  ``bag of words'' is the usual terminology.  In statistical parlance,
+  a bag corresponds to a multinomial outcome.}
+%
+LingPipe uses a tokenizer factory to convert a character sequence into
+a sequence of tokens.  The order of these tokens doesn't matter for
+naive Bayes or other classifiers that operate over bags of words.
+
+A bag of words is like a set of words in that the order doesn't
+matter, but is unlike a set in that the count does matter.  For
+instance, using a whitespace-based tokenizer, the strings
+\stringmention{hee hee haw} and \stringmention{hee haw hee} produce
+the same bag of words, namely \stringmention{hee} appears twice and
+\stringmention{haw} once.  These strings produce a different bag of
+words than \stringmention{hee haw}, which only has a count of one for
+\stringmention{hee}.
+
+
+\subsection{Exhaustivity and Exclusivity and Text Genre}
+
+Naive Bayes classifiers require two or more categories into which
+input texts are categorized.  These categories must be both exhaustive
+and mutually exclusive.
+
+For example, a news site such as Bing's or Google's, might classify a
+news story as to whether it belongs in the category U.S., World,
+Entertainment, Sci/Tech, Business, Politics, Sports, or Health.  As
+another example, a research consortium might want to classify MEDLINE
+citations mentioning mice as to whether they mention the effects of
+any specific gene or not (the former class being useful for those
+researching the genetic landscape of mice).  As a third example, a
+marketing firm interested in a particular brand might classify a blog
+post into four categories: positive toward brand, negative toward
+brand, neutral toward brand, doesn't mention brand.  As a fourth
+example, we could classify a patients discharge summaries (long texts
+written by care givers) as to whether it indicates the patient is a
+smoker or not.
+
+Note that in each case, the texts under consideration were a
+particular kind, such as newswire stories, MEDLINE citations about
+mice, general blog posts, or patient discharge summaries.  We can
+refer to the set of documents of this type as a genre or the domain of
+the classifier.
+
+The requirement of exhaustiveness is relative to texts that are drawn
+from the genre under consideration.  We don't try to classify sports
+stories as to whether they are about genomics or not or have a
+positive sentiment toward the food quality.  
+
+Often, this genre boundary can be moved by reconceptualizing the
+classifier and training it on broader or narrower data types.  For
+instance, the second example was restricted to MEDLINE citations about
+mice, and doesn't consider full-length research articles or scientific
+news stories, or even MEDLINE citations not about mice.  The third
+example, in contrast, classifies all blog entries, but has a category
+``doesn't mention brand'' to deal with posts not about the brand in
+question.
+
+In practice, classifiers may be applied to texts drawn from a
+different genre from which they were trained.  For instance, we could
+take blog sentiment classifiers and try to apply them to hotel
+reviews.  Or we could apply MEDLINE citation classifiers to the full
+texts of research articles.  In these cases, accuracy is almost always
+worse on out-of-domain texts than in-domain texts.  For instance, we
+could apply our blog sentiment classifier to product reviews in
+magazines, but we would not expect it to work as well in that context
+as for the kinds of blogs over which it was trained.  Similarly, we
+could apply the mouse genetics classifier to full-length journal
+articles, but it would likely not perform as well as for the citations
+over which it was trained.
+
+\subsection{Training Data: Natural versus Handmade}
+
+To train naive Bayes classifiers and other supervised classifiers, we
+require training data in the form of labeled instances.  In the case
+of text classifiers, these consist of a sequence of texts paired with
+their unique categories.  
+
+For naive Bayes, and indeed for most statistical classifiers, the
+training data should be drawn at random from the same distribution as
+the test data will be drawn from.  Naive Bayes uses information about
+which categories are most prevalent as well as what words are likely
+to show up in which category.
+
+For instance, we would create training data for news story section
+headings by gathering news articles of the kind we'd like to classify
+and assigning them to categories by hand. 
+
+Sometimes we can find data already labeled for us.  For instance, we
+could scrape a news aggregation or set of newspaper sites, recording
+the category under which the article was listed (and perhaps
+converting it back to the set of categories we care about).  These
+might have originally arisen by hand labeling in the newspaper site,
+but are most likely automatically generated by a news aggregator.
+Similarly, we could examine the Medical Subject Heading (MeSH) tags
+applied to MEDLINE citations by its curators to see if they were
+marked as being about genomics and about mice.  
+
+Sometimes we can gather data from less directly labeled sources.  For
+instance, we can find positive and negative restaurant reviews by
+examining how many stars a user assigned to them.  Or find blog posts
+about food by creating a set of tags and searching for blogs with
+those tags.  Or even by doing a web search with some terms chosen
+for each category.
+
+Our training data is almost always noisy, even if labeled by task
+specialists by hand.  Naive Bayes is particularly robust to noisy
+training data.  This produces a quality-quantity tradeoff when
+creating the data.  High-quality data labeling is very labor
+intensive, and its often good enough to get
+
+
+
+\subsection{Generative Story}
+
+Naive Bayes classifiers are based on a probabilistic model of a corpus
+of texts with category-specific content.  Models like naive Bayes are
+called ``generative'' in the machine learning literature because they
+are richly specified enough to generate whole corpora.  In contrast,
+classifiers like logistic regression are not generative in the sense
+of being able to generate a corpus from the model.
+
+The way in which naive Bayes represents a corpus, each document is
+provided with a single category among a set of possible categories.
+We suppose there is a fixed set of $K > 1$ categories and that each
+document belongs to exactly one category.  To generate a document, we
+first generate its category based on a probability distribution
+telling us the prevalence of documents of each category in the
+collection.
+
+Then, given the category of a document, we generate the words in the
+document according to a category-specific distribution over words.
+The words are generated independently from one another given the
+document's category.  The conditional independence of words given the
+document category is almost always violated by natural language texts.
+that is why the naive Bayes model is often erroneously called
+``naive'' (the error is in labeling the model itself naive rather
+than its application in a given setting).
+
+Note that we do not model the selection of the number of topics $K$,
+the number of documents $N$, or the number of words $M_n$ in the
+$n$-th document; these are given as constants.  
+
+Given a top-level distribution over categories along with a
+distribution over words for each category, it is straightforward to
+generate a corpus of documents.  But we can go one better and also
+generate the category prevalence distribution and the
+category-specific distributions over words.  In order to do so, we
+need a distribution over these distributions, which is known as a
+prior in Bayesian statistics.
+
+The standard assumption is that the distribution over categories is
+drawn from a symmetric Dirichlet prior and the distributions over
+words for each category are all drawn from a symmetric Dirichlet
+prior.  In practice, this amounts to additive smoothing for our
+parameter estimates for the category distributions.  In natural
+language processing, the most common priors are Laplace priors, which
+adds 1, Jeffreys priors, which add 0.5, and uniform priors, which add
+0.  The uniform priors lead to traditional maximum likelihood
+estimates, which are dangerous in practice for reasons we explain
+below.
+
+
+\subsection{Getting Started with Naive Bayes}
+
+LingPipe has two naive Bayes implementations.  In this section, we
+focus on the traditional implementation of naive Bayes, which is found
+in the LingPipe class \code{TradNaiveBayes} in the package
+\code{com.aliasi.classify}.  
+
+\subsubsection{Laugh Classification: His or Hers?}
+
+Our example involves classifying laughs based on whether they were
+produced by a man (his) or his wife (hers).  The manly laugh consists
+of more ``haw'' and less ``hee.''  The training data we will use has
+three examples of laughs from him and her.  His laughs are
+\stringmention{haw}, \stringmention{haw hee haw}, and
+\stringmention{haw haw}.  Her laughs in the training data are
+\stringmention{haw hee}, \stringmention{hee hee hee haw}, and
+\stringmention{haw}.  Note that the single word \stringmention{haw}
+shows up as a laugh for her and for him.  Naive Bayes and all of our
+other classifiers can handle this kind of ``inconsistent'' training
+data, which is not actually inconsistent under a probabilistic model.
+It's a matter of who's most likely to utter what, not that they
+can't utter the same laughs.
+
+\subsubsection{Setting up the Classifier}
+
+The basic functionality of the naive Bayes classifier class can be
+gleaned from a simple demo program which shows how the model is
+trained and how it is run.  We provide such an example in the class
+\code{TradNbDemo}, which consists of a single \code{main()} method.
+The method starts by assigning the input arguments, in this case
+a single argument representing the text to be classified.
+%
+\codeblock{TradNbDemo.1}
+
+The next step is to set up the classifier itself, the
+minimal constructor for which requires a tokenizer factory
+and set of categories represented as strings.
+%
+\codeblock{TradNbDemo.2}
+%
+The regular expression \code{{\bk}P\{Z\}+} (see
+\refsec{regex-unicode-classes}) produces a tokenizer factory that
+defines tokens to be maximal sequences of characters which Unicode
+considers not whitespace.  We have used the \code{asSet()} method in
+LingPipe's \code{CollectionUtils} class to define a set of strings
+consisting of the categories his and hers.  The classifier is
+constructed using the categories and tokenizer factory.
+
+
+\subsubsection{Providing Training Data}
+
+At this point, we are ready to train the classifier using training
+data.  For the demo, we just hard code the training data.  Each
+training datum consists of an instance of the class
+\code{Classified<CharSequence>}.  These training data are passed to
+the classifier one at a time using its \code{handle()} method (see
+\refsec{corpus-handlers} for a general overview of LingPipe handlers).
+Because it implements \code{handle(Classified<CharSequence>)}, the
+naive Bayes classifier class is able to implement the interface
+\code{ObjectHandler<Classified<CharSequence>>}, which is convenient if
+we want to supply the classifier as a callback to either a parser or a
+corpus.
+
+The order in which training data is provided to a naive
+Bayes classifier is irrelevant, so we will provide all the
+training data from the lady's laugh before the gentleman's.
+%
+\codeblock{TradNbDemo.3}
+%
+We start by creating a classification, \code{hersCl}, using the
+category name literal \code{"hers"}.  A base LingPipe classification
+extends the \code{Classification} class in the
+\code{com.aliasi.classify} package.  These are used as the results of
+classification.  Classifications are immutable, so they may be reused
+for training, and thus we only have one.
+
+After creating the classification, we create a list of training texts
+using Java's built-in utility \code{asList()} from the \code{Arrays}
+utility class.  Note that we used a list rather than a set because we
+can train on the same item more than once.  For instance, the woman in
+question may have hundreds of laughs in a training set with lots of
+duplication.  Training on the same text again adds new information
+about the proportion of laughs of different kinds. 
+
+The final statement is a for-each loop, which iterates over the texts,
+wraps them in an instance of \code{Classified<CharSequence>}, and
+sends them to the classifier via its
+\code{handle(Classified<CharSequence>)} method.  This is where the
+actual learning takes place.  Wehn the handle method is called, the
+classifier tokenizes the text and keeps track of the counts of each
+token it sees for each category, as well as the number of instances
+of each category.  
+
+We do the same thing for training the classifier for his laughs,
+so there's no need to show that code.
+
+\subsubsection{Performing Classification}
+
+Once we've trained our classifier with examples of his laughs and
+her laughs, we are ready to classify a new instance.  This is
+done with a single call to the classifiers \code{classify(CharSequence)}
+method.
+%
+\codeblock{TradNbDemo.4}
+%
+Note that the result is an instance of \code{JointClassification},
+which is the richest classification result defined in LingPipe.  The
+joint classification provides a ranking of results, and for each
+provides the conditional probability of the category given the text as
+well as the log (base 2) of the joint probability of the category and
+the text.  These are pulled off by iterating over the ranks and
+then pulling out the rank-specific values.  After that, we print them
+in code that is not shown.
+
+\subsubsection{Running the Demo}
+
+The code is set up to be run from Ant using the target \code{nb-demo},
+reading the value of property \code{text} for the text to be classified.
+for instance, if we want to classify the laugh \stringmention{hee hee},
+we would call it as follows.
+%
+\commandlinefollow{ant -Dtext="hee hee" nb-demo}
+\begin{verbatim}
+Input=|hee hee|
+Rank= 0  cat=hers  p(c|txt)=0.87  log2 p(c,txt)= -2.66
+Rank= 1  cat= his  p(c|txt)=0.13  log2 p(c,txt)= -5.44
+\end{verbatim}
+%
+Our classifier estimates an 87\% chance that \stringmention{hee hee} was
+her laugh and not his, and thus it is the top-ranked answer (note that
+we count from 0, as usual).  We will not worry about the joint
+probabilities for now.  
+
+\subsubsection{Ignores Unknown Tokens}
+
+The naive Bayes model as set up in LingPipe's
+\code{TradNaiveBayesClassifier} class follows the standard practice
+of ignoring all tokens that were not seen in the training data.  So
+if we set the text to \stringmention{hee hee foo}, we get exactly
+the same output, because the token \stringmention{foo} is simply
+ignored.
+
+This may be viewed as a defect of the generative model, because it
+doesn't generate the entire text.  We have the same problem if the
+tokenizer reduces, say by case normalizing or stemming or stoplisting
+--- we lose the connection to the original text.  Another way of
+thinking of naive Bayes is as classifying bags of tokens drawn
+from a known set. 
+
+
+
+
+
 

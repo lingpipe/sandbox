@@ -32,6 +32,16 @@
     </jar>
   </target>
 
+  <property name="text" value="hardy haw haw"/>
+  <target name="nb-demo"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.TradNbDemo"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
+
   <target name="run"
           depends=""/>
 
