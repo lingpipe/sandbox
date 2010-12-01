@@ -257,7 +257,7 @@ Pattern.compile(".").matcher("\n").matches()
 Unicode defines a range of categories for characters, such as the
 category \code{Lu} of uppercase letters (see
 \refsec{unicode-categories} for more information).  The regular
-expression \code{p\{\codeVar{X}\}} matches any unicode character
+expression \code{{\bk}p\{\codeVar{X}\}} matches any unicode character
 belonging to the Unicode category \codeVar{X}.  For example,
 the class \code{Lu} picks out uppercase letters, so we have
 %
@@ -267,6 +267,9 @@ Regex=|\p{Lu}|    Text=|A|    Matches=true
 \end{verbatim}
 %
 
+Using a capital letter complements the category; for instance,
+\code{{\bk}p\{Lu\}} matches uppercase letters, whereas
+\code{{\bk}P\{Lu\}} matches any character except an uppercase letter.
 
 \subsection{ASCII Classes}
 
