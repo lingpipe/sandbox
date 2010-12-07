@@ -2,9 +2,23 @@
 
 So-called naive Bayes classifiers are neither naive nor, under their
 usual realization, Bayesian.  In this chapter, we will focus on
-LingPipe's implementation of the traditional naive Bayes classifier.
+LingPipe's implementation of the traditional naive Bayes classifier,
+only returning the other naive Bayes-like classifier after we have
+covered language models and the general language-model classifiers.
 
-\section{Naive Bayes Basics}
+After covering the basic modeling assumptions of naive Bayes, we
+provide a simple example to help you get started.  The rest of the
+chapter considers the details of the API, how to tune and evaluate a
+naive Bayes model, and how to use it in a semi-supervised setting with
+small amounts of training
+
+
+
+\section{Introduction to Naive Bayes}
+
+The theory of naive Bayes classifiers is based on several fairly
+restrictive assumptions about the classification problem.  This
+section lays out the basics.
 
 \subsection{Texts as Bags of Words}
 
@@ -179,14 +193,14 @@ estimates, which are dangerous in practice for reasons we explain
 below.
 
 
-\subsection{Getting Started with Naive Bayes}
+\section{Getting Started with Naive Bayes}
 
 LingPipe has two naive Bayes implementations.  In this section, we
 focus on the traditional implementation of naive Bayes, which is found
 in the LingPipe class \code{TradNaiveBayes} in the package
 \code{com.aliasi.classify}.  
 
-\subsubsection{Laugh Classification: His or Hers?}
+\subsection{Laugh Classification: His or Hers?}
 
 Our example involves classifying laughs based on whether they were
 produced by a man (his) or his wife (hers).  The manly laugh consists
@@ -202,7 +216,7 @@ data, which is not actually inconsistent under a probabilistic model.
 It's a matter of who's most likely to utter what, not that they
 can't utter the same laughs.
 
-\subsubsection{Setting up the Classifier}
+\subsection{Setting up the Classifier}
 
 The basic functionality of the naive Bayes classifier class can be
 gleaned from a simple demo program which shows how the model is
@@ -228,7 +242,7 @@ consisting of the categories his and hers.  The classifier is
 constructed using the categories and tokenizer factory.
 
 
-\subsubsection{Providing Training Data}
+\subsection{Providing Training Data}
 
 At this point, we are ready to train the classifier using training
 data.  For the demo, we just hard code the training data.  Each
@@ -275,7 +289,7 @@ of each category.
 We do the same thing for training the classifier for his laughs,
 so there's no need to show that code.
 
-\subsubsection{Performing Classification}
+\subsection{Performing Classification}
 
 Once we've trained our classifier with examples of his laughs and
 her laughs, we are ready to classify a new instance.  This is
@@ -293,7 +307,7 @@ the text.  These are pulled off by iterating over the ranks and
 then pulling out the rank-specific values.  After that, we print them
 in code that is not shown.
 
-\subsubsection{Running the Demo}
+\subsection{Running the Demo}
 
 The code is set up to be run from Ant using the target \code{nb-demo},
 reading the value of property \code{text} for the text to be classified.
@@ -312,7 +326,7 @@ her laugh and not his, and thus it is the top-ranked answer (note that
 we count from 0, as usual).  We will not worry about the joint
 probabilities for now.  
 
-\subsubsection{Unknown Tokens}
+\subsection{Unknown Tokens}
 
 The naive Bayes model as set up in LingPipe's
 \code{TradNaiveBayesClassifier} class follows the standard practice
@@ -327,6 +341,178 @@ tokenizer reduces, say by case normalizing or stemming or stoplisting
 --- we lose the connection to the original text.  Another way of
 thinking of naive Bayes is as classifying bags of tokens drawn
 from a known set. 
+
+
+\section{Independence, Overdispersion and Probability Attenuation}
+
+Although naive Bayes returns probability estimates for categories
+given texts, these probability estimates are typically very poorly
+calibrated for all but the shortest texts.  The underlying problem is
+the independence assumption underlying the naive Bayes model, which
+is not satisfied with natural language text.  
+
+A simple example should help.  Suppose we have newswire articles about
+sports.  For instance, as I write this, the lead story on the {\it New
+  York Times} sports page is about the player Derek Jeter's contract
+negotiations with the New York Yankees baseball team.  This article
+mentions the token \stringmention{Jeter} almost 20 times, or about
+once every 100 words or so.  If the independence assumptions
+underlying naive Bayes were correct, the odds against this happening
+would be astronomical.  Yet this article is no different than many
+other articles about sports, or about any other topic for that matter,
+that focus on a small group of individuals.
+
+In the naive Bayes model, the probability of seeing the word
+\stringmention{Jeter} in a document is conditionally independent of
+the other words in the document.  The words in a document are
+not strictly independent of each other, but they are independent
+of each other given the category of the document.  In other words,
+the naive Bayes model assumes that in documents about sports,
+the word \stringmention{Jeter} occurs at a constant rate.  In
+reality, the term \stringmention{Jeter} occurs much more frequently
+about baseball, particularly ones about the Yankees.
+
+The failure of the independence assumption for naive Bayes manifests
+itself in the form of inaccurate probability assignments.  Luckily,
+naive Bayes classifiers work better for first-best classification than
+one might expect given the violation of the assumptions on which the
+model is based.  What happens is that the failed independence
+assumption mainly disturbs the probabiilty assignments to different
+categories given the texts, not the rankings of these categories.
+
+Using our example from the previous section of the his and hers
+laughter classifier, we can easily demonstrate the effect.  The
+easiest way to see this is duplicating the input.  For instance,
+consider classifying \stringmention{hee hee haw}, using
+%
+\commandlinefollow{ant -Dtext="hee hee haw" nb-demo}
+\begin{verbatim}
+Rank= 0  cat=hers  p(c|txt)=0.79
+Rank= 1  cat= his  p(c|txt)=0.21
+\end{verbatim}
+%
+If we simply double the input to \stringmention{hee hee haw hee hee haw},
+note how the probability estimates become more extreme.
+%
+\commandlinefollow{ant -Dtext="hee hee haw hee hee haw" nb-demo}
+\begin{verbatim}
+Rank= 0  cat=hers  p(c|txt)=0.94
+Rank= 1  cat= his  p(c|txt)=0.06
+\end{verbatim}
+%
+Just by duplicating the text, our estimate of the laugh being hers
+jumps from 0.79 to 0.94.  The same thing happens when Derek Jeter's
+called out twenty times in a news story.
+
+Because naive Bayes is using statistical inference, it is reasonable
+for the category probability estimates to become more certain when
+more data is observed.  The problem is just that certainty grows
+exponentially with more data in naive Bayes, which is a bit too fast.
+As a result, naive Bayes typically grossly overestimates or
+underestimates probabilities of categories for documents.  And
+the effect is almost always greater for longer documents.
+
+\section{Tokens, Counts and Sufficient Statistics}
+
+Document length per se is not itself a factory in naive Bayes models.
+It only comes into play indirectly by adding more tokens.  In general,
+there are only two pieces of information that the naive Bayes classifier
+uses for training:
+%
+\begin{enumerate}
+\item The bag of tokens for each category derived from combining all
+  training examples, and
+\item The number of training examples per category.
+\end{enumerate}
+%
+As long as we hold the number of examples per category constant, we
+can rearrange the positions of tokens in documents.  For instance,
+we could replace his examples
+%
+\codeblock{FragmentsNb.1}
+%
+with
+%
+\codeblock{FragmentsNb.2}
+%
+of even
+%
+\codeblock{FragmentsNb.3}
+%
+with absolutely no effect the resulting classifier's behavior.  Neither
+the order of tokens or their arrangement into documents is considered.
+
+The latter example shows that the empty string is a perfectly good
+training example; although it has no tokens (under most sensible
+tokenizers anyway), it does provide an example of him laughing and ups
+the overall probability of the laugher being him rather than her.
+That is, the last sequence of three training example is not equivalent to
+using a single example with the same tokens,
+%
+\codeblock{FragmentsNb.4}
+
+
+
+\section{Unbalanced Category Probabilities}
+
+In the simple example of laugh classification, we used the same number
+of training examples for his laughs and her laughs.  The quantity
+under consideration is the number of times \code{handle()} was
+called, that is the total number of texts used to train each category,
+not the number of tokens.
+
+The naive Bayes classifier uses the information gained from the number
+of training instances for each category.  If we know that she is more
+likely to laugh than him, we can use that information to make better
+predictions.  
+
+In the example above, with balanced training sizes, if we provide no
+input, the classifier is left with only prevalence to go by, and
+returns a 50\% chance for him or her, because that was the balance of
+laughs in the training set.  The following invocation uses a text
+consisting of a single space (no tokens).%
+%
+\footnote{The program accepts the empty string, but Ant's notion of
+  command-line arguments don't; empty string values for the \code{arg}
+  element for the \code{java} task are just ignored, as in
+  \code{<arg value=""/>}.}
+%
+\commandlinefollow{ant -Dtext=" " nb-demo}
+\begin{verbatim}
+Rank= 0  cat=hers  p(c|txt)=0.50
+Rank= 1  cat= his  p(c|txt)=0.50
+\end{verbatim}
+%
+
+Now let's consider what happens when we modify our earlier demo
+to provide two training examples for her and three for him.  The
+resulting code is in class \code{CatSkew}, which is identical
+to our earlier example except for the data,
+%
+\codeblock{TradNbSkewedTrain.1}
+%
+\codeblock{TradNbSkewedTrain.2}
+%
+Note that we have used exactly the same tokens as the first
+time to train each category.  
+
+
+Now if we input a text with no tokens, we get a different estimate.
+%
+\commandlinefollow{ant -Dtext=" " cat-skew}
+\begin{verbatim}
+Rank= 0  cat= his  p(c|txt)=0.58
+Rank= 1  cat=hers  p(c|txt)=0.42
+\end{verbatim}
+%
+You might be wondering why the resulting estimate is only 58\% likely
+to be his laugh when 60\% of the training examples were his.  The
+reason has to do with smoothing, to which we turn in the next section.
+
+It is important to keep in mind that the training data
+
+
+
 
 
 

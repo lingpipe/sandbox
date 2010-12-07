@@ -42,8 +42,18 @@
     </java>
   </target>
 
+  <target name="cat-skew"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.CatSkew"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
+
   <target name="run"
-          depends=""/>
+          depends="nb-demo,
+                   cat-skew"/>
 
 
 </project>
