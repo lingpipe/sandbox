@@ -241,16 +241,11 @@ whether or not the \code{DOTALL} flag is set (see
 end-of-line sequences.  The following two expressions evaluate to
 \code{true},
 %
-\begin{verbatim}
-Pattern.compile(".").matcher("A").matches()
-Pattern.compile(".",DOTALL).matcher("\n").matches()
-\end{verbatim}
+\codeblock{FragmentsRegex.1}
 %
 whereas the following expression evaluates to \code{false},
 %
-\begin{verbatim}
-Pattern.compile(".").matcher("\n").matches()
-\end{verbatim}
+\codeblock{FragmentsRegex.2}
 
 \subsection{Unicode Classes}\label{section:regex-unicode-classes}
 
