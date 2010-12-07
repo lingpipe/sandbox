@@ -40,16 +40,16 @@ public class TradNbDemo {
         List<String> herTexts
             = Arrays.asList("haw hee", "hee hee hee haw", "haw");
 
-        for (String txt : herTexts)
-            classifier.handle(new Classified<CharSequence>(txt,hersCl));
+        for (String t : herTexts)
+            classifier.handle(new Classified<CharSequence>(t,hersCl));
         /*x*/
 
 
         Classification hisCl = new Classification("his");
         List<String> hisTexts 
             = Arrays.asList("haw", "haw hee haw", "haw haw");
-        for (String txt : hisTexts)
-            classifier.handle(new Classified<CharSequence>(txt,hisCl));
+        for (String t : hisTexts)
+            classifier.handle(new Classified<CharSequence>(t,hisCl));
 
 
         System.out.printf("Input=|%s|\n",text);

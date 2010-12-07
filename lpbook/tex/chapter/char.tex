@@ -266,7 +266,7 @@ the sequence of bytes \code{0x00}, \code{0x41}.
 
 Code points at or above \unicode{10000} are represented using four
 bytes arranged in two pairs.  Calculating the two pairs of bytes
-involves bit-twiddling.  For instance, given a code point
+involves bit-twiddling.  For instance, given an integer code point
 \code{codepoint}, the following code
 calculates the four bytes.
 %
@@ -276,28 +276,12 @@ their FAQ at
 \urldisplay{http://unicode.org/faq/utf\_bom.html}
 }
 %
-\begin{verbatim}
-static final int LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
-static final int SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
-
-int lead = LEAD_OFFSET + (codepoint >> 10);
-int trail = 0xDC00 + (codepoint & 0x3FF);
-
-int byte1 = lead >>> 8;
-int byte2 = lead & 0xFF;
-int byte3 = trail >>> 8;
-int byte4 = trail & 0xFF;
-\end{verbatim}
+\codeblock{FragmentsChars.6}
 %
-Going the other way around, given the four bytes, we
-can calculate the code point with the following code.
+Going the other way around, given the four bytes (as integer
+variables), we can calculate the code point with the following code.
 %
-\begin{verbatim}
-int lead = byte1 << 8 | byte2;
-int trail = byte3 << 8 | byte4;
-
-int codepoint = (lead << 10) + trail + SURROGATE_OFFSET;
-\end{verbatim}
+\codeblock{FragmentsChars.7}
 
 Another way to view this transformation is through the following
 table.%
@@ -578,15 +562,11 @@ encoded value padded to four characters with leading zeroes.
 
 For instance, instead of writing
 
-\begin{verbatim}
-int n = 1;
-\end{verbatim}
+\codeblock{FragmentsChars.8}
 %
 we could write
 %
-\begin{verbatim}
-\u0069\u006E\u0074\u0020\u006E\u0020\u003D\u0020\u0031\u003B
-\end{verbatim}
+\codeblock{FragmentsChars.9}
 %
 and it would behave exactly the same way, because \charmention{i} is
 \unicode{0069}, \charmention{n} is \unicode{006E}, \charmention{t} is
@@ -619,9 +599,7 @@ literals.  Any character wrapped in single quotes is treated as
 a character in a program.  For instance, we can assign a character
 to a variable with 
 %
-\begin{verbatim}
-char c = 'a'; 
-\end{verbatim}
+\codeblock{FragmentsChars.10}
 %
 Given the availability of arbitrary Unicode characters in Java
 programs using the syntax \code{{\bk}u}\codeVar{xxxx}, it's easy
@@ -629,17 +607,15 @@ to assign arbitrary Unicode characters.  For instance,
 to assign the variable \code{c} to the character \charmention{\`a},
 \unicode{00E0}, use
 %
+\codeblock{FragmentsChars.11}
 \begin{verbatim}
-char c = '\u00E0'; 
 \end{verbatim}
 %
 Equivalently, because values of type \code{char} act like unsigned
 short integers, it's possible to directly assign integer values
 to them, as in
 %
-\begin{verbatim}
-char c = 0x00E0;
-\end{verbatim}
+\codeblock{FragmentsChars.12}
 %
 The expression \code{{\bk}0x00E0} is an integer literal in hexadecimal
 notation.  In general, the compiler will infer which kind of integer
@@ -690,9 +666,7 @@ to assign the newline character to the variable \code{c}.
 
 A character expression may be assigned to an integer result, as in
 %
-\begin{verbatim}
-int n = 'a';
-\end{verbatim}
+\codeblock{FragmentsChars.13}
 %
 After this statement is executed, the value of the variable \code{n}
 will be 97.  This is often helpful for debugging, because it allows
@@ -1000,15 +974,11 @@ Passing an index that's out of range raises an
 \code{java.lang} package.
 
 Indexing from position zero (inclusive) to length (exclusive) supports
-the conventional \code{for} loop for iterating over items in a sequence,
+the conventional \code{for} loop for iterating over items in a sequence.
+For instance, if \code{cs} is a variable of type \code{CharSequence},
+we can loop
 %
-\begin{verbatim}
-CharSeqeunce cs = ...;
-for (int i = 0; i < cs.length(); ++i) {
-    char c = cs.charAt(i);
-    ...
-}
-\end{verbatim}
+\codeblock{FragmentsChars.14}
 %
 Because lengths are instances of \code{int}, are only allowed to be as
 long as the longest positive \code{int} value, $2^{32-1} - 1$, which
@@ -1134,18 +1104,14 @@ its \code{newDecoder()} method to get a \code{CharSetDecoder}.
 In Java code, strings may be represented as characters surrounded
 by double quotes.  For instance,
 %
-\begin{verbatim}
-String name = "Fred";
-\end{verbatim}
+\codeblock{FragmentsChars.15}
 %
 The characters between the quotes can be any characters in the Java
 program.  Specifically, they can be Unicode escapes, so we could've
 written the above replacing \code{F} and \code{e} with Unicode
 escapes, as in
 %
-\begin{verbatim}
-String name = "\u0046r\u0065d";
-\end{verbatim}
+\codeblock{FragmentsChars.16}
 
 In practice, string literals essentially create static constants for
 the strings.  Because strings are immutable, the value of string
@@ -1195,12 +1161,7 @@ way words are sorted in dictionaries.  The easiest way to define
 lexicographic sort is with code, here comparing strings \code{s}
 and \code{t}.
 %
-\begin{verbatim}
-for (int i = 0; i < Math.min(s.length(),t.length()); ++i)
-    if (s.charAt(i) != t.charAt(i))
-        return s.charAt(i) - t.charAt(i);
-return s.length() - t.length();
-\end{verbatim}
+\codeblock{FragmentsChars.17}
 
 We walk over both strings from the beginning until we find a position
 where the characters are different, at which point we return the
@@ -1221,11 +1182,7 @@ the same length, we return zero, because they are equal.
 
 The hash code for a string \code{s} is computed as if by
 %
-\begin{verbatim}
-int hashCode = 0;
-for (int i = 0; i < s.length(); ++i)
-    hashCode = 31 * hashCode + s.charAt(i);
-\end{verbatim}
+\codeblock{FragmentsChars.18}
 %
 This definition is consistent with equals in that two equal strings
 have the same character sequence, and hence the same hash code.
@@ -1453,15 +1410,10 @@ builder pattern for strings, where after adding content, \code{toString()}
 is used to construct a string based on the buffered values.
 
 A typical use would be to create a string by concatenating the members
-of an array, as in
+of an array, as in the following, where \code{xs} is an array of
+strings of type \code{String[]},
 %
-\begin{verbatim}
-String[] xs = ...;
-StringBuilder sb = new StringBuilder();
-for (String x : xs)
-    sb.append(x);
-String s = sb.toString();
-\end{verbatim}
+\codeblock{Fragmentschars.19}
 %
 First a string builder is created, then values are appended to it,
 then it is converted to a string.  When a string builder is converted

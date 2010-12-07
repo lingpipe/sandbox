@@ -161,14 +161,9 @@ absolute path with a conventionalized name.  For instance, if I happen
 to be running in directory \code{c:{\bk}lpb} (on Windows), then the
 following two expressions return equivalent files
 %
-\begin{verbatim}
-new File("c:\lpb\Foo").getCanonicalPath()
-\end{verbatim}
+\codeblock{FragmentsIo.3}
 %
-%
-\begin{verbatim}
-new File("foo").getCanonicalPath();
-\end{verbatim}
+\codeblock{FragmentsIo.4}
 %
 Note that this is not truly a unique normal form.  The resulting files
 will have different capitalizations for \code{foo} in this case, but
@@ -438,15 +433,7 @@ are declared to throw the more general \code{IOException}, you'll want
 to catch the \code{FileNotFoundException} first.  For example, it's
 legal to write
 %
-\begin{verbatim}
-try {
-    in = new FileInputStream(file);
-} catch (FileNotFoundException e) { 
-    ...
-} catch (IOException e) {
-    ...
-}
-\end{verbatim}
+\codeblock{FragmentsIo.5}
 %
 In general, you have to order the catches from more specific to mroe
 general.  If you try to catch the I/O exception before the file not
@@ -602,28 +589,12 @@ assigned may be null.
 The typical idiom for closing a \code{Closeable} may be illustrated
 with an input stream
 %
-\begin{verbatim}
-InputStream in = null;
-try {
-    in = new FileInputStream(file);
-    ...
-} finally {
-    if (in != null) {
-        in.close();
-    }
-}
-\end{verbatim}
+\codeblock{FragmentsIo.6}
 %
 Sometimes, the close method itself is wrapped to suppress
 warnings, as in
 %
-\begin{verbatim}
-try {
-    in.close();
-} catch (IOException e) {
-    /* ignore exception */
-}
-\end{verbatim}
+\codeblock{FragmentsIo.7}
 %
 Note that even if the close method is wrapped, the operations in the
 try block may throw I/O exceptions.  To remove these, I/O exceptions
@@ -638,16 +609,7 @@ LingPipe provides a utility method
 tests for null and swallows I/O exceptions for close operations.
 Basically, it's defined as follows.
 %
-\begin{verbatim}
-static void close(Closeable c) {
-    if (c == null) return;
-    try {
-        c.close();
-    } catch (IOException e) {
-        /* ignore exception */
-    }
-}
-\end{verbatim}
+\codeblock{FragmentsIo.8}
 %
 If you need to log stream closing exceptions, a similar method may
 be implemented with logging in the catch operation and a message to
@@ -728,17 +690,12 @@ stream.
 
 \subsection{The \code{InputStreamReader} Class}\label{section:io-inputstreamreader}
 
-Given an input stream and a character encoding, an instance
-of \code{InputStreamReader} may be constructed to read characters.
-The usual idiom is
+Given an input stream and a character encoding, an instance of
+\code{InputStreamReader} may be constructed to read characters.  The
+usual idiom given that \code{encoding} is an instance of \code{String}
+and \code{in} an instance of \code{InputStream} is
 %
-\begin{verbatim}
-String encoding = ...;
-InputStream in = ...;
-Reader reader = new InputStreamReader(in,encoding);
-...
-reader.close();
-\end{verbatim}
+\codeblock{FragmentsIo.9}
 %
 The operations ellided in the middle may then use the reader to
 retrieve character-based data.  Instances may also be constructed from
@@ -822,9 +779,13 @@ Both the input and output file streams declare finalizer methods which
 may release any system resources when the related stream is no longer
 in scope.  The problem with finalization is that it's not guaranteed
 to happen until the JVM on which the code was running is terminated.
-In any case, whether it exits normally or not, the operating system
-will recover any process-specific file handles.
 
+In any case, whether it exits normally or not, the operating system
+will recover any process-specific file handles.  Thus short-lived
+processes like simple commands do not need to be as careful about
+recovering file-based resources as long-running server processes.  In
+any case, the best the code can do is close all streams as soon as
+they are no longer needed, even in the face of exceptions.
 
 
 \subsection{File Descriptors}\label{section:io-file-descriptors}
@@ -948,20 +909,18 @@ character streams, \code{BufferedReader} and \code{BufferedWriter}
 
 \subsection{Constructing Buffered Streams}
 
-The buffered byte streams have constructors
-\code{BufferedInputStream(InputStream,int)} and
-\code{BufferedOutputStream(OutputStream,int)} that wrap a specified
-stream and use a buffer of the specified size to hold bytes.  
-The buffer sizes may be dropped, in which case a default size is used.
+The constructor \code{BufferedInputStream(InputStream,int)} creates a
+buffered input stream wrapping the specified input stream with the
+specified buffer size (in bytes).  The constructor
+\code{BufferedOutputStream(OutputStream,int)} performs the same role
+for output streams.  There are also one-argument constructors for
+which the buffer sizes may be dropped, in which case a default size is
+used.
 
 For example, we may created a buffered input stream from
-a file input stream using
+a file input stream given a \code{File} instance \code{file} with
 %
-\begin{verbatim}
-File file = ...;
-InputStream in = new FileInputStream(file);
-InputStream bufIn = new BufferedInputStream(in);
-\end{verbatim}
+\codeblock{FragmentsIo.10}
 %
 The variable \code{bufIn} is then used where the unbuffered stream
 \code{in} would've been used.  By assigning all these streams of
@@ -1003,19 +962,15 @@ the file input or output streams.
 By this same line of reasoning, if a byte stream is converted to a
 character stream or vice versa, buffering is not required at both
 places.  Usually, the buffer is placed later in the chain, around the
-reader or writer, as in
+reader or writer, as in the following examples.%
 %
-\begin{verbatim}
-InputStream in = new FileInputStream(file);
-Reader reader = new InputStreamReader(in,"UTF-8");
-BufferedReader bufReader = new BufferedReader(isReader);
-\end{verbatim}
+\footnote{We use UTF-8 encoding so frequently that LingPipe provides the
+  static final string constant \code{Strings.UTF8} to use to specify
+  UTF-8 encodings.}
 %
-\begin{verbatim}
-OutputStream out = new FileOutputStream(file);
-Writer writer = new OutputStreamWriter(out,"UTF-8");
-BufferedWriter bufWriter = new BufferedWriter(writer);
-\end{verbatim}
+\codeblock{FragmentsIo.1}
+%
+\codeblock{FragmentsIo.2}
 
 \subsection{Line-Based Reads}
 
@@ -1508,7 +1463,7 @@ the classpath in a number of prespecified locations based on its name.
 The sample program \code{ResourceInput} reads the content of a
 resource from the classpath and writes it to the standard output.
 The part of the \code{main()} method that gets the resource as
-an input streami is
+an input stream is
 %
 \codeblock{ResourceInput.1}
 %
@@ -1521,11 +1476,11 @@ also important because the rules for locating the resource depend on
 the particular class loader used to load the class.
 
 If the name begins with a forward slash (\code{/}), it is taken to be
-an absolute path name.  Otherwise, it is a relative path.  Relative
-paths are interpreted relative to the package name of the class from
-which the get method was called.  Specifically, the package name of
-the class using forward slashes as separators is used a prefix for the
-name.  
+an absolute path name (absolute in the classpath, not in the file
+system).  Otherwise, it is a relative path.  Relative paths are
+interpreted relative to the package name of the class from which the
+get method was called.  Specifically, the package name of the class
+using forward slashes as separators is used a prefix for the name.
 
 The Ant target \code{resource-input} look for a resource with the name
 given by property \code{resource.name}, adding the archive named by
@@ -1621,7 +1576,7 @@ default locale will be used.  The locale impacts the printing of
 things like dates and decimal numbers, which are conventionally
 printed differently in different places.  Although we are obsessive
 about maintaining unadulterated character data and work in many
-languages, a discussion of the intricacies f application
+languages, a discussion of the intricacies of application
 internationalization is beyond the scope of this book.
 
 For example, the sample program \code{FileByteCount} (see
@@ -1694,9 +1649,7 @@ to reset their character encodings.  For example, to reset standard
 output to use UTF-8, insert the following statement before any
 output is produced,
 %
-\begin{verbatim}
-System.setOut(new PrintStream(System.out,true,"UTF-8"));
-\end{verbatim}
+\codeblock{FragmentsIo.11}
 %
 The value \code{true} enables auto-flushing.  The new standard
 output wraps the old standard output in a new print stream
@@ -1706,9 +1659,7 @@ The output streams may be similarly redirected to files by using a
 \code{PrintStream} constructed from a file in the same way.  For
 example,
 %
-\begin{verbatim}
-System.setErr(new PrintStream("stdout.utf8.txt","UTF-16BE"));
-\end{verbatim}
+\codeblock{FragmentsIo.12}
 %
 sends anyting the program writes to the standard error stream to the
 file \code{stdout.utf8.txt}, using the UTF-16BE character encoding
@@ -1727,12 +1678,7 @@ reconstruct for Java commands.  Suppose we have a variable \code{file}
 that is initialized to a file or \code{null} if the command is to
 write an output
 %
-\begin{verbatim}
-PrintStream out 
-    = (file != null)
-    ? new PrintStream(new FileOutputStream(file))
-    : System.out;
-\end{verbatim}
+\codeblock{FragmentsIo.13}
 %
 If the file is non-null, an output stream for it is wrapepd
 in a print stream, otherwise the standard output is used.
@@ -1816,7 +1762,7 @@ toString()=http://google.com/webhp?q=dirichlet
 \end{verbatim}
 %
 Looking over the output shows how the URL is parsed into components
-suc as host, path and query.
+such as host, path and query.
 
 \subsection{Reading from URLs}
 
@@ -1906,9 +1852,9 @@ reader.
 There is a constructor for each mode of input specification.
 \code{InputSource(String)} may be used with a system identifier in the
 form of a URL, and \code{InputSource(InputStream)} and
-\code{InputSource(Reader)} for stream data.  We recommend using one
-of these constructors and not the corresponding setters.
-immutable. 
+\code{InputSource(Reader)} for stream data.  Although input sources
+are not immutable, we recommend using a detailed constructor rather
+than a simple constructor followed by setters.
 
 There is also a no-argument constructor \code{InputSource()} and
 setters for each of the input types.  The setters
@@ -2011,7 +1957,7 @@ We then reverse the process to read the object back in,
 %
 \codeblock{ObjectIo.2}
 %
-First, we get the bytes that were written frmo the byte array
+First, we get the bytes that were written from the byte array
 output stream and use them to create a byte array input stream.%
 %
 \footnote{Note that we assign variables to the most general type possible;
@@ -2045,13 +1991,13 @@ file.getCanonicalPath()=C:\lpb\src\io\foo    s=bar    n=42
 
 \subsection{The \code{Serializable} Interface}
 
-The \code{Serializable} interface in package \code{java.io} is 
-what's known as a marker interface.  The marker pattern involves
-an interface, such as \code{Serializable}, which declares no
-methods.  The interface is used to treat classes that implement
-it differently in some contexts.  The object input and output
-classes use the \code{Serializable} marker interface to determine
-if a class should be serialized or not.  
+The \code{Serializable} interface in package \code{java.io} is what's
+known as a marker interface.  The marker pattern involves an
+interface, such as \code{Serializable}, which declares no methods.
+The interface is used to treat classes that implement it differently
+in some contexts.  The object input and output classes use the
+\code{Serializable} marker interface to determine if a class can be
+serialized or not.
 
 When a class is serialized, its fully qualified path name is written
 out as if by the \code{writeUTF()} method.  A 64-bit serial version
@@ -2059,14 +2005,14 @@ identifier is also written.  Then data representing the state of
 the class is written.
 
 All that is strictly necessary to make a class serializable is to
-declare it to implement the \code{Serializable} interface and meet a
-few additional conditions described below.  If nothing else is
-specified, the serial version identifier will be computed from the
-class's signature, including the signature of its parents and
-implemented interfaces.  If nothing else is done, the state of the
-class is serialized by serializing each of its member objects and
-writing each of its primitive member variables, including all those
-inherited from parent classes.
+declare it to implement the \code{Serializable} interface, although it
+must also meet a few additional conditions described below.  If
+nothing else is specified, the serial version identifier will be
+computed from the class's signature, including the signature of its
+parents and implemented interfaces.  If nothing else is done, the
+state of the class is serialized by serializing each of its member
+objects and writing each of its primitive member variables, including
+all those inherited from parent classes.
 
 The first condition for default serializability is that all of the
 class's member variables (including those of its superclasses)
@@ -2089,7 +2035,7 @@ write the objects.  If you change the member variables, method
 declarations, subclasses, etc., it will interfere with
 deserialization.  The second version requirement is that the major
 version of Java being used to deserialize must be at least as great
-as that used to deserialize.  Thus it is not possible to serialize in
+as that used to serialize.  Thus it is not possible to serialize in
 Java version 6 and deserialize in version 5.
 
 
@@ -2244,16 +2190,10 @@ For convenience, the \code{FileLineReader} class implements the
 \code{Iterable<String>} interface, with \code{iterator()} returning an
 \code{Iterator<String>} that iterates over the lines produced by the
 \code{readLine()} method inherited from \code{BufferedReader}.  Being
-iterable enables for-loop syntax, as in
+iterable enables for-loop syntax, so that if \code{file} is an
+instance of \code{File}, the standard idiom for reading lines is
 %
-\begin{verbatim}
-File file = ...;
-FileLineReader lines = new FileLineReader(file,"UTF-8");
-for (String line : lines) {
-    ...
-}
-lines.close();
-\end{verbatim}
+\codeblock{FragmentsIo.14}
 %
 The ellided code block will then perform some operation on each line.
 
@@ -2302,10 +2242,7 @@ methods for strings, \code{readFromFile(File,String)} and
 \code{writeStringToFile(String,File,String)}.  Together, we can
 use these methods to transcode from one encoding to another,
 %
-\begin{verbatim}
-char[] cs = Files.readCharsFromFile(fileIn,enc1);
-Files.writeCharsToFile(cs,fileOut,enc2);
-\end{verbatim}
+\codeblock{FragmentsIo.15}
 
 
 \subsection{The \code{Streams} Utility Class}

@@ -94,10 +94,8 @@ can be read from a tokenizer with a for loop.  Given a tokenizer
 factory \code{tokFac} and the character slice for input, the
 usual idiom is
 %
-\begin{verbatim}
-Tokenizer tokenizer = tokFac.tokenizer(cs,start,length);
-for (String token : tokenizer) { ... }
-\end{verbatim}
+\codeblock{FragmentsTok.3}
+
 
 \subsubsection{Bulk Tokenization}
 
@@ -471,15 +469,7 @@ produce a tokenizer which is then passed through the method
 \code{modify(Tokenizer)}, which returns a \code{Tokenizer} that may
 then be returned.  This is perhaps easier to see in code,
 %
-\begin{verbatim}
-protected abstract Tokenizer modify(Tokenizer tokenizer);
-
-public Tokenizer tokenizer(char[] cs, int start, int length) {
-    TokenizerFactory tokFact = baseTokenizerFactory();
-    Tokenizer tok = tokFact.tokenizer(cs,start,length);
-    return modify(tok);
-}
-\end{verbatim}
+\codeblock{FragmentsTok.4}
 
 \subsubsection{Serialization}
 
@@ -602,11 +592,7 @@ The class is used like other filters.  For instance, to create a
 tokenizer factory that returns lowercase tokens produced the
 Indo-European tokenizer using German lowercasing, just use
 %
-\begin{verbatim}
-TokenizerFactory f = IndoEuropeanTokenizerFactory.INSTANCE;
-Locale loc = Locale.GERMAN;
-TokenizerFactory fact = new LowerCaseTokenizerFactory(f,loc);
-\end{verbatim}
+\codeblock{FragmentsTok.5}
 
 Instances will be serializable if the base tokenizer factory is
 serializable.  Serialization stores the locale using its built-in
@@ -639,20 +625,13 @@ tokenizers are constructed by wrapping a base tokenizer and providing
 a stop list.  For instance, to remove the words \stringmention{the} and
 \stringmention{be}, we could use
 %
-\begin{verbatim}
-Set<String> stopSet = CollectionUtils.asSet("the","be");
-TokenizerFactory f1 = IndoEuropeanTokenizerFactory.INSTANCE;
-TokenizerFactory f2 = new LowerCaseTokenizerFactory(f1);
-TokenizerFactory f3 = new StopTokenizerFactory(f2,stopSet);
-\end{verbatim}
+\codeblock{FragmentsTok.6}
 %
 The first line uses the static utility method \code{asSet()}
 in the LingPipe utility class \code{CollectionUtils}.  This
 method is defined with signature 
 %
-\begin{verbatim}
-static <E> HashSet<E> asSet(E... es);
-\end{verbatim}
+\codeblock{FragmentsTok.7}
 %
 so that it takes a variable-length number of \code{E} objects and
 returns a hash set of that type.  Because Java performs type inference
@@ -720,12 +699,9 @@ An instance of \code{RegExFilteredTokenizerFactory} may be constructed
 from a base tokenizer factory and a \code{Pattern} (from
 \code{java.util.regex}).  For instance, we could retain only tokens
 that started with capital letters (as defined by Unicode) using
+the following code for a variable \code{f} of type \code{TokenizerFactory},
 %
-\begin{verbatim}
-TokenizerFactory f = ...;
-Pattern p = Pattern.compile("\p{Lu}.*");
-TokenizerFactory f2 = new RegExFilteredTokenizerFactory(f,p);
-\end{verbatim}
+\codeblock{FragmentsTok.8}
 %
 We could just as easily retain only tokens that didn't start with an
 uppercase letter by using the regex \code{[\^{\bk}p\{Lu\}].*} instead
