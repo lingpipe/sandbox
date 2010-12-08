@@ -32,4 +32,14 @@ class FragmentsNb {
     }
         
 
+    void a5() {
+        /*x FragmentsNb.5 */
+        List<String> hisTexts 
+            = Arrays.asList("haw", "har har", "hee haw haw");
+
+        List<String> herTexts 
+            = Arrays.asList("tee hee", "hee hee", "hee hee haw");
+        /*x*/
+    }
+
 }
