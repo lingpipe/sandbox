@@ -509,10 +509,54 @@ You might be wondering why the resulting estimate is only 58\% likely
 to be his laugh when 60\% of the training examples were his.  The
 reason has to do with smoothing, to which we turn in the next section.
 
-It is important to keep in mind that the training data
 
+\section{Smoothing, Prior Counts, and Maximum Likelihood}
 
+At root, a naive Bayes classifier estimates two kinds of things.  First,
+it estimates the probability of each category independently of any
+tokens.  As we saw in the last section, this is carried out based on
+the number of training examples presented for each category.
 
+The second kind of estimation is carried out on a per-category basis.
+For each category, the naive Bayes model provides an estimate of the
+probability of seeing each token (in the training set) in that
+category.
+
+These estimates are carried out by counting.  In the simplest case,
+for category prevalence, if there are two categories, $A$ and $B$,
+with three training instances for category $A$ and seven for category
+$B$, then a simple estimate, called the maximum likelihood estimate,
+can be derived based on relative frequency in the training data.  In
+this case, the probability of category $A$ is 0.3 and that of category
+$B$ is 0.7.  
+
+The frequency-based estimate is called ``maximum likelihood'' because
+it assigns the probability that provides the highest probability
+estimate for the data that's seen.  If we have three instance of
+category $A$ and seven of category $B$, the maximum likelihood
+estimate is 0.3 for $A$ and 0.7 for category $B$.  The same thing
+holds in the situation where there are more than two categories.
+
+The problem with simple frequency-based estimates is that they are not
+very robust for large sets with limited training data, which is just
+what we find in language.  For instance, if we had training for
+him and her that looked as follows,
+%
+\codeblock{FragmentsNb.5}
+%
+then the probability assigned to her uttering \stringmention{har} or
+him uttering \stringmention{tee} would be zero.  This leads to a
+particularly troubling situation when classifying an utterance such as
+\stringmention{har tee har}, which contains both strings.  Such a
+string would be impossible in the model, because he is assigned zero
+probability of uttering \stringmention{tee} and she's assigned zero
+probability of uttering \stringmention{har}.  This becomes a huge problem
+when we're dealing with vocabularies of thousands or millions of 
+possible tokens, many of which are seen only a handful of times in
+a few categories.
+
+To get around the zero-probability estimates arising from maximum
+likelihood, the usual approach is to smooth these estimates.  
 
 
 
