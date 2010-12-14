@@ -27,9 +27,10 @@ identifying the language of a snippet of text, analyzing whether a
 movie review is postive or negative, linking a mention of a gene name
 in a text to a database entry for that gene, or resolving the sense of
 an ambiguous word like \stringmention{bank} as meaning a savings
-institution or a flowing body of water.  In each of these cases, we
-have a known finite set of outcomes and some evidence in the form of
-text.
+institution or the sloped land next to a stream (it can also mean many
+other things, including the tilt of an airplane, or even an adjective
+for a kind of shot in billiards).  In each of these cases, we have a
+known finite set of outcomes and some evidence in the form of text.
 
 \subsection{Exclusive and Exhaustive Categories}
 
@@ -77,8 +78,6 @@ A ranking classifier returns the possible categories in rank order of
 their match to the input.  The top ranked answer is the first-best
 result.  We still assume exhaustive and exclusive categories, but the
 classfier supplies its second-best guess, third-best guess and so on.
-In cases where there are large numbers of categories, an application
-might return more than one possible answer to a user.
 
 A scoring classifier goes one step further and assigns a (floating
 point) score to each categories.  These may then be sorted to provide
@@ -126,7 +125,7 @@ categorical outcomes based on a probability model for documents (see
 Scalar outcomes are typically continuous.  Examples of continuous
 scalar variables include a person's height, the length of the vowel
 sequence in milliseconds in the pronunciation of the word
-\charmention{lion}, or the number of miles between two cities.  Wes
+\charmention{lion}, or the number of miles between two cities.  
 
 Rating movies on an ordinal 1-5 scale doesn't allow ratings like
 1.793823.  Half-star ratings could be accomodated by including
@@ -338,7 +337,7 @@ and confusion matrices in particular.
 \subsection{Classifier Accuracy and Confidence Intervals}
 
 The overall accuracy is just the number of correct responses divided
-by the total numbe of responses.  A correct response for an item
+by the total number of responses.  A correct response for an item
 occurs when the response category matches the reference category.  The
 count of correct responses are thus on the diagonal of the confusion
 matrix.  There were 9 correct responses for reference cabernets, 5 for
@@ -1703,7 +1702,7 @@ precision and recall by setting different operating points for
 accepting a result.  It is important to keep in mind, though, that
 these results are on evaluation data, and represent only an estimate
 of what results will be on unseen data.  In practice, if results were
-achieved through tuning by cross-validation, the precision-recall and
+achieved through tuning by cross validation, the precision-recall and
 ROC curves will be overly optimistic.
 
 

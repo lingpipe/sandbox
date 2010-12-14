@@ -252,7 +252,7 @@ the classifier one at a time using its \code{handle()} method (see
 \refsec{corpus-handlers} for a general overview of LingPipe handlers).
 Because it implements \code{handle(Classified<CharSequence>)}, the
 naive Bayes classifier class is able to implement the interface
-\code{ObjectHandler<Classified<CharSequence>>}, which is convenient if
+\code{ObjectHandler<Classified<CharSequence>{}>}, which is convenient if
 we want to supply the classifier as a callback to either a parser or a
 corpus.
 

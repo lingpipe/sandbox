@@ -223,9 +223,9 @@
     </java>
   </target>
 
-  <target name="abstract-externalized"
+  <target name="ae-demo"
           depends="jar">
-    <java classname="com.lingpipe.book.io.AbstractExternalized"
+    <java classname="com.lingpipe.book.io.NamedScoredList"
           classpathref="classpath"
           fork="true">
     </java>
@@ -256,9 +256,30 @@
   </target>
 
 
+  <target name="compile-demo"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.CompilationDemo"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+
+  <target name="serialize-demo"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.SerializationDemo"
+          classpath="${jar}"
+          fork="true">
+      <classpath refid="classpath"/>
+    </java>
+  </target>
+
+
 
   <target name="run"
-          depends="abstract-externalized,
+          depends="ae-demo,
+                   compile-demo,
                    file-byte-count,
                    file-dump,
                    file-properties,
@@ -270,6 +291,7 @@
                    list-roots,
                    copy-files,
                    object-io,
+                   serialize-demo,
                    serial-proxied,
                    serialized-singleton,
                    url-properties,
