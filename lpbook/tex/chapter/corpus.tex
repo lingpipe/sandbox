@@ -96,7 +96,7 @@ specification requires the instantiation of the type parameter
 \code{H} to extend the \code{Handler} interface.  
 
 For use in LingPipe 4, all parsers will use object handler insances,
-so all parsers will actually extend \code{Parser<ObjectHandler<E>>}
+so all parsers will actually extend \code{Parser<ObjectHandler<E>{}>}
 for some arbitrary object type \code{E}.
 
 \subsubsection{Getting and Setting Handlers}
@@ -230,7 +230,7 @@ We define the MedPost parser to extend \code{StringParser}.
 \codeblock{MedPostPosParser.1}
 %
 The generic parameter for the parser's handler is specified to be of
-type \code{ObjectHandler<Tagging<String>>}.  LingPipe's \code{Tagging}
+type \code{ObjectHandler<Tagging<String>{}>}.  LingPipe's \code{Tagging}
 class, which represents tags applied to a sequence of items, is in
 package \code{com.aliasi.tag}; we gloss over its details here as we
 are only using it as an example for parsing.
@@ -286,7 +286,7 @@ strings to the final variable \code{tagSet}.
 %
 It is final because it's used in the anonymous inner class defiend to
 create an object to assign to variable \code{handler}.  The anonymous
-inner class implements \code{ObjectHandler<Tagging<String>>}, so it
+inner class implements \code{ObjectHandler<Tagging<String>{}>}, so it
 must define a method \code{handle(Tagging<String>)}.  All the handle
 method does is add the list of tags found in the tagging to the tag
 set.
@@ -333,7 +333,7 @@ To represent a corpus, LingPipe uses the abstract base class
 \code{Corpus}, in package \code{com.aliasi.corpus}.  It is
 parameterized generically the same way as a parser, with
 \code{Corpus<H extends Handler>}.  As of LingPipe 4, we only really
-have need of instances of \code{Corpus<ObjectHandler<E>>}, where
+have need of instances of \code{Corpus<ObjectHandler<E>{}>}, where
 \code{E} is the type of object being represented by the corpus.
 
 The basic work of a corpus class is done by its \code{visitTrain(H)}
@@ -471,7 +471,7 @@ LingPipe provides a dynamic, in-memory corpus implementation in the
 class \code{ListCorpus}, in package \code{com.aliasi.corpus}.  The
 class has a generic parameter, \code{ListCorpus<E>}, where \code{E} is
 the type of objects handled.  It is defined to extend
-\code{Corpus<ObjectHandler<E>>}, so the handler will be an object
+\code{Corpus<ObjectHandler<E>{}>}, so the handler will be an object
 handler for type \code{E} objects.
 
 There is a zero-argument constructor \code{ListCorpus()} that
@@ -516,7 +516,7 @@ The directories are expored recursively, and files with GZIP
 or Zip compression indicated by suffix \code{.gz} or \code{.zip}
 are automatically unpacked.  For zip files, each entry is visited.
 
-At the lowest level, every ordinary file, eithe in the directory
+At the lowest level, every ordinary file, either in the directory
 structure or in a Zip archive is visited and processed. 
 
 \subsubsection{Constructing a Disk Corpus}
@@ -576,6 +576,49 @@ data to help with predictions, such as naive Bayes classifiers, there
 will be a noticeable bias against the category being evaluated in a
 leave-one-out evaluation.
 
+\subsubsection{Non-Stationarity and Cross Validation}
+
+Another problem plaguing cross-validating (and other evaluations) is
+non-stationary distributions of text.  If text were stationary at the
+sentence level, then the content of a sentence (conditioned on the
+category, say, in a classifier) would be independent of the content of
+the other sentences in a single text item.  In reality, natural
+language text is highly non-stationary.  This is easiest to see with
+names, where if a name is mentioned in an article it is much more
+likely to be mentioned again in the same article than be mentioned in
+a different article.  
+
+The evidence for this kind of non-stationarity is results that vary
+among folds more than you would expect them to by chance alone.  A
+system that is 80\% accurate and classifies 100 documents, will find
+95\% of its runs in the range from 72 to 88, with lots of variation.
+This can be computed with the binomial confidence interval.  If more
+than this amount of variance is seen, there are problems with
+non-stationarity.
+
+In some situations, we can avoid intra-document word and phrase
+correlations in our evaluations by choosing only small bits out
+of a single document.  
+
+Another issue with stationarity is the temporal nature of language.
+If we have a year of newswire, it gives a very different perspective
+to break the documents up at random or to put them in temporal
+buckets.  Not only does what gets talked about differ by month
+(different holidays, weather, etc.), once something gets introduced
+into a document collection, it can stick around as a ``hot'' topic for
+a while, then disappear.  This can lead to overly optimistic
+performance estimates if part of such a topic is used to train and
+the other part for evaluation.  
+
+If each fold is a month, the fairest test is to train on the
+last month given the earlier months.  Training by cross-validating by
+month, or even worse, cross-validating by sentence, leads to a situation
+where you use text in the future to train a system to operate on
+
+In real applications, if the system is not trained continuously, it
+will gradually fall out of step with the kind of text it's about.
+
+
 \subsection{Permuting the Corpus}
 
 Cross-validation only makes sense theoretically when the items are all
@@ -600,7 +643,7 @@ appearing in sentences.
 LingPipe provides a corpus implementation tailored to implementing
 cross validation.  The class \code{CrossValidatingObjectCorpus<E>} has
 a generic parameter \code{E} defining the objects that are handled in
-the corpus.  The class extends \code{Corpus<ObjectHandler<E>>}, so the
+the corpus.  The class extends \code{Corpus<ObjectHandler<E>{}>}, so the
 handlers for a cross-validating object corpus will have a
 \code{handle(E)} method.
 

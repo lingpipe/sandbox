@@ -2049,9 +2049,9 @@ and the ability to create immutable objects without no-arg constructors.
 
 Our recommended approach to serialization is to use the serialization
 proxy pattern, which we describe in this section by example, with an
-implementation in \code{SerialProxied}.  The class begins by declaring
-it implements \code{Serializable}, then definining two final member
-variables in a single two-argument constructor.  
+implementation in \code{SerialProxied} defined here.  The class begins
+by declaring it implements \code{Serializable}, then definining two
+final member variables in a single two-argument constructor.
 %
 \codeblock{SerialProxied.1}
 %
@@ -2266,7 +2266,7 @@ if by the \code{closeQuietly()} method.
 There are utility bulk read methods that buffer inputs and return them
 as an array.  Special utility methods are needed because the amount of
 data available or read from a stream is unpredictable.  Bulk writing,
-on teh other hand, is built into output streams and writers
+on the other hand, is built into output streams and writers
 themselves.
 
 The bulk read method \code{toByteArray(InputStream)} reads all of the
@@ -2294,15 +2294,16 @@ thing for \code{char} value streams.
 
 LingPipe defines the interface \code{Compilable} in the package
 \code{com.aliasi.util} for classes that define a compiled
-representation. 
+representation.  
 
-The interface has a single method, \code{compileTo(ObjectOutput)},
-used for compiling an object to an object output stream.  Like all I/O
-interface methods, it's defined to throw an \code{IOException}.  The
-method is used just like the \code{writeExternal(ObjectOutput)} method
-from Java's \code{Externalizable} interface.  It is assumed that only
-whatever is written, deserialization will produce a single object that
-is the compiled form of the object that was compiled.  
+The \code{Compilable} interface has a single method,
+\code{compileTo(ObjectOutput)}, used for compiling an object to an
+object output stream.  Like all I/O interface methods, it's defined to
+throw an \code{IOException}.  The method is used just like the
+\code{writeExternal(ObjectOutput)} method from Java's
+\code{Externalizable} interface.  It is assumed that only whatever is
+written, deserialization will produce a single object that is the
+compiled form of the object that was compiled.
 
 Many of LingPipe's statistical models, such as language models,
 classifiers and HMMs have implementations that allow training data to
@@ -2314,6 +2315,7 @@ of the same class as the one serialized.  If a model's compilable,
 a compilation followed by deserialization typically produces an
 object implementing the same model more efficiently, but without the
 ability to be updated with new training data. 
+
 
 \subsection{The \code{AbstractExternalizable} Class}\label{section:io-abstract-externalizable}
 
@@ -2339,18 +2341,85 @@ This method is called by \code{readExternal()} and the object it
 returns stored to be used as the return value for
 \code{readResolve()}.
 
-We provide an example class \code{AbstractExternalized} that parallels
-our earlier example \code{SerialProxied} (see
-\refsec{io-serialization-proxy}, with the
-\code{AbstractExternalizable} interface doing some of the work.  The
-only thing that changes is the declaration of the externalizer,
+To see how to use this class as the base class for serialization
+proxies, we provide an example that parallels the one we implemented
+directly in \refsec{io-serialization-proxy}.  This time, we use
+a nested inner class that extends \code{AbstractExternalizable}.
+
+The class is constructed as follows.
 %
-\codeblock{AbstractExternalized.1}
+\codeblock{NamedScoredList.1}
 %
-and the read method, which now returns an object rather than
-assigning it,
+Note that the class is defined with a generic and declared to
+implement Java's \code{Serializable} interface.  Also note the
+explicit declaration of the serial version UID.  The constructor
+stores a copy of the input list, the string name, and the double
+score, as well as a new object which is not serializable itself.
+
+The two features making this class immutable also prevent it from
+being serializable.  First, there is no zero-argument constructor.
+Second, the member variables are declared to be final.  Adding a
+public zero-arg constructor and removing the final declarations would
+allow the class to be serialized in place.
+
+Instead, we use the \code{writeReplace()} method as before to
+return the object's serialization proxy, which is also declared
+to be generic and provided with the object itself through \code{this}.
 %
-\codeblock{AbstractExternalized.2}
+\codeblock{NamedScoredList.2}
+
+The class \code{Externalizer} is declared as a nested static class
+as follows.
+%
+\codeblock{NamedScoredList.3}
+%
+Note that the generic argument is different; they can't be the same
+because this is a nested static class, not an inner class, so it
+doesn't have access to the containing class's generic.  It is defined
+to extend the utility class \code{AbstractExternalizable}.  It also
+defines its own serial version UID.  It holds a final reference to a
+\code{NamedScoredList} for which it is the serialization proxy.  There
+is the requisit public no-argument constructor, as well as a
+constructor that sets the member variable to its argument.  The no-arg
+constructor is used for deserialization and the one-arg constructor
+for serialization.
+
+The helper class requires two abstract methods to be overridden.
+The first is for writing the object, and gets called as soon as
+\code{writeReplace()} creates the proxy.
+%
+\codeblock{NamedScoredList.4}
+%
+This uses the contained instance \code{mAe} to access the data that
+needs to be written.  Here, it's an object, a string, and a double,
+each with their own write methods.  The class is defined to throw
+an I/O exception, and will almost always require this declaration
+because the write methods throw I/O exceptions.
+
+The second overridden method is for reading.  This just reverses
+the writing process, returning an object.
+%
+\codeblock{NamedScoredList.5}
+%
+We read in the list, using the generic on the class itself
+for casting purposes.  We then read in the string and double
+with the matching read methods on object inputs.  Finally, we
+return a new named scored list with the same generic.  This
+object is what's finally returned on deserialization.
+
+The \code{main()} method for the demo just creates an object
+and then serializes and deserializes it using the utility method.
+%
+\codeblock{NamedScoredList.6}
+
+This may be run using the Ant target \code{ae-demo}.
+%
+\commandlinefollow{ant ae-demo}
+\begin{verbatim}
+p1=NSL([a, b, c], foo, 1.4)     p2=NSL([a, b, c], foo, 1.4)
+\end{verbatim}
+
+\subsubsection{Serializing Singletons}
 
 This class makes it particularly easy to implement serialization for a
 singleton.  We provide an example in \code{SerializedSingleton}.  Following
@@ -2440,4 +2509,127 @@ creates an input stream from the resource then wraps it in an object
 input stream for reading.  The
 \code{readResourceObject(Class<?>,String)} method reads a (possibly
 relative) resource relative to the specified class.  
+
+
+\subsection{Demos of Serialization and Compilation}
+
+In the demo classes \code{CompilationDemo} and
+\code{SerializationDemo}, we provide examples of how to serialize
+and deserialize a class.  Both classes are based on a simple
+\code{main()} command-line method and both use the same object
+to serialize and compile.
+
+
+\subsubsection{Object Construction}
+
+Suppose we have an instance of a class that's compilable, like
+\code{TrainSpellChecker} in LingPipe's \code{spell} package.  We will
+assume it is constructed using an appropriate language model \code{lm}
+and weighted edit distance \code{dist}, using the following code at
+the beginning of the main method of both demo classes.
+%
+\codeblock{CompilationDemo.0}
+%
+This code also provides it with a training example so it's not completely
+empty later (not that being empty would cause problems).
+
+\subsubsection{Serialization Demo}
+
+To serialize a file directly, we can use the following.
+%
+\codeblock{SerializationDemo.1}
+%
+We first create a file input stream, then wrap it in an object output
+stream, in both cases assigning to more general variables.  We then
+call \code{writeObject()} on the object output with the object to be
+serialized as an argument.  This is how all serialization works in
+Java at base.  If the object being passed in is not serializable, an
+\code{NotSerializableException} will be raised.  We then close the
+object output stream to ensure all bytes are written.  
+
+The complementary set of calls reads the object back in.  We create an
+input stream using the same file, wrap it in an object input, then
+call the \code{readObject()} method on the object input.  Finally, we
+cast to the appropriate class, \code{TrainSpellChecker}, and then
+close the object input.
+
+The same thing can be accomplished with the static utility methods
+\code{serializeTo()} and \code{readObject()}, both in
+\code{AbstractExternalizable}.
+%
+\codeblock{SerializationDemo.2}
+
+It is also possible to serialize and deserialize in memory, which
+is particularly useful for testing purposes.  The static utility
+method \code{serializeDeserialize()} carries this out, as follows.
+%
+\codeblock{SerializationDemo.3}
+
+We can run the demo using the Ant target \code{serialize-demo},
+as follows.
+%
+\commandlinefollow{ant serialize-demo}
+\begin{verbatim}
+tsc.getClass()=class com.aliasi.spell.TrainSpellChecker
+o1.getClass()=class com.aliasi.spell.TrainSpellChecker
+o2.getClass()=class com.aliasi.spell.TrainSpellChecker
+o3.getClass()=class com.aliasi.spell.TrainSpellChecker
+\end{verbatim}
+%
+The output shows the result of calling the general object method
+\code{getClass()} on the varialbes of type \code{Object} read back in.
+This approach works in general for inspecting the class of a
+deserialized object.
+
+
+\subsubsection{Compilation Demo}
+
+Assuming we have constructed a trained spell checker in variable
+\code{tsc} as shown above, we can use the following code to compile
+it.
+%
+\codeblock{CompilationDemo.1}
+%
+This involves creating an object output stream wrapping a file output
+stream, then calling \code{compileTo()} on the object being compiled
+with the object output as argument.  Make sure to close the stream so
+that everything's written.  
+
+After creating the object, we reverse the process by creating an
+object input that wraps a file input stream.  We then use the
+\code{readObject()} method on the object input to read an object,
+which we assign to variable \code{o1} of type \code{Object}.  We then
+cast the object to a compiled spell checker and make sure to close
+the object input.
+
+Exactly the same pair of operations can be carried out using the
+static utility methods \code{compileTo()} and \code{readObject()}
+with the following code.
+%
+\codeblock{CompilationDemo.2}
+%
+If you look at the implementation of these methods, they closely
+match what was written above, with the addition of buffering and
+more robust closes in finally blocks.
+
+If you don't need an on-disk representation, the single method
+\code{compile()} does the same thing in memory, though with more
+robust closes.
+%
+\codeblock{CompilationDemo.3}
+%
+
+If we run the demo, using the \code{compile-demo} Ant target, we see
+that the objects read back in are compiled spell checkers in each
+case.
+%
+\commandlinefollow{ant compile-demo}
+\begin{verbatim}
+tsc.getClass()=class com.aliasi.spell.TrainSpellChecker
+o1.getClass()=class com.aliasi.spell.CompiledSpellChecker
+o2.getClass()=class com.aliasi.spell.CompiledSpellChecker
+o3.getClass()=class com.aliasi.spell.CompiledSpellChecker
+\end{verbatim}
+
+
 
