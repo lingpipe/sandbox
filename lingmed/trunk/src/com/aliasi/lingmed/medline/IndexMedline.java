@@ -78,6 +78,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 
 /** 
  * <P>The <code>IndexMedline</code> command processes a
@@ -187,6 +188,7 @@ public class IndexMedline extends AbstractCommand {
     // initialize instance variables per command line args
     private IndexMedline(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
+	mLogger.setLevel(Level.INFO);
         mIndexName = getExistingArgument(LUCENE_INDEX);
         mDistDirPath = getExistingArgument(DIST_DIR);
         mType = getExistingArgument(DIST_TYPE);
@@ -197,8 +199,9 @@ public class IndexMedline extends AbstractCommand {
         else mIndex = FileUtils.checkIndex(mIndexName,false);
         mDistDir = new File(mDistDirPath);
         FileUtils.ensureDirExists(mDistDir);
-
+	
         String codecClassName = getExistingArgument(CODEC_PARAM);
+	System.out.println(codecClassName);
         Class clss = Class.forName(codecClassName);
         Constructor cons = clss.getConstructor();
         mCodec = (MedlineCodec) cons.newInstance();
@@ -210,10 +213,10 @@ public class IndexMedline extends AbstractCommand {
      * arguments and behavior.
      */
     public void run() {
-        mLogger.info("start run");
+        System.out.println("start run");
         try {
-            File[] files = getLaterFiles(mIndex);
-            mLogger.info("Total files to process: " + files.length);
+            File[] files = getLaterFiles(mDistDir);
+            System.out.println("Total files to process: " + files.length);
             if (mLogger.isDebugEnabled())
                 mLogger.debug("File names:" + java.util.Arrays.asList(files));
             if (files.length > 0) {
@@ -225,19 +228,19 @@ public class IndexMedline extends AbstractCommand {
                 indexWriter.setRAMBufferSizeMB(RAM_BUF_SIZE);
                 if (sIsBaseline) indexWriter.setMergeFactor(MERGE_FACTOR_HI);
                 for (File file: files) {
-                    mLogger.info("processing file:" + file);
+                    System.out.println("processing file:" + file);
                     MedlineIndexer indexer = new MedlineIndexer(indexWriter,mCodec);
                     parser.setHandler(indexer);
                     parseFile(parser,file);
                     indexer.close();
                     recordFile(indexWriter,file.getName());
-                    mLogger.info("completed processing file:" + file);
+                    System.out.println("completed processing file:" + file);
                 }
-                mLogger.info("All files parsed, now optimize index");
+                System.out.println("All files parsed, now optimize index");
                 indexWriter.optimize();
                 indexWriter.close();
             }
-            mLogger.info("Processing complete.");
+            System.out.println("Processing complete.");
         } catch (Exception e) {
             mLogger.warn("Unexpected Exception: "+e.getMessage());
             mLogger.warn("stack trace: "+Logging.logStackTrace(e));
@@ -252,6 +255,7 @@ public class IndexMedline extends AbstractCommand {
     static final String LOW_SORT_STRING = "";
 
     private String getLastUpdate(File index) throws IOException {
+	System.out.println("Got index" + index);
         IndexReader reader = null;
         IndexSearcher searcher = null;
         try {
@@ -279,8 +283,9 @@ public class IndexMedline extends AbstractCommand {
     }
 
     private File[] getLaterFiles(File index) throws IOException {
+	System.out.println(index);
         String lastFileName = getLastUpdate(index);
-        mLogger.debug("lastFileName: |"+lastFileName+"|");
+        System.out.println("lastFileName: |"+lastFileName+"|");
         String[] extensions = {"xml", "gz"};
         FileFilter filter = new FileExtensionFilter(extensions,false);
         File[] files = mDistDir.listFiles(filter);
@@ -363,14 +368,14 @@ public class IndexMedline extends AbstractCommand {
     }
 
     private void reportParameters() {
-        mLogger.info("Indexing MEDLINE "
-                     + "\n\tStart time=" + Strings.msToString(startTimeMillis())
-                     + "\n\tIndex=" + mIndexName
-                     + "\n\tMedline directory=" + mDistDirPath
-                     + "\n\tDist type (baseline or updates)=" + mType
-                     + "\n\tSleep interval in minutes=" + mSleep
-                     );
-    }
+        System.out.println("Indexing MEDLINE "
+			   + "\n\tStart time=" + Strings.msToString(startTimeMillis())
+			   + "\n\tIndex=" + mIndexName
+			   + "\n\tMedline directory=" + mDistDirPath
+			   + "\n\tDist type (baseline or updates)=" + mType
+			   + "\n\tSleep interval in minutes=" + mSleep
+	);
+}
 
     private int sleepMins() { return mSleep; }
 

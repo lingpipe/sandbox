@@ -1,4 +1,4 @@
-import com.aliasi.lingmed.parser.*;
+import com.aliasi.lingmed.medline.parser.*;
 
 import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;

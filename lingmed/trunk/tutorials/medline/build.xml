@@ -37,7 +37,7 @@
 </target>
 
 <property name="data"
-	  value="../../data/2010/medsamp2010.xml"/>
+	  value="../../data/2009/"/>
 
 <target name="word-count"
         depends="jar">
