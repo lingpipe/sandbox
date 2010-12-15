@@ -36,13 +36,28 @@
   </jar>
 </target>
 
+<property name="data"
+	  value="../../data/2010/medsamp2010.xml"/>
 
 <target name="word-count"
         depends="jar">
   <java classname="WordCountMedline"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="../../data/medline/medsamp2010.xml"/>
+    <arg value="${data}"/>
+  </java>
+</target>
+
+<property name="outfile"
+	  value="tmp.csv"/>
+
+<target name="chem"
+        depends="jar">
+  <java classname="ChemicalPmid"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data}"/>
+    <arg value="${outfile}"/>
   </java>
 </target>
 
