@@ -50,11 +50,13 @@ public class ChemicalPmid {
     }
 
     static void processFile(File file) throws FileNotFoundException, IOException {
-	System.out.println("Processing " + file);
+
 	if (file.getName().endsWith(".xml")) {
+	    System.out.println("Processing " + file);
 	    InputSource inputSource = new InputSource(new FileInputStream(file));
 	    mParser.parse(inputSource);
 	} else if (file.getName().endsWith(".gz")) {
+	    System.out.println("Processing " + file);
 	    FileInputStream fileIn = null;
 	    GZIPInputStream gzipIn = null;
 	    InputStreamReader inReader = null;
@@ -74,8 +76,6 @@ public class ChemicalPmid {
 		Streams.closeInputStream(gzipIn);
 		Streams.closeInputStream(fileIn);
 	    }
-	} else {
-	    throw new IllegalArgumentException("arguments must end with .xml or .gz");
 	}
     }
     
