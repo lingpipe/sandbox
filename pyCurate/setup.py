@@ -1,4 +1,4 @@
-# creates package curate-1.0.zip in directory dist/
+# create /dist/curate-1.0.zip and /MANIFEST
 # -------------------------------------------------
 # % python setup.py sdist
 
@@ -14,4 +14,12 @@ setup(name="curate",
       version="1.0",
       py_modules = ['libcurate'],
       packages = ['curatepkg'],
-      scripts = ['runcurate.py']);
+      scripts = ['runcurate.py'],
+      author = ['Bob Carpenter', 'Andrey Rzhetsky', 'James Evans' ],
+      author_email = [ 'carp@lingpipe.com' ],
+      maintainer = ['Bob Carpenter'],
+      maintainer_email = ['carp@lingpipe.com'],
+      description = ['Packages for curating data annotation efforts.'],
+      url = ['http://alias-i.com/lingpipe/web/sandbox.html'],
+      download_url = ['https://aliasi.devguard.com/svn/sandbox/pyCurate']
+      );
