@@ -4,19 +4,19 @@ def hello(a="world"):
     print "hello", a
     
 
-def emDawidSkene(alpha,   # float[K][K]
-                 beta,    # float[K]
-                 item,    # int[N]
-                 anno,    # int[N]
-                 label):  # int[N]
+def em_dawid_skene(alpha,   # float[K][K]
+                   beta,    # float[K]
+                   item,    # int[N]
+                   anno,    # int[N]
+                   label):  # int[N]
     I = max(item)
     J = max(anno)
     K = max(label)
     N = len(item)
 
-    Is = range(0,I-1)
-    Js = range(0,J-1)
-    Ks = range(0,K-1)
+    Is = range(0,I)
+    Js = range(0,J)
+    Ks = range(0,K)
 
     if len(alpha) != K:
         raise ValueError("len(alpha) != K")
@@ -29,7 +29,6 @@ def emDawidSkene(alpha,   # float[K][K]
         raise ValueError("len(anno) != N")
     if len(label) != N:
         raise ValueError("len(label) != N")
-
 
     prevalence = []          # double[K]
     category = [ [] ]        # double[I][K]
@@ -44,20 +43,46 @@ def emDawidSkene(alpha,   # float[K][K]
             for k2 in Ks:
                 accuracy[j][k1][k2] = 0.7 if k1 == k2 else 1/(K-1)
           
-    for params in emLoop(alpha,beta,item,anno,label,
-                         I,J,K,N,Is,Js,Ks,
-                         prevalence,category,accuracy):
-        yield params
+    while true:
+        # E Step: p(cat[i]|...)
+        for i in Is:
+            list_copy(prevalence,category[i],Ks)
+            for n in Ns:
+                for k in Ks:
+                    category[item[n]][k] *= accuracy[anno[n]][k][label[n]]
+                    for i in Is:
+                        linearNorm(category[i],Ks)
 
 
-def emLoop(alpha,beta,item,anno,label,
-           I,J,K,N,Is,Js,Ks,
-           prevalence,category,accuracy):
-    for n in [1,2,3]:
-        yield n
+        # M step 1: prevalence*
+        list_copy(beta,prevalence,Ks)
+        for i in Is:
+            for k in Ks:
+                prevalence[k] += category[i][k]
+        prob_norm(prevalence,Ks)
 
-                
+        # M step 2: accuracy*
+        for j in Js:
+            for k in Ks:
+                list_copy(alpha[k],accuracy[j][k],Ks)
+        for n in Ns:
+            for k in Ks:
+                accuracy[anno[n]][k][label[n]] += category[item[n]][k]
+        for j in Js:
+            for k in Ks:
+                prob_norm(accuracy[j][k],Ks)
+        
+        yield (prevalence,category,accuracy)
 
+            
+def list_copy(froms,tos,indexes):
+    for i in indexes:
+        tos[i] = froms[i]
+
+def prob_norm(theta,indexes):
+    Z = sum(theta)
+    for i in indexes:
+        theta[i] /= Z
         
             
         
