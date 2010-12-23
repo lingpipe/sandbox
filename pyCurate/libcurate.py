@@ -43,7 +43,7 @@ def em_dawid_skene(alpha,   # float[K][K]
             for k2 in Ks:
                 accuracy[j][k1][k2] = 0.7 if k1 == k2 else 1/(K-1)
           
-    while true:
+    while True:
         # E Step: p(cat[i]|...)
         for i in Is:
             list_copy(prevalence,category[i],Ks)
@@ -84,6 +84,7 @@ def prob_norm(theta,indexes):
     for i in indexes:
         theta[i] /= Z
         
+
             
         
     
