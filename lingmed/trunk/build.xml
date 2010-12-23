@@ -102,6 +102,9 @@
 
 <!-- **** MACROS **** -->
 
+
+
+
 <macrodef name="searchService">
   <attribute name="host"/>
   <attribute name="port"/>
@@ -201,6 +204,14 @@
     </javadoc>
 </target>
 
+
+<target name="shortLingBlast"
+        description="A toy implementation of LingBlast to test system and establish understanding of the framework"
+
+        depends="indexMedlineBaseline,indexEntrezGene">
+</target>
+
+
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM"
         depends="jar">
@@ -266,7 +277,7 @@
       <classpath refid="classpath.standard"/>
       <arg value="-distFile=${entrezgene.dist.file}" />
       <arg value="-index=${entrezgene.lucene.index.dir}" />
-      <arg value="-type=live_gene" />
+      <!--<arg value="-type=live_gene" /> -->
     </java>
 </target>
 
@@ -353,7 +364,7 @@
     <arg value="-entrezgene=${entrezgene.lucene.index.dir}"/>
     <arg value="-maxPubmedHitsPerAlias=50000"/>
     <arg value="-genHtml=true"/>
-    <arg value="-allowedNames=${lingblast.dir}/hifreq_names.txt"/>
+<!--    <arg value="-allowedNames=${lingblast.dir}/hifreq_names.txt"/>-->
   </java>
 </target>
 
@@ -484,7 +495,7 @@
         maxMemory="${mxMem}"
         fork="true">
     <arg value="-index"/>
-    <arg value="${medline.lucene.index.dir}"/>
+    <arg value="${index}"/>
     <arg value="-ro"/>  <!-- read only index -->
     <classpath>
       <path refid="classpath.standard"/>

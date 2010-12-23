@@ -48,7 +48,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 
 /** 
  * <P>The <code>IndexEntrezGene</code> command processes
@@ -108,6 +108,8 @@ public class IndexEntrezGene extends AbstractCommand {
      */
     private IndexEntrezGene(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
+	Appender appender = new ConsoleAppender(new SimpleLayout());
+	mLogger.addAppender(appender);
         mIndexName = getExistingArgument(LUCENE_INDEX);
         mDistFileName = getExistingArgument(DIST_FILE);
         mType = getArgument(TYPE);
