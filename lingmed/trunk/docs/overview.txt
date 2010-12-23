@@ -16,25 +16,46 @@ The top-level LingMed directory contains the following
 ant configuration files:
 
 build.xml - the default build file, runs core tasks
-build_common.xml - common tasks and macros for common tasks
-build_dev.xml - tasks used for testing and development
-build_linkage.xml - targets used to build the genelinkage app
-build_web.xml - targets that launch the genelinkage webapp
 
-The ant -f flag is used to specify a particular build file,
-else ant will use the file "build.xml".
+The build.lingmed.properties is accessed by
+ 
+<property file="build.properties"/>
 
-The default build file, and the dev, prod, and web files
-all start by accessing build.lingmed.properties and build_common.xml:
-
- <import file="build_common.xml"/>
+in the build.xml. In the distro there are short versions of MEDLINE
+and EntrezGene data to facillitate a toy implementation of LingBlast. 
+You will have to modify the relevant values to point at data you
+download from NLM.
 
 The LingMed programs use command line arguments
 to get configuration information.  Ant provides a
 simple way of invoking these programs.
 
+Quick Start:
+
+To build a toy version of LingBlast (see description below), run the
+quickStart task in ant:
+
+>ant quickStartLingBlast
+
+You can see what it is doing by looking at the ant target:
+
+<target name="quickStartLingBlast"
+        description="A toy implementation of LingBlast to test system and establish understanding of the framework"
+        depends="indexMedlineBaseline,indexEntrezGene">
+</target>
+
+You can look at the created Lucene indexes with 
+
+ant luke -Dindex=lucene/short/medline2009
+
+and 
+
+ant luke -Dindex=lucene/short/entrezGene
+
+
+
 Here is the macro for the LingMed DownloadMedline program
-(from build_common.xml):
+(from build.xml):
 
 <macrodef name="downloadMedline">
   <attribute name="repository"/>
@@ -274,6 +295,11 @@ The "-distDir" argument specifies the path to the medline distribution files,
 and corresponds to the "-targetDir" argument used in the download command.
 
 
+To see the contents of the lucene index use the luke task in
+build.xml. It is paramaterized to read in the just created
+index. Documentation for luke can be found at:
+http://www.getopt.org/luke/
+
 Here is the downloadMedlineUpdates target from the build.xml file:
 
 <target name="downloadMedlineUpdates"
@@ -423,6 +449,7 @@ ftp://ftp.ncbi.nih.gov/gene/DATA/ASN_BINARY/
 there are subdirectories for different kinds of species - e.g. mammalia
 and data files for each species - for human the path is:
 ftp://ftp.ncbi.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Homo_sapiens.ags.gz
+Remember to gunzip the ags file. 
 
 Once downloaded, the .ags file must be converted to .xml.
 This is done via a the gene2xml program, also distributed by nlm.
@@ -448,22 +475,31 @@ The following arguments are required:
     Path to the Lucene index file.
 -distFile
     Path to the XML file.
-
+-type
+    Specifies restriction on Entrezgene entries, see Java doc for values
 Here is the ant task which does this:
+
 
 <target name="indexEntrezGene"
         description="create Lucene EntrezGene index"
         depends="jar">
-  <java classname="com.aliasi.lingmed.entrezgene.IndexEntrezGene"
-        maxMemory="3G"
-        fork="true">
-    <classpath refid="classpath.standard"/>
-    <arg value="-index=${entrezgene.lucene.index.dir}"/>
-    <arg value="-distFile=C:\\mitzi\data\entrezgene\Homo_sapiens.xml"/>
-  </java>
+    <java classname="com.aliasi.lingmed.entrezgene.IndexEntrezGene"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distFile=${entrezgene.dist.file}" />
+      <arg value="-index=${entrezgene.lucene.index.dir}" />
+      <arg value="-type=live_gene" />
+    </java>
 </target>
 
-(Note that the above -distFile argument will probably not work for you.)
+
+(Note that the above -distFile and -index arguments will need to be
+set). 
+
+It is a good idea to examine the index with luke:
+
+>ant luke -Dindex=lucene/short/entrezGene
 
 2.3 Making the EntrezGene Lucene Index available via RMI
 ==============
