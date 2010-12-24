@@ -2,9 +2,9 @@ import libcurate
 import numpy
 import pymc
 
-I = 200
+I = 10000
 J = 5
-K = 3   
+K = 5
 N = I*J 
 
 Is = range(I)
@@ -12,16 +12,22 @@ Js = range(J)
 Ks = range(K)
 Ns = range(N)
 
-beta = [ 2, 2, 2 ]
+beta = []
+for k in Ks:
+    beta.append(2)
 prevalence = pymc.rdirichlet(beta).tolist()
 prevalence.append(1.0-sum(prevalence)) # complete
 category = []
 for i in Is:
     category.append(pymc.rcategorical(prevalence).tolist())
 
-alpha = [ [ 16, 4, 1 ],
-          [ 2, 16, 2 ],
-          [ 1, 4, 16 ] ]
+#doh!  alpha set up to do three-way only
+
+alpha = []
+for k1 in Ks:
+    alpha.append([])
+    for k2 in Ks:
+        alpha[k1].append((5 - abs(k1 - k2))**2)
 accuracy = []
 for j in Js:
     accuracy.append([])
@@ -55,11 +61,15 @@ print "prevalence=",prevalence
 
 epoch = 0
 for (prev,cat,acc) in libcurate.em_dawid_skene(alpha,beta,item,anno,label):
-    if epoch > 20: break
+    if epoch > 100: break
     print ""
     print "===================================="
     print "EPOCH=", epoch
     print "prev=", prev
-    print "cat=", cat
-    print "acc=", acc
     epoch += 1
+
+print "prev=", prev
+#print "cat=", cat
+for j in Js:
+    for k in Ks:
+        print "acc=[",j,",",k,"]=",acc[j][k]
