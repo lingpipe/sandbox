@@ -2,10 +2,7 @@ import libcurate
 import numpy
 import pymc
 
-libcurate.hello()
-libcurate.hello("bob")
-
-I = 30
+I = 200
 J = 5
 K = 3   
 N = I*J 
@@ -15,7 +12,7 @@ Js = range(J)
 Ks = range(K)
 Ns = range(N)
 
-beta = [ 1, 1, 1 ]
+beta = [ 2, 2, 2 ]
 prevalence = pymc.rdirichlet(beta).tolist()
 prevalence.append(1.0-sum(prevalence)) # complete
 category = []
@@ -43,18 +40,26 @@ for i in Is:
         label.append(pymc.rcategorical(accuracy[j][category[i]]).tolist())
         k += 1
 
-print "prevalence=",prevalence
+
+# k = 0
+# for i in Is:
+#     print "cat ",i,"=",category[i]
+#     for j in Js:
+#         print "     label ",j,"=",label[k]
+#         k += 1
+
 for j in Js:
     for k in Ks:
         print "acc ",j," ",k,"=",accuracy[j][k]
-k = 0
-for i in Is:
-    print "cat ",i,"=",category[i]
-    for j in Js:
-        print "     label ",j,"=",label[k]
-        k += 1
+print "prevalence=",prevalence
 
-#for (prev,cat,acc) in em_dawid_skene(alpha,beta,item,anno,label):
-#    print "prev=", prev
-#    print "cat=", cat
-#    print "acc=", acc
+epoch = 0
+for (prev,cat,acc) in libcurate.em_dawid_skene(alpha,beta,item,anno,label):
+    if epoch > 20: break
+    print ""
+    print "===================================="
+    print "EPOCH=", epoch
+    print "prev=", prev
+    print "cat=", cat
+    print "acc=", acc
+    epoch += 1
