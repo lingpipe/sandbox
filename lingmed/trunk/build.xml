@@ -204,11 +204,9 @@
     </javadoc>
 </target>
 
-
 <target name="shortLingBlast"
         description="A toy implementation of LingBlast to test system and establish understanding of the framework"
-
-        depends="indexMedlineBaseline,indexEntrezGene">
+        depends="indexMedlineBaseline,indexEntrezGene,buildDict,compileModels,lingblast">
 </target>
 
 
@@ -392,9 +390,9 @@
     <classpath refid="classpath.standard"/>
     <arg value="-host=localhost"/>
     <arg value="-dictionary=${dictionary}"/>
-    <arg value="-medline=${medline.lucene.index}"/>
+    <arg value="-medline=${medline.lucene.index.dir}"/>
     <arg value="-modelDir=${model.dir}"/>
-    <arg value="-sqlDir=/data/genelinkage/sql"/>
+    <arg value="-sqlDir=lingblast/genelinkage/sql"/>
     <arg value="-genomicsThreshold=100"/>
   </java>
 </target>
@@ -419,7 +417,7 @@
     <arg value="-geneIds=test_geneIds.txt"/>
     <arg value="-maxArticles=500"/>
     <arg value="-host=localhost"/>
-    <arg value="-medline=${medline.lucene.index}"/>
+    <arg value="-medline=${medline.lucene.index.dir}"/>
     <arg value="-entrezgene=${entrezgene.lucene.index}"/>
     <arg value="-dbUrl=${mysqlBaseURL}/gene_linkage"/>
     <arg value="-dbName=gene_linkage"/>
