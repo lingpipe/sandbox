@@ -48,7 +48,7 @@ import java.util.Set;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 
 /**
  * Find gene mentions in text and use language models
@@ -76,6 +76,8 @@ public class LingBlast {
                      ExactDictionaryChunker dictionaryChunker,
                      File modelDir,
                      double threshold) throws IOException, ClassNotFoundException {
+	Appender appender = new ConsoleAppender(new SimpleLayout());
+	mLogger.addAppender(appender);
         mMedlineSearcher = medlineSearcher;
         mEntrezGeneSearcher = entrezGeneSearcher;
         mDictionaryChunker = dictionaryChunker;

@@ -48,7 +48,7 @@ import java.util.Set;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 
 /**
  * <P>The <code>ModelCompiler</code> command builds
@@ -154,6 +154,9 @@ public class ModelCompiler extends AbstractCommand {
 
     private ModelCompiler(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
+	Appender appender = new ConsoleAppender(new SimpleLayout());
+	mLogger.addAppender(appender);
+
         mSearchHost = getExistingArgument(SEARCH_HOST);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mEntrezService = getExistingArgument(ENTREZGENE_SERVICE);

@@ -40,7 +40,9 @@ import java.util.Set;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
+
+
 
 /**
  * <P>The <code>DictionaryBuilder</code> command creates 
@@ -126,7 +128,6 @@ import org.apache.log4j.Logger;
 public class DictionaryBuilder extends AbstractCommand {
     private final Logger mLogger
         = Logger.getLogger(DictionaryBuilder.class);
-
     private boolean mGenHtml;
     private PrintStream mHtmlOut;
 
@@ -174,6 +175,9 @@ public class DictionaryBuilder extends AbstractCommand {
     // initialize instance variables per command line args
     private DictionaryBuilder(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
+	Appender appender = new ConsoleAppender(new SimpleLayout());
+	mLogger.addAppender(appender);
+
         mGenHtml = Boolean.valueOf(getArgument(GEN_HTML));
         mDictFileName = getExistingArgument(DICT_FILE);
         mSearchHost = getExistingArgument(SEARCH_HOST);

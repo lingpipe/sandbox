@@ -41,7 +41,7 @@ You can see what it is doing by looking at the ant target:
 
 <target name="quickStartLingBlast"
         description="A toy implementation of LingBlast to test system and establish understanding of the framework"
-        depends="indexMedlineBaseline,indexEntrezGene">
+        depends="indexMedlineBaseline,indexEntrezGene,buildDict">
 </target>
 
 You can look at the created Lucene indexes with 
