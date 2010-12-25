@@ -30,29 +30,30 @@
 </div><!-- head -->
 
 <div id="navig">
-<!-- set class="current" for current link -->
+  <!-- set class="current" for current link -->
 <ul>
-<li><a href="../read-me.html">lingmed</a>
-<ul>
-<li><a class="current" href="getting_started.html">getting started</a>
-<ul>
-<li><a href="#ant">using ant</a></li>
-<li><a href="#ncbi">ncbi downloads</a></li>
-<li><a href="#indexes">building indexes</a></li>
-</ul>
-<li><a href="dao.html">search and indexing</a>
-<li><a href="medline.html">medline processing</a></li>
-<li><a href="lingblast.html">lingblast</a></li>
-<li><a href="genelinkage.html">putting it together: genelinkage</a></li>
-</ul>
-</li>
-<li><a href="http://alias-i.com/lingpipe/index.html">lingpipe</a></li>
-</ul>
-</div><!-- navig -->
+  <li><a href="../read-me.html">lingmed</a>
+  <ul>
+    <li><a class="current" href="getting_started.html">getting started</a>
+    <ul>
+      <li><a href="#ant">using ant</a></li>
+      <li><a href="#ncbi">ncbi downloads</a></li>
+      <li><a href="#indexes">building indexes</a></li>
+    </ul>
+    <ul>
+      <li><a href="dao.html">search and indexing</a></li>
+      <li><a href="medline.html">medline processing</a></li>
+      <li><a href="lingblast.html">lingblast</a></li>
+      <li><a href="genelinkage.html">putting it together: genelinkage</a></li>
+    </ul>
+    <ul>
+      <li><a href="http://alias-i.com/lingpipe/index.html">lingpipe</a></li>
+    </ul>
+  </div><!-- navig -->
+  
+  <div id="content" class="content">
 
-<div id="content" class="content">
-
-<h2>LingMed download</h2>
+    <h2>LingMed download</h2>
 
 <p>
 If you are here you're obviously managed to download LingMed from the
@@ -73,43 +74,13 @@ which explains how to modify these files for your installation.
 </p>
 
 <p>
-The top-level LingMed directory contains a set of ant configuration files:
-</p>
-<ul>
-<li>build.xml - the default build file, runs core tasks</li>
-<li>build_common.xml - common tasks and macros for common tasks</li>
-<li>build_dev.xml - tasks used for testing and development</li>
-<li>build_linkage.xml - tasks that build the genelinkage app</li>
-<li>build_web.xml - targets that launch the genelinkage webapp</li>
-</ul>
-
-
-<p>
-The default build file, and the dev, linkage, and web files 
-all start by accessing build_common.xml:
+The top-level LingMed directory contains an ant configuration file build.xml:
 </p>
 
-<pre class="code">
- &lt;import file="build_common.xml"/&gt;
-</pre>
-
-<p>
+  <p>
 The ant -f flag is used to specify a particular build file,
 else ant will use the file <code>build.xml</code>.
 This file contains the basic LingMed infrastructure targets.
-This is all you need to build the indexes for each Entrez Gene
-database and run them as search servers.
-The build_dev.xml is used during applications development.
-The build_web.xml is used to launch the genelinkage servlet on Tomcat.
-</p>
-
-<p>
-Ant macros are defined in <code>build_common.xml</code>.
-These are used to invoke LingMed programs which
-take a number of installation-dependent arguments and one
-task-specific argument, e.g. starting a remote search service,
-or handling MEDLINE distribution files, which may be either
-baseline or updates files.
 </p>
 
 <p>

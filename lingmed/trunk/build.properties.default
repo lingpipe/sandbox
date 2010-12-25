@@ -1,0 +1,35 @@
+# installation-specific properties
+# will override properties in build.xml
+# This will be overridden by build.properties.local if it exists. Create that file
+# and modify to suit and do not check into subversion. 
+# 
+
+# NLM data
+nlm.data=data/short
+medline.pwd=your@email
+
+entrezgene.dist.file=data/short/shortEntrezGene.xml
+entrezgene.lucene.index.dir=lucene/short/entrezGene
+
+medline.lucene.index.dir=lucene/short/medline/2009
+
+# Lucene location
+lucene.dir=lucene/short
+
+lingblast.dir=lingblast
+
+# rmi config for remote search server
+rmi.absolute.base.dir=/full/path/to/lucene/jar/dir
+rmi.server.address=192.168.1.257
+rmi.server.port=1099
+
+# tomcat manager accounts
+tomcat.manager.url=http://localhost:8080/manager/
+tomcat.manager.username=setme
+tomcat.manager.password=setme
+
+# mysql config for genelinkage database
+mysqlHost=localhost
+mysqlPort=3306
+mysql.gl.user=setme
+mysql.gl.passwd=setme

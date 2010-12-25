@@ -2,7 +2,9 @@
 <project name="lingmed" default="compile" basedir=".">
 
 <!-- **** CONFIG **** -->
-<property file="build.properties"/>
+<property file="build.properties.local"/>   <!-- create and modify values here for local install -->
+<property file="build.properties.default"/> <!-- paramaterization to run short example -->
+
 
 <property name="lucene.dir"
           value="/data/users/mem26/data/lucene" />
@@ -150,6 +152,14 @@
 <target name="clean"
         description="delete build dir, jarfile">
   <delete dir="build"/>
+  <delete file="${jar}"/>
+</target>
+
+<target name="cleanData__dangerous"
+        description="clean">
+  <delete dir="${entrezgene.lucene.index.dir}"/>
+  <delete dir="${medline.lucene.index.dir}"/>
+  <delete dir="${lingblast.dir}"/>
   <delete file="${jar}"/>
 </target>
 
@@ -392,7 +402,7 @@
     <arg value="-dictionary=${dictionary}"/>
     <arg value="-medline=${medline.lucene.index.dir}"/>
     <arg value="-modelDir=${model.dir}"/>
-    <arg value="-sqlDir=lingblast/genelinkage/sql"/>
+    <arg value="-sqlDir=${lingblast.dir}/genelinkage/sql"/>
     <arg value="-genomicsThreshold=100"/>
   </java>
 </target>

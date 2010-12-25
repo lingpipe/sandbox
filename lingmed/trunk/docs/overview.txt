@@ -8,6 +8,9 @@ Lingmed is a top-level project in the aliasi sandbox.
 Commands and command parameters are illustrated via excerpts
 from the lingmed build.xml file.
 
+The documentation is badly out of date but this is currently the best place to 
+understand all the functionality that is contained. 
+
 Building and running LingMed
 ==============
 
@@ -29,29 +32,6 @@ download from NLM.
 The LingMed programs use command line arguments
 to get configuration information.  Ant provides a
 simple way of invoking these programs.
-
-Quick Start:
-
-To build a toy version of LingBlast (see description below), run the
-quickStart task in ant:
-
->ant quickStartLingBlast
-
-You can see what it is doing by looking at the ant target:
-
-<target name="quickStartLingBlast"
-        description="A toy implementation of LingBlast to test system and establish understanding of the framework"
-        depends="indexMedlineBaseline,indexEntrezGene,buildDict">
-</target>
-
-You can look at the created Lucene indexes with 
-
-ant luke -Dindex=lucene/short/medline2009
-
-and 
-
-ant luke -Dindex=lucene/short/entrezGene
-
 
 
 Here is the macro for the LingMed DownloadMedline program
