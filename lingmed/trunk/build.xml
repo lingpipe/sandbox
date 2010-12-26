@@ -156,14 +156,14 @@
 </target>
 
 <target name="cleanData__dangerous"
-        description="removes major lucene and model directories. DO NOT USE unless you know exactly what it does"
+        description="removes major lucene and model directories and logs. DO NOT USE unless you know exactly what it does"
 	depends="clean">
   <delete dir="${lucene.dir}"/>
   <delete file="${dictionary}"/>
   <delete file="${dictionary}.html"/>
   <delete dir="${model.dir}"/>
   <delete dir="${genelinkage.dir}"/>
-  <delete file="${jar}"/>
+  <delete file="lingmed.log"/>
 </target>
 
 <target name="compile"

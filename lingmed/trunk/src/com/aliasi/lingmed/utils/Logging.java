@@ -21,15 +21,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.apache.log4j.*;
+
 /**
  * Helper routines for logging
  *
  * @author Mitzi Morris
- * @version 1.0
+ * @author Breck Baldwin
+ * @version 1.1
  * @since   LingMed1.0
  */
 
 public class Logging {
+
 
 
     // returns String containing formatted StackTrace for logger
