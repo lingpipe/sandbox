@@ -156,7 +156,8 @@
 </target>
 
 <target name="cleanData__dangerous"
-        description="clean">
+        description="removes major lucene and model directories. DO NOT USE unless you know exactly what it does"
+	depends="clean">
   <delete dir="${lucene.dir}"/>
   <delete file="${dictionary}"/>
   <delete file="${dictionary}.html"/>
