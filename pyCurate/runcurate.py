@@ -60,11 +60,12 @@ for j in Js:
 print "prevalence=",prevalence
 
 epoch = 0
-for (prev,cat,acc) in libcurate.em_dawid_skene(alpha,beta,item,anno,label):
-    if epoch > 100: break
+for (ll,prev,cat,acc) in libcurate.em_dawid_skene(alpha,beta,item,anno,label):
+    if epoch > 1000: break
     print ""
     print "===================================="
     print "EPOCH=", epoch
+    print "log likelihood=",ll
     print "prev=", prev
     epoch += 1
 

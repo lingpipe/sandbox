@@ -1,4 +1,5 @@
 # Library Module
+from math import log
 
 def em_dawid_skene(alpha,   # float[K][K]
                    beta,    # float[K]
@@ -43,10 +44,7 @@ def em_dawid_skene(alpha,   # float[K][K]
             for k2 in Ks:
                 accuracy[j][k1].append(0.7 if k1 == k2 else 1.0/(K-1.0))
 
-    epoch = 0
     while True:
-        epoch += 1
-        yield (prevalence,category,accuracy)  # go first to return init
         # E Step: p(cat[i]|...)
         for i in Is:
             list_copy(prevalence,category[i],Ks)
@@ -73,6 +71,10 @@ def em_dawid_skene(alpha,   # float[K][K]
         for j in Js:
             for k in Ks:
                 prob_norm(accuracy[j][k],Ks)
+
+                
+
+        yield (0.0,prevalence,category,accuracy)  # go first to return init
         
             
 def list_copy(froms,tos,indexes):
