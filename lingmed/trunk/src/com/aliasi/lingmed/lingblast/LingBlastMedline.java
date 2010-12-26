@@ -50,7 +50,7 @@ import java.util.Set;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 
 /**
  * <P>The <code>LingBlastMedline</code> command
@@ -161,6 +161,8 @@ public class LingBlastMedline extends AbstractCommand {
     // initialize instance variables per command line args
     private LingBlastMedline(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
+	Appender appender = new ConsoleAppender(new SimpleLayout());
+	mLogger.addAppender(appender);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mSearchHost = getExistingArgument(SEARCH_HOST);
         mModelDirPath = getExistingArgument(MODEL_DIR);

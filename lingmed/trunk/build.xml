@@ -159,7 +159,10 @@
         description="clean">
   <delete dir="${entrezgene.lucene.index.dir}"/>
   <delete dir="${medline.lucene.index.dir}"/>
-  <delete dir="${lingblast.dir}"/>
+  <delete file="${dictionary}"/>
+  <delete file="${dictionary}.html"/>
+  <delete dir="${model.dir}"/>
+  <delete dir="${genelinkage.dir}"/>
   <delete file="${jar}"/>
 </target>
 
@@ -218,7 +221,6 @@
         description="A toy implementation of LingBlast to test system and establish understanding of the framework"
         depends="indexMedlineBaseline,indexEntrezGene,buildDict,compileModels,lingblast">
 </target>
-
 
 <target name="downloadMedlineBaseline"
         description="download MEDLINE baseline distribution from NLM"
@@ -402,7 +404,7 @@
     <arg value="-dictionary=${dictionary}"/>
     <arg value="-medline=${medline.lucene.index.dir}"/>
     <arg value="-modelDir=${model.dir}"/>
-    <arg value="-sqlDir=${lingblast.dir}/genelinkage/sql"/>
+    <arg value="-sqlDir=${genelinkage.dir}"/>
     <arg value="-genomicsThreshold=100"/>
   </java>
 </target>
