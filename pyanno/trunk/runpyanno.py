@@ -1,10 +1,10 @@
-import libcurate
-import numpy
+import pyanno
 import pymc
+import numpy
 
-I = 10000
-J = 5
-K = 5
+I = 100
+J = 3
+K = 4
 N = I*J 
 
 Is = range(I)
@@ -60,7 +60,7 @@ for j in Js:
 print "prevalence=",prevalence
 
 epoch = 0
-for (ll,prev,cat,acc) in libcurate.em_dawid_skene(alpha,beta,item,anno,label):
+for (ll,prev,cat,acc) in pyanno.em_ds_prior(item,anno,label,alpha,beta):
     if epoch > 1000: break
     print ""
     print "===================================="

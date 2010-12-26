@@ -1,20 +1,30 @@
 # Library Module
 from math import log
 
-def em_dawid_skene(alpha,   # float[K][K]
-                   beta,    # float[K]
-                   item,    # int[N]
-                   anno,    # int[N]
-                   label):  # int[N]
+def em_dawid_skene(item,   #int[N]
+                   anno,   #int[N]
+                   label): #int[N]
+    K = max(label)+1
+    alpha = fill_vec(K)
+    beta = fill_mat(K,K)
+    for x in em_ds_prior(item,anno,label,alpha,beta):
+        yield x
+
+
+def em_ds_prior(item,    # int[N]
+                anno,    # int[N]
+                label,   # int[N]
+                alpha,   # float[K][K]
+                beta):   # float[K]
     I = max(item)+1
     J = max(anno)+1
     K = max(label)+1
     N = len(item)
 
-    Is = range(0,I)
-    Js = range(0,J)
-    Ks = range(0,K)
-    Ns = range(0,N)
+    Is = range(I)
+    Js = range(J)
+    Ks = range(K)
+    Ns = range(N)
 
     if len(alpha) != K:
         raise ValueError("len(alpha) != K")
@@ -28,21 +38,12 @@ def em_dawid_skene(alpha,   # float[K][K]
     if len(label) != N:
         raise ValueError("len(label) != N")
 
-    prevalence = []    # double[K]
-    category = []      # double[I][K]
-    accuracy = []      # double[J][K][K]
-    for k in Ks:
-        prevalence.append(1.0/K)
-    for i in Is:
-        category.append([])
-        for k in Ks:
-            category[i].append(1.0/K)
+    prevalence = fill_vec(K,1.0/K)
+    category = fill_mat(I,K,1.0/K)
+    accuracy = fill_tens(J,K,K,0.3/(K-1.0))
     for j in Js:
-        accuracy.append([])
-        for k1 in Ks:
-            accuracy[j].append([])
-            for k2 in Ks:
-                accuracy[j][k1].append(0.7 if k1 == k2 else 1.0/(K-1.0))
+        for k in Ks:
+            accuracy[j][k][k] = 0.7
 
     while True:
         # E Step: p(cat[i]|...)
@@ -51,8 +52,20 @@ def em_dawid_skene(alpha,   # float[K][K]
         for n in Ns:
             for k in Ks:
                 category[item[n]][k] *= accuracy[anno[n]][k][label[n]]
+
+        log_likelihood = 0.0
+        for i in Is:
+            likelihood_i = 0.0
+            for k in Ks:
+                likelihood_i += category[i][k]
+            log_likelihood_i = log(likelihood_i)
+            # print("log_likelihood_",i,"=",log_likelihood_i)
+            log_likelihood += log_likelihood_i
+
         for i in Is:
             prob_norm(category[i],Ks)
+
+        yield (log_likelihood,prevalence,category,accuracy)  
 
         # M step 1: prevalence*
         list_copy(beta,prevalence,Ks)
@@ -72,21 +85,43 @@ def em_dawid_skene(alpha,   # float[K][K]
             for k in Ks:
                 prob_norm(accuracy[j][k],Ks)
 
-                
 
-        yield (0.0,prevalence,category,accuracy)  # go first to return init
-        
-            
 def list_copy(froms,tos,indexes):
     for i in indexes:
         tos[i] = froms[i]
+
 
 def prob_norm(theta,indexes):
     Z = sum(theta)
     for i in indexes:
         theta[i] /= Z
-        
 
+
+def fill_vec(N,x=0.0):
+    result = []
+    n = 0
+    while n < N:
+        result.append(x)
+        n += 1
+    return result
+
+
+def fill_mat(M,N,x=0.0):
+    result = []
+    m = 0
+    while m < M:
+        result.append(fill_vec(N,x))
+        m += 1
+    return result
+                   
+    
+def fill_tens(M,N,J,x=0.0):
+    result = []
+    m = 0
+    while m < M:
+        result.append(fill_mat(N,J,x))
+        m += 1
+    return result
             
         
     

@@ -1,2 +1,79 @@
-PyCurate 1.0 Documentation
+pyAnno 1.0 Documentation
 ============================================================
+
+pyAnno is a Python library implementing fitters for
+Dawid-and-Skene-style latent categorical models based on data coding
+or other diagostic test results.
+
+FUNCTIONALITY
+------------------------------------------------------------ 
+
+* MLE for Dawid and Skene's multinomial model with arbitrary data
+  designs (i.e., annotators may annotate arbitrary subsets of the
+  data)
+
+
+
+RUNNING TESTS
+--------------------
+
+
+
+PYTHON LIBRARY DEPENDENCIES
+------------------------------------------------------------
+pymc, numpy
+
+
+DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
+------------------------------------------------------------
+
+Data
+--------------------
+I                 number of items being annotated
+J                 number of annotators
+N                 number of annotations
+K                 number of categories
+jj[n] in 0:(J-1)  annotator for annotation n in 1:N
+ii[n] in 0:(I-1)  item for annotation n in 1:N
+y[n]  in 0:(K-1)  category for annotation n in 1:N
+
+Parameters
+--------------------
+z[i]  in 1:K                 (latent) category for item i in 1:I
+pi[k] in [0,1]               prevalence of category k in 1:K; 
+                                 SUM_k pi[k] = 1
+theta[j][kRef][k] in [0,1]   probability of annotator j in 1:J 
+                                 returning category k in 1:K for 
+                                 item of true category kRef; 
+                                 SUM_k theta[j,kRef,k] = 1
+Model
+--------------------
+z[i] ~ Categorical(pi)
+y[n] ~ Categorical(theta[ jj[n] ][ z[ii[n]] ])
+
+Complete Data Likelihood
+--------------------
+p(y,z|theta,pi)
+    = p(z|pi) * p(y|theta,z)
+    = PROD_{i in 1:I} p(z[i]|pi)
+      * PROD_{n in 1:N} p(y[n]|theta,z)
+    = PROD_{i in 1:K} pi[ z[i] ]
+      * PROD_{n in 1:N} theta[ jj[n] ][ z[ii[n]] ][ y[n] ]
+
+Observed Data Likelihood
+--------------------
+p(y|theta,pi) = SUM_z p(y,z|theta,pi)
+
+Maximum Likelihood Estimate (MLE)
+--------------------
+(theta*,pi*) = ARGMAX_{theta,pi} p(y|theta,pi)
+
+
+
+
+REFERENCES
+------------------------------------------------------------
+
+Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood estimation of
+observer error-rates using the EM algorithm.  Applied Statistics,
+28(1):20--28.
