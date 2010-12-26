@@ -157,8 +157,7 @@
 
 <target name="cleanData__dangerous"
         description="clean">
-  <delete dir="${entrezgene.lucene.index.dir}"/>
-  <delete dir="${medline.lucene.index.dir}"/>
+  <delete dir="${lucene.dir}"/>
   <delete file="${dictionary}"/>
   <delete file="${dictionary}.html"/>
   <delete dir="${model.dir}"/>
