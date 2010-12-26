@@ -10,10 +10,12 @@ shortLingBlast.
 
 Suggested sequcence for exploration:
 
+0) Copy log4j.properties.template to log4j.properties in lingmed/trunk/
+
 1) Run 'ant javadoc' in the lingmed/trunk/ directory. It will generate the java doc and will
 be in the folder /lingmed/trunk/docs/api.
 
-2) Read the documentation in lingmed/trunk/docs/getting_started.html
+2) Read the documentation in lingmed/trunk/read-me.html
 
 3) Run shortLingBlast
 
