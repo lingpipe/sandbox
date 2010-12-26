@@ -109,6 +109,7 @@ import org.apache.log4j.*;
  * </dl>
  *
  * @author Mitzi Morris
+ * @autor Breck Baldwin
  * @version 1.0
  * @since   LingMed1.0
  */
@@ -161,8 +162,6 @@ public class LingBlastMedline extends AbstractCommand {
     // initialize instance variables per command line args
     private LingBlastMedline(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
-	Appender appender = new ConsoleAppender(new SimpleLayout());
-	mLogger.addAppender(appender);
         mMedlineService = getExistingArgument(MEDLINE_SERVICE);
         mSearchHost = getExistingArgument(SEARCH_HOST);
         mModelDirPath = getExistingArgument(MODEL_DIR);

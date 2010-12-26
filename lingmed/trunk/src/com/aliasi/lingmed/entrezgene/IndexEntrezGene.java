@@ -108,8 +108,6 @@ public class IndexEntrezGene extends AbstractCommand {
      */
     private IndexEntrezGene(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
-	Appender appender = new ConsoleAppender(new SimpleLayout());
-	mLogger.addAppender(appender);
         mIndexName = getExistingArgument(LUCENE_INDEX);
         mDistFileName = getExistingArgument(DIST_FILE);
         mType = getArgument(TYPE);
