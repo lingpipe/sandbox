@@ -21,8 +21,6 @@ category = []
 for i in Is:
     category.append(pymc.rcategorical(prevalence).tolist())
 
-#doh!  alpha set up to do three-way only
-
 alpha = pyanno.alloc_mat(K,K)
 for k1 in Ks:
     for k2 in Ks:
@@ -65,20 +63,17 @@ print "sample prevalence=",sample_prevalence
 delta = pyanno.alloc_vec(K)
 epoch = 0
 for (ll,prev,cat,acc) in pyanno.dawid_skene_mle_em(item,anno,label):
-    if epoch > 1000: break
-    print ""
-    print "===================================="
-    print "EPOCH=", epoch
-    print "log likelihood=",ll
-    print "prev=", prev
-    for k in Ks:
-        delta[k] = prev[k] - sample_prevalence[k]
-    print "estimated_prev - sample_prev=",delta
-    
+    if epoch > 100: break
+    print "EPOCH={0:6d}  log likelihood={1:+10.4f}".format(epoch,ll)
     epoch += 1
 
-print "prev=", prev
-#print "cat=", cat
+for k in Ks:
+    print "prev*[{0:2d}]={1:5.3f} prev[]={2:5.3f}  delta={3:+5.3f}".format(k,prev[k],prevalence[k],prev[k]-prevalence[k])
 for j in Js:
-    for k in Ks:
-        print "acc=[",j,",",k,"]=",acc[j][k]
+    for k1 in Ks:
+        for k2 in Ks:
+            print "acc*[{0:3d},{1:2d},{2:2d}]={3:5.3f}  acc[]={4:5.3f}  delta={5:+5.3f}".format(j,k1,k2,acc[j][k1][k2],accuracy[j][k1][k2],acc[j][k1][k2]-accuracy[j][k1][k2])
+#for i in Is:
+#    for k in Ks:
+#        print "E[cat[",i,",",k,"]|...]=",cat[i][k]
+
