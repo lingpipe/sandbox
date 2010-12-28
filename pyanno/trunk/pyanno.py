@@ -1,5 +1,57 @@
 # Library Module
 from math import log
+import pymc
+
+def sim_dawid_skene(I,J,K,alpha=None,beta=None):
+
+    # test input params here
+
+    Is = range(I)
+    Js = range(J)
+    Ks = range(K)
+    N = I*J
+    Ns = range(N)
+        
+    if alpha == None:
+        alpha = alloc_mat(K,K)
+        for k1 in Ks:
+            for k2 in Ks:
+                alpha[k1][k2] = (K - abs(k1 - k2))**3
+        
+    if beta == None:
+        beta = alloc_vec(K,2.0)
+
+    # simulated params
+    beta = alloc_vec(K,2.0)
+
+    prevalence = pymc.rdirichlet(beta).tolist()
+    prevalence.append(1.0-sum(prevalence)) # complete
+    category = []
+    for i in Is:
+        category.append(pymc.rcategorical(prevalence).tolist())
+
+    accuracy = alloc_tens(J,K,K)
+    for j in Js:
+        for k in Ks:
+            accuracy[j][k] = pymc.rdirichlet(alpha[k]).tolist()
+            accuracy[j][k].append(1.0-sum(accuracy[j][k]))
+
+    # simulated data
+    item = []
+    anno = []
+    label = []
+    for i in Is:
+        for j in Js:
+            item.append(i)
+            anno.append(j)
+            label.append(pymc.rcategorical(accuracy[j][category[i]]).tolist())
+    N = len(item)
+
+    return (prevalence,category,accuracy,item,anno,label)
+
+
+
+        
 
 def dawid_skene_mle_em(item,    # int[N]
                        anno,    # int[N]
@@ -20,7 +72,7 @@ def dawid_skene_mle_em(item,    # int[N]
     warn_missing_vals("label",label)
 
     # initialize params
-    init_accuracy = 0.6
+    init_accuracy = 0.4
     prevalence = alloc_vec(K,1.0/K)
     category = alloc_mat(I,K,1.0/K)
     accuracy = alloc_tens(J,K,K,(1.0 - init_accuracy)/(K-1.0))

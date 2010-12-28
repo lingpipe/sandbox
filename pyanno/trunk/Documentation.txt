@@ -1,31 +1,49 @@
 pyAnno 1.0 Documentation
 ============================================================
 
-pyAnno is a Python library implementing fitters for
-Dawid-and-Skene-style latent categorical models based on data coding
-or other diagostic test results.
+pyAnno is a Python library implementing fitters and utilities for
+Dawid-and-Skene-style models of data coding.  
+
 
 FUNCTIONALITY
 ------------------------------------------------------------ 
 
-* MLE for Dawid and Skene's multinomial model with arbitrary data
-  designs (i.e., annotators may annotate arbitrary subsets of the
-  data)
+The input consists of a number of items to be classified into a set of
+categories by a set of annotators.  The data design is arbitrary in
+the sense that each item may be classified by any subset of the
+annotators, including multiple annotations by the same annotator.
+
+Given this data, models are fit with parameters for the prevalence of
+each category in the data as well as the accuracy of each annotator in
+terms of a probabilistic response matrix.  Given estimates for
+accuracy and prevalence along with the annotations for each item,
+estimates of category probabilities for items can be calculated.
+
+There are several models and estimators for these models, described
+below.
 
 
-
-RUNNING TESTS
---------------------
-
-
-
-PYTHON LIBRARY DEPENDENCIES
+DEPENDENCIES
 ------------------------------------------------------------
-pymc, numpy
+Python: 2.6
+Libraries: pymc, numpy
 
 
-DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
+
+RUNNING IT
 ------------------------------------------------------------
+
+Testing Model I with simulated data:
+
+% cd $PYANNO_HOME
+% python sim_dawid_skene_mle_em.py
+
+
+MODEL I.  DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
+------------------------------------------------------------
+Model I generalizes the model in (Dawid and Skene 1979) to arbitrary
+designs, including that of (Rzhetsky, .  There are no priors, so
+estimation is necessarily through maximum likelihood.
 
 Data
 --------------------
@@ -69,6 +87,91 @@ Maximum Likelihood Estimate (MLE)
 (theta*,pi*) = ARGMAX_{theta,pi} p(y|theta,pi)
 
 
+EM ALGORITHM
+------------------------------------------------------------
+
+All of the expecation-maximization (EM) algorithms work the
+same way for computing either maximum likelihood estimates (MLE)
+or maximum a posterioiri (MAP estimates).  The basic idea is
+to treat the the unknown category labels as missing data,
+alternating between estimating the category expecations and
+then maximizing the parameters for those expectations.
+
+0. Initialize parameters (pi(0),theta(0))
+
+1. for n = 1; ; ++n
+
+   1.a  (E Step)
+        Calculate observed data likelihood given previous params
+             p(cat|pi(n-1),theta(n-1),y)
+
+   1.b  (M Step)
+        Set next params pi(n), theta(n) to maximize observed 
+        data likelihood w.r.t. previous params
+         
+   1.c  (convergence test)
+        if log likelihood doesn't change much, exit
+
+
+PYTHON API DOCUMENTATION
+------------------------------------------------------------
+
+pyanno.sim_dawid_skene(I,J,K,alpha,beta)
+--------------------
+simulate data for an annotation experiment with
+a full-panel design in which every annotator annotates
+each item once
+
+I: int, val > 0
+   number of items
+J: int, val > 0 
+   number of annotators
+K: int, val > 0
+   number of categories
+alpha: double[K], vals > 0
+       parameters for accuracy sampling (optional)
+beta: double[K][K], vals > 0
+      parameters for prevalence sampling (optional)
+
+return: (prevalence,category,accuracy,item,anno,label)
+where
+prevalence: double[K], vals in [0,1], sum to 1.0
+            simulated category prevalence
+category: int[I], vals in 1:K
+          simulated categories for items
+accuracy: double[J][K][K], vals in [0,1], double[j][k] sums to 1
+          simulated accuracies for annotators, with
+          accuracy[j][k1][k2] being the probability of annotator
+          j responding k2 if the true category is k1
+item: int[I*J], vals in 1:I
+      items for annotation n
+anno: int[I*J], vals in 1:J
+      annotator for annotation n
+label: int[I*J], vals in 1:K
+       label for annotation n
+
+
+pyanno.dawid_skene_mle_em(item,anno,label)
+--------------------
+item: int[N], vals in 1:I
+      identifiers of items being annotated
+anno: int[N], vals in 1:J
+      identifier of annotator
+label: int[N], vals in 1:K
+       category provided by annotator
+
+returns a generator of EM estimates, each of which
+is of the form (log_likelihood,prev_hat,cat_hat,acc_hat)
+where 
+
+log_likelihood: double, val <= 0
+                log p(data|params)
+prev_hat: double[K], vals in [0,1], sum to 1.0
+          estimate of category prevalence
+cat_hat: double[I][K], vals in [0,1], cat_hat[i] sums to 1.0
+         estimates of category probabilities for items
+acc_hat: double[J][K][K], vals in [0,1], acc_hat[j][k] sums to 1.0
+         estimates of accuracies for annotators and true items
 
 
 REFERENCES
@@ -77,3 +180,7 @@ REFERENCES
 Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood estimation of
 observer error-rates using the EM algorithm.  Applied Statistics,
 28(1):20--28.
+
+Rzhetsky, A., H. Shatkay, and W. J. Wilbur.  How to get the most out
+of your curation effort.  PLoS Computational Biology. 5(5). 2009.  
+doi: 10.1371/journal.pcbi.1000391
