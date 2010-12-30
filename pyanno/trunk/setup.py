@@ -12,14 +12,14 @@ from distutils.core import setup
 
 setup(name="pyanno",
       version="1.0",
-      py_modules = ['pyanno'],
-      packages = ['pyanno_utils'],
-      scripts = ['sim.py', 'fit.py'],
+      py_modules = ['pyanno.multinom'],
+      packages = ['pyanno'],
+      scripts = ['eg_mle_sim.py'],
       author = ['Bob Carpenter', 'Andrey Rzhetsky', 'James Evans' ],
       author_email = [ 'carp@lingpipe.com' ],
       maintainer = ['Bob Carpenter'],
       maintainer_email = ['carp@lingpipe.com'],
       description = ['Packages for curating data annotation efforts.'],
       url = ['http://alias-i.com/lingpipe/web/sandbox.html'],
-      download_url = ['https://aliasi.devguard.com/svn/sandbox/pyCurate']
+      download_url = ['https://aliasi.devguard.com/svn/sandbox/pyanno']
       );
