@@ -1,8 +1,9 @@
 # Library Module
 from math import log
 import pymc
+from .util import *
 
-def sim_dawid_skene(I,J,K,alpha=None,beta=None):
+def sim_ordinal(I,J,K,alpha=None,beta=None):
 
     # test input params here
 
@@ -16,7 +17,7 @@ def sim_dawid_skene(I,J,K,alpha=None,beta=None):
         alpha = alloc_mat(K,K)
         for k1 in Ks:
             for k2 in Ks:
-                alpha[k1][k2] = (K - abs(k1 - k2))**3
+                alpha[k1][k2] = max(1,(K + (0.5 if k1 == k2 else 0) - abs(k1 - k2))**4)
         
     if beta == None:
         beta = alloc_vec(K,2.0)
@@ -53,9 +54,9 @@ def sim_dawid_skene(I,J,K,alpha=None,beta=None):
 
         
 
-def dawid_skene_mle_em(item,    # int[N]
-                       anno,    # int[N]
-                       label):  # int[N]
+def mle_em(item,    # int[N]
+           anno,    # int[N]
+           label):  # int[N]
 
     I = max(item)+1
     J = max(anno)+1
@@ -215,68 +216,3 @@ def em_ds_prior(item,            # int[N]
             for k in Ks:
                 prob_norm(accuracy[j][k],Ks)
 
-
-def warn_missing_vals(varname,xs):
-    missing = set(xs) - set(range(max(xs)+1))
-    if len(missing) > 0:
-        print "Missing values in ",varname,"=",missing
-
-def list_copy(froms,tos,indexes):
-    for i in indexes:
-        tos[i] = froms[i]
-
-
-def fill_vec(xs,y):
-    i = 0
-    while i < len(xs):
-        xs[i] = y
-        i += 1
-
-def fill_mat(xs,y):
-    i = 0
-    while i < len(xs):
-        fill_vec(xs[i],y)
-        i += 1
-
-def fill_tens(xs,y):
-    i = 0
-    while i < len(xs):
-        fill_mat(xs[i],y)
-        i += 1
-
-def prob_norm(theta,indexes):
-    Z = sum(theta)
-    n = len(theta) - 1
-    while n >= 0:
-        theta[n] /= Z
-        n -= 1
-
-
-def alloc_vec(N,x=0.0):
-    result = []
-    n = 0
-    while n < N:
-        result.append(x)
-        n += 1
-    return result
-
-
-def alloc_mat(M,N,x=0.0):
-    result = []
-    m = 0
-    while m < M:
-        result.append(alloc_vec(N,x))
-        m += 1
-    return result
-                   
-    
-def alloc_tens(M,N,J,x=0.0):
-    result = []
-    m = 0
-    while m < M:
-        result.append(alloc_mat(N,J,x))
-        m += 1
-    return result
-            
-        
-    
