@@ -58,11 +58,19 @@ def mle(item,
         init_acc=0.5,
         epsilon=0.001,
         max_epochs=1000):
+
+    if epsilon < 0.0:
+        raise ValueError("epislon < 0.0")
+    if max_epochs < 0:
+        raise ValueError("max_epochs < 0")
+
     log_likelihood_curve = []
     epoch = 0
     diff = float('inf')
-    for (ll,prev_mle,cat_mle,accuracy_mle) in mle_em(item,anno,label,init_acc):
-        print "  epoch={0:6d}  log likelihood={1:+10.4f}   diff={2:10.4f}".format(epoch,ll,diff)
+    for (ll,prev_mle,cat_mle,accuracy_mle) \
+          in mle_em(item,anno,label,init_acc):
+        print "  epoch={0:6d}  log lik={1:+10.4f}   diff={2:10.4f}".\
+                format(epoch,ll,diff)
         log_likelihood_curve.append(ll)
         if epoch > max_epochs:
             break
@@ -87,6 +95,20 @@ def mle_em(item,    # int[N]
     Js = range(J)
     Ks = range(K)
     Ns = range(N)
+
+    if len(anno) != N:
+        raise ValueError("len(item) != len(anno)")
+    if len(label) != N:
+        raise ValueError("len(item) != len(label)")
+    if init_accuracy < 0.0 or init_accuracy > 1.0:
+        raise ValueError("init_accuracy not in [0,1]")
+    for n in Ns:
+        if item[n] < 0:
+            raise ValueError("item[n] < 0")
+        if anno[n] < 0:
+            raise ValueError("anno[n] < 0")
+        if label[n] < 0:
+            raise ValueError("label[n] < 0")
 
     warn_missing_vals("item",item)
     warn_missing_vals("anno",anno)

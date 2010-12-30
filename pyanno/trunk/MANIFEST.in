@@ -1,3 +1,5 @@
-include Documentation.txt
-include License.txt
 include README.txt
+include Installation.txt
+include License.txt
+include Models.txt
+include UserGuide.txt
