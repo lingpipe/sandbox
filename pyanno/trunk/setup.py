@@ -4,17 +4,17 @@
 
 # install package into local Python distribution
 # ----------------------------------------------
-# % unzip curate-1.0.zip
-# % cd curate-1.0
+# % unzip pyanno-1.0.zip
+# % cd pyanno-1.0
 # % python setup.py install
 
 from distutils.core import setup 
 
-setup(name="curate",
+setup(name="pyanno",
       version="1.0",
-      py_modules = ['libcurate'],
-      packages = ['curatepkg'],
-      scripts = ['runcurate.py'],
+      py_modules = ['pyanno'],
+      packages = ['pyanno_utils'],
+      scripts = ['sim.py', 'fit.py'],
       author = ['Bob Carpenter', 'Andrey Rzhetsky', 'James Evans' ],
       author_email = [ 'carp@lingpipe.com' ],
       maintainer = ['Bob Carpenter'],
