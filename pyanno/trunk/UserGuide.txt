@@ -1,6 +1,10 @@
 pyAnno 1.0 USER GUIDE
 ============================================================
 
+This user guide contains information about getting started
+with pyanno, running simulations and running model estimation.
+
+
 INSTALLATION
 ------------------------------------------------------------
 The installation guide is in Install.txt
@@ -68,12 +72,12 @@ of data annotation.  For more information on the models, see
 Models.txt.
 
 (diff,ll,prev_mle,cat_mle,acc_mle)
-pyann.mle(item,  
-          anno,
-          label,
-          init_acc=0.5,
-          epsilon=0.001,
-          max_epochs=1000)
+mle(item,  
+    anno,
+    label,
+    init_acc=0.5,
+    epsilon=0.001,
+    max_epochs=1000)
 ----------------------------------------
 item:        int[N], 0 <= item[n] < I
              list of item identifiers
