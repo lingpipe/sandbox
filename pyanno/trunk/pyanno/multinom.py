@@ -52,11 +52,31 @@ def sim_ordinal(I,J,K,alpha=None,beta=None):
 
 
 
-        
+def mle(item,
+        anno,
+        label,
+        init_acc=0.5,
+        epsilon=0.001,
+        max_epochs=1000):
+    log_likelihood_curve = []
+    epoch = 0
+    diff = float('inf')
+    for (ll,prev_mle,cat_mle,accuracy_mle) in mle_em(item,anno,label,init_acc):
+        print "  epoch={0:6d}  log likelihood={1:+10.4f}   diff={2:10.4f}".format(epoch,ll,diff)
+        log_likelihood_curve.append(ll)
+        if epoch > max_epochs:
+            break
+        if len(log_likelihood_curve) > 10:
+            diff = (ll - log_likelihood_curve[epoch-10])/10.0
+            if abs(diff) < epsilon:
+                break
+        epoch += 1
+    return (diff,ll,prev_mle,cat_mle,accuracy_mle)
 
 def mle_em(item,    # int[N]
            anno,    # int[N]
-           label):  # int[N]
+           label,   # int[N]
+           init_accuracy=0.5):
 
     I = max(item)+1
     J = max(anno)+1
@@ -73,7 +93,6 @@ def mle_em(item,    # int[N]
     warn_missing_vals("label",label)
 
     # initialize params
-    init_accuracy = 0.4
     prevalence = alloc_vec(K,1.0/K)
     category = alloc_mat(I,K,1.0/K)
     accuracy = alloc_tens(J,K,K,(1.0 - init_accuracy)/(K-1.0))

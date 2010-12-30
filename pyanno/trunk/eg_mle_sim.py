@@ -36,19 +36,10 @@ for j in Js:
 print "RUNNING EM"
 MAX_EPOCHS = 1000
 EPSILON = 0.00001
-epoch = 0
-log_likelihood_curve = []
-diff = -1
-for (ll,prev_mle,cat_mle,accuracy_mle) in pyanno.multinom.mle_em(item,anno,label):
-    log_likelihood_curve.append(ll)
-    if epoch > MAX_EPOCHS:
-        break
-    if len(log_likelihood_curve) > 10:
-        diff = ll - log_likelihood_curve[epoch-10]
-        if abs(diff) < EPSILON:
-            break
-    print "  epoch={0:6d}  log likelihood={1:+10.4f}   diff={2:8.4f}".format(epoch,ll,diff)
-    epoch += 1
+(diff,ll,prev_mle,cat_mle,accuracy_mle) \
+    = pyanno.multinom.mle(item,anno,label)
+
+print "CONVERGENCE ll[final] - ll[final-10]=",diff
 
 print "PREVALENCE ESTIMATES"
 print "{0:>2s}, {1:>5s}, {2:>5s}, {3:>5s}, {4:>6s}, {5:>6s}".format("k","sim","samp","MLE","d.sim","d.samp")
