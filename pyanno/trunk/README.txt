@@ -33,7 +33,7 @@ See License.txt for more information.
 Installation and Use
 ------------------------------------------------------------
 Instructions for installing and Using PyCurate are
-in Documentation.txt.
+in Installation.txt and UserGuide.txt.
 
 
 Contributors

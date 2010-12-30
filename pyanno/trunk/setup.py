@@ -12,7 +12,7 @@ from distutils.core import setup
 
 setup(name="pyanno",
       version="1.0",
-      py_modules = ['pyanno.multinom,pyanno.util'],
+      py_modules = ['pyanno.multinom','pyanno.util'],
       packages = ['pyanno'],
       scripts = ['eg_mle_sim.py'],
       author = ['Bob Carpenter', 'Andrey Rzhetsky', 'James Evans' ],

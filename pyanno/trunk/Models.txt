@@ -1,45 +1,7 @@
-pyAnno 1.0 Documentation
+pyanno 1.0: MODEL DEFINITIONS
 ============================================================
 
-pyAnno is a Python library implementing fitters and utilities for
-Dawid-and-Skene-style models of data coding.  
-
-
-FUNCTIONALITY
------------------------------------------------------------- 
-
-The input consists of a number of items to be classified into a set of
-categories by a set of annotators.  The data design is arbitrary in
-the sense that each item may be classified by any subset of the
-annotators, including multiple annotations by the same annotator.
-
-Given this data, models are fit with parameters for the prevalence of
-each category in the data as well as the accuracy of each annotator in
-terms of a probabilistic response matrix.  Given estimates for
-accuracy and prevalence along with the annotations for each item,
-estimates of category probabilities for items can be calculated.
-
-There are several models and estimators for these models, described
-below.
-
-
-DEPENDENCIES
-------------------------------------------------------------
-Python: 2.6
-Libraries: pymc, numpy
-
-
-
-RUNNING IT
-------------------------------------------------------------
-
-Testing Model I with simulated data:
-
-% cd $PYANNO_HOME
-% python sim_dawid_skene_mle_em.py
-
-
-MODEL I.  DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
+DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
 ------------------------------------------------------------
 Model I generalizes the model in (Dawid and Skene 1979) to arbitrary
 designs, including that of (Rzhetsky, .  There are no priors, so
