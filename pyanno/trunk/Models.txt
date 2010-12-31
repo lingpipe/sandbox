@@ -139,6 +139,10 @@ acc_hat: double[J][K][K], vals in [0,1], acc_hat[j][k] sums to 1.0
 REFERENCES
 ------------------------------------------------------------
 
+Artstein, Ron and Massimo Poesio. 2008. Inter-coder agreement for
+computational linguistics.  Computational Linguistics Journal
+34(4):555--596.
+
 Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood estimation of
 observer error-rates using the EM algorithm.  Applied Statistics,
 28(1):20--28.
@@ -146,3 +150,4 @@ observer error-rates using the EM algorithm.  Applied Statistics,
 Rzhetsky, A., H. Shatkay, and W. J. Wilbur.  How to get the most out
 of your curation effort.  PLoS Computational Biology. 5(5). 2009.  
 doi: 10.1371/journal.pcbi.1000391
+
