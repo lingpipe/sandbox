@@ -27,14 +27,6 @@ def fill_tens(xs,y):
         fill_mat(xs[i],y)
         i += 1
 
-def prob_norm(theta,indexes):
-    Z = sum(theta)
-    n = len(theta) - 1
-    while n >= 0:
-        theta[n] /= Z
-        n -= 1
-
-
 def alloc_vec(N,x=0.0):
     result = []
     n = 0
@@ -61,5 +53,20 @@ def alloc_tens(M,N,J,x=0.0):
         m += 1
     return result
             
+def prob_norm(theta,indexes):
+    Z = sum(theta)
+    n = len(theta) - 1
+    while n >= 0:
+        theta[n] /= Z
+        n -= 1
+
+def mat_sum(x)
+    sum = 0
+    for x_i in A:
+        for x_i_j in row:
+            sum += x_i_j
+    return sum
+        
+    
         
     
