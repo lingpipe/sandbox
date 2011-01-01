@@ -58,18 +58,23 @@ def alloc_tens4(M,N,J,K,x=0.0):
     return result
     
             
-def prob_norm(theta,indexes):
+def prob_norm(theta):
     Z = sum(theta)
     n = len(theta) - 1
     while n >= 0:
         theta[n] /= Z
         n -= 1
 
+def vec_sum(x):
+    sum = 0
+    for x_i in x:
+        sum += x_i
+    return sum
+
 def mat_sum(x):
     sum = 0
-    for x_i in A:
-        for x_i_j in row:
-            sum += x_i_j
+    for x_i in x:
+        sum += vec_sum(x_i)
     return sum
         
     

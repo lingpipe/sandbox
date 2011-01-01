@@ -12,9 +12,9 @@ from distutils.core import setup
 
 setup(name="pyanno",
       version="1.0",
-      py_modules = ['pyanno.multinom','pyanno.util','pyanno.kappa','pyanno.unittest'],
+      py_modules = ['pyanno.multinom','pyanno.util','pyanno.kappa'],
       packages = ['pyanno'],
-      scripts = ['eg_mle_sim.py'],
+      scripts = ['eg_mle_sim.py','unit_test.py'],
       author = ['Bob Carpenter', 'Andrey Rzhetsky', 'James Evans' ],
       author_email = [ 'carp@lingpipe.com' ],
       maintainer = ['Bob Carpenter'],

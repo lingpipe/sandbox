@@ -1,6 +1,4 @@
-import util
-
-__name__ = 'pyanno.kappa'
+from .util import *
 
 def agr(confusion_mat):
     """Return the agreement rate for the specified confusion matrix.
