@@ -47,11 +47,16 @@ def alloc_mat(M,N,x=0.0):
     
 def alloc_tens(M,N,J,x=0.0):
     result = []
-    m = 0
-    while m < M:
+    for m in range(M):
         result.append(alloc_mat(N,J,x))
-        m += 1
     return result
+
+def alloc_tens4(M,N,J,K,x=0.0):
+    result = []
+    for m in range(M):
+        result.append(alloc_tens(N,J,K))
+    return result
+    
             
 def prob_norm(theta,indexes):
     Z = sum(theta)
