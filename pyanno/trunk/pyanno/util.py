@@ -65,7 +65,7 @@ def prob_norm(theta,indexes):
         theta[n] /= Z
         n -= 1
 
-def mat_sum(x)
+def mat_sum(x):
     sum = 0
     for x_i in A:
         for x_i_j in row:
