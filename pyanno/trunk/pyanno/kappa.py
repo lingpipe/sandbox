@@ -1,6 +1,13 @@
-from .util import *
+import util
+
+__name__ = 'pyanno.kappa'
 
 def agr(confusion_mat):
+    """Return the agreement rate for the specified confusion matrix.
+    
+    Keyword arguments:
+    confusion_mat -- square confusion matrix of catgorical responses
+    """
     tot = mat_sum(confusion_mat)
     agr = 0
     for k in range(len(confusion_mat)):
@@ -45,7 +52,7 @@ def kappa(confusion_mat):
     return chance_adj_agr(agr,e_agr)
 
 # equiv to estimating prev with simple voted inference for labels
-def global_prevalence(label,Ks)
+def global_prevalence(label,Ks):
     theta = alloc_vec(max(label)+1)
     for k in label:
         theta[k] += 1
