@@ -126,7 +126,7 @@ def mle_em(item,    # int[N]
 
         # E: p(cat[i]|...) 
         for i in Is:
-            list_copy(prevalence,category[i])
+            vec_copy(prevalence,category[i])
         for n in Ns:
             for k in Ks:
                 category[item[n]][k] *= accuracy[anno[n]][k][label[n]]
@@ -219,7 +219,7 @@ def em_ds_prior(item,            # int[N]
     while True:
         # E Step: p(cat[i]|...)
         for i in Is:
-            list_copy(prevalence,category[i])
+            vec_copy(prevalence,category[i])
         for n in Ns:
             for k in Ks:
                 if supervis[item[n]] == None:
@@ -240,7 +240,7 @@ def em_ds_prior(item,            # int[N]
         yield (log_likelihood,prevalence,category,accuracy)  
 
         # M step 1: prevalence*
-        list_copy(beta,prevalence)
+        vec_copy(beta,prevalence)
         for i in Is:
             for k in Ks:
                 prevalence[k] += category[i][k]
@@ -249,7 +249,7 @@ def em_ds_prior(item,            # int[N]
         # M step 2: accuracy*
         for j in Js:
             for k in Ks:
-                list_copy(alpha[k],accuracy[j][k])
+                vec_copy(alpha[k],accuracy[j][k])
         for n in Ns:
             for k in Ks:
                 accuracy[anno[n]][k][label[n]] += category[item[n]][k]
