@@ -94,9 +94,20 @@ class TestUtil(unittest.TestCase):
         self.assertAlmostEqual(1.0,vec_sum(theta),3)
 
 class TestKappa(unittest.TestCase):
-    def test_base(self):
-        conf_mat = [1]
-        self.assertEquals(1,1)
+    def test_agr(self):
+        cm1 = [[1]]
+        self.assertEquals(1.0,agr(cm1))
+        cm2 = [[41,3],[9,47]]
+        self.assertAlmostEqual((41.0 + 47.0)/100.0,agr(cm2))
+        cm3 = [[44,6],[6,44]]
+        self.assertAlmostEqual(0.88,agr(cm3))
+    def test_s(self):
+        cm1 = [[44,6],[6,44]]
+        self.assertAlmostEqual((0.88-0.5)/(1.0-0.5),s(cm1))
+        cm2 = [[44,6,0,0],[6,44,0,0],[0,0,0,0],[0,0,0,0]]
+        self.assertAlmostEqual(0.84,s(cm2))
+        self.assertAlmostEqual(0.88,agr(cm2))
+        
 
 class TestMultinom(unittest.TestCase):
     def testbase2(self):
