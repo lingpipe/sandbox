@@ -8,14 +8,16 @@ def agr(confusion_mat):
     """
     tot = mat_sum(confusion_mat)
     agr = 0
-    for k in range(len(confusion_mat)):
+    k = len(confusion_mat)
+    while k > 0:
+        k -= 1
         agr += confusion_mat[k][k]
     return float(agr)/float(tot)
 
 def s(confusion_mat):
-    agr = agr(confusion_mat)
-    e_agr = (1.0/float(len(confusion_mat)))**2
-    return chance_adj_agr(agr,e_agr)
+    agr_ = agr(confusion_mat)
+    e_agr = 1.0/float(len(confusion_mat))
+    return chance_adj_agr(agr_,e_agr)
 
 def pi(confusion_mat):
     agr = agr(confusion_mat)
