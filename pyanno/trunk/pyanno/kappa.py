@@ -20,7 +20,7 @@ def s(confusion_mat):
     return chance_adj_agr(agr_,e_agr)
 
 def pi(confusion_mat):
-    agr = agr(confusion_mat)
+    agr_ = agr(confusion_mat)
     K = len(confusion_mat)
     Ks = range(K)
     theta = alloc_vec(K)
@@ -28,14 +28,14 @@ def pi(confusion_mat):
         for k2 in Ks:
             theta[k1] += confusion_mat[k1][k2]
             theta[k2] += confusion_mat[k1][k2]
-    prob_norm(theta,Ks)
+    prob_norm(theta)
     e_agr = 0.0
     for k in Ks:
         e_agr += theta[k]**2
-    return chance_adj_agr(agr,e_agr)
+    return chance_adj_agr(agr_,e_agr)
 
 def kappa(confusion_mat):
-    agr = agr(confusion_mat)
+    agr_ = agr(confusion_mat)
     K = len(confusion_mat)
     Ks = range(K)
     theta1 = alloc_vec(K)
@@ -44,19 +44,13 @@ def kappa(confusion_mat):
         for k2 in Ks:
             theta1[k1] += confusion_mat[k1][k2]
             theta2[k2] += confusion_mat[k1][k2]
-    prob_norm(theta1,Ks)
-    prob_norm(theta2,Ks)
+    prob_norm(theta1)
+    prob_norm(theta2)
     e_agr = 0.0
     for k in Ks:
         e_agr += theta1[k] * theta2[k]
-    return chance_adj_agr(agr,e_agr)
+    return chance_adj_agr(agr_,e_agr)
 
-# equiv to estimating prev with simple voted inference for labels
-def global_prevalence(label,Ks):
-    theta = alloc_vec(max(label)+1)
-    for k in label:
-        theta[k] += 1
-    return prob_norm(theta,Ks)    
 
 def chance_adj_agr(agr,expected_agr):
     return (agr - expected_agr)/(1.0 - expected_agr)
@@ -106,3 +100,10 @@ def print_agr_metrics(item,anno,label):
                    pi(conf_mat),
                    kappa(conf_mat))
     
+
+# equiv to estimating prev with simple voted inference for labels
+def global_prevalence(label,Ks):
+    theta = alloc_vec(max(label)+1)
+    for k in label:
+        theta[k] += 1
+    return prob_norm(theta)
