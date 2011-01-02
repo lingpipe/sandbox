@@ -1,12 +1,13 @@
-
 def warn_missing_vals(varname,xs):
     missing = set(xs) - set(range(max(xs)+1))
     if len(missing) > 0:
         print "Missing values in ",varname,"=",missing
 
-def list_copy(froms,tos,indexes):
-    for i in indexes:
-        tos[i] = froms[i]
+def list_copy(x,y):
+    n = len(x)
+    while (n > 0):
+        n -= 1
+        y[n] = x[n]
 
 
 def fill_vec(xs,y):
