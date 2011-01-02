@@ -1,9 +1,5 @@
 README: pyanno 1.0
 ============================================================
-
-What is pyanno?
------------------------------------------------------------- 
-
 pyanno 1.0 is a suite of Python libraries for modeling the data coding
 or diagnostic testing process to support inferences required for data
 curation.  Specifically, pyanno implements statistical models for
@@ -24,31 +20,55 @@ via Gibbs sampling, and a Bayesian estimator implemented via averaging
 Gibbs samples from the posterior.
 
 
-Licensing
+
+LICENSING
 ------------------------------------------------------------
-PyCurate is licensed under the Apache License, Version 2.0.
-See License.txt for more information.
+pyAnno is licensed under the Apache License, Version 2.0.
+For more information, see
+
+     License.txt 
 
 
-Installation and Use
+
+INSTALLATION
 ------------------------------------------------------------
-Instructions for installing and Using PyCurate are
-in Installation.txt and UserGuide.txt.
+pyAnno comes with a standard Python installer, which
+is described in:
+
+     Installation.txt
 
 
-Contributors
+
+USE
+------------------------------------------------------------
+pyAnno's user guide is at:
+
+     UserGuide.txt
+
+
+
+UNDERSTANDING
+------------------------------------------------------------
+The statistical models on which pyAnno is based are
+described in:
+
+     Models.txt
+
+
+
+DEVELOPING
+------------------------------------------------------------
+Links to the version control repository and explanations
+of coding conventions and unit testing are in:
+
+     DeveloperGuide.txt
+
+
+
+CONTRIBUTORS
 ------------------------------------------------------------
 Bob Carpenter    (Columbia University,   Statistics)
 Andrey Rzhetsky  (University of Chicago, Medicine)
 James Evans      (University of Chicago, Sociology)
 
 
-References
-------------------------------------------------------------
-
-Dawid, A. P. and A. M. Skene. 1979. Maximum likelihood estimation of
-observed error rates using the EM algorithm. Journal of Applied
-Statistics 28(1):20--28.
-
-Rzhetsky A., H. Shatkay, and W. J. Wilbur. 2009. How to get the most
-out of your curation effort. PLoS Computational Biology 5(5).

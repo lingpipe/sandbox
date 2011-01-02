@@ -5,6 +5,10 @@ from pyanno.util import *
 import unittest
 
 class TestUtil(unittest.TestCase):
+    def test_vec_sum(self):
+        self.assertEquals(0,vec_sum([]))
+        self.assertEquals(1,vec_sum([1]))
+        self.assertEquals(3,vec_sum([1,2]))
     def test_mat_sum(self):
         self.assertEquals(0,mat_sum([[]]))
         self.assertEquals(1,mat_sum([[1]]))
