@@ -5,6 +5,16 @@ from pyanno.util import *
 import unittest
 
 class TestUtil(unittest.TestCase):
+    def test_list_copy(self):
+        a = [1,2,3]
+        b = [4,5,6]
+        list_copy(a,b)
+        self.assertEquals(1,b[0])
+        self.assertEquals(3,b[2])
+        c = []
+        d = []
+        list_copy(c,d)
+        self.assertEquals(0,len(d))
     def test_vec_sum(self):
         self.assertEquals(0,vec_sum([]))
         self.assertEquals(1,vec_sum([1]))
@@ -18,6 +28,8 @@ class TestUtil(unittest.TestCase):
         theta = [0.2]
         prob_norm(theta)
         self.assert_prob_normed(theta)
+
+
     def assert_prob_normed(self,theta):
         self.assert_(len(theta) > 0)
         for theta_i in theta:
@@ -25,15 +37,14 @@ class TestUtil(unittest.TestCase):
             self.assert_(theta_i <= 1.0)
         self.assertAlmostEqual(1.0,vec_sum(theta),3)
 
-class TestAgr(unittest.TestCase):
+class TestKappa(unittest.TestCase):
     def test_base(self):
         conf_mat = [1]
         self.assertEquals(1,1)
 
-class TestAgr2(unittest.TestCase):
+class TestMultinom(unittest.TestCase):
     def testbase2(self):
         self.assertEquals(2,2)
 
 unittest.main()
-
 
