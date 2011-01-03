@@ -134,6 +134,15 @@ class TestKappa(unittest.TestCase):
         ag2 = 20.0/36.0
         k2 = (ag2 - ce2)/(1.0 - ce2)
         self.assertAlmostEqual(k2,kappa(cm2))
+    def test_global_prevalence(self):
+        item = [0,0]
+        label = [0,1]
+        theta_hat = global_prevalence(item,label)
+        assertAlmostEqualLists(self,[0.5,0.5],theta_hat)
+        item2 = [0,0,0, 1,1]
+        label2 = [0,0,1, 1,2]
+        theta_hat2 = global_prevalence(item2,label2)
+        assertAlmostEqualLists(self,[4.0/12.0, 5.0/12.0, 3.0/12.0],theta_hat2)
     def test_K(self):
         item = [0,0,0]
         anno = [0,1,2]
@@ -143,11 +152,11 @@ class TestKappa(unittest.TestCase):
         Ke = (ag - ag_exp)/(1.0 - ag_exp)
         self.assertAlmostEqual(Ke,K(item,anno,lab))
     def test_K_2(self):
-        item = [0,0,0,1,1,2]
-        anno = [0,1,2,0,1,0]
-        lab = [0,0,1,1,1,0]
+        item = [0,0,0, 1,1, 2]
+        anno = [0,1,2, 0,1, 0]
+        lab =  [0,0,1, 1,1, 0]
         ag = 2.0/4.0
-        ag_exp = 0.5
+        ag_exp = (5.0/9.0)**2 + (4.0/9.0)**2
         Ke = (ag - ag_exp)/(1.0 - ag_exp)
         self.assertAlmostEqual(Ke,K(item,anno,lab))
     def test_K_3(self):
@@ -155,7 +164,7 @@ class TestKappa(unittest.TestCase):
         anno = [0,1,2, 0,1, 0,1,2,3,4,5,6]
         lab =  [0,0,1, 1,1, 0,1,2,1,0,1,2]
         ag = (1.0 + 1.0 + 1.0 + 3.0 + 1.0)/(3.0 + 1.0 + 21.0)
-        ag_exp = (4.0**2 + 6.0**2 + 2.0**2) / 12.0**2
+        ag_exp = (20.0/63.0)**2 + (37.0/63.0)**2 + (6.0/63.0)**2
         Ke = (ag - ag_exp)/(1.0 - ag_exp)
         self.assertAlmostEqual(Ke,K(item,anno,lab))
     def test_chance_adj_agr(self):
@@ -164,6 +173,13 @@ class TestKappa(unittest.TestCase):
 class TestMultinom(unittest.TestCase):
     def testbase2(self):
         self.assertEquals(2,2)
+
+def assertAlmostEqualLists(testcase,x,y):
+    testcase.assertEquals(len(x),len(y))
+    n = 0
+    while n < len(x):
+        testcase.assertAlmostEqual(x[n],y[n])
+        n += 1
 
 if __name__ == '__main__':
     unittest.main()

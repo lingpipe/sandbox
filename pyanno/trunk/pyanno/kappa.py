@@ -91,7 +91,7 @@ def K(item,anno,label):
     label -- parallel array of labels, with label[n] being the
              label assigned by annotator anno[n] to item item[n]
     """
-    if len(anno) != len(anno):
+    if len(item) != len(anno):
         raise ValueError("len(item) != len(anno)")
     if len(label) != len(anno):
         raise ValueError("len(label) != len(anno)")
@@ -99,7 +99,7 @@ def K(item,anno,label):
     J = max(anno)+1
     K = max(label)+1
     N = len(item)
-    theta = global_prevalence(label)
+    theta = global_prevalence(item,label)
     agr_exp = 0.0
     for theta_n in theta:
         agr_exp += theta_n * theta_n
@@ -135,7 +135,40 @@ def K(item,anno,label):
     return chance_adj_agr(float(agr)/float(tot),agr_exp)
             
             
-        
+def global_prevalence(item,label):
+    """Return the global maximum likelihood estimate of prevalence for
+    the specified array of labels.  
+
+    The prevalence of a category is estimated to be proportional to
+    the sum of adjusted counts for labels, where the adjusted count
+    for label[n] is 1 divided by the number of labels for the item[n].
+
+    The length of the returned array will be the number of labels, the
+    values will be non-negative, and the values will sum to 1.0
+
+    Keyword arguments:
+    item -- array of item identifiers
+    label -- parallel array of label assignments
+    """
+    if len(label) != len(item):
+        raise ValueError("len(label) != len(item)")
+    item_to_labs = {}
+    for i in item:
+        item_to_labs[i] = []
+    N = len(item)
+    n = 0
+    while n < N:
+        item_to_labs[item[n]].append(label[n])
+        n += 1
+
+    K = max(label)+1
+    theta = alloc_vec(K)
+    for labs in item_to_labs.values():
+        increment = 1.0/float(len(labs))
+        for k in labs:
+            theta[k] += increment
+    prob_norm(theta)
+    return theta
 
 
 
@@ -154,10 +187,9 @@ def confusion_matrices(item,anno,label):
             yield (j1,j2,conf_mat)
 
 
-
-
 # assumes unique annotations with map representation
 def encode(item,anno,label):
+    """Internal use only"""
     if len(anno) != len(anno):
         raise ValueError("len(item) != len(anno)")
     if len(label) != len(anno):
@@ -175,6 +207,7 @@ def encode(item,anno,label):
     
 
 def print_agr_metrics(item,anno,label):
+    """Internal use only"""
     print "{0:>3},{1:>3}, {2:>5}, {3:>5}, {4:>5}, {5:>5}".\
         format("j1","j2","agr","s","pi","kappa")
     for (j1,j2,conf_mat) in confusion_matrices(item,anno,label):
@@ -186,13 +219,3 @@ def print_agr_metrics(item,anno,label):
                    kappa(conf_mat))
     
 
-# equiv to estimating prev with simple voted inference for labels
-def global_prevalence(label):
-    K = max(label)+1
-    theta = alloc_vec(K)
-    n = len(label)
-    while n > 0:
-        n -= 1
-        theta[label[n]] += 1.0
-    prob_norm(theta)
-    return theta
