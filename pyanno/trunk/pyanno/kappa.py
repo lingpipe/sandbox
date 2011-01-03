@@ -111,7 +111,7 @@ def K(item,anno,label):
     n = len(item)
     while n > 0:
         n -= 1
-        anno_labels[item[n]].append(label[i])
+        anno_labels[item[n]].append(label[n])
     tot = 0
     agr = 0
     i = I
@@ -121,19 +121,18 @@ def K(item,anno,label):
         if M < 2:
             continue
         anno_labels[i].sort()
-        tot += M * (M-1) / 2
+        tot += (M * (M-1)) / 2
         start = 0
         m = 1
         while m < M:
             if anno_labels[i][m] != anno_labels[i][start]:
                 run = m - start
-                agr += run * (run-1) / 2
+                agr += (run * (run-1)) / 2
                 start = m
             m += 1
         run = m - start
-        agr += run * (run-1) / 2
-    return (float(agr)/float(tot),
-            chance_adj_agr(agr,expected_agr))
+        agr += (run * (run-1)) / 2
+    return chance_adj_agr(float(agr)/float(tot),agr_exp)
             
             
         
@@ -195,4 +194,5 @@ def global_prevalence(label):
     while n > 0:
         n -= 1
         theta[label[n]] += 1.0
-    return prob_norm(theta)
+    prob_norm(theta)
+    return theta
