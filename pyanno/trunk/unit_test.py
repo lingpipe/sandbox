@@ -142,6 +142,22 @@ class TestKappa(unittest.TestCase):
         ag_exp = (1.0*1.0)/(3.0*3.0) + (2.0*2.0)/(3.0*3.0)
         Ke = (ag - ag_exp)/(1.0 - ag_exp)
         self.assertAlmostEqual(Ke,K(item,anno,lab))
+    def test_K_2(self):
+        item = [0,0,0,1,1,2]
+        anno = [0,1,2,0,1,0]
+        lab = [0,0,1,1,1,0]
+        ag = 2.0/4.0
+        ag_exp = 0.5
+        Ke = (ag - ag_exp)/(1.0 - ag_exp)
+        self.assertAlmostEqual(Ke,K(item,anno,lab))
+    def test_K_3(self):
+        item = [0,0,0, 1,1, 2,2,2,2,2,2,2]
+        anno = [0,1,2, 0,1, 0,1,2,3,4,5,6]
+        lab =  [0,0,1, 1,1, 0,1,2,1,0,1,2]
+        ag = (1.0 + 1.0 + 1.0 + 3.0 + 1.0)/(3.0 + 1.0 + 21.0)
+        ag_exp = (4.0**2 + 6.0**2 + 2.0**2) / 12.0**2
+        Ke = (ag - ag_exp)/(1.0 - ag_exp)
+        self.assertAlmostEqual(Ke,K(item,anno,lab))
     def test_chance_adj_agr(self):
         self.assertAlmostEqual((0.9-0.5)/(1.0-0.5),chance_adj_agr(0.9,0.5))
 
