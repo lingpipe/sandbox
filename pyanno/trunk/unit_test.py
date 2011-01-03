@@ -141,3 +141,6 @@ class TestKappa(unittest.TestCase):
 class TestMultinom(unittest.TestCase):
     def testbase2(self):
         self.assertEquals(2,2)
+
+if __name__ == '__main__':
+    unittest.main()
