@@ -134,9 +134,16 @@ class TestKappa(unittest.TestCase):
         ag2 = 20.0/36.0
         k2 = (ag2 - ce2)/(1.0 - ce2)
         self.assertAlmostEqual(k2,kappa(cm2))
+    def test_K(self):
+        item = [0,0,0]
+        anno = [0,1,2]
+        lab = [0,0,1]
+        ag = 1.0/3.0
+        ag_exp = (1.0*1.0)/(3.0*3.0) + (2.0*2.0)/(3.0*3.0)
+        Ke = (ag - ag_exp)/(1.0 - ag_exp)
+        self.assertAlmostEqual(Ke,K(item,anno,lab))
     def test_chance_adj_agr(self):
         self.assertAlmostEqual((0.9-0.5)/(1.0-0.5),chance_adj_agr(0.9,0.5))
-
 
 class TestMultinom(unittest.TestCase):
     def testbase2(self):
