@@ -1,5 +1,6 @@
 # Library Module
 from math import log
+import numpy
 import pymc
 from .util import *
 
@@ -18,8 +19,7 @@ def mle(item,
     log_likelihood_curve = []
     epoch = 0
     diff = float('inf')
-    for (ll,prev_mle,cat_mle,accuracy_mle) \
-          in mle_em(item,anno,label,init_acc):
+    for (ll,prev_mle,cat_mle,accuracy_mle) in mle_em(item,anno,label,init_acc):
         print "  epoch={0:6d}  log lik={1:+10.4f}   diff={2:10.4f}".\
                 format(epoch,ll,diff)
         log_likelihood_curve.append(ll)
@@ -73,6 +73,7 @@ def mle_em(item,    # int[N]
     for j in Js:
         for k in Ks:
             accuracy[j][k][k] = init_accuracy
+
     
     while True:
 
@@ -95,6 +96,7 @@ def mle_em(item,    # int[N]
         for i in Is:
             prob_norm(category[i])
 
+
         # return here with E[cat|prev,acc] and LL(prev,acc;y)
         yield (log_likelihood,prevalence,category,accuracy)
 
@@ -112,6 +114,37 @@ def mle_em(item,    # int[N]
         for j in Js:
             for k in Ks:
                 prob_norm(accuracy[j][k])
+
+
+def map(item,
+        anno,
+        label,
+        alpha=None,
+        beta=None,
+        init_acc=0.5,
+        epsilon=0.001,
+        max_epochs=1000):
+
+    if epsilon < 0.0:
+        raise ValueError("epislon < 0.0")
+    if max_epochs < 0:
+        raise ValueError("max_epochs < 0")
+
+    llp_curve = []
+    epoch = 0
+    diff = float('inf')
+    for (lp,ll,prev_mle,cat_mle,accuracy_mle) in mle_em(item,anno,label,alpha,beta,init_acc):
+        print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={1:+10.4f}  llp={1:+10.4f}   diff={2:10.4f}".\
+                format(epoch,ll,lp,ll+lp,diff)
+        log_likelihood_curve.append(ll+lp)
+        if epoch > max_epochs:
+            break
+        if len(log_likelihood_curve) > 10:
+            diff = (ll - log_likelihood_curve[epoch-10])/10.0
+            if abs(diff) < epsilon:
+                break
+        epoch += 1
+    return (diff,ll,lp,prev_mle,cat_mle,accuracy_mle)
 
 
 # alpha and beta previous counts, not alpha/beta Dirichlet here
@@ -177,6 +210,11 @@ def map_em(item,
         for k in Ks:
             accuracy[j][k][k] = init_accuracy
     
+    beta_a = numpy.array(beta)
+    alpha_a = []
+    for k in Ks:
+        alpha_a.append(numpy.array(alpha[k]))
+
     while True:
 
         # E: p(cat[i]|...) 
@@ -196,11 +234,19 @@ def map_em(item,
             log_likelihood_i = log(likelihood_i)
             log_likelihood += log_likelihood_i
 
+        log_prior = 0.0
+        prevalence_a = numpy.array(prevalence[0:(K-1)])
+        log_prior += pymc.dirichlet_like(prevalence_a,beta_a)
+        for j in Js:
+            for k in Ks:
+                acc_j_k_a = numpy.array(accuracy[j][k][0:(K-1)])
+                log_prior += pymc.dirichlet_like(acc_j_k_a,alpha_a[k])
+
         for i in Is:
             prob_norm(category[i])
 
         # return here with E[cat|prev,acc] and LL(prev,acc;y)
-        yield (log_likelihood,prevalence,category,accuracy)
+        yield (log_prior,log_likelihood,prevalence,category,accuracy)
 
         # M: prevalence* + accuracy*
         vec_copy(beta,prevalence)
@@ -218,11 +264,6 @@ def map_em(item,
         for j in Js:
             for k in Ks:
                 prob_norm(accuracy[j][k])
-
-
-
-
-
 
 
 
