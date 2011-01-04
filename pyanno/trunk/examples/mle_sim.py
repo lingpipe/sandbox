@@ -1,6 +1,5 @@
 try:
     import pyanno.multinom
-    import foo.bar.gaz
 except ImportError, e:
     print e
     print ""
