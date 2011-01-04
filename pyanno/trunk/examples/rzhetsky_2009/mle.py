@@ -11,7 +11,7 @@ except ImportError, e:
 
 if len(sys.argv) != 2:
     print "Require command-line argument for data file."
-    print "sys.argv=",sys.argv
+    print "Data is distributed in $PYANNO_HOME/examples/rzhetsky_2009/data"
     raise SystemExit(2)
 
 print "READING DATA"

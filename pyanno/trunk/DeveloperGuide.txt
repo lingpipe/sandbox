@@ -21,13 +21,13 @@ From now on, we'll assume $PYANNO_HOME is the directory
 $PYANNO_SVN_ROOT/trunk.
 
 
+
 BUILD AND INSTALL
 ------------------------------------------------------------
 You only need to build and install if you want to run
 the contained scripts, because they import the packages
 assuming they are installed.  Unit testing, for instance,
 doesn't require a build or install.
-
 
 Building pyanno
 ----------------------------------------
@@ -43,7 +43,6 @@ files:
     $PYANNO_HOME/dist/pyanno-1.0.tar.gz
                      /pyanno-1.0.zip
 
-
 Developer Installation of pyanno
 ----------------------------------------
 After following the build instructions above,
@@ -52,6 +51,7 @@ After following the build instructions above,
     % python setup.py install
 
 End-user installation instructions in Install.txt.
+
 
 
 UNIT TESTS
