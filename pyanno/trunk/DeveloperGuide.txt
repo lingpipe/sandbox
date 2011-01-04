@@ -53,6 +53,22 @@ After following the build instructions above,
 End-user installation instructions in Install.txt.
 
 
+Scripted Operation
+----------------------------------------
+There are Windows batch (.bat) and Unix shell (.sh) scripts
+to build and install.  
+
+On Windows:
+
+     % cd $PYANNO_HOME
+     % build.bat
+
+On Unix:
+
+     % cd $PYANNO_HOME
+     % sh build.sh
+
+
 
 UNIT TESTS
 ------------------------------------------------------------

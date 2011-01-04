@@ -294,7 +294,7 @@ def map_em(item,
 # >>> pymc.dirichlet_like(theta,alpha)
 # nan
 def dir_ll(theta,alpha):
-    delta = 0.0000001
+    delta = 0.0000000001
     while True:
         for k in range(len(theta)):
             # subtract delta, but with delta min
