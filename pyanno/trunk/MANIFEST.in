@@ -1,6 +1,2 @@
-include README.txt
-include DeveloperGuide.txt
-include Installation.txt
-include License.txt
-include Models.txt
-include UserGuide.txt
+include *.txt
+recursive-include examples *.py *.txt *.csv
