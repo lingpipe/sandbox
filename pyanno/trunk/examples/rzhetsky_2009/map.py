@@ -23,6 +23,7 @@ item = []
 label = []
 anno = []
 item_id = 0
+
 while True:
     line = file.readline()
     if not line:
@@ -59,16 +60,16 @@ print "VOTED PREVALENCE"
 print "    prev=",pyanno.kappa.global_prevalence(item,label)
 
 print "PRIORS"
-beta = pyanno.util.alloc_vec(K,1.0)    # 1.5
-alpha = pyanno.util.alloc_mat(K,K,1.0) # 1.5
+beta = pyanno.util.alloc_vec(K,1.5)  
+alpha = pyanno.util.alloc_mat(K,K,1.5)
 for k1 in Ks:
     for k2 in Ks:
         if (k1 == k2):
-            alpha[k1][k2] = 1.0 # 8.0
+            alpha[k1][k2] = 8.0
             if k2 - 1 >= 0:
-                alpha[k1][k2-1] = 1.0 # 2.0
+                alpha[k1][k2-1] = 2.0
             if k2 + 1 < K:
-                alpha[k1][k2+1] = 1.0 # 2.0
+                alpha[k1][k2+1] = 2.0
 print "     beta=",beta
 for k in Ks:
     print "     alpha[",k,"]=",alpha[k]

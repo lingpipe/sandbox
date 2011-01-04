@@ -14,6 +14,7 @@ def agr(confusion_mat):
         agr += confusion_mat[k][k]
     return float(agr)/float(tot)
 
+
 def s(confusion_mat):
     """Return the s statistic for the specified confusion matrix.
 
@@ -23,6 +24,7 @@ def s(confusion_mat):
     agr_ = agr(confusion_mat)
     e_agr = 1.0/float(len(confusion_mat))
     return chance_adj_agr(agr_,e_agr)
+
 
 def pi(confusion_mat):
     """Return Scott's pi statistic for the specified confusion matrix.
@@ -43,6 +45,7 @@ def pi(confusion_mat):
     for k in Ks:
         e_agr += theta[k]**2
     return chance_adj_agr(agr_,e_agr)
+
 
 def kappa(confusion_mat):
     """Return Cohen's kappa statistic for the specified confusion matrix.
@@ -80,6 +83,7 @@ def chance_adj_agr(agr,expected_agr):
     """
     return (agr - expected_agr)/(1.0 - expected_agr)
           
+
 def K(item,anno,label):
     """Return the K agreement statistic for multiple annotators
     represented by the specified items, annotators, and labels.
@@ -171,51 +175,4 @@ def global_prevalence(item,label):
     return theta
 
 
-
-def confusion_matrices(item,anno,label):
-    (I,J,K,N,anno_to_item_map) = encode(item,anno,label)
-    for j1 in range(J):
-        for j2 in range(j1+1,J):
-            conf_mat = alloc_mat(K,K)
-            item_set1 = set(anno_to_item_map[j1].keys())
-            item_set2 = set(anno_to_item_map[j2].keys())
-            item_set_both = item1.intersect(item2)
-            for i in item_set_both:
-                label1 = anno_to_item_map[j1][i]
-                label2 = anno_to_item_map[j2][i]
-                conf_mat[label1][label2] += 1
-            yield (j1,j2,conf_mat)
-
-
-# assumes unique annotations with map representation
-def encode(item,anno,label):
-    """Internal use only"""
-    if len(anno) != len(anno):
-        raise ValueError("len(item) != len(anno)")
-    if len(label) != len(anno):
-        raise ValueError("len(label) != len(anno)")
-    I = max(item)+1
-    J = max(anno)+1
-    K = max(label)+1
-    N = len(item)
-    anno_to_item_map = {}
-    for j in range(J):
-        anno_to_item_map[j] = {}
-    for n in range(N):
-        anno_to_item_map[anno[n]][item[n]] = label[n]
-    return (I,J,K,N,anno_to_item_map)
-    
-
-def print_agr_metrics(item,anno,label):
-    """Internal use only"""
-    print "{0:>3},{1:>3}, {2:>5}, {3:>5}, {4:>5}, {5:>5}".\
-        format("j1","j2","agr","s","pi","kappa")
-    for (j1,j2,conf_mat) in confusion_matrices(item,anno,label):
-        print "{0:3d},{1:3d}, {2:5.3f}, {3:5.3f}, {4:5.3f}, {5:5.3f}".\
-            format(j1,j2,
-                   agr(conf_mat),
-                   s(conf_mat),
-                   pi(conf_mat),
-                   kappa(conf_mat))
-    
 

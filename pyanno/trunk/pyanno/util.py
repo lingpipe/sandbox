@@ -1,5 +1,3 @@
-# MODULE: pyanno.util
-
 def alloc_vec(N,x=0.0):
     result = []
     n = 0
