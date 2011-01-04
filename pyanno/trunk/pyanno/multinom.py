@@ -7,10 +7,66 @@ from .util import *
 def mle(item,
         anno,
         label,
-        init_acc=0.5,
-        epsilon=0.001,
-        max_epochs=1000):
+        init_acc=0.6,
+        epsilon=0.0001,
+        max_epochs=500):
+    """Returns a tuple (diff,ll,prev,cat,acc) containing the final
+    difference in log likelihood, estimates for the data's
+    log likelihood, the prevalence of categories, the categories of
+    items, and the accuracies of each annotator (see below for more
+    detail, including dimensions and types).
 
+    The model is defined in the Models.txt file in the top level of
+    the distribution.
+
+    The data is provided in the form of three parallel arrays of
+    length N.  For each index n, the parallel arrays has the content
+
+    item[n] is the ID of the item being annotated, 
+    anno[n] the ID of the annotator doing the annotation, and
+    label[n] the ID of the category the annotator assigned the item.
+    
+    The rest of this description assumes the following constants:
+
+    I = max(item) + 1 is the number of items, numbered 0 to I-1.
+    J = max(anno) + 1 is the number of annotators, numbered 0 to J-1.
+    K = max(label) + 1 is the number of categories, numbered 0 to K-1.
+
+    Keyword arguments:
+    item -- int[N], 0 <= item[n] < I
+    list of item identifiers
+
+    anno -- int[N], 0 <= anno[n] < J
+    list of annotator identifiers
+
+    label -- int[N], 0 <= label[n] < K
+    list of labels by annotators for items
+
+    init_acc --  float[J][K][K] >= 0.0, SUM_k2 init_acc[j][k][k2] = 1.0
+    initial accuracy estimate for annotators for EM (default 0.6)
+
+    epsilon -- float >= 0.0
+    minimum log likelihood increase to continue (default 0.0001)
+
+    max_epochs -- int > 0
+    maximum numbe of epochs (default 500)
+
+    Return tuple: (diff, ll, mle, cat, acc)
+    diff --   float >= 0.0
+    increase in log likelihood over past 10 epochs
+    
+    ll -- float <= 0.0
+    log likelihood for estimates returned
+
+    prev -- float[K] >= 0, SUM_k prev_mle[k] = 1.0
+    maximum likelihood estimate of category prevalence
+
+    cat -- float[I][K] >=0,  SUM_k cat_mle[i][k] = 1.0
+    maximum likelihood estimate of categories
+
+    acc -- float[J][K][K] >=0, SUM_k2 acc_mle[i][k][k2] = 1.0
+    maximum likelihood estimate of annotator accuracies 
+    """
     if epsilon < 0.0:
         raise ValueError("epislon < 0.0")
     if max_epochs < 0:
@@ -33,14 +89,41 @@ def mle(item,
     return (diff,ll,prev_mle,cat_mle,accuracy_mle)
 
 
-def mle_em(item,    # int[N]
-           anno,    # int[N]
-           label,   # int[N]
-           init_accuracy=0.5):
+def mle_em(item,
+           anno,
+           label,
+           init_accuracy=0.6):
+    """Returns a generator over per-epoch maximum-likelihood estimates,
+    with generated items consisting of (ll,prev,cat,acc) tuples.
 
-    I = max(item)+1
-    J = max(anno)+1
-    K = max(label)+1
+    See the documentation of pyanno.multinom.mle() for more information
+    on the inputs.
+    
+    Keyword arguments:
+    item -- int[N], 0 <= item[n] < I
+    list of item identifiers
+
+    anno -- int[N], 0 <= anno[n] < J
+    list of annotator identifiers
+
+    label -- int[N], 0 <= label[n] < K
+    list of labels by annotators for items
+
+    init_accuracy -- float, 0 <= init_accuracy <= 1
+    initial accuracy of annotators to seed EM
+
+    Generated tuples (ll,prev,cat,acc):
+    ll -- log likelihood of data given parameters in
+    current epoch
+    prev -- estimate of prevalence in current epoch
+    cat -- estimate of category distribution for items
+    in current epoch
+    acc -- estimate of annotator accuracies in current
+    epoch
+    """
+    I = max(item) + 1
+    J = max(anno) + 1
+    K = max(label) + 1
     N = len(item)
 
     Is = range(I)
@@ -121,10 +204,31 @@ def map(item,
         label,
         alpha=None,
         beta=None,
-        init_acc=0.5,
+        init_acc=0.6,
         epsilon=0.001,
         max_epochs=1000):
+    """Returns maximum a posteriori (MAP) estimate tuple
+    (diff,ll,lp,prev,cat,acc) consisting of final difference,
+    log likelihood, log prior, category prevalence estimate,
+    item category estimates, and annotator accuracy estimates.
 
+    The model is defined in the Models.txt file in the top level of
+    the distribution.
+    
+    See the documentation for pyanno.multinom.mle() in this module for
+    a description of all but the following inputs:
+    
+    alpha -- matrix of priors for annotator accuracy by category
+    (default uniform with all 1.0 values)
+
+    beta -- array of priors for prevalence (default
+    uniform with all 1.0 values)
+
+    The outputs are the same as for pyanno.multinom.mle(), with the
+    following addition:
+
+    lp -- log of the prior p(acc|alpha) * p(prev|beta)
+    """
     if epsilon < 0.0:
         raise ValueError("epislon < 0.0")
     if max_epochs < 0:
@@ -153,8 +257,20 @@ def map_em(item,
            label,
            alpha=None,
            beta=None,
-           init_accuracy=0.5):
+           init_accuracy=0.6):
+    """
+    Return a generator of tuples (lp,ll,prev,cat,acc), one per epoch,
+    consisting of log prior, log likelihood, prevalence, category, and
+    accuracy estimates.  
 
+    The MAP model is defined in Models.txt in the top-level directory.
+
+    The arguments are the same as for pyanno.multinom.map(), and
+    the tuples are just per-epoch versions of the same.
+
+    This generator is to map() as mle_em() is to mle().  See the
+    documentation for those functions in this module for more info.
+    """
     I = max(item)+1
     J = max(anno)+1
     K = max(label)+1

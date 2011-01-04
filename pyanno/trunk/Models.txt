@@ -3,9 +3,11 @@ pyanno 1.0: MODEL DEFINITIONS
 
 DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
 ------------------------------------------------------------
-Model I generalizes the model in (Dawid and Skene 1979) to arbitrary
-designs, including that of (Rzhetsky, .  There are no priors, so
-estimation is necessarily through maximum likelihood.
+
+Our first model generalizes the model in (Dawid and Skene 1979) to
+arbitrary designs, including that of (Rzhetsky et al. 2009).  There
+are no priors, so estimation is necessarily through maximum
+likelihood.
 
 Data
 --------------------
@@ -42,12 +44,63 @@ p(y,z|theta,pi)
 
 Observed Data Likelihood
 --------------------
-p(y|theta,pi) = SUM_z p(y,z|theta,pi)
+p(y|theta,pi) = INTEGRAL_z p(y,z|theta,pi) dz
 
 Maximum Likelihood Estimate (MLE)
 --------------------
 (theta*,pi*) = ARGMAX_{theta,pi} p(y|theta,pi)
 
+
+
+DAWID AND SKENE'S MODEL WITH PRIORS
+------------------------------------------------------------
+The second model adds priors to the Dawid and Skene model, which
+corresponds to the full Model B in (Rzhetsky et al. 2009).
+
+Priors
+--------------------
+This model basically adds Dirichlet priors for the categorical
+parameters.  There is one prior beta for prevalence pi, and
+K priors alpha[k] for annotator response for items of reference
+category k.  
+
+   beta in (0,infty)^K
+
+   alpha[k] in (0,infty)^K
+
+For maximum a posteriori fitting, all values must be 
+greater than or equal to 1.0.
+
+
+Model
+--------------------
+In BUGS-like notation, we add the following:
+
+pi ~ Dirichlet(beta)
+
+for (j in 1:J) {
+    for (k in 1:K) {
+    	theta[j][k] ~ Dirichlet(alpha[k])
+    }
+}
+
+Complete Likelihood
+--------------------
+We just add in terms for the priors to the data likelihood
+above, giving us:
+
+p(y,z,theta,pi|alpha,beta)
+    = p(theta|alpha) * p(pi|beta) * p(y,z|theta,pi)
+
+where
+
+     p(theta|alpha) = Dirichlet(theta|alpha)
+
+and
+
+     p(theta|alpha) 
+         = PROD_{j in 1:J} PROD_{k in 1:K} 
+	     Dirichlet(theta[j][k]|alpha[k]).
 
 EM ALGORITHM
 ------------------------------------------------------------
@@ -75,65 +128,7 @@ then maximizing the parameters for those expectations.
         if log likelihood doesn't change much, exit
 
 
-PYTHON API DOCUMENTATION
-------------------------------------------------------------
 
-pyanno.sim_dawid_skene(I,J,K,alpha,beta)
---------------------
-simulate data for an annotation experiment with
-a full-panel design in which every annotator annotates
-each item once
-
-I: int, val > 0
-   number of items
-J: int, val > 0 
-   number of annotators
-K: int, val > 0
-   number of categories
-alpha: double[K], vals > 0
-       parameters for accuracy sampling (optional)
-beta: double[K][K], vals > 0
-      parameters for prevalence sampling (optional)
-
-return: (prevalence,category,accuracy,item,anno,label)
-where
-prevalence: double[K], vals in [0,1], sum to 1.0
-            simulated category prevalence
-category: int[I], vals in 1:K
-          simulated categories for items
-accuracy: double[J][K][K], vals in [0,1], double[j][k] sums to 1
-          simulated accuracies for annotators, with
-          accuracy[j][k1][k2] being the probability of annotator
-          j responding k2 if the true category is k1
-item: int[I*J], vals in 1:I
-      items for annotation n
-anno: int[I*J], vals in 1:J
-      annotator for annotation n
-label: int[I*J], vals in 1:K
-       label for annotation n
-
-
-pyanno.dawid_skene_mle_em(item,anno,label)
---------------------
-item: int[N], vals in 1:I
-      identifiers of items being annotated
-anno: int[N], vals in 1:J
-      identifier of annotator
-label: int[N], vals in 1:K
-       category provided by annotator
-
-returns a generator of EM estimates, each of which
-is of the form (log_likelihood,prev_hat,cat_hat,acc_hat)
-where 
-
-log_likelihood: double, val <= 0
-                log p(data|params)
-prev_hat: double[K], vals in [0,1], sum to 1.0
-          estimate of category prevalence
-cat_hat: double[I][K], vals in [0,1], cat_hat[i] sums to 1.0
-         estimates of category probabilities for items
-acc_hat: double[J][K][K], vals in [0,1], acc_hat[j][k] sums to 1.0
-         estimates of accuracies for annotators and true items
 
 
 REFERENCES
