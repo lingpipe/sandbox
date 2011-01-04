@@ -141,7 +141,7 @@ def mle_em(item,    # int[N]
             log_likelihood += log_likelihood_i
 
         for i in Is:
-            prob_norm(category[i],Ks)
+            prob_norm(category[i])
 
         # return here with E[cat|prev,acc] and LL(prev,acc;y)
         yield (log_likelihood,prevalence,category,accuracy)
@@ -151,7 +151,7 @@ def mle_em(item,    # int[N]
         for i in Is:
             for k in Ks:
                 prevalence[k] += category[i][k]
-        prob_norm(prevalence,Ks)
+        prob_norm(prevalence)
 
         fill_tens(accuracy,0.0)
         for n in Ns:
@@ -159,7 +159,7 @@ def mle_em(item,    # int[N]
                 accuracy[anno[n]][k][label[n]] += category[item[n]][k]
         for j in Js:
             for k in Ks:
-                prob_norm(accuracy[j][k],Ks)
+                prob_norm(accuracy[j][k])
 
 
 
@@ -235,7 +235,7 @@ def em_ds_prior(item,            # int[N]
             log_likelihood += log_likelihood_i
 
         for i in Is:
-            prob_norm(category[i],Ks)
+            prob_norm(category[i])
 
         yield (log_likelihood,prevalence,category,accuracy)  
 
@@ -244,7 +244,7 @@ def em_ds_prior(item,            # int[N]
         for i in Is:
             for k in Ks:
                 prevalence[k] += category[i][k]
-        prob_norm(prevalence,Ks)
+        prob_norm(prevalence)
 
         # M step 2: accuracy*
         for j in Js:
@@ -255,5 +255,5 @@ def em_ds_prior(item,            # int[N]
                 accuracy[anno[n]][k][label[n]] += category[item[n]][k]
         for j in Js:
             for k in Ks:
-                prob_norm(accuracy[j][k],Ks)
+                prob_norm(accuracy[j][k])
 
