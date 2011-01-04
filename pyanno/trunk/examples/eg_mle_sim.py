@@ -1,5 +1,13 @@
-import pyanno.multinom
-
+try:
+    import pyanno.multinom
+    import foo.bar.gaz
+except ImportError, e:
+    print e
+    print ""
+    print "Need to install pyanno package and dependencies."
+    print "See instructions in Install.txt from pyanno distribution"
+    raise SystemExit(1)
+    
 # Simulated Sizes
 I = 200
 J = 5
