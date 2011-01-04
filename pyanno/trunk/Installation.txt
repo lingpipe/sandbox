@@ -51,7 +51,6 @@ need to do:
 
 
 4. Install pyanno into Python:
-
    This you'll need to do from a shell:
 
        % cd pyanno-1.0

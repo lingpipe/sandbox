@@ -41,8 +41,6 @@ for j in Js:
         pyanno.multinom.prob_norm(accuracy_sample[j][k])
 
 print "RUNNING EM"
-MAX_EPOCHS = 1000
-EPSILON = 0.00001
 (diff,ll,prev_mle,cat_mle,accuracy_mle) \
     = pyanno.multinom.mle(item,anno,label)
 
