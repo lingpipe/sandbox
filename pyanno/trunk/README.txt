@@ -13,12 +13,9 @@ inferring from multiply coded categorical data
 The models include Dawid and Skene's (1979) multinomial model with a
 maximum likelihood estimator implemented with EM.  A generalization of
 Dawid and Skene's model with Dirichlet priors on prevalence and
-estimator accuracy is also implemented.  For this model, estimator
-implementations include a maximum a posteriori estimator via
-expectation maximization (EM), a Bayesian posterior sampler estimated
-via Gibbs sampling, and a Bayesian estimator implemented via averaging
-Gibbs samples from the posterior.
-
+estimator accuracy is also implemented.  This model is also estimated
+with EM.  Finally, Rzhetsky et al.'s (2009) version of the Dawid and
+Skene model with tied accuracies and uniform errors.
 
 
 LICENSING

@@ -1,5 +1,5 @@
 # Library Module
-from math import log
+import math
 import numpy
 import pymc
 from .util import *
@@ -90,7 +90,7 @@ def mle_em(item,    # int[N]
             likelihood_i = 0.0
             for k in Ks:
                 likelihood_i += category[i][k]
-            log_likelihood_i = log(likelihood_i)
+            log_likelihood_i = math.log(likelihood_i)
             log_likelihood += log_likelihood_i
 
         for i in Is:
@@ -133,21 +133,21 @@ def map(item,
     llp_curve = []
     epoch = 0
     diff = float('inf')
-    for (lp,ll,prev_mle,cat_mle,accuracy_mle) in mle_em(item,anno,label,alpha,beta,init_acc):
-        print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={1:+10.4f}  llp={1:+10.4f}   diff={2:10.4f}".\
+    for (lp,ll,prev_mle,cat_mle,accuracy_mle) in map_em(item,anno,label,
+                                                        alpha,beta,init_acc):
+        print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
                 format(epoch,ll,lp,ll+lp,diff)
-        log_likelihood_curve.append(ll+lp)
+        llp_curve.append(ll+lp)
         if epoch > max_epochs:
             break
-        if len(log_likelihood_curve) > 10:
-            diff = (ll - log_likelihood_curve[epoch-10])/10.0
+        if len(llp_curve) > 10:
+            diff = (llp_curve[epoch] - llp_curve[epoch-10])/10.0
             if abs(diff) < epsilon:
                 break
         epoch += 1
     return (diff,ll,lp,prev_mle,cat_mle,accuracy_mle)
 
 
-# alpha and beta previous counts, not alpha/beta Dirichlet here
 def map_em(item,
            anno,
            label,
@@ -166,9 +166,31 @@ def map_em(item,
     Ns = range(N)
 
     if alpha == None:
-        alpha = alloc_mat(K,K,0.0)
+        alpha = alloc_mat(K,K,1.0)
     if beta == None:
-        beta = alloc_vec(K,0.0)
+        beta = alloc_vec(K,1.0)
+
+    for k in Ks:
+        if beta[k] < 1.0:
+            raise ValueError("beta[k] < 1")
+    for k1 in Ks:
+        for k2 in Ks:
+            if alpha[k1][k2] < 1.0:
+                raise ValueError("alpha[k1][k2] < 1")
+
+    alpha_prior_count = alloc_mat(K,K)
+    for k1 in Ks:
+        for k2 in Ks:
+            alpha_prior_count[k1][k2] = alpha[k1][k2] - 1.0
+    beta_prior_count = alloc_vec(K)
+    for k in Ks:
+        beta_prior_count[k] = beta[k] - 1.0
+
+    beta_array = numpy.array(beta)
+    alpha_array = []
+    for k in Ks:
+        alpha_array.append(numpy.array(alpha[k]))
+
 
     if len(anno) != N:
         raise ValueError("len(item) != len(anno)")
@@ -197,12 +219,12 @@ def map_em(item,
 
     # initialize params
     prevalence = alloc_vec(K)
-    vec_copy(beta,prevalence)
+    vec_copy(beta_prior_count,prevalence)
     prob_norm(prevalence)
 
     category = alloc_mat(I,K)
     for i in Is:
-        vec_copy(beta,category[i])
+        vec_copy(beta_prior_count,category[i])
         prob_norm(category[i])
 
     accuracy = alloc_tens(J,K,K,(1.0 - init_accuracy)/(K-1.0))
@@ -210,11 +232,6 @@ def map_em(item,
         for k in Ks:
             accuracy[j][k][k] = init_accuracy
     
-    beta_a = numpy.array(beta)
-    alpha_a = []
-    for k in Ks:
-        alpha_a.append(numpy.array(alpha[k]))
-
     while True:
 
         # E: p(cat[i]|...) 
@@ -231,16 +248,21 @@ def map_em(item,
             likelihood_i = 0.0
             for k in Ks:
                 likelihood_i += category[i][k]
-            log_likelihood_i = log(likelihood_i)
+            if likelihood_i < 0.0:
+                print "likelihood_i=",likelihood_i, "cat[i]=",category[i]
+            log_likelihood_i = math.log(likelihood_i)
             log_likelihood += log_likelihood_i
 
         log_prior = 0.0
         prevalence_a = numpy.array(prevalence[0:(K-1)])
-        log_prior += pymc.dirichlet_like(prevalence_a,beta_a)
+        log_prior += dir_ll(prevalence_a,beta_array)
         for j in Js:
             for k in Ks:
                 acc_j_k_a = numpy.array(accuracy[j][k][0:(K-1)])
-                log_prior += pymc.dirichlet_like(acc_j_k_a,alpha_a[k])
+                log_prior += dir_ll(acc_j_k_a,alpha_array[k])
+        if math.isnan(log_prior) or math.isinf(log_prior):
+            log_prior = 0.0
+        
 
         for i in Is:
             prob_norm(category[i])
@@ -249,7 +271,7 @@ def map_em(item,
         yield (log_prior,log_likelihood,prevalence,category,accuracy)
 
         # M: prevalence* + accuracy*
-        vec_copy(beta,prevalence)
+        vec_copy(beta_prior_count,prevalence)
         for i in Is:
             for k in Ks:
                 prevalence[k] += category[i][k]
@@ -257,7 +279,7 @@ def map_em(item,
 
         for j in Js:
             for k in Ks:
-                vec_copy(alpha[k],accuracy[j][k])
+                vec_copy(alpha_prior_count[k],accuracy[j][k])
         for n in Ns:
             for k in Ks:
                 accuracy[anno[n]][k][label[n]] += category[item[n]][k]
@@ -266,6 +288,20 @@ def map_em(item,
                 prob_norm(accuracy[j][k])
 
 
+# defined to prevent underflows resulting from theta[k] = 0.0, causing nans:
+# >>> theta = numpy.array([ 0.75300156,  0.24474181,  0.00225663])
+# >>> alpha = numpy.array([4.0,2.0,1.0,1.0])
+# >>> pymc.dirichlet_like(theta,alpha)
+# nan
+def dir_ll(theta,alpha):
+    delta = 0.0000001
+    while True:
+        for k in range(len(theta)):
+            # subtract delta, but with delta min
+            theta[k] = max(delta, theta[k] - delta) 
+        ll = pymc.dirichlet_like(theta,alpha)
+        if not math.isnan(ll) and not math.isinf(ll):
+            return ll
 
 def sim_ordinal(I,J,K,alpha=None,beta=None):
 
