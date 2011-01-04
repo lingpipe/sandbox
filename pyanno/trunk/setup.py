@@ -1,12 +1,5 @@
-# create /dist/curate-1.0.zip and /MANIFEST
-# -------------------------------------------------
-# % python setup.py sdist
-
 # install package into local Python distribution
 # ----------------------------------------------
-# % unzip pyanno-1.0.zip
-# % cd pyanno-1.0
-# % python setup.py install
 
 from distutils.core import setup 
 
