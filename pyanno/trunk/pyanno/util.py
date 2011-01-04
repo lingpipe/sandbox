@@ -76,6 +76,9 @@ def mat_sum(x):
 
 def prob_norm(theta):
     Z = sum(theta)
+    if Z <= 0.0:
+        fill_vec(theta,1.0/float(len(theta)))
+        return
     n = len(theta) - 1
     while n >= 0:
         theta[n] /= Z
