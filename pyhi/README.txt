@@ -57,7 +57,10 @@ and gzipped tarball (.tar.gz) using:
 
     % python setup.py sdist --formats=gztar,zip
 
-This will place the distribution files in directory dist.
+This will place the distribution files in directory dist.  It uses the
+MANIFEST.in file to determine which additional files on top of those
+ending in .py to include (there's an include syntax for patterns). 
+This package includes everything.  
 
 
 Running Unit Tests
