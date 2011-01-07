@@ -22,6 +22,13 @@ Download pyhi-1.0.tar.gz into directory $DL, then:
     % cd pyhi-1.0
     % python setup.py install
 
+Unfortunately, uninstalling requires finding the directories under
+your python distribution and removing them by hand.  Look in:
+
+    $PYTHON_HOME/lib/site-packages/
+
+where $PYTHON_HOME is the directory in which Python is installed.
+
 
 Running pyhi Command
 ------------------------------------------------------------
