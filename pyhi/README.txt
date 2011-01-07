@@ -1,15 +1,17 @@
 README: pyhi 1.0
 ============================================================
 
-The utility of the pyhi package is a purely pedagogical of how to
-organize a Python package for distribution and use.
+The pyhi package is a pedagogical example of how to organize a Python
+package for distribution and use.
 
 pyhi 1.0 consists of a single package, pyhi, made up of a single
 module, pyhi.greet, containing two functions, hello() and goodbye().
 
-The package is fully configured with scripts to run greetings,
-unit tests, full documentation, and distribution configuration with
-license.  
+The package is fully configured with scripts to unit test, build and
+install the package, and run a greetings program from a script.  The
+package contains full documentation, including installation 
+and use instructions and code doc strings.
+
 
 Installation
 ------------------------------------------------------------
@@ -39,6 +41,17 @@ or from a script:
 
     import pyhi.greet
     pyhi.greet.hello(first="Big",last="Kahuna")
+
+
+Running Unit Tests
+------------------------------------------------------------
+
+The unit tests are based on the python module unnittest.  They are
+located in bin/runtests.py and may be run with:
+
+   % pyhthon $DL/pyhi-1.0/bin/runtests.py
+
+It'll print out how many tests passed or indicate failure.
 
 
 About

@@ -8,7 +8,7 @@ def hello(first="Dave", second=""):
 
     Return: Personalized greeting
     """
-    return ("Hello, " + first + " " + second).lstrip()
+    return ("Hello, " + first + " " + second).strip() + "."
 
 def goodbye():
     """Returns goodbye message.
@@ -16,4 +16,4 @@ def goodbye():
     Named Arguments: None
     Return: Goodbye message.
     """
-    return "Goodbye"
+    return "Goodbye."
