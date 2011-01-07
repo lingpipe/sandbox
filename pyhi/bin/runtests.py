@@ -3,12 +3,15 @@ import pyhi.greet
 
 class TestPyhiGreet(unittest.TestCase):
     def test_hello(self):
-        self.assertEquals("Hello, Dave",
+        self.assertEquals("Hello, Dave.",
                           pyhi.greet.hello())
-        self.assertEquals("Hello, Bob",
+        self.assertEquals("Hello, Bob.",
                           pyhi.greet.hello("Bob"))
-        self.assertEquals("Hello, John Doe",
+        self.assertEquals("Hello, John Doe.",
                           pyhi.greet.hello(second="Doe", first="John"))
+    def test_goodbye(self):
+        self.assertEquals("Goodbye.",
+                          pyhi.greet.goodbye())
 
 # conditional runs tests if this file called as script (allows import w/o run)
 if __name__ == '__main__':
