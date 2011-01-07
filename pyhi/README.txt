@@ -50,6 +50,16 @@ or from a script:
     pyhi.greet.hello(first="Big",last="Kahuna")
 
 
+Building
+------------------------------------------------------------
+The distribution itself may be built as a zip archive (.zip)
+and gzipped tarball (.tar.gz) using:
+
+    % python setup.py sdist --formats=gztar,zip
+
+This will place the distribution files in directory dist.
+
+
 Running Unit Tests
 ------------------------------------------------------------
 
@@ -67,8 +77,14 @@ if your python is installed in /usr/bin/python.
 It'll print out how many tests passed or indicate failure.
 
 
+Cleaning
+------------------------------------------------------------
+
+To avoid clutter, there's no clean (or build) scripts.  The build
+generates a file (MANIFEST) and two directories (build, dist).  After
+installation, these may all be removed.
+
+
 About
 ------------------------------------------------------------
 by Bob Carpenter, Alias-i, Inc.  carp@lingpipe.com
-
-
