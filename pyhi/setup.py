@@ -11,5 +11,5 @@ setup(name="pyhi",
       maintainer = ['Bob Carpenter'],
       maintainer_email = ['carp@lingpipe.com'],
       description = ['Package demonstrating how to organize python packages.'],
-      url = ['http://alias-i.com/lingpipe/web/sandbox.html'],
-      download_url = ['https://aliasi.devguard.com/svn/sandbox/pyhi'] );
+      url = ['http://alias-i.com/python/pyhi/index.html'],
+      download_url = ['http://alias-i.com/python/pyhi/index.html'])
