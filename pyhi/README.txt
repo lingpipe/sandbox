@@ -47,9 +47,15 @@ Running Unit Tests
 ------------------------------------------------------------
 
 The unit tests are based on the python module unnittest.  They are
-located in bin/runtests.py and may be run with:
+located in pyhi-1.0/bin/runtests.py and may be run with:
 
-   % pyhthon $DL/pyhi-1.0/bin/runtests.py
+   % pyhthon runtests.py
+
+or
+
+   % runtests.py
+
+if your python is installed in /usr/bin/python.
 
 It'll print out how many tests passed or indicate failure.
 
