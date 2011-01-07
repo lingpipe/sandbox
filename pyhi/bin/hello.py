@@ -1,4 +1,4 @@
-# !/usr/bin/python
+#! /usr/bin/python
 
 # USAGE:  (python) hello.py [FirstName [SecondName]]
 # You only need (python) if your python install isn't
