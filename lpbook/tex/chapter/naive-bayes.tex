@@ -510,7 +510,7 @@ to be his laugh when 60\% of the training examples were his.  The
 reason has to do with smoothing, to which we turn in the next section.
 
 
-\section{Smoothing, Prior Counts, and Maximum Likelihood}
+\section{Maximum Likelihood Estimation and Smoothing}
 
 At root, a naive Bayes classifier estimates two kinds of things.  First,
 it estimates the probability of each category independently of any
@@ -522,25 +522,29 @@ For each category, the naive Bayes model provides an estimate of the
 probability of seeing each token (in the training set) in that
 category.
 
+\subsection{Maximum Likelihood by Frequency}
+
 These estimates are carried out by counting.  In the simplest case,
 for category prevalence, if there are two categories, $A$ and $B$,
 with three training instances for category $A$ and seven for category
 $B$, then a simple estimate, called the maximum likelihood estimate,
 can be derived based on relative frequency in the training data.  In
-this case, the probability of category $A$ is 0.3 and that of category
-$B$ is 0.7.  
+this case, the estimated probability of category $A$ is 0.3 and that
+of category $B$ is 0.7.
 
 The frequency-based estimate is called ``maximum likelihood'' because
 it assigns the probability that provides the highest probability
 estimate for the data that's seen.  If we have three instance of
 category $A$ and seven of category $B$, the maximum likelihood
 estimate is 0.3 for $A$ and 0.7 for category $B$.  The same thing
-holds in the situation where there are more than two categories.
+holds, namely that maximum likelihood probability estimates are
+proportional to frequency, in the situation where there are more than
+two categories.
 
 The problem with simple frequency-based estimates is that they are not
-very robust for large sets with limited training data, which is just
-what we find in language.  For instance, if we had training for
-him and her that looked as follows,
+very robust for large numbers of words with limited training data,
+which is just what we find in language.  For instance, if we had
+training for him and her that looked as follows,
 %
 \codeblock{FragmentsNb.5}
 %
@@ -553,13 +557,231 @@ probability of uttering \stringmention{tee} and she's assigned zero
 probability of uttering \stringmention{har}.  This becomes a huge problem
 when we're dealing with vocabularies of thousands or millions of 
 possible tokens, many of which are seen only a handful of times in
-a few categories.
+a few categories.  
+
+Maximum likelihood estimation is supported by LingPipe's traditional
+naive Bayes implementation.  Just set the prior counts to zero; see
+the next section for more detail on prior counts.
+
+\subsection{Prior Counts for Smoothed Estimates}
 
 To get around the zero-probability estimates arising from maximum
-likelihood, the usual approach is to smooth these estimates.  
+likelihood, the usual approach is to smooth these estimates.  The
+simplest way to do this is to start all of the counts at a (typically
+small) positive initial value.  This leads to what is known as {\it
+  additive smoothing} estimates and the amount added is
+called the {\it prior count}.%
+%
+\footnote{In statistical terms, additive smoothing produces the
+  maximum a posteriori (MAP) parameter estimate given a symmetric
+  Dirichlet prior with parameter value $\alpha$ equal to the prior
+  count plus 1.}
+%
+
+There is a second constructor for \code{TradNaiveBayesClassifier} that
+allows the prior counts to be specified, as well as a length normalization,
+which we currently set to \code{Double.NaN} in order to turn off that
+feature (see \refsec{naive-bayes-length-norm} for more information on
+length normalization).  
+
+An example of the use of this constructor is provided in the
+class \code{AdditiveSmooth} in this chapter's package.  It consists
+of a static main method, which begins as follows.
+%
+\codeblock{AdditiveSmooth.1}
+%
+Here we have defined the set of categories to be \stringmention{hot}
+and \stringmention{cold}, used a whitespace-breaking tokenizer factory,
+and set the category prior count to 1.0 and the token prior count to 0.5.
+This will have the effect of adding 0.5 to the count of all tokens and
+1.0 to the count of all categories.
+
+Next, consider training three hot examples and two cold examples.
+%
+\codeblock{AdditiveSmooth.2}
+%
+There is a total of 7 different tokens in these five training items,
+\stringmention{super}, \stringmention{steamy}, \stringmention{out},
+\stringmention{boiling}, \stringmention{today},
+\stringmention{freezing}, and \stringmention{icy}.  Only the token
+\stringmention{out} appears in both a hot training example and a cold one.
+All other tokens appear once, except \stringmention{steamy},
+which appears twice in the hot category.
+
+After building the model, the code iterates over the categories and
+tokens printing probabilities.  First, the category probabilities
+are computed; for generality, the code uses the method \code{categorySet()}
+on the classifier to retrieve the categories.
+%
+\codeblock{AdditiveSmooth.3}
+%
+The method \code{probCat()} retrieves the probability of a category.
+
+The next code block just iterates over the tokens using the
+traditional naive Bayes classifier method \code{knownTokenSet()},
+which contains all the tokens in the training data.  Within that
+loops, it again iterates over the categories.  This time, the
+traditional naive Bayes classifier method \code{probToken()} is
+used to retrieve the estimated probabilty that a token in 
+an instance of that category is equal to the given token.
+%
+\codeblock{AdditiveSmooth.4}
 
 
 
+\subsubsection{Running the Demo}
+
+There is an ant target \code{additive-smooth} which calls the 
+command.
+
+\commandlinefollow{ant additive-smooth}
+\begin{verbatim}
+p(cold)=0.429    p(hot)=0.571
+
+p(   super|cold)=0.077    p(   super| hot)=0.158
+p(     icy|cold)=0.231    p(     icy| hot)=0.053
+p( boiling|cold)=0.077    p( boiling| hot)=0.158
+p(  steamy|cold)=0.077    p(  steamy| hot)=0.263
+p(   today|cold)=0.077    p(   today| hot)=0.158
+p(freezing|cold)=0.231    p(freezing| hot)=0.053
+p(     out|cold)=0.231    p(     out| hot)=0.158
+\end{verbatim}
+%
+The first pair of columns indicates the estimated probability of each
+token given the category, hot or cold, and the bottom part indicates
+the overall probability of the categories hot and cold before seeing
+any data.  
+
+Let's look at some particular estimates, focusing on the hot category.
+Given this training data, a token in a statement expressing hot
+weather is 5\% or so likely to be \stringmention{icy} and 26\% likely
+to be \stringmention{steamy}.  The token \stringmention{icy} was
+not in the training data for the hot category, whereas the token
+\stringmention{steamy} appeared twice.  
+
+With additively smoothed estimates, the probability assigned to a
+given token is proportional to that token's count in the training data
+plus its prior count.  Looking at our examples, these are 2.5 for
+\stringmention{steamy} (count of 2 plus 0.5 prior count), 0.5 for
+\stringmention{icy} and \stringmention{freezing}, and 1.5 for the
+other four tokens.  Thus the total effective count is $1 \times 2.5 +
+4 \times 1.5 + 2 \times 0.5 = 9.5$, and the probability for
+\stringmention{steamy} is $2.5/9.5 \approx 0.263$.  Given this
+estimation method, the sum of the token probabilities is guaranteed to
+be 1.
+
+The probabilities for categories are calculated in the same way.  That
+is, the overall count of hot instances was 3, whereas the count of
+cold training instances was 2.  The prior count for categories was
+1.0, so the effective count for hot is 4 and for cold is 3, so the
+estimated probability of a hot category is $4/7 \approx 0.571$.  As
+with the tokens, the category probabilities will sum to 1, which is as
+it should be with the interpretation of the categories as exclusive
+and exhaustive.
 
 
+
+\section{Item-Weighted Training}
+
+Having seen in the last section how prior counts and training examples
+determine estimates for two kinds of probabilities.  First, the probability
+of a category, and second, the probability of a token in a message of
+a given category.  In each case, we added one to the count of categories
+or tokens for each relevant item in the training set.
+
+There are two situations where it is helpful to weight the training
+examples non-uniformly.  The first situation arises when some examples
+are more important than others.  These can be given higher weights.
+The second situation arises when there is uncertainty in the category
+assignments.  For instance, we might have a string and be only 90\%
+sure it's about hot weather.  In this case, we can train the hot
+catgory with a count of 0.9 and the cold category with a count of 0.1
+for the same training example.  This latter form of training is
+particularly useful for semi-supervised learning, which we consider
+below.  For now, we will just describe the mechanisms for carrying it
+out and see what actually happens.
+
+We provide an example in the class \code{ItemWeighting} in this
+chapter's package.  For the most part, it is the same as the
+\code{AdditiveSmooth} class in the way it sets up the classifier and
+prints out the probability estimates.  The difference is that it weights
+training examples rather than using the default weight of 1.0.
+%
+\codeblock{ItemWeighting.1}
+%
+We've used a smaller example set to focus on the effect of weighting.
+
+There is an ant target \code{item-weight} that prints out the
+resulting estimates, which are as follows.
+
+\commandlinefollow{ant item-weight}
+\begin{verbatim}
+p(cold)=0.536    p(hot)=0.464
+
+p( boiling|cold)=0.098    p( boiling| hot)=0.333
+p(  warmly|cold)=0.255    p(  warmly| hot)=0.112
+p(   dress|cold)=0.255    p(   dress| hot)=0.112
+p(    mild|cold)=0.196    p(    mild| hot)=0.112
+p(     out|cold)=0.196    p(     out| hot)=0.333
+\end{verbatim}
+%
+There are two cold training instances trained with weights of 0.8 and
+0.5.  Now rather than adding 1 to the category count for each
+instance, we add its weight, getting a total observed weight of 1.3.
+With a prior category count of 1.0, the efective count for the cold
+category is 2.3.  There is one training instance for the hot category,
+trained with a weight of 0.99, so the effective hot category count is
+1.99, and the resulting probability of the cold category is
+$2.3/(2.3+1.99) \approx 0.536$.
+
+The tokens get weighted in the same way.  For instance, dress is
+weighted 0.8, and there is a prior count of 0.5 for tokens, so the
+effective count of \stringmention{dress} in the cold category is 1.3;
+its effective count in the hot category is just the prior count, 0.5.
+The token \stringmention{out} is weighted 1.0 in the cold category and
+1.49 in the hot category.  The total count for cold tokens corresponds
+to all counts and priors, with effective counts of 1.3 for
+\stringmention{dress}, 1.3 for \stringmention{warmly}, 1.0 for
+\stringmention{mild} and 1.0 for \stringmention{cold}.  There is also
+a count of 0.5 for \stringmention{boiling}, even though it was never
+used in a cold example.  Thus the probability estimate for
+\stringmention{warmly} is $1.3/(1.3 + 1.3 + 1.0 + 1.0 + 0.5) \approx
+0.255$.
+
+
+\section{Serialization and Compilation}
+
+The traditional naive Bayes classifier class implements both Java's
+\code{Serializable} interface and LingPipe's \code{Compilable}
+interface.  See \refsec{io-object-data-io} for object reading and
+writing, including serializability, and \refsec{io-compilable} for a
+general description of LingPipe's compilation interface.
+
+Serializing a traditional naive Bayes classifier and reading it
+back in results in an instance of \code{TradNaiveBayesClassifier} in
+exactly the same state as the serialized classifier.  In particular,
+a deserialized traditional naive Bayes classifier may be trained
+with further examples.  
+
+For more efficiency, a traditional naive Bayes classifier may be
+compiled.  Among other optimizations, all the logarithms required
+to prevent underflows and convert multiplications to additions
+are precomputed.  
+
+Compiling a traditional naive Bayes classifier and reading it back in
+results in an implementation of \code{JointClassifier<CharSequence>};
+the class implementing this is not public, so the only thing that can
+be done with the compiled classifier is classification.  In particular,
+there's no way to add more training instances or set parameters.
+
+In order to serialize a traditional naive Bayes classifier, its
+tokenizer factory must be serializable.  For compilation, the
+tokenizer factory must be either compilable or serializable.  If
+the tokenizer factory implements LingPipe's \code{Compilable} interface
+it'll be compiled, otherwise it'll be serialized.%
+%
+\footnote{This is carried out with LingPipe's static utility method
+  \code{compileOrSerialize()}, which may be found in the
+  \code{AbstractExternalizable} class in the \code{com.aliasi.util}
+  package.}
 
