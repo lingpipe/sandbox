@@ -51,9 +51,27 @@
     </java>
   </target>
 
+  <target name="additive-smooth"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.AdditiveSmooth"
+          classpathref="classpath"
+          fork="true">
+    </java>
+  </target>
+
+  <target name="item-weight"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.ItemWeighting"
+          classpathref="classpath"
+          fork="true">
+    </java>
+  </target>
+
   <target name="run"
           depends="nb-demo,
-                   cat-skew"/>
+                   cat-skew,
+                   additive-smooth,
+                   item-weight"/>
 
 
 </project>
