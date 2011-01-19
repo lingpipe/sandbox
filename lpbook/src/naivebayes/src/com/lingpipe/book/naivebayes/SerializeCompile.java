@@ -2,6 +2,9 @@ package com.lingpipe.book.naivebayes;
 
 import com.aliasi.classify.Classification;
 import com.aliasi.classify.Classified;
+import com.aliasi.classify.ConditionalClassification;
+import com.aliasi.classify.ConditionalClassifier;
+import com.aliasi.classify.JointClassifier;
 import com.aliasi.classify.JointClassification;
 import com.aliasi.classify.TradNaiveBayesClassifier;
 
@@ -15,8 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public class SerializeCompile {
+import java.io.File;
+import java.io.IOException;
 
+public class SerializeCompile {
 
     /*x SerializeCompile.1 */
     public static void main(String[] args) 
@@ -27,10 +32,6 @@ public class SerializeCompile {
 
         String text = args[0];
         File file = new File(args[1]);
-
-        double lengthNorm = args[0].equalsIgnoreCase("NaN")
-            ? Double.NaN
-            : Double.valueOf(args[1]);
 
         TokenizerFactory tf 
             = new RegExTokenizerFactory("\\P{Z}+");
@@ -60,8 +61,9 @@ public class SerializeCompile {
         /*x SerializeCompile.2 */
         AbstractExternalizable.compileTo(classifier,file);
 
-        JointClassifier<CharSequence> compiledClassifier
-            = (JointClassifier<CharSequence>)
+        @SuppressWarnings("unchecked")
+        ConditionalClassifier<CharSequence> compiledClassifier
+            = (ConditionalClassifier<CharSequence>)
             AbstractExternalizable.readObject(file);
 
         file.delete();
@@ -71,35 +73,49 @@ public class SerializeCompile {
         /*x SerializeCompile.3 */
         AbstractExternalizable.serializeTo(classifier,file);
 
-        JointClassifier<CharSequence> deserializedClassifier
+        @SuppressWarnings("unchecked")
+        TradNaiveBayesClassifier deserializedClassifier
+            = (TradNaiveBayesClassifier)
+            AbstractExternalizable.readObject(file);
+        file.delete();
+        /*x*/
+
+        AbstractExternalizable.serializeTo(classifier,file);
+
+        @SuppressWarnings("unchecked")
+        TradNaiveBayesClassifier deserializedClassifierTrain
             = (TradNaiveBayesClassifier)
             AbstractExternalizable.readObject(file);
 
         file.delete();
 
+        /*x SerializeCompile.4 */
         String s = "hardy har har";
-        deserializedClassifier.handle(new Classified<CharSequence>(t,s));
+        Classified<CharSequence> trainInstance
+            = new Classified<CharSequence>(s,hisCl);
+        deserializedClassifierTrain.handle(trainInstance);
         /*x*/
 
 
-        printResults("Original",classifier,text);
-        printResults("Compiled",compiledClassifier,text);
-        printResults("Serialized, Additionally Trained",
-                     deserializedClassifier,text);
+        print("Original",classifier,text);
+        print("Compiled",compiledClassifier,text);
+        print("Serialized",
+              deserializedClassifier,text);
+        print("Serialized, Additional Training",
+              deserializedClassifierTrain,text);
     }
 
     static void print(String msg,
-                      JointClassifier<CharSequence> classifier,
+                      ConditionalClassifier<CharSequence> classifier,
                       String text) {
-        System.out.println("Results for: " + msg);
-        JointClassification jc
+        System.out.println("\nResults for: " + msg);
+        ConditionalClassification cc
             = classifier.classify(text);
-        for (int rank = 0; rank < jc.size(); ++rank) {
-            String cat = jc.category(rank);
-            double condProb = jc.conditionalProbability(rank);
-            double jointProb = jc.jointLog2Probability(rank);
-            System.out.printf("Rank=%2d  cat=%4s  p(c|txt)=%4.2f  log2 p(c,txt)=%6.2f\n",
-                              rank,cat,condProb,jointProb);
+        for (int rank = 0; rank < cc.size(); ++rank) {
+            String cat = cc.category(rank);
+            double condProb = cc.conditionalProbability(rank);
+            System.out.printf("Rank=%2d  cat=%4s  p(c|txt)=%4.2f\n",
+                              rank,cat,condProb);
         }
     }
 

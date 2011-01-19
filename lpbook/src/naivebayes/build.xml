@@ -67,11 +67,38 @@
     </java>
   </target>
 
+
+  <property name="length.norm" value="1.0"/>
+  <target name="length-norm"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.LengthNorm"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+      <arg value="${length.norm}"/>
+    </java>
+  </target>
+
+  <property name="file" value="temp.JointClassifier"/>
+  <target name="serialize-compile"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.SerializeCompile"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+      <arg value="${file}"/>
+    </java>
+  </target>
+
+
+
   <target name="run"
           depends="nb-demo,
                    cat-skew,
                    additive-smooth,
-                   item-weight"/>
+                   item-weight,
+                   length-norm,
+                   serialize-compile"/>
 
 
 </project>

@@ -58,9 +58,9 @@ public class LengthNorm {
         /*x LengthNorm.1 */
         classifier.setLengthNorm(lengthNorm);
         JointClassification jc = classifier.classify(text);
-        /*x */
+        /*x*/
 
-        // MORE CUT ANDPASTE
+        // MORE CUT AND PASTE
 
         for (int rank = 0; rank < jc.size(); ++rank) {
             String cat = jc.category(rank);
