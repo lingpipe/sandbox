@@ -36,7 +36,10 @@ so-called bags of words.%
 %
 LingPipe uses a tokenizer factory to convert a character sequence into
 a sequence of tokens.  The order of these tokens doesn't matter for
-naive Bayes or other classifiers that operate over bags of words.
+naive Bayes or other classifiers that operate over bags of words.  As
+we'll see later, the way in which a sequence of characters is
+tokenized into sequences of strings plays a large role in
+tuning a naive Bayes classifier effectively.
 
 A bag of words is like a set of words in that the order doesn't
 matter, but is unlike a set in that the count does matter.  For
@@ -193,7 +196,7 @@ estimates, which are dangerous in practice for reasons we explain
 below.
 
 
-\section{Getting Started with Naive Bayes}
+\section{Getting Started with Naive Bayes}\label{section:nb-getting-started}
 
 LingPipe has two naive Bayes implementations.  In this section, we
 focus on the traditional implementation of naive Bayes, which is found
@@ -619,14 +622,18 @@ The method \code{probCat()} retrieves the probability of a category.
 
 The next code block just iterates over the tokens using the
 traditional naive Bayes classifier method \code{knownTokenSet()},
-which contains all the tokens in the training data.  Within that
-loops, it again iterates over the categories.  This time, the
-traditional naive Bayes classifier method \code{probToken()} is
-used to retrieve the estimated probabilty that a token in 
-an instance of that category is equal to the given token.
+which contains all the tokens in the training data.  This is
+an unmodifiable view of the actual token set.  Testing whether
+a token is known may be carried out directly using the method
+\code{isKnownToken(String)}.
+
+Within the loop, it again iterates over the categories.  This time,
+the traditional naive Bayes classifier method \code{probToken()}, with
+arguments for a token and category, calculates the estimated
+probability that any given token in a document of the specified
+category is the specified token.
 %
 \codeblock{AdditiveSmooth.4}
-
 
 
 \subsubsection{Running the Demo}
@@ -748,6 +755,152 @@ used in a cold example.  Thus the probability estimate for
 \stringmention{warmly} is $1.3/(1.3 + 1.3 + 1.0 + 1.0 + 0.5) \approx
 0.255$.
 
+\subsection{Training with Conditional Classifications}
+
+Because it can train with weighted examples, the traditional naive
+Bayes classifier supports a method to train using a conditional
+classification.  The method \code{trainConditional()} takes four
+arguments, a \code{CharSequence} for the input text, a
+\code{ConditionalClassification} for the result, as well as a count
+multiplier and minimum category virtual count, the effect of which we
+describe below. This result is the same as if weighted training had
+been carried out for every category with weight equal to the
+conditional probability of the category in the classification times
+the count multiplier.  If the virtual count consisting of the
+probability times the count multiplier is less than the minimum
+virtual count, the category is not trained.
+
+
+\section{Document Length Normalization}\label{section:naive-bayes-length-norm}
+
+It is common in applications of naive Bayes classification to mitigate
+the attenuating effect of document length and correlation among the
+tokens by treating each document as if it were the same length.  This
+can result in better probabilistic predictions by reducing the
+tendency of conditional probability estimates for categories to be
+zero or one.  Length normalization does not affect the ranking of
+categories for a single document, and thus returns the same first-best
+guess as to category for a document.  Even though it doesn't change
+rankings, length normalization does rescale the probabilty estimates
+of categories given text.  This can lead to better calibration of
+probabilities across documents, by making the probability estimates
+less dependent on document length and token correlation.
+
+Document length normalization works by multiplying the weight of each
+token in the document by the actual document length divided by the
+length norm.  Thus if the document is ten tokens long and the length
+normalization is four tokens, each token of the ten in the input
+counts as if it were only 0.4 tokens, for a total length of four
+tokens.  If the length norm is four tokens and the input is two tokens
+long, each token counts as if it were two tokens.  If the numbers are
+round, the effects will be the same as removing that many tokens.  For
+instance, if the input is \stringmention{hee hee haw haw haw haw} and
+the length normalization is 3, the result is the same as presenting
+\stringmention{hee haw haw} to an un-length-normalized naive Bayes
+instance.
+
+As we will see below in an example, length normalization applies
+before unknown tokens are discarded.  Thus the behavior before and
+after length normalization is different if there are unknown tokens
+present.  The decision to implement things this way is rather
+arbitrary; the model would be coherent under the decision to throw
+away unknown tokens before rather than after computing length.  As
+implemented in LingPipe, unknown tokens increase uncertainty, but
+do not change the relative ranking of documents.  
+
+Because of the multiplicative nature of probability, overall
+scores are geometric averages, so that the reweighting takes place
+in the exponent, not as a simple multiplicative factor.
+
+
+\subsection{Demo: Length Normalization}
+
+\subsubsection{Setting Length Normalization}
+
+The length normalization value, which is the effective length used for
+all documents, may be set in the constructor or using the method
+\code{setLengthNorm(double)}.  The current value of the length norm is
+oreturned by \code{lengthNorm()}.  Length norms cannot be negative,
+zero, or infinite.  Setting the length norm to \code{Double.NaN} turns
+off length normalization.
+
+The class \code{LengthNorm} in this chapter's package trains exactly
+the same model using exactly the same data as in our first example in
+\refsec{nb-getting-started}.  To repeat, his laughs are trained on
+three examples, \stringmention{haw}, \stringmention{haw hee haw}, and
+\stringmention{haw haw}, and hers are trained on three instances,
+\stringmention{haw hee}, \stringmention{hee hee hee haw}, and
+\stringmention{haw}.  
+
+The length normalization is read in as the second command-line
+argument after the text to classify, and parsed into the \code{double}
+variable \code{lengthNorm}.  The length norm for the classifier is
+then set with the \code{setLengthNorm()} method.  
+%
+\codeblock{LengthNorm.1}
+%
+Note that we set the value before running classification.  It
+doesn't matter when the length norm is set before classification.
+We could have also set it in the constructor.
+
+\subsubsection{Running Examples}
+
+The Ant target \code{length-norm} runs the demo, with the text being
+supplied through property \code{text} and the length norm through
+property \code{length.norm}.  For example, we can evaluate a length
+norm of 3.0 tokens as follows (with the rank 1 results elided):
+%
+\commandlinefollow{ant -Dtext="hee hee haw" -Dlength.norm=3.0 length-norm}
+\begin{verbatim}
+Input=|hee hee haw|   Length Norm=   3.00
+Rank= 0  cat=hers  p(c|txt)=0.79  log2 p(c,txt)= -3.85
+\end{verbatim}
+%
+Unlike the situation without length normalization, the number of
+times the input is repeated no longer matters.  If we repeat it twice,
+we get the same result.
+%
+\commandlinefollow{ant -Dtext="hee hee haw hee hee haw" -Dlength.norm=3.0 length-norm}
+\begin{verbatim}
+Input=|hee hee haw hee hee haw|   Length Norm=   3.00
+Rank= 0  cat=hers  p(c|txt)=0.79  log2 p(c,txt)= -3.85
+\end{verbatim}
+
+We can also see that with length normalization, unknown tokens
+are included in the length normalization.  For example, consider
+the following, which adds two unknown tokens to the input.
+%
+\commandlinefollow{ant -Dtext="hee hee haw foo bar" -Dlength.norm=3.0 length-norm}
+\begin{verbatim}
+Input=|hee hee haw foo bar|   Length Norm=   3.00
+Rank= 0  cat=hers  p(c|txt)=0.69  log2 p(c,txt)= -2.71
+\end{verbatim}
+%
+With length normalization, the presence of unknown tokens drive
+the probability estimates closer to 0.5 because they participate
+in the length calculation but are not discriminative.  
+
+Providing a length-norm value of \code{Double.NaN} turns off
+length normalization.  For the input of \stringmention{hee hee haw},
+this provides the same result as setting length normalization to
+3.0.
+%
+\commandlinefollow{ant -Dtext="hee hee haw" -Dlength.norm=NaN length-norm}
+\begin{verbatim}
+Input=|hee hee haw|   Length Norm=    NaN
+Rank= 0  cat=hers  p(c|txt)=0.79  log2 p(c,txt)= -3.85
+\end{verbatim}
+%
+But now if we duplicate the document, we see the attenuating
+effect of length again.
+%
+\commandlinefollow{ant -Dtext="hee hee haw hee hee haw" -Dlength.norm=NaN length-norm}
+\begin{verbatim}
+Input=|hee hee haw hee hee haw|   Length Norm=    NaN
+Rank= 0  cat=hers  p(c|txt)=0.94  log2 p(c,txt)= -6.71
+\end{verbatim}
+
+
 
 \section{Serialization and Compilation}
 
@@ -769,10 +922,14 @@ to prevent underflows and convert multiplications to additions
 are precomputed.  
 
 Compiling a traditional naive Bayes classifier and reading it back in
-results in an implementation of \code{JointClassifier<CharSequence>};
-the class implementing this is not public, so the only thing that can
-be done with the compiled classifier is classification.  In particular,
-there's no way to add more training instances or set parameters.
+results in an implementation of \code{JointClassifier<CharSequence>}
+if there are more than two categories.  If there are only two
+categories, the class read back in will only implement the interface
+\code{ConditionalClassifier<CharSequence>}.  The reason for this is
+that the binary (two-category) case is heavily optimized for computing
+the conditional probabilities and adding in the data to compute the
+joint probabilities would double the size and halve the speed of
+binary compiled classifiers.
 
 In order to serialize a traditional naive Bayes classifier, its
 tokenizer factory must be serializable.  For compilation, the
@@ -784,4 +941,92 @@ it'll be compiled, otherwise it'll be serialized.%
   \code{compileOrSerialize()}, which may be found in the
   \code{AbstractExternalizable} class in the \code{com.aliasi.util}
   package.}
+
+\subsection{Serialization and Compilation Demo}
+
+The demo class \code{SerializeCompile} in this chapter's package
+illustrates both serialization and compilation.  Because
+deserialization in java may throw class-not-found and I/O exceptions,
+the main method starts off declaring that.
+%
+\codeblock{SerializeCompile.1}
+
+The first two command-line arguments are for the text to be classified
+and a (temporary) file name into which the classifier is serialized
+(or compiled).
+
+After constructing and training with the same code as in the first
+example in \refsec{nb-getting-started}, compiling a naive Bayes
+classifier to a file and reading it back in may be accomplished as
+follows.
+%
+\codeblock{SerializeCompile.2}
+%
+The static utility method \code{compileTo()} from Java's class
+\code{AbstractExternalizable} class (in the \code{util} package) is
+used to do the writing.  This could also be done through LingPipe's
+\code{Compilable} interface directly using the traditional naive Bayes
+class's method \code{compileTo(ObjectOut)}.  We deserialized using
+another utility method, \code{readObject()}, which reads and returns
+serialized objects from files (there are also utility methods to read
+compiled or serailized models from the class path as resources).
+
+Usually, one program would write the compiled file and another
+program, perhaps on another machine or at a different site, would read
+it.  Here, we have put the two operations together for reference.
+Note that the unchecked cast warning on reading back in is suppressed;
+an error may still result at runtime from the cast if the file
+supplied to read back in has an object of a different type or isn't a
+serialized object at all. Note that when read back in, it is
+assigned to a \code{JointClassifier<CharSequence>}; attempting to
+cast to a \code{TradNaiveBayesClassifier} would fail, as the compiled
+version is not an instance of that class.
+
+We do the same thing for serialization, using a different utility method
+to serialize, but the same \code{readObject()} method to deserialize. 
+%
+\codeblock{SerializeCompile.3}
+%
+Here, we are able to cast the deserialized object back to the original
+class, \code{TradNaiveBayesClassifier}.  
+
+Because deserialization results in a traditional naive Bayes
+classifier, we may provide more training data.  Repeating the
+serialization and deserialization with a different variable,
+we can go on to train.
+%
+\codeblock{SerializeCompile.4}
+
+
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{serialize-compile} runs the class, classifying
+a text supplied as property \code{text} and using a file derived
+from the value of the property \code{file}.  Running it shows
+the result of classifying with the original, compiled, deserialized,
+and then deserialized and further trained classifier.
+
+\commandlinefollow{ant -Dtext="hee haw hee hee" serialize-compile}
+\begin{verbatim}
+text=hee haw hee hee
+
+Results for: Original
+Rank= 0  cat=hers  p(c|txt)=0.91
+
+Results for: Compiled
+Rank= 0  cat=hers  p(c|txt)=0.91
+
+Results for: Serialized
+Rank= 0  cat=hers  p(c|txt)=0.91
+
+Results for: Serialized, Additional Training
+Rank= 0  cat=hers  p(c|txt)=0.97
+\end{verbatim}
+
+Note that the conditional probability assigned to her laughing are the
+same for the original, compiled, and serialized model.  The estimate
+is different for the model with additional training data, as we
+would expect.  We have not reported log joint probabilities because
+they are not produced by the compiled model.
 

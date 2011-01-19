@@ -45,7 +45,7 @@ public class LdaWorm {
         long randomSeed = Long.parseLong(args[5]); //  6474835;
         int numSamples = Integer.parseInt(args[6]);
         File modelFile = new File(args[7]);
-        File symbolTableFile = new File(args[8]);
+        File stFile = new File(args[8]);
         int burninEpochs = 0;
         int sampleLag = 1; // no lag
 
@@ -59,7 +59,7 @@ public class LdaWorm {
         System.out.println("Burnin epochs=" + burninEpochs);
         System.out.println("Sample lag=" + sampleLag);
         System.out.println("Model file=" + modelFile);
-        System.out.println("Symbol table file=" + symbolTableFile);
+        System.out.println("Symbol table file=" + stFile);
 
         CharSequence[] articleTexts = readCorpus(corpusFile);
         
@@ -95,7 +95,7 @@ public class LdaWorm {
         LatentDirichletAllocation lda = sample.lda();
         AbstractExternalizable.serializeTo(lda,modelFile);
 
-        AbstractExternalizable.serializeTo(symbolTable,symbolTableFile);
+        AbstractExternalizable.serializeTo(symbolTable,stFile);
         /*x*/
 
         int maxWordsPerTopic = 50;
@@ -153,7 +153,8 @@ public class LdaWorm {
         factory = new EnglishStopTokenizerFactory(factory);
         factory = new StopTokenizerFactory(factory,STOPWORD_SET);
         factory = new StemTokenizerFactory(factory);
-        factory = new StopTokenizerFactory(factory,STOPWORD_SET); // stop before and after stemming
+        // repeated to remove stemmed and unstemmed stopwords
+        factory = new StopTokenizerFactory(factory,STOPWORD_SET);
         return factory;
     }
     /*x*/
