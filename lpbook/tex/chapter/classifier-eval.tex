@@ -972,13 +972,15 @@ definition is
 \subsection{Prevalence}
 
 Another commonly reported statistic for precision-recall matrices is
-prevalence, which is just the percentage of positive cases among all
-cases.  This is defined by
+prevalence, which is just the percentage of positive reference cases
+among all cases.  This is defined by
 %
 \begin{equation}
 \mbox{prev} = (TP+FN)/(TP+FP+TN+FN)
 \end{equation}
 %
+Note that false negatives are reference positive cases for which
+the system returned a negative response.   
 
 If we know the prevalence of true cases as well as a classifier's
 sensitivity and specificity, we can reconstruct the entire confusion
@@ -1088,7 +1090,7 @@ responses, namely the proportion of positive responses, as
 \code{responseLikelihood()}.  
 
 All of the other statistics are defined in exactly the same way as for
-consuion matrices.
+confusion matrices.
 
 \subsubsection{Demo: Precision-Recall Evaluations}
 
@@ -1361,7 +1363,7 @@ the document- and query-specific effects built into scoring.
 
 Conditional probabilities, on the other hand, are naturally calibrated
 to be comparable across runs.  If I have two wines, and for the first
-one respond 55\% cabernet, 35\% syrah and 10\% pinot, and for the
+one I respond 55\% cabernet, 35\% syrah and 10\% pinot, and for the
 second, 90\% cabernet, 8\% syrah, and 2\% pinot, I can rank my
 choices.  My best guess is that wine 2 is a cabernet, because I've
 estimated a 90\% chance of being right.  My second best guess is that
@@ -1401,7 +1403,10 @@ Responses are added to the evaluation using the method
 \code{addCase(boolean,double)}, which takes two arguments, the first
 being whether the result was correct, and second what the score was.
 Note that we are not keeping track of the individual categories, just
-their scores and whether they are correct or not.
+their scores and whether they are correct or not.%
+%
+\footnote{To keep track of the actual items, use the basic precision-recall
+evaluation.}
 
 Going back to our example, of the previous section, suppose the first
 wine was a syrah, and the second a cabernet.  Here we repeat the
@@ -1774,7 +1779,13 @@ $n/R$.
 
 In this section, we provide a precise definition of contingency tables
 and discuss the computation and interpretation of statistics on
-contingency tables.  
+contingency tables.%
+%
+\footnote{This appendix is more advanced mathematically than the
+  earlier presentation and assumes an understanding of probability
+  distributions, densities, and hypothesis testing.  See
+  \refappendix{stats} for a refresher on the concepts and definitions
+  needed to understand these more advanced sections.}
 
 A contingency table is an $M \times N$ matrix $C$ of counts
 \ie{$C_{m,n} \in \nats$}.  A generic contingency table is shown in
@@ -1823,7 +1834,7 @@ C_{+,+} = \sum_{m=1}^M \sum_{n=1}^N C_{m,n}.
 
 The $\chi^2$ distribution may be used to test the null hypothesis that
 that a pair of categorical random variables are generated
-independently.
+independently.%
 
 Suppose we have $K$ independent and identically distributed (i.i.d.)
 pairs $A_k, B_k$ of categorical random variables taking values $A_k
@@ -1860,10 +1871,14 @@ of the random variables $A$ and $B$.
 
 Given a contingency table $C$, we can estimate the marginal
 distributions $p_A(m)$ and $p_B(n)$ by maximum likelihood using the
-observed counts in $C$.  Because $p_A$ and $p_B$ are multinomials, we
-assume $p_A = \dbern{\theta}$ and $p_B = \dbern{\phi}$.  The
-maximum likelihood estimates $\theta^*, \phi^*$ of $\theta,\phi$
-given $C$ are
+observed counts in $C$ (see \refsec{stats-mle} for an overview of
+maximum likelihood estimation).  Because $p_A$ and $p_B$ are
+multinomials, we assume $p_A = \dbern{\theta}$ and $p_B =
+\dbern{\phi}$ have Bernoulli distributions (i.e., coin flips) with
+chance-of-success parameters $\theta$ and $\phi$ (see
+\refsec{stats-multinom-distro} and \refsec{stats-bernoulli-distro} for
+definitions of multinomial and Bernoulli distributions).  The maximum
+likelihood estimates $\theta^*, \phi^*$ of $\theta,\phi$ given $C$ are
 %
 \begin{equation}
 \theta^*_m = \frac{C_{m,+}}{C_{+,+}} 
@@ -1919,8 +1934,9 @@ outside of the central probabiilty interval of $1-p$.
 
 \subsubsection{Pearson's Mean Square Contingency}
 
-Dividing Pearson's $\chi^2$ statistic $X^2$ by the number of cases
-yields Pearson's $\varphi^2$ statistic.
+Dividing Pearson's statistic $X^2$ (which we previously used for the
+$\chi^2$ test) by the number of cases yields Pearson's $\varphi^2$
+statistic.
 %
 \begin{equation}
 \varphi^2 =\frac{X^2}{C_{+,+}}
@@ -2054,6 +2070,9 @@ categories and columns to represent system responses.
 
 There is a wide range of statistics that have been applied to
 evaluating the performance of classifiers using confusion matrices.
+We repeat some of our earlier definitions in this chapter for
+completeness, providing fully specified definitions here for all
+of the statistics.
 
 \subsection{$\kappa$ Statistics for Chance-Adjusted Agreement}\label{section:stats-kappa}
 
@@ -2313,7 +2332,7 @@ The Jaccard similarity coefficient%
   Société Vaudoise des Sciences Naturelles} {\bf 37}:547--579.}
 %
 provides a single measure of the quality of match between a response
-and a reference.  Teh similarity coefficient $J$ is defined by
+and a reference.  The similarity coefficient $J$ is defined by
 %
 \begin{equation}
 J = \frac{\mbox{TP}}{\mbox{TP} + \mbox{FP} + \mbox{FN}}.
@@ -2349,7 +2368,7 @@ that may be adapted to sensitivity-specific matrices.%
 %
 \footnote{Fowlkes E.~B. and C.~L.~Mallows. 1983. A method for
   comparing two hierarchical clusterings. {\it Journal of the American
-  Statistical Association} {\bf 78}(384):553--584. \doi{10.2307/2288117}}.
+  Statistical Association} {\bf 78}(384):553--584. \doi{10.2307/2288117}}\hspace*{-1pt}${}^{,}$%
 %
 \footnote{They first reduce hierarchical clusterings to flat
   clusterings (by setting a threshold on dendrogram height) then these
@@ -2540,7 +2559,7 @@ We can now compare micro- and macro-averaged statistics.  For example,
 micro-averaged precision is $108/130$ and micro-averaged recall is
 also $108/130$, yielding a micro-averaged $F$ measure of $108/130$, or
 about 83\%.  Macro-averaged precision is the average of $85/100$
-(85\%), $20/25$ (80\%) and $3/5$ (60%), or about 75\%.  The low-count
+(85\%), $20/25$ (80\%) and $3/5$ (60\%), or about 75\%.  The low-count
 category 3 brings down the averages from the high count cases.  This
 can work out the other way around, with macro-averaged values being
 higher than their micro-averaged counterparts.
@@ -2578,7 +2597,7 @@ which we might also have available as a parallel vector $x \in
 
 If we want to evaluate ranked sensitivity or recall, it's critical
 that we know how many positive answers there are in total.  If we want
-to evaluate speicificity, we also need to know how many negative
+to evaluate specificity, we also need to know how many negative
 answers there are in total.
 
 For example, suppose there is a set $T$ of 10 tags that might apply to
@@ -2593,11 +2612,19 @@ By knowing that there is one additional reference tag not in the
 response, namely $T_2$, we are able to tell what percentage of all
 tags are found at each rank in the list of results.
 
-We could complete the response pessimistically (as far as evaluation
-goes) to $\vecext{1,0,0,1,0,0,0,1}$, by placing the correct response
-at the last possible rank.  It might be better to average a bunch of
-random samples, but it's a lot of work.  Instead, we will just
-truncate our evaluations at the extent of the user input.
+One possibility would be to complete the response pessimistically, at
+least as far as evaluation goes.  This means taking all the items
+which are not ranked and assuming the correct responses appear last.
+For instance, we'd extend our response vector $y = \vecext{1,0,0,1}$
+representing four ranked responses, the first and fourth of which are
+correct, to eight ranked responses, $y = \vecext{1,0,0,1,0,0,0,1}$,
+with an additional correct response in the eighth (last) position.  It
+might be better to average a bunch of random orderings of the
+non-responses, as that's what you'd expect to get if the system just
+returned randomly ordered results after its responses, but that
+approach would be computationally demanding.  Instead, we will just
+truncate our evaluations at the extent of the user input and leave
+it for the reader to extrapolate to unseen responses.
 
 \subsubsection{Statistics at Rank $n$}
 

@@ -25,7 +25,8 @@ array as an argument and returns an instance of \code{Tokenizer}.
 LingPipe's tokenizer factory implementations come in two flavors Basic
 tokenizer factories are constructed from simple parameters.  For the
 basic tokenizers with no parameters, a singleton instance is supplied
-as a static constant in the class.  
+as a static constant in the class.  For consistency, these singleton
+constants all have the variable name \code{INSTANCE}.
 
 Tokenizer filters are constructed from other tokenizer factories and
 modify their outputs in some way, such as by case normalization,
@@ -48,11 +49,11 @@ string.
 There is no state represented in the \code{Tokenizer} abstract class,
 so there is a single no-argument constructor \code{Tokenizer()}.
 
-Because tokenizers are usually created through the 
-\code{TokenizerFactory} interface, most.
-classes extending \code{Tokenizer} are not delcared to be public.
-Instead, only the factory is visible, and the documentation for a
-tokenizer's behavior will be in the factory's class documentation.
+Because tokenizers are usually created through the
+\code{TokenizerFactory} interface, most classes extending
+\code{Tokenizer} are not delcared to be public.  Instead, only the
+factory is visible, and the documentation for a tokenizer's behavior
+will be in the factory's class documentation.
 
 \subsubsection{Streaming Tokens}
 
@@ -76,10 +77,14 @@ relative to the slice being tokenized, not to the underlying character
 array.  
 
 The token position methods are implemented in the \code{Tokenizer}
-base class to throw an \code{UnsupportedOperationException}.
-Subclasses that want token positions should override these methods.
-Tokenizer filters should almost always just pass the positions of the
-tokens being modified.
+base class to throw an \code{UnsupportedOperationException}.  All of
+LingPipe's built-in tokenizer factories produce tokenizers that
+properly handle token positions.  
+
+User-defined ubclasses that need token positions should override these
+methods.  Tokenizer filters should almost always just pass the
+positions of the tokens being modified, so that the derived token may
+be linked back to its source in the original text.
 
 \subsubsection{Iteration}
 
@@ -96,12 +101,6 @@ usual idiom is
 %
 \codeblock{FragmentsTok.3}
 
-
-\subsubsection{Bulk Tokenization}
-
-The method \code{tokenize()} returns an array of the remaining tokens
-and \code{tokenize(List,List)} writes the remaining tokens and
-whitespaces to the specified list.
 
 \subsubsection{Serializability and Thread Safety}
 
@@ -666,12 +665,13 @@ LingPipe provides a built-in stop list for English.  The
 stoplist for English:
 %
 \begin{quote}
+\stringmention{
 a, be, had, it, only, she, was, about, because, has, its, of, some,
 we, after, been, have, last, on, such, were, all, but, he, more, one,
 than, when, also, by, her, most, or, that, which, an, can, his, mr,
 other, the, who, any, co, if, mrs, out, their, will, and, corp, in,
 ms, over, there, with, are, could, inc, mz, s, they, would, as, for,
-into, no, so, this, up, at, from, is, not, says, to
+into, no, so, this, up, at, from, is, not, says, to}
 \end{quote}
 %
 Note that the entries are all lowercase.  It thus makes sense
@@ -778,12 +778,11 @@ be thread safe if the base tokenizer factory is thread safe.
 
 \section{Morphology, Stemming, and Lemmatization}
 
-In linguistics, morphology is the study of how words are formed.  A
-
-Morphology crosses the study of several other phenomena,
-including syntax (parts of speech and how words combine), phonology
-(how words are pronounced), orthography (how a language is written,
-including how words are spelled), and semantics (what a word means).
+In linguistics, morphology is the study of how words are formed.
+Morphology crosses the study of several other phenomena, including
+syntax (parts of speech and how words combine), phonology (how words
+are pronounced), orthography (how a language is written, including how
+words are spelled), and semantics (what a word means).
 
 LingPipe does not contain a general morphological analyzer, but it
 implements many parts of word syntax, semantics and orthography.
@@ -832,21 +831,21 @@ languages go even further, defining numbers for three objects, or
 distinguishing many from a few.
 
 In English, the verbs \code{code}, \code{codes}, \code{coded}, and
-\code{coding} are all inflectional variants of the same underlying word,
-differing in person, number, tense, and aspect.  We get agreement
-between verbs and subject nouns in English for these features.  For
-instance, a person might say \stringmention{I code} in referring to
-themselves, but \stringmention{she codes} when referring to another
-woman coding.  Other languages, such as French or Russian, also have
-agreement for gender, which can be natural (male person versus female
-person versus versus non-person) or grammatical (as in French).
-Natural gender is based on what is being talked about.  That's the
-distinction we get in English between the relative pronouns
-\stringmention{who}, which is used for people and other animate
-objects, and \stringmention{what}, which is used for inanimate
-objects.  For instance, we say \stringmention{who did you see?} if
-we expect the answer to be a person, and 
-\stringmention{what did you see?} if we want a thing.
+\code{coding} are all inflectional variants of the same underlying
+word, differing in person, number, tense, and aspect.  We get
+agreement between verbs and subject nouns in English for these
+features.  For instance, a person might say \stringmention{I code} in
+referring to themselves, but \stringmention{she codes} when referring
+to their friend writing code.  Other languages, such as French or
+Russian, also have agreement for gender, which can be natural (male
+person versus female person versus versus non-person) or grammatical
+(as in French).  Natural gender is based on what is being talked
+about.  That's the distinction we get in English between the relative
+pronouns \stringmention{who}, which is used for people and other
+animate objects, and \stringmention{what}, which is used for inanimate
+objects.  For instance, we say \stringmention{who did you see?} if we
+expect the answer to be a person, and \stringmention{what did you
+  see?} if we want a thing.
 
 Most languages have fairly straightforward inflectional morphology,
 defining a few variants of the basic nouns and verbs.  The actual
@@ -869,7 +868,7 @@ It is also common to see internal vowel changes, as in the English
 alternation \stringmention{run}/\stringmention{ran}.  Languages
 like Arabic and Hebrew take this to the extreme with their
 templatic morphology systems in which a base form consists of
-a sequence of consonants and an inflected form mixes in vowles.
+a sequence of consonants and an inflected form mixes in vowels.
 
 
 \subsection{Derivational Morphology}
@@ -1154,19 +1153,19 @@ with a command line argument given by the value of the property
 %
 \commandlinefollow{ant -Dtext="Smith was bravely charging the front lines" porter-stemmer-tokens}
 \begin{verbatim}
-Smith was Bravely charging the front lines.
+Smith was bravely charging the front lines.
 0123456789012345678901234567890123456789012
 0         1         2         3         4
 
 START   END TOKEN          START   END TOKEN
     0     5  |Smith|          27    30  |the|
     6     9  |wa|             31    36  |front|
-   10    17  |Brave|          37    42  |line|
+   10    17  |brave|          37    42  |line|
    18    26  |charg|          42    43  |.|
 \end{verbatim}
 %
 Note that the token spans are for the token before stemming,
-so that the token \stringmention{breavely} starts at position
+so that the token \stringmention{brave} starts at position
 10 (inclusive) and ends at 17 (exclusive), spanning the substring
 of the input text \stringmention{bravley}.  
 
@@ -1543,9 +1542,9 @@ segmented into sentences, a process we consider in
 The Treebank tokenizer was designed for the ASCII chaacters
 (\unicode{0000}--\unicode{007F}), which means it is not defined for
 characters such as Unicode punctuation.  Following the convention of
-\LaTeX rather than Unicode, the Treebank tokenizer analyzes a quote
+\LaTeX\ rather than Unicode, the Treebank tokenizer analyzes a quote
 character (\charmention{"}) as two grave accents (\charmention{``}) if
-it's an opening qoe and two apostrophes (\charmention{''}) if it's a
+it's an opening quote and two apostrophes (\charmention{''}) if it's a
 closing quote.  Like periods, determining the status of the quotes
 requires context.
 
@@ -2075,7 +2074,7 @@ has not yet been called or the \code{close()} method has been
 called.
 
 Once a token stream is set up, its \code{incrementToken()} method
-sets up teh properties for the next token if there is one.
+sets up the properties for the next token if there is one.
 %
 \codeblock{TokenizerFactoryAnalyzer.5}
 %
