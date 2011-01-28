@@ -1030,3 +1030,227 @@ is different for the model with additional training data, as we
 would expect.  We have not reported log joint probabilities because
 they are not produced by the compiled model.
 
+
+\section{Training and Testing with a Corpus}
+
+In this section, we show how to use a \code{Corpus} implementation to
+train and test a classifier.  In our demo of LingPipe's \code{Corpus}
+abstract base class in \refsec{corpus-20-newsgroups-corpus}, we showed
+how to create a corpus from the 20 Newsgroups data set (the data
+and download location are described in \refsec{corpora-20-newsgroups}).
+
+We will re-use our corpus code in this demo, though we have copied the
+implementation so as to not make the imports in the demos too
+confusing.  Thus you'll find the implementation in
+\code{TwentyNewsgroupsCorpus} in this chapter's demo package
+(\code{com.lingpipe.book.naivebayes}).
+
+\subsection{Training Naive Bayes with a Corpus}
+
+Training a classifier like naive Bayes with a corpus is particularly
+straightforward.  As usual, the demo code lives in the \code{main()}
+method and starts by marshalling the command-line arguments, here just
+the name of the tar gzipped file in which the corpus was saved as
+the \code{File} variable \code{corpusTgzFile}.  We
+then just use the constructor to create the corpus. 
+%
+\codeblock{Nb20NewsCorpus.1}
+%
+Given the corpus, we apply the static method \code{getCatSet()} to
+extract the categories from the corpus.  The set is then used to generate
+an array of categories, which is then sorted.
+
+The static utility category extraction method is defined using an
+anonymous class used as a callback, as follows.
+%
+\codeblock{Nb20NewsCorpus.0}
+%
+The set is declared to be final so that it can be used within the
+anonymous handler's method.  The corpus method \code{visitCorpus()} is
+then applied to a newly defined object handler instance; in general,
+the \code{visitCorpus()} method sends all of the classified objects in
+the corpus to the specified handler.  In this case, our handler is
+anonymous and handles a classified object by adding its
+classification's first best category assignment to the category set.
+The generic \code{<T>} is being used for the type of object being
+classified, which doesn't matter here, but must be kept consistent
+across the corpus and the inner class handling the callbacks.
+
+The next block of code creates a fully parameterized traditional
+naive Bayes classifier.
+%
+\codeblock{Nb20NewsCorpus.2}
+%
+LingPipe's built-in Indo-Euroepan tokenizer factory singleton is used
+for tokenization (see \refchap{tokenization} for more on tokenization
+in general and \refsec{tok-indo-euro} for more information on
+LingPipe's Indo-European tokenizer factory).  Further note that the
+category prior count is set to 1.0 and the token count prior to 0.1,
+and the length normalization is set to 10.0; these were explained
+earlier in this chapter.
+
+After setting up the classifier, the corpus's \code{visitTrain()}
+method is used to send all of the training instances to the
+classifier instance.  
+
+After visiting the training data, the classifier's ready to use.
+Instead of using it directly, we compile it to a more efficient form.
+This is done with the utility method \code{compile()} in LingPipe's
+\code{AbstractExternalizable} class (see \refsec{io-compilable} for
+more information on LingPipe's general compilation interface).  The
+required cast may throw I/O exceptions and the implicit
+deserialization may throw a class-not-found exception, so those are
+declared on the top-level \code{main()} method.  Note that we have
+assigned the compiled object to a more general type,
+\code{ConditionalClassifier}.  That's because the compiled form of the
+traditional naive Bayes classifiers are not instances of
+\code{TradNaiveBayesClassifier}.
+
+\subsection{Evaluation with a Corpus}
+
+Because our corpus was built with a training and test section
+according to the way the 20 Newsgroup corpus is distributed, we can
+also use the corpus for testing.  The first step is to set up the
+evaluator.  
+%
+\codeblock{Nb20NewsCorpus.4}
+%
+We use an evaluator for conditional classifications, which
+we construct with the compiled classifier, the array of categories, and
+a flag indicating whether or not to store inputs, which we set to
+\code{false} here.  If you want to inspect the true positives, false
+positives, etc., you need to set this flag to \code{true}.  
+
+After setting up the classifier evaluator, we call the corpus
+method \code{visitTest()} to supply the test cases to the 
+evaluator's \code{handle()} method.  
+
+Rather than just printing the evaluator, which provides a very verbose
+dump, we have focused on the most common evaluation metrics for
+all-versus-all and one-versus-all evaluations.  See
+\refchap{classifier-evaluation} for a complete description of
+available classifier evaluations.
+
+\subsubsection{All-Versus-All Results}
+
+The first thing we do is extract the results for accuracy,
+and macro-averaged precision, recall, F-measure, and kappa
+for the overall system
+%
+\codeblock{Nb20NewsCorpus.5}
+%
+These are then printed using code not displayed here.  See
+\refsec{classifier-eval-macro-avg} for more information on
+interpreting macro averaged results; they're essentially averages
+of the one-versus-all results, to which we turn next.
+
+
+\subsubsection{One-Versus-All Results}
+
+In one versus all evaluations, we treat the twenty newsgroup
+categories as being decomposed into twenty one-versus-all evaluations.
+In these cases, we treat each problem as a binary classification problem.
+See \refsec{classifier-eval-one-versus-all} for more information on
+one-versus-all evaluations.  In code, we just loop over the
+categories, extracting the one-versus-all evaluations as
+precision-recall evaluation objects.
+%
+\codeblock{Nb20NewsCorpus.6}
+%
+From these, we pull out the true and false positives and negative
+counts, overall accuracy, along with precision, recall (aka sensitivity),
+specificity (aka rejection recall), and F measure.  These are then
+printed in code not shown.
+
+Further, for each category, we print out the non-zero cells of
+the confusion matrix itself.  These indicate counts for the
+number of times a document of a given category was classified
+as something else, and vice-versa, though we only show the first
+case.
+%
+\codeblock{Nb20NewsCorpus.7}
+%
+The confusion matrix as an integer array was created outside of the
+loop as part of the last code block using the \code{matrix()} method
+from the confusion matrix class.  The entries \code{matrix[k1][k2]}
+indicate the number of times a document with true category \code{k1}
+was misclassified as being of category \code{k2}.
+
+\subsection{Running the Demo}
+
+There's an Ant target \code{20-news-corpus} that runs the demo.
+It reads the name of the tar gzipped data file from
+the property \code{20-news-file}, which we specify here
+on the command line.
+%
+\commandline{ant -D20-news-file=../../data-dist/20news-bydate.tar.gz 20-news-corpus}
+%
+The first thing it prints out after it finishes is the confusion
+matrix accuracies for all-versus-all:
+%
+\begin{verbatim}
+All Versus All
+  correct/total = 5638 / 7532
+  accuracy=0.749
+  Macro Avg prec=0.785  rec=0.728   F=0.716
+  Kappa=0.735
+\end{verbatim}
+%
+After this, it prints the one-versus-all results.  For instance,
+consider the fourth category, \stringmention{talk.politics.mideast},
+for which we see the following results.
+%
+\begin{verbatim}
+Category[17]=talk.politics.mideast versus All
+  TP=313 TN=7137 FP=19 FN=63
+  Accuracy=0.989
+  Prec=0.943  Rec(Sens)=0.832  Spec=0.997  F=0.884
+    * => alt.atheism : 6
+    * => comp.graphics : 1
+    * => comp.windows.x : 5
+    * => misc.forsale : 1
+    * => rec.autos : 1
+    * => rec.motorcycles : 2
+    * => rec.sport.baseball : 5
+    * => rec.sport.hockey : 2
+    * => sci.electronics : 3
+    * => sci.space : 1
+    * => soc.religion.christian : 34
+    * => talk.politics.guns : 2
+    * => talk.politics.mideast : 313
+    alt.atheism => * : 5
+    comp.graphics => * : 1
+    sci.med => * : 2
+    talk.politics.guns => * : 2
+    talk.politics.misc => * : 5
+    talk.religion.misc => * : 4
+\end{verbatim}
+%
+After dumping the number true and false positive and negatives, it
+prints the overall accuracy, which is 98.9\% in this case.  The other
+one-versus-all evaluations have similarly high accuracies in the high
+90\% range.  But overall accuracy was only around 75\%.  The reason
+for this is that any negative is counted as correct, with overall
+accuracy being the number of true positives plus true negatives
+divided by the total cases.  The true negatives dominate these
+numbers, and aren't sensitive to getting the correct category as long
+as it's not the category being evaluated one versus all.  This is
+reflected in relatively high precision and specificity values (94.3\%
+and 99.7\% here), but lower recall values (83.2\% here).
+
+The remaining lines indicate the actual confusions, with an asterisk
+replacing the category being evaluated.  For instance, six instances
+of documents which were in the \stringmention{talk.politics.mideast}
+category were mistakenly classified as being of category
+\stringmention{alt.atheism}.  Similarly, there were five cases of
+documents whose true category was \stringmention{sci.med} that were mistakenly
+classified as \stringmention{talk.politics.mideast}.
+
+
+
+
+
+
+
+
+

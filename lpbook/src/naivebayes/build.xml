@@ -9,6 +9,7 @@
 
   <path id="classpath">
     <pathelement location="${jar}"/>
+    <pathelement location="../../lib/ant-1.8.1.jar"/>  <!-- for tar parsing -->
     <pathelement location="../../lib/lingpipe-4.0.1.jar"/>
   </path>
 
@@ -91,6 +92,15 @@
   </target>
 
 
+  <property name="20-news-file" value="../../data-dist/20news-bydate.tar.gz"/>
+  <target name="20-news-corpus"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.Nb20NewsCorpus"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${20-news-file}"/>
+    </java>
+  </target>
 
   <target name="run"
           depends="nb-demo,
@@ -98,7 +108,8 @@
                    additive-smooth,
                    item-weight,
                    length-norm,
-                   serialize-compile"/>
+                   serialize-compile,
+                   20-news-corpus"/>
 
 
 </project>
