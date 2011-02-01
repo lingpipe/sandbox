@@ -538,7 +538,7 @@ it'll be safe to use a single insance of a disk corpus from
 multiple threads.
 
 
-\section{Cross Validation}
+\section{Cross Validation}\label{section:corpus-xval}
 
 Cross validation is a process for evaluating a learning system in such
 a way as to extract as many evaluation points as possible from a fixed
@@ -705,6 +705,19 @@ is usually training that is the bottleneck in cross validation,
 explicit synchronization of the evaluators should not cause too much
 of a synchronization bottleneck.
 
+\subsubsection{Examples of Cross Validation}
+
+Because cross-validation is so critical, there are examples of
+its use for most of the systems that can be evaluated.  The following
+is a list of examples.
+%
+\begin{center}
+\begin{tabular}{l|l|l}
+{\it Evaluator} & {\it Model} & {\it Reference}
+\\ \hline
+\code{JointClassifier} & \code{TradNaiveBayes} & \refsec{naive-bayes-xval}
+\end{tabular}
+\end{center}
 
 
 
