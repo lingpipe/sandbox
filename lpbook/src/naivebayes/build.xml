@@ -102,6 +102,24 @@
     </java>
   </target>
 
+  <property name="20-news-file" value="../../data-dist/20news-bydate.tar.gz"/>
+  <property name="cat-prior" value="1.0"/>
+  <property name="tok-prior" value="0.1"/>
+  <property name="length-norm" value="10.0"/>
+  <property name="random-seed" value="42"/>
+  <target name="20-news-xval"
+          depends="jar">
+    <java classname="com.lingpipe.book.naivebayes.TwentyNewsXvalDemo"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${20-news-file}"/>
+      <arg value="${cat-prior}"/>
+      <arg value="${tok-prior}"/>
+      <arg value="${length-norm}"/>
+      <arg value="${random-seed}"/>
+    </java>
+  </target>
+
   <target name="run"
           depends="nb-demo,
                    cat-skew,

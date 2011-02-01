@@ -147,7 +147,7 @@ public class Nb20NewsCorpus {
                     cSet.add(c.getClassification().bestCategory());
                 }
             });
-        return catSet;
+        return cSet;
     }
     /*x*/
 

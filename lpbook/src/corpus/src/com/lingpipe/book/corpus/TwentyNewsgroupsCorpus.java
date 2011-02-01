@@ -4,7 +4,6 @@ import com.aliasi.classify.Classification;
 import com.aliasi.classify.Classified;
 
 import com.aliasi.corpus.Corpus;
-import com.aliasi.corpus.ListCorpus;
 import com.aliasi.corpus.ObjectHandler;
 
 import com.aliasi.util.Streams;

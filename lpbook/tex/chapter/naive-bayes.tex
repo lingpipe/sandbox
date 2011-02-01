@@ -1106,7 +1106,7 @@ assigned the compiled object to a more general type,
 traditional naive Bayes classifiers are not instances of
 \code{TradNaiveBayesClassifier}.
 
-\subsection{Evaluation with a Corpus}
+\subsection{Evaluation with a Corpus}\label{section:naive-bayes-corpus-eval}
 
 Because our corpus was built with a training and test section
 according to the way the 20 Newsgroup corpus is distributed, we can
@@ -1245,6 +1245,612 @@ category were mistakenly classified as being of category
 \stringmention{alt.atheism}.  Similarly, there were five cases of
 documents whose true category was \stringmention{sci.med} that were mistakenly
 classified as \stringmention{talk.politics.mideast}.
+
+
+\section{Cross-Validating a Classifier}\label{section:naive-bayes-xval}
+
+Our next demonstration is of cross validation, which were introduced in
+\refsec{corpus-xval}.  
+
+\subsection{Implementing the Cross-Validating Corpus}
+
+The implementation of the cross-validating corpus for the Twenty
+Newsgroups data is in the class \code{TwentyNewsXvalCorpus} in this
+chapter's package, \code{naivebayes}.  For the implementation, we
+extend LingPipe's \code{XValidatingObjectCorpus} class.%
+%
+\footnote{In general, cross-validating object corpora may be used
+  directly without. An equally perspicuous approach for this example,
+  in which the extension defines no new methods, would be to
+  define a static factory method that returned an instance of
+  \code{XValidatingObjectCorpus}.}
+%
+\codeblock{TwentyNewsXvalCorpus.1}
+%
+Note that we have supplied the generic argument
+\code{Classified<CharSequence>}, which is the type of classifications
+making up the training and evaluation data.  We have a simple
+constructor taking the name of the gzipped tar file in which the
+corpus may be found as well as the number of folds for cross
+validation.  The number of folds is used in the explicit call to
+\code{super(int)}, which is required because the only constructor for
+\code{XValidatingObjectCorpus} requires an integer argument specifying
+the number of folds.  The constructor is declared to throw an I/O
+exception if it has trouble reading the corpus.%
+%
+\footnote{As tempting as it may be to capture I/O exceptions locally
+  and ignore them, we believe it is better to flag them in static
+  corpora like Twenty Newsgroups so that parsing errors in the corpus
+  may be found.  This also makes coding easier, as the exceptions are
+  simply propagated. In a production system, the marshalling of data
+  would need to be made more robust.}
+
+The actual parser has not been abstracted, but rather is copied almost
+verbatim from the example in \refsec{corpora-20-newsgroups}.  The
+main action is in the loop driving over the entries in the tar input
+stream.
+%
+\codeblock{TwentyNewsXvalCorpus.2}
+%
+Within the block, we repeat the parsing code from
+\refsec{corpora-20-newsgroups} to pull out the data (not shown here),
+until we can retrieve the text and classification.  
+%
+\codeblock{TwentyNewsXvalCorpus.3}
+%
+The difference from the previous usage is that we call the
+cross-validating corpus method \code{handle(E)}, where \code{E} is the
+generic type of the corpus, here \code{Classified<CharSequence>}.  The
+implementation is inherited from the superclass.  This call to the
+handle method adds the classified character sequence to the corpus.
+When we are done, we close the tar input stream, and are ready to go.
+
+
+\subsection{Implementing the Evaluation Driver}
+
+Now that we have a cross-validating corpus, we can see how to use it
+to do a cross-validating evaluation.  The example is implemented in
+\code{main()} method of class \code{TwentyNewsXvalDemo} in this
+chapter's package, \code{naivebayes}.  As usual, we start the
+main method by reading command-line arguments.  
+%
+\codeblock{TwentyNewsXvalDemo.1}
+%
+As is usual in commands to do cross-validation, we have an argument
+for the data file.  In addition, we have command-line arguments for
+the parameters we wish to tune, here the the category prior, the token
+prior, the length normalization.  Finally, we have a parameter that
+controls the randomization used for cross-validation itself.  
+
+Because we will reuse it, we also declare the tokenizer factory (here,
+it's really just a local variable shortcut to save space).
+%
+\codeblock{TwentyNewsXvalDemo.2}
+%
+
+Next, we create the corpus itself using its constructor.
+%
+\codeblock{TwentyNewsXvalDemo.3}
+%
+After it is created, we permute using a randomizer based on the seed
+number supplied as a command-line argument.  Then we extract the set
+of categories from the corpus using the static utility method, as
+previously shown in \refsec{naive-bayes-corpus-eval}.
+
+We're finally ready to create the evaluator.  For cross-validation,
+it's typical to have an overall evaluation, which is used for
+every fold.  Here is how it's constructed.
+%
+\codeblock{TwentyNewsXvalDemo.4}
+%
+Note that we supplied a \code{null} classifier argument.  We will
+set the classifier for the evaluation once we have trained it
+within a fold.
+
+We then set up a loop over the folds.
+%
+\codeblock{TwentyNewsXvalDemo.5}
+%
+It loops over the folds (counting from zero).  Within the loop, it
+sets the fold on the corpus using the \code{setFold(int)} method.
+
+Then, it constructs a new classifier instance using the parameters
+read from the command line.  Note how this is done within the loop
+body.  If we had constructed a classifier on the outside, it would've
+been reused within the loop, with the result being that we'd be
+testing on training data as we went along.
+
+After setting up the classifier, we call the corpus's
+\code{visitTrain()} method, supplying the new classifier instance as
+an argument.  This causes all the training items in the corpus to be
+supplied to the classifier's \code{handle(Classified<CharSequence>)}
+method.
+
+We next compile the classifier and use it for evaluation.
+%
+\codeblock{TwentyNewsXvalDemo.6}
+%
+The compilation is only for efficiency, and is carried out using a
+static utility method in LingPipe's \code{AbstractExternalizable}
+class.
+
+Next, we set the global classifier evaluator's classifier to be the
+result of compiling our trained naive Bayes classifier.  We then call
+the corpus's \code{visitTest()} method to send all the test instances
+to the evaluator's \code{handle(Classified<CharSequence>)} method.
+As a result, the global evaluator will have the evaluation statistics
+for all of the folds in a single evaluation.  
+
+After updating our global evaluation, we create a local evaluator
+that we will use just for the current fold.  It's set up just like
+the global evaluator and invoked in the same way using the corpus's
+\code{visitTest()} method.  The code to print the local evaluations
+per fold and the global evaluation in the end are not shown.
+
+\subsection{Cross Validating}
+
+There are two purposes of cross validation.  One is to use as much
+evaluation data as possible to get a tighter read on the system's
+performance.  The second uses the first to tune the parameters of the
+system.  Because the same data is continually being reused,
+cross-validated performance tends to be better than held out
+performance on new data.
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{ 20-news-xval} is setup up to run the
+\code{main()} method of \code{TwentyNewsXvalDemo}.  The Ant target
+passes the values of these properties to the command.  Here's
+an example illustrating all of the arguments.
+%
+\commandlinefollow{ant -Dcat-prior=2.0 -Dtok-prior=0.1 -Dlength-norm=10.0 -Drandom-seed=85 20-news-xval}
+\begin{verbatim}
+  20-news-file=C:\lpb\data-dist\20news-bydate.tar.gz
+  cat-prior=2.0
+  tok-prior=0.1
+  length-norm=10.0
+  random-seed=85
+  tok-fact=com.aliasi.tokenizer.IndoEuropeanTokenizerFactory
+
+FOLD 0  totalCount=  1884   acc=0.825   conf95=0.017
+  macro avg: prec=0.847  rec=0.809  F1=0.800
+
+FOLD 1  totalCount=  1885   acc=0.816   conf95=0.017
+  macro avg: prec=0.836  rec=0.801  F1=0.786
+
+...
+
+FOLD 9
+  totalCount=  1885   acc=0.831   conf95=0.017
+  macro avg: prec=0.854  rec=0.813  F1=0.805
+
+Global Eval
+  totalCount= 18846   acc=0.827   conf95=0.005
+  macro avg: prec=0.848  rec=0.808  F1=0.802
+\end{verbatim}
+%
+After printing the command-line arguments, it prints the results per
+fold.  In this case, we have only chosen to print the count of
+examples in the fold, the overall accuracy (and 95\% +/- value), and
+the macro-averaged results; any of the other evaluation statistics
+could be treated in the same way.  Further, by replacing the base
+classifier evaluator with a conditional classifier evaluator, even
+more statistics would be available (at the cost of speed and storage).
+
+The main thing to take away from this display is the variation between
+the folds.  Each represents training on a random 90\% of the data and
+testing on the remaining 10\%.  The confidence intervals are computed
+in the usual way from a normal approximation to a binomial
+distribution.  As discussed in \refsec{classifier-eval-acc-conf}, the
+way to read these is as a 95\% interval is as $0.825 \pm 0.017$.
+
+An immediate takeaway message is that using three decimal places of
+accuracy to report these results is highly misleading.  The confidence
+interval tells us taht we're roughly $\pm 0.02$, so the second decimal
+place isn't even likely to be accurate.  The rough validity of these
+confidence intervals can be seen from looking at the range of values
+produced.  The way to interpret the 95\% intervals resulting from one
+fold can best be explained by example.  For instance, in fold 0, the
+accuracy estimate is 0.825 with a confidence interval of $\pm 0.017$.
+This is saying that (roughly because of the normal approximation)
+if we truly had an 0.825 accuracy nad run 1884 trials (the total count
+for the fold), 95\% of the time we would expect the measured
+accuracy estimate to fall in the interval $0.825 \pm 0.017$.
+
+After the final fold (fold 9, because we numbered from 0), we print
+the global evaluation.  This is based on all the cases, so note the
+tenfold higher total count.  The accuracy here is just the average of
+the per-fold accuracies (weighted by count, of course).   Note
+that because we have ten times as many evaluation points, our
+confidence interval is much tighter.  Though it's still not tight
+enough to report more than two decimal places. 
+
+We can conclude with the settings we have that our system
+is roughly 83\% accurate.
+
+\subsection{Tuning a System}
+
+The goal of tuning is to find the settings that work the best for a
+given system.  Usually this is done by optimizing some measure of
+performance, such as accuracy or macro-averaged F measure.  The
+two standard approaches have been illustrated already for naive
+Bayes, namely setting aside an official train/test split of the
+data and the second is by cross validation.
+
+The advantage of cross validation is that it uses more data, which all
+else being equal, is a good thing.  The main drawback to
+cross-validation is well illustrated with the twenty newsgroups data,
+namely that the set of examples in the corpus is not stationary.  In
+particular, the twenty newsgroups corpus is the result of a
+typewritten dialog taking place on a newsgroup over time.  The later
+articles are often closely related to the earlier articles by
+inclusion of quotes and responses.  Thus they are related exactly and
+also topically.  This is wholly typical of natural language and many
+other domains in which forecasting is much harder than backcasting (or
+``aftcasting'' if you prefer a more nautical terminology). 
+
+One reason for this in language data is easily understood by imagining
+ten years of newswire data.  Over time, different political figures
+and sports figures come into and out of public focus and different
+events come into and out of focus.  Often with a cyclic schedule; we
+would not be surprised to find the news mentioning the word
+\stringmention{holiday} and the phrase \stringmention{new year} more
+often in December and January than in other months.  The terms
+\stringmention{World Cup} and \stringmention{Winter Olympics} tend to
+occur on four-year cycles.  Basically, language is not neatly
+homogeneous over time (what a statistician would call ``stationary'').
+
+For tuning, it's usually easiest to start with reasonable default
+parameters and then move a single parameter at a time until results
+look roughly optimal, then move onto the next parameter, continuing
+to cycle through all the parameters until you run out of time,
+energy or improvements.
+
+
+\subsection{Tuning Naive Bayes}
+
+The three quantitative tuning parameters for naive Bayes are reflected
+in the command-line arguments to our demo, namely the two priors and
+the length normalization.  
+
+\subsubsection{Category Prior}
+
+The category prior indicates the prior count of examples to be added
+to each category's count.  During prediction, naive Bayes adds the
+prior count and observed count in training to derive an estimate of
+the probability of seeing a given category of text.  
+
+Increasing the category prior will drive the category distribution
+closer to uniform, meaning that the categories will have similar
+probabilities.  This is easy to see with an example with two
+categories, $A$ and $B$.  Suppose our corpus has 10 instances of $A$
+and 40 instances of $B$.  With a prior count of 0, the probability
+estimate for $A$ is 40/(10+50), or 0.8.  But if we have a prior count
+of 20, the estimate is (40+20)/(10+20 + 50+20), or 0.6.  The higher
+prior drives the probability closer to 0.5, representing equal odds
+of either category appearing.
+
+The twenty newsgroups is a balanced corpus, meaning that there are
+roughly the same number of items in each category.  This is not
+typical of the real data from which it was gathered.  In the wild,
+different newsgroups have wildly different numbers of messages posted
+to them.  If someone were to give us a posting, we would ideally be
+able to use our knowledge of the frequency of postings as well as the
+text.  
+
+For balanced corpora like twenty newsgroups, the prior will have no
+effect.  If ther training data counts were 20 and 20 for categories
+$A$ and $B$, then the estimated probabilities are 0.5 no matter
+what the prior count.  As a result, changing this parameter will
+have no effect on the outcomes.
+
+As with all count-based priors, the more data that is seen,
+the smaller the effect of the prior.  This is also easily
+seen by example.  If we have a prior count of 10, then
+we get very different estimates with counts of 4 and 1,
+40 and 10, and 4000 and 1000.  As the size of the data
+increases, the estimates converge to the maximum likelihood
+estimate that arises from a zero prior.
+
+
+\subsubsection{Token Prior}
+
+Like the category prior, the token prior smooths estimates,
+specifically the estimate of the probability of seeing a given token
+in a document drawn from a particular category.  This parameter has a
+profound effect on naive Bayes classifiers.  For instance, here's
+the overall accuracies based on different choices of token prior,
+leaving the category prior at 2.0 and the length normalization at 10.0.
+%
+\begin{center}
+\begin{tabular}{r|r}
+{\it Token Prior} & {\it Accuracy} 
+\\ \hline
+0.0001 & 0.91
+\\
+ 0.0010 & 0.91
+\\
+ 0.0100 & 0.89
+\\
+ 0.1000 & 0.83
+\\
+ 1.0000 & 0.69
+\\
+10.0000 & 0.44
+\end{tabular}
+\end{center}
+%
+In this case, performance goes up as we lower the token count prior.
+Typically, performance will begin to drop as the prior is reduced
+below its optimal value.  While sometimes a zero prior will work (it's
+equivalent to a maximum likelihood estimator), in practice it can
+result in zero probability estimates, which can lead to numerical
+instability in the evaluations.  For instance, setting the prior to
+0.0 will crash naive Bayes, but setting it to a very small value still
+gives performance of roughly 0.905.  
+
+For robustness, it's usually safest to leave the parameters
+close to where the performance begins to get good rather than to
+extreme values.  For instance, from the above measurements, we'd
+set the token prior to 0.001, not 0.0001.  By more robust, we mean
+that the performance will likely be better for test examples
+which are not exactly like the training examples.
+
+If we were to continue to raise the prior, the performance
+would degrade to chance accuracy, which is 0.05 given the
+balanced 20 categories.
+
+\subsubsection{Tuning Length Normalization}
+
+The length normalization treats the entire document as if it were the
+length norm number of tokens long.  Setting the value to \code{Double.NaN}
+turns off length normalization (that's done with command-line
+argument \stringmention{NaN} in this demo program).
+
+The length normalization has a greater effect on probabilility
+estimates than on first-best classification.  Its effect on first-best
+results depends on the length of the document.  If the document is
+shorter than the length norm, the document's model of tokens gets
+upweighted relative to the overall category distribution.  If the
+document is longer than the length norm, the reverse happens, with
+more weight being given to the distribution over the categories than
+would occur in the unnormalized case.
+
+\subsubsection{Tuning Tokenization}
+
+Because naive Bayes runs purely off of the observed tokens, the
+tokenizer factory's behavior has a very large effect on how the
+classifier behaves.  In these examples, we have used LingPipe's
+default tokenizer for Indo-European languages (like English).  
+
+It is common to apply a number of filters to a basic tokenizer.
+Specifically, it is common to case normalize, remove stop words, and
+reduce to a stemmed (or lemmatized form).  See \refchap{tokenization}
+for a thorough description of LingPipe's built-in tokenizers.
+
+Although it is possible to use n-gram based tokenization for naive
+Bayes, either at the character or token level, these tokenizers
+further violate the assumption of independence underlying naive Bayes.
+For instance, if we have the word \stringmention{fantastic} and are
+looking at 4-grams, then the first two tokens, \stringmention{fant}
+and \stringmention{anta} are highly related; in fact, we know that the
+character 4-gram following \stringmention{fant} must begin with
+\stringmention{ant}.
+
+
+\section{Formalizing Naive Bayes}
+
+The naive Bayes model has a particularly simple structural form.
+Setting aside document-length normalization, and assuming tokenization
+has already happened, the model is nothing more than a multinomial
+mixture model.  
+
+\subsection{The Model}
+
+The easiest way to write it is using sampling notation.  
+
+
+\subsubsection{Observed Data}
+
+The data we observe is structured as follows.
+%
+\begin{center}
+\begin{tabular}{l|l}
+{\it Data} & {\it Description}
+\\ \hline
+$K \in \nats$ & number of categories
+\\ 
+$N \in \nats$ & number of documents
+\\
+$V \in \nats$ & number of distinct tokens
+\\
+$M_n \in \nats$ & number of words in document $n$
+\\
+$x_{n,m} \in 1{:}V$ & word $m$ in document $n$
+\\
+$z_n \in 1{:}K$ & category of document $n$
+\end{tabular}
+\end{center}
+
+\subsubsection{Model Parameters}
+
+The parameters of the model are as follows.
+%
+\begin{center}
+\begin{tabular}{l|l}
+{\it Parameter} & {\it Description}
+\\ \hline
+$\alpha \in \posreals$ &  prior count for categories plus 1
+\\
+$\beta \in \posreals$ & prior count for tokens in categories plus 1
+\\
+$\pi_k \in [0,1]$ & probability of category $k$
+\\
+$\phi_{k,v} \in [0,1]$ & probability of token $v$ in document of category $k$
+\end{tabular}
+\end{center}
+%
+Note that the Dirichlet prior parameters $\alpha$ and $\beta$ are set
+to the prior counts (as defined in our interface) plus 1.  In general,
+prior count parameters for a Dirichlet may be effectively negative; they
+are not allowed in LingPipe because they can easily lead to situations
+where there is no maximum a posteriori estimate (see \refsec{naive-bayes-map}).
+
+
+\subsubsection{Probability Model}
+
+The generative model for the entire corpus (all observed data and
+parameteters) is defined in sampling notation as follows.
+%
+\begin{align}
+\pi &\sim \mbox{\sf Dirichlet}(\alpha)
+\\
+\phi_{k} &\sim \mbox{\sf Dirichlet}(\beta)
+& \mbox{ for } k \in 1{:}K
+\\
+z_n &\sim \mbox{\sf Discrete}(\pi) & \mbox{ for } n \in 1{:}N
+\\
+x_{n,m} &\sim \mbox{\sf Discrete}(\phi_{z_n}) & \mbox{ for } n \in 1{:}N, m \in 1{:}M_n
+\end{align}
+%
+For us, we fix the prior parameters $\alpha$ and $\beta$ to constants.
+Specifically, these values are one plus the prior counts as described
+in the API.%
+%
+\footnote{This is because, in general, the prior count can be
+  conceptually negative for Dirichlet priors; LingPipe doesn't
+  accomodate this case, because the MAP estimates often diverge with
+  prior counts below zero.}
+%
+
+To start, we generate the category discrete distribution parameter
+$\pi$ using a Dirichlet prior.  This parameter determines the
+distribution of categories in the (super)population.%
+%
+\footnote{The finite population sampled may have a different
+  distribution of categories.  This is easy to see.  If I roll a
+  six-sided die twelve times, it's unlikely that I'll get each number
+  exactly twice even though each has a 1/6 probability in each throw.
+  The parameter represents the distribution over a theoretical
+  superpopulation.  The law of large numbers states that as the corpus
+  size ($N$) grows, the sampled proportions approach the
+  superpopulation proportions.}
+%
+Next, for each category $k$, we generate the discrete distribution
+parameter $\phi_k$ which models the probability of each token
+appearing at any point in a document of category $k$.  
+
+Now, we are ready to generate the observed data.  For each document
+$n$, we generate its category $z_n$ based on the category distribution
+$\pi$.  Then, for each word $m$ in document $n$, we generate its token
+$x_{n,m}$ using the distributioin $\phi_{z_n}$ over words for category
+$z_n$.  That's the entire model.
+
+The sampling notation determines the entire probability of all of the
+parameters (excluding the constant prior parameters) and the observed
+data.
+%
+\begin{align}
+p(\pi,&\phi,z,x) 
+\\
+&{} = \mbox{\sf Dir}(\pi|\alpha)
+\, \times \,  \prod_{k=1}^K \mbox{\sf Dir}(\phi_k|\beta)
+\, \times \,  \prod_{n=1}^N \mbox{\sf Disc}(z_n|\pi)
+\, \times \,  \prod_{n=1}^N \, \prod_{m=1}^{M_n} \mbox{\sf Disc}(w_{n,m}|\phi_{z_n}).
+\nonumber
+\end{align}
+
+
+\subsection{Predictive Inference}
+
+For now, we will assume we know the parameters for a model; in
+the next section we show how to estimate them.  Our prediction
+problem for classification is to model the probability distribution
+over categories given an observed document, which has the form
+%
+\begin{equation}
+p(z_n | w_n, \pi, \phi).
+\end{equation}
+%
+Applying Bayes's rule and a little algebra reveals that
+%
+\begin{align}
+p(z_n|w_n, \pi, \phi) 
+&{} = \frac{p(z_n,w_n|\pi,\phi)}{p(w_n|\pi,\phi)}
+\\[6pt]
+&{} \propto p(z_n,w_n|\pi,\phi)
+\\[3pt]
+&{} = p(z_n|\pi) \times \prod_{m=1}^{M_n} p(w_{n,m}|z_n,\phi).
+\end{align}
+%
+To compute the actual probabilities, we just renormalize,
+computing 
+%
+\begin{equation}
+p(z_n|\pi,\phi) 
+= \frac{p(z_n|\pi) \times \prod_{m=1}^{M_n} p(w_{n,m}|z_n,\phi)}
+       {\sum_{k=1}^K p(k|\pi) \times \prod_{m=1}^{M_n} p(w_{n,m}|k,\phi)}.
+\end{equation}
+
+
+\subsection{Parameter Estimation}\label{section:naive-bayes-map}
+
+Given training data, our job is to estimate the parameters for
+a model.%
+%
+\footnote{This is an instance of so-called ``point estimation'', which
+  may be contrasted with full Bayesian inference.  The latter averages
+  over the uncertainty of the inferred parameters, whereas the former
+  just assumes they are correct (or good enough).  Bayesian inference
+  tends to be more robust, but inferences based on point estimates
+  are much easier and faster, and tend to provide similar results.}
+
+What we do for naive Bayes is known as maximum a posteriori (MAP)
+estimate, because we are finding the parameters that maximize the
+Bayesian posterior $p(\pi,\phi|z,w)$, which represents the probability
+distribution over the parameters $\pi$ and $\phi$ given the observed
+data $z$ and $w$; here we have suppressed the implicit conditioning on
+the constants $\alpha$, $\beta$, $N$, $M$, and $K$.  The MAP estimates
+for parameters are written as $\hat{pi}$ and $\hat{\phi}$ and defined
+by 
+%
+\begin{equation}
+(\hat{\pi},\hat{\phi})
+= \arg\max_{\pi,\phi} \ p(\pi,\phi|z,w).
+\end{equation}  
+%
+Because of the convenient form we have chosen for the priors, namely
+Dirichlet, this equation can be solved analytically (as long as the
+priors $\alpha$ and $\beta$ are greater than or equal to 1).
+We just formalize what we said earlier, namely that we add the prior
+counts to the observed counts.  For instance, for the category prevalence
+parameter $\pi$, we have
+%
+\begin{equation}
+\hat{\pi}_k \propto \alpha + \sum_{n=1}^N \indicator{z_n = k},
+\end{equation}
+%
+where the indicator function $\indicator{z_n = k}$ has value 1 if the
+condition is true and value 0 otherwise.  In words, its value is the
+count of training examples for which the category $z_n$ was equal to
+$k$.  This expression normalizes to
+%
+\begin{equation}
+\hat{\pi}_k 
+\ = \ \frac{\alpha + \sum_{n=1}^N \indicator{z_n = k}}
+       {\sum_{k=1}^K (\alpha + \sum_{n=1}^N \indicator{z_n = k})}
+\ = \ \frac{\alpha + \sum_{n=1}^N \indicator{z_n = k}}
+       {K \times \alpha + N}.          
+\end{equation}
+%
+The denominator is derived as the total of counts contributed by
+training instances ($N$) and by the prior, which adds a prior count of
+$\alpha$ for each category ($K \times \alpha$).
+
+
+
+
+
 
 
 
