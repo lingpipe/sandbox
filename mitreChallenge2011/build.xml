@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+
+<project name="MITRE Challenge 2011"
+         basedir=".">
+
+<property name="jar" value="mitre-challenge.jar"/>
+
+<path id="classpath.standard">
+  <pathelement location="${jar}"/>
+  <pathelement location="lib/lingpipe-4.0.1.jar"/>
+</path>
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete file="${jar}"/>
+</target>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac includeAntRuntime="false"   
+         optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <compilerarg value="-Xlint:all"/>
+    <classpath refid="classpath.standard"/>
+    <src path="src/"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="${jar}">
+    <fileset dir="build/classes"
+             includes="**/*.class"/>
+  </jar>
+</target>
+
+<property name="data-dir"
+          value="e:\data\mitreChallenge2011\unpacked"/>
+
+<target name="chars"
+        depends="jar">
+  <java classname="com.lingpipe.mitre2011.Chars"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data-dir}/index.txt"/>
+    <arg value="${data-dir}/queries.txt"/>
+  </java>
+</target>
+
+
+<target name="corpus"
+        depends="jar">
+  <java classname="com.lingpipe.mitre2011.Corpus"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data-dir}"/>
+  </java>
+</target>
+
+
+<target name="ngrams"
+        depends="jar">
+  <java classname="com.lingpipe.mitre2011.Ngrams"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="${data-dir}"/>
+  </java>
+</target>
+
+
+
+</project>
