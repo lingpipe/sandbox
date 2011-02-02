@@ -2,13 +2,15 @@ package com.lingpipe.mitre2011;
 
 
 import com.aliasi.io.FileLineReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 
 public class Chars {
 
     public static void main(String[] args) throws IOException {
         System.out.println("Counting Chars");
-
-
         int[] histo = new int[256];
         
 
