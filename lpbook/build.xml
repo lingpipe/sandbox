@@ -141,8 +141,6 @@
                   mode="775">
 	<include name="lingpipe-book-code-${version}.tgz"/>
       </tarfileset>
-
-      
     </tar>
   </target>
 

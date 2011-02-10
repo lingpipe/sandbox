@@ -142,7 +142,8 @@ Our training data is almost always noisy, even if labeled by task
 specialists by hand.  Naive Bayes is particularly robust to noisy
 training data.  This produces a quality-quantity tradeoff when
 creating the data.  High-quality data labeling is very labor
-intensive, and its often good enough to get
+intensive.  Sometimes it is more effective to collect more
+lower-quality data.  
 
 
 
@@ -176,24 +177,56 @@ Note that we do not model the selection of the number of topics $K$,
 the number of documents $N$, or the number of words $M_n$ in the
 $n$-th document; these are given as constants.  
 
+\subsection{Priors and Posteriors}
+
 Given a top-level distribution over categories along with a
 distribution over words for each category, it is straightforward to
-generate a corpus of documents.  But we can go one better and also
-generate the category prevalence distribution and the
-category-specific distributions over words.  In order to do so, we
-need a distribution over these distributions, which is known as a
-prior in Bayesian statistics.
+generate a corpus of documents.  In a Bayesian setting we can go one
+step further and also generate the category prevalence distribution
+and the category-specific distributions over words.  In order to do
+so, we need to go up a level of abstraction and consider a probability
+distribution over the parameters of a probabiltiy distribution.  Then,
+we start by generating the prevalence distribution and the topic
+distributions, then continue to generate the documents.  
 
-The standard assumption is that the distribution over categories is
-drawn from a symmetric Dirichlet prior and the distributions over
-words for each category are all drawn from a symmetric Dirichlet
-prior.  In practice, this amounts to additive smoothing for our
-parameter estimates for the category distributions.  In natural
-language processing, the most common priors are Laplace priors, which
-adds 1, Jeffreys priors, which add 0.5, and uniform priors, which add
-0.  The uniform priors lead to traditional maximum likelihood
-estimates, which are dangerous in practice for reasons we explain
-below.
+Such a distribution over distributions is called a \techdef{prior} in
+Bayesian statistics.  The reason such distributions are called priors
+has to do with how they apply in inference.  The idea is that any
+point in time, we have a distribution over distributions.  Then we
+observe data and update our prior distribution with the observed data
+to construct a posterior distribution.  The posterior distribution
+combines the information in the prior with the information in the
+data.  This process can be iterated, with the posterior aftering
+seeing a first batch of data used as the prior for subsequent data.
+This is, in fact, exactly what the naive Bayes implementation allows.
+The implementation starts with a prior distribution over parameters,
+then as it sees data, it updates the parameters of this prior
+distribution to define the posterior distribution.  
+
+In practice, we use a very simple kind of so-called \techdef{additive
+  prior} that is both easy to understand and easy to calculate.
+The prior is characterized by prior counts for data.  That is, we
+start from a condition that is the same as if we've observed some
+data.  For instance, Laplace suggested adding one to all counts.
+
+Our counts for naive Bayes are of two forms.  The first is the
+number of documents that have been seen of each category.  These
+counts are used to estimate the prevalence of categories.  Our
+prior might do something like add 1 to all of the counts.  
+
+The second form of data is the number of times a token has been
+observed in a document of a given category.  These counts are
+used to estimate the probability of tokens being generated in
+a document of a given category.  
+
+\subsection{Maximum Likelihood Estimation}
+
+Suppose we choose to add zero prior counts to all of our data.  The
+result is that the parameters will all be set to their empirical
+ratios.  Adding zero prior counts is, in this case, equivalent to
+saying any distribution over categories or any distribution over the
+words in a category is equally likely.  This leads to what is called
+maximum likelihood estimates, as we will see later.
 
 
 \section{Getting Started with Naive Bayes}\label{section:nb-getting-started}
@@ -284,7 +317,7 @@ The final statement is a for-each loop, which iterates over the texts,
 wraps them in an instance of \code{Classified<CharSequence>}, and
 sends them to the classifier via its
 \code{handle(Classified<CharSequence>)} method.  This is where the
-actual learning takes place.  Wehn the handle method is called, the
+actual learning takes place.  When the handle method is called, the
 classifier tokenizes the text and keeps track of the counts of each
 token it sees for each category, as well as the number of instances
 of each category.  
@@ -417,10 +450,10 @@ the effect is almost always greater for longer documents.
 
 \section{Tokens, Counts and Sufficient Statistics}
 
-Document length per se is not itself a factory in naive Bayes models.
+Document length per se is not itself a factor in naive Bayes models.
 It only comes into play indirectly by adding more tokens.  In general,
-there are only two pieces of information that the naive Bayes classifier
-uses for training:
+there are only two pieces of information that the naive Bayes
+classifier uses for training:
 %
 \begin{enumerate}
 \item The bag of tokens for each category derived from combining all
@@ -476,9 +509,10 @@ laughs in the training set.  The following invocation uses a text
 consisting of a single space (no tokens).%
 %
 \footnote{The program accepts the empty string, but Ant's notion of
-  command-line arguments don't; empty string values for the \code{arg}
-  element for the \code{java} task are just ignored, as in
-  \code{<arg value=""/>}.}
+  command-line arguments doesn't; empty string values for the \code{arg}
+  element for the \code{java} task are just ignored, so that adding
+  the line \code{<arg value=""/>} as an argument in the \code{java}
+  element has no effect.}
 %
 \commandlinefollow{ant -Dtext=" " nb-demo}
 \begin{verbatim}
@@ -562,10 +596,6 @@ when we're dealing with vocabularies of thousands or millions of
 possible tokens, many of which are seen only a handful of times in
 a few categories.  
 
-Maximum likelihood estimation is supported by LingPipe's traditional
-naive Bayes implementation.  Just set the prior counts to zero; see
-the next section for more detail on prior counts.
-
 \subsection{Prior Counts for Smoothed Estimates}
 
 To get around the zero-probability estimates arising from maximum
@@ -594,8 +624,15 @@ of a static main method, which begins as follows.
 \codeblock{AdditiveSmooth.1}
 %
 Here we have defined the set of categories to be \stringmention{hot}
-and \stringmention{cold}, used a whitespace-breaking tokenizer factory,
-and set the category prior count to 1.0 and the token prior count to 0.5.
+and \stringmention{cold}, used a whitespace-breaking tokenizer
+factory, and set the category prior count to 1.0 and the token prior
+count to 0.5.%
+%
+\footnote{It may appear odd that we are allowing ``counts'' to take on
+  fractional values.  This is unproblematic because all of our
+  estimates are derived from ratios.  On the other hands, counts will
+  never be allowed to be negative.}
+%
 This will have the effect of adding 0.5 to the count of all tokens and
 1.0 to the count of all categories.
 
@@ -654,10 +691,20 @@ p(freezing|cold)=0.231    p(freezing| hot)=0.053
 p(     out|cold)=0.231    p(     out| hot)=0.158
 \end{verbatim}
 %
-The first pair of columns indicates the estimated probability of each
-token given the category, hot or cold, and the bottom part indicates
-the overall probability of the categories hot and cold before seeing
-any data.  
+At the top, we see the probabilities of the categories
+\stringmention{cold} and \stringmention{hot} before seeing any data.
+Note that these two values sums to 1.  Below that, columns display the
+estimated probability of each token given the category, hot or cold.
+For each category, \stringmention{hot} and \stringmention{cold}, 
+the sum of the probabilities of all tokens is also 1.  
+
+Each of these lines corresponds to a parameter in the model.  Thus
+this model has 16 parameters.  We only need to specify 13 of them,
+though.  Given $p(\stringmention{cold})$, we know that
+$p(\stringmention{hot}) = 1 - p(\stringmention{cold})$.  Furthermore,
+we know that $p(\stringmention{out}|\stringmention{cold})$ is one
+minus the sum of the probabilities of the other tokens, and similarly
+for $p(\stringmention{out}|\stringmention{hot})$.
 
 Let's look at some particular estimates, focusing on the hot category.
 Given this training data, a token in a statement expressing hot
@@ -969,7 +1016,7 @@ used to do the writing.  This could also be done through LingPipe's
 class's method \code{compileTo(ObjectOut)}.  We deserialized using
 another utility method, \code{readObject()}, which reads and returns
 serialized objects from files (there are also utility methods to read
-compiled or serailized models from the class path as resources).
+compiled or serialized models from the class path as resources).
 
 Usually, one program would write the compiled file and another
 program, perhaps on another machine or at a different site, would read
