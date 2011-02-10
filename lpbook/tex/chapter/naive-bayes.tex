@@ -1912,7 +1912,7 @@ model parameters $\pi$ and $\phi_z$, is proportional to the probabilty
 of the category times the probabilty of the tokens in that category.
 %
 \begin{equation}
-p(z_n|w_n,\pi,\phi) \propto p(x_n|\pi) \times \prod_{m=1}{M_n} p(w_{n,m}|\phi_{z_n}).
+p(z_n|w_n,\pi,\phi) \propto p(x_n|\pi) \times \prod_{m=1}^{M_n} p(w_{n,m}|\phi_{z_n}).
 \end{equation}
 %
 Note that the probabilty of category $z_n$ is proportional to the
@@ -1923,15 +1923,29 @@ probabilities arises because of the conditional independence assumed
 for words $w_{n,m}$ given category $z_n$.  Note that in this form,
 each word counts once as a term in the product.  
 
-To length normalize, we are going to treat the product as if it is
-really of length $\lambda > 0$, where $\lambda$ is the length
-normalization parameter.  Because we have a product, this is going to
-amount to a kind of geometric average, with probability of a category
-defined to be proportional to a rescaled product, namely
+Suppose our length normalization parameter is $\lambda > 0$,
+indicating that we wish to treat every document as if it were really
+length $\lambda$ rather than its actual length $M_n$.  To rescale
+the product to be effectively $\lambda$ terms long instead of the
+$M_n$ terms long as it's defined, we raise it to the $\lambda/M_n$
+power,
 %
 \begin{equation}
 p(z_n|w_n,\pi,\phi) \propto p(x_n|\pi) \times \left( \prod_{m=1}{M_n} p(w_{n,m}|\phi_{z_n}) \right)^{\textstyle \lambda / M_n}
 \end{equation}
+%
+First note that the normalization only applies to the token terms, not
+the category distribution terms.  Second note that if the length norm
+and document length are the same, $\lambda = M_n$, there is no effect.
+Now if $\lambda > M_n$, we inflate the contribution of each term
+by a power of $\lambda/M_n$.  If $\lambda < M_n$, raising to the
+power $\lambda/M_n$ downweights each term.
+
+so that the length norm $\lambda$ is larger than the number of tokens
+$M_n$ in the document, then we raise the product to a power less than
+1.
+
+
 
 
 
