@@ -1,0 +1,223 @@
+\chapter{Language Models}\label{chap:lm}
+
+A \techdef{language model} is a model that assigns probabilities to
+strings.  Traditionally, these strings are either sequences of bytes,
+sequences of characters, or sequences of tokens.  LingPipe provides
+language model implementations for sequences of characters and
+sequences of tokens.  We are going to focus on character sequences
+that make up natural language text, although language models may be
+applied to arbitrary sequences.  This text may come from anywhere,
+including e-mail or instant messages, blogs, newspapers, fiction
+novels, emergency room discharge summaries, job applicant resume's,
+etc.
+
+The basic operation of language models in LingPipe is to provide them
+training data consisting of a sequence of texts.  After they are
+trained, language models may be used to estimate the probability of
+texts that were not in the training data.  
+
+\section{Applications of Language Models}
+
+LingPipe uses language models as the basis of several other modules,
+including classification, taggers, chunkers, spelling correction, and
+significant phrase extractionnn for exploratory data analysis.  In all
+cases, these applications use one or more language models to estimate
+different kinds of text.  For instance, in language-model based
+classification, there is a language model for each category, and texts
+are classified into the category which assigns them the highest
+probability.  In chunkers, separate language models might be
+constructed for person names, company names, place names, and for text
+that's not part of a name; these are then combined to analyze new text
+for names of entities.  For spelling correction, a single language
+model characterizes the correct spellings and is used to weigh
+alternative corrections against each other.  For significant phrase
+extraction, a background language model characterizes a fixed
+comparison text, such as all the text collected from newspapers in a
+year, and a foreground model characterizes some other text, such as
+the text collected this week; differential analysis is then done to
+find phrases that appear more frequently than one would expect in the
+foreground model, thus modeling a kind of ``hot topic'' detection.
+
+One of the major applications of language models is in speech
+recognition, where they play the same role as the language model in
+spelling correction.  
+
+Another application of language models is compression.  Using a
+technique such as arithmetic coding, language models provide
+state-of-the-art compression.  Although LingPipe does not implement an
+arithmetic coder for compression, we will discuss the connection to
+compression below when we discuss empirical cross-entropy.
+
+Yet another application of language models is in characterizing
+languages or sublanguages.  For instance, we can compare the entropy
+of news stories in the {\it New York Times} with biomedical abstracts
+in MEDLINE, the surprising result being that MEDLINE is more
+predictable at the text level than the {\it Times}).  We can also
+compare the entropy of Chinese and English, measuring the average
+information content of a Chinese character (of which there are tens of
+thousands) with the information content of an English character (of
+which there are dozens).
+
+\section{Language Model Interfaces}
+
+There is a rich set of interfaces for language models and related
+support classes in the LingPipe package \code{com.aliasi.lm}.  The
+basic interfaces are in the \code{LanguageModel} interface, most
+being defined as nested interfaces.
+
+\subsection{Predictive: \code{LanguageModel}}
+
+The top-level language model interface, \code{LanguageModel}, defines
+methods for estimating probabilities of sequence of characters.  It
+defines two methods for estimating the log (base 2) probability of a
+sequence of characters, one based on arrays and one based on the
+character sequence interface.
+%
+\begin{verbatim}
+double log2Estimate(char[] cs, int start, int end);
+double log2Estimate(CharSequence cs);
+\end{verbatim}
+%
+The first method uses an indexed character array to define the slice
+of characters from \code{cs[start]} to \code{cs[end-1]}.  For most
+methods, the character slice method is more efficient and the
+character-sequence method defined by first converting the sequence to
+an array of characters.
+
+The reason estimates are returned as logarithms is that we would
+otherwise run into underflow.  If each character has an average
+probabilty of 0.25 (roughly what they have in open-domain English text
+like a newspaper), the probability of a sequence of 600 tokens has a
+$2^{-1200}$ probabilty, which is too small to fit into a Java
+double-precision floating point value (the minimum value for which is
+$2^{-1074}$).
+
+\subsection{Trainable: \code{LanguageModel.Dynamic}}
+
+Language models that may be trained by supplying example text
+implement the interface \code{LanguageModel.Dynamic}.  This interface
+extends the corpus interface \code{ObjectHandler<CharSequence>},
+which specifies the method
+%
+\begin{verbatim}
+void handle(CharSequence cs);
+\end{verbatim}
+%
+The character sequence is considered as training data and used to fit
+the model parameters.  See \refsec{corpus-handlers} for more
+information on \code{ObjectHandler} and how it fits into corpus
+patterns.
+
+There are four other methods named \code{train()}, the first two
+of which simply allow training with character sequences.
+%
+\begin{verbatim}
+void train(CharSequence cs);
+void train(CharSequence cs, int count);
+\end{verbatim}
+%
+The first method is a legacy method duplicating the functionality of
+\code{handle()}.  The second method takes an integer count value which
+determines the number of times the character sequence is used for
+training.  Although implemented more efficiently, a training call
+with a count is equivalent to calling the basic training method the
+count number of times.
+
+The last two methods just repeat the character sequence methods
+with character slices.
+
+
+\subsection{Conditionals: \code{LanguageModel.Conditional}}
+
+Conditional language models predict the probability of a character
+given the previous characters.  The interface
+\code{LanguageModel.Conditional} specifies the method
+%
+\begin{verbatim}
+double log2ConditionalEstimate(CharSequence);
+\end{verbatim}
+%
+This method returns the probabilty of the last character in
+the sequence given the initial characters in the sequence.  For
+instance, \code{log2ConditionalEstimate("abcd")} returns the
+probability of the character \charmention{d} following the
+sequence of characters stringmention{abc}.  There is also
+a method working on character slices.
+
+\subsection{Tokens: \code{LanguageModel.Tokenized}}
+
+For language models based on tokens, the interface
+\code{LanguageModel.Tokenized} supplies a method for
+computing the probability of a sequence of tokens,
+%
+\begin{verbatim}
+double tokenLog2Probability(String[] toks, int start, int end);
+\end{verbatim}
+%
+This returns the log (base 2) probability of the specified slice of
+tokens.  As usual, the start is inclusive and the end exclusive, so
+that the tokens used are \code{toks[start]} to \code{toks[end-1]}.
+There is also a method to return the linear probability, which is just
+the result of exponentiating the log probability.  
+
+Unlike character-based probabilities, this token probability only
+counts the probability of the tokens, not the whitespaces (or other
+non-token characters) surrounding them.  
+
+A further disconnect for tokenized language models is that they may
+use a tokenizer that reduces the signal, conflating some of the
+inputs.  In that case, what is being modeled is the probability of
+the sequence of tokens, not the raw character sequence.  For example,
+any two character sequences producing the same tokens will produce
+the same token probability even if they are different strings.
+
+\subsection{Bounded: \code{LanguageModel.Sequence}}
+
+The interface \code{LanguageModel.Sequence} is just a marker
+interface, meaning that it does not specify any new methods other than
+that inherited from its superintervace, \code{LanguageModel}.
+
+Sequence-based language model implementations are normalized so
+that the sum of the probability of all strings of all lengths is one.%
+%
+\footnote{Because it's just a marker interface, the requirement is
+  conventional rather than expressed in Java's type language.  This is
+  similar to interface requirements on collections in the
+  \code{java.util} core library.}
+%
+In symbols, this amounts to
+%
+\begin{equation}
+\sum_{n \geq 0} \hspace*{8pt} \sum_{\text{\code{cs.length()} == n}} \hspace*{3pt} 2^{\text{\code{log2Prob(cs)}}} = 1.
+\end{equation}
+
+\subsection{Unbounded: \code{LanguageModel.Process}}
+
+The other type of language model is a process language model, declared
+by implementing the marker interface \code{LanguageModel.Process}.  A
+process language model treats a sequence of characters as being
+generated as a kind of random process that generates a character at a
+time without a distinct beginning or end.  
+
+Because they don't model the beginning or end of a string, process
+language models are normalized by length so that the sum of the
+probabilities of all strings of a given length is one.  In symbols,
+for every \code{n}, we have
+%
+\begin{equation}
+\sum_{\text{\code{cs.length()} == n}} \hspace*{3pt} 2^{\text{\code{log2Prob(cs)}}} = 1.
+\end{equation}
+%
+
+
+\section{Character Language Models}
+
+LingPipe's language models come in two main flavors, character-based
+and token-based.  The character-based models are further subdivided as
+to whether they model the start and end of a string or not.
+
+
+
+
+
+
