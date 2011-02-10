@@ -140,6 +140,7 @@
                   prefix="lucene-3-tutorial-code"
                   mode="775">
         <include name="lib/lucene*"/>
+        <include name="lib/lingpipe-4.0.1.jar"/>
         <include name="src/applucene/**/*"/>
         <exclude name="**/*~"/>
         <exclude name="**/.svn/*"/>
