@@ -1,5 +1,9 @@
 package com.lingpipe.mitre2011;
 
+import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import com.aliasi.io.FileLineReader;
 import java.io.IOException;
