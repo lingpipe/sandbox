@@ -3,6 +3,7 @@ package com.lingpipe.mitre2011;
 import com.aliasi.spell.TfIdfDistance;
 
 import com.aliasi.tokenizer.NGramTokenizerFactory;
+import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.TokenizerFactory;
 
 import com.aliasi.util.BoundedPriorityQueue;
@@ -30,13 +31,13 @@ public class Ngrams {
     static final boolean DEBUG = true;
 
     static final int INDEX_NGRAM = 4;
-    static final int MATCH_NGRAM_MIN = 2;
-    static final int MATCH_NGRAM_MAX = 3;
+    static final int MATCH_NGRAM_MIN = 3;
+    static final int MATCH_NGRAM_MAX = 5;
 
     static final String COMMENT_PREFIX = "# ";
 
-    static final int MAX_RESULTS_INDEX = 200;
-    static final int MAX_RESULTS = 50;
+    static final int MAX_RESULTS_INDEX = 2000;
+    static final int MAX_RESULTS = 500;
 
     static final double MIN_INDEX_PROXIMITY = 0.5;
 
@@ -109,10 +110,10 @@ public class Ngrams {
             System.out.println("Matching");
         int count = 0;
         for (String[] fields1 : corpus.mQueries) {
-            if ((count++ % 10) == 0) {
+            if ((count++ % 100) == 0) {
                 if (DEBUG) {
                     System.out.println("\n==================================");
-                    System.out.println("\nCOUNT=" + count);
+                    System.out.println("COUNT=" + count);
                     System.out.println("==================================\n");
                 }
             }
@@ -121,14 +122,19 @@ public class Ngrams {
             String name1 = fieldsToName(fields1);
             char[] name1Cs = name1.toCharArray();
 
-            BoundedPriorityQueue<Match> queue
-                = new BoundedPriorityQueue<Match>(ScoredObject.comparator(),
-                                                  MAX_RESULTS_INDEX);
+
+            // CANDIDATE SET INDEX
+
             Set<String[]> candidateSet = new HashSet<String[]>();
             for (String ngram : tfIdx.tokenizer(name1Cs,0,name1Cs.length))
                 if (nGramToFields.containsKey(ngram))
                     candidateSet.addAll(nGramToFields.get(ngram));
+
+            // N-GRAM SCORE
             
+            BoundedPriorityQueue<Match> queue
+                = new BoundedPriorityQueue<Match>(ScoredObject.comparator(),
+                                                  MAX_RESULTS_INDEX);
             for (String[] fields2 : candidateSet) {
                 String id2 = fields2[0];
                 String name2 = fieldsToName(fields2);
@@ -137,6 +143,9 @@ public class Ngrams {
                     queue.offer(new Match(fields1,fields2,proximity));
                 }
             }
+
+
+            // RESCORE
 
             BoundedPriorityQueue<ScoredObject<String>> resultQueue
                 = new BoundedPriorityQueue<ScoredObject<String>>(
@@ -160,6 +169,8 @@ public class Ngrams {
                 }
             }
 
+            // OUTPUT
+
             for (ScoredObject<String> so : resultQueue) {
                 String id2 = so.getObject();
                 double score = so.score();
@@ -175,6 +186,15 @@ public class Ngrams {
 
     // use this for rescoring a hypothesis match
     static double rescore(String[] fields1, String[] fields2, double score) {
+
+        // pull out components
+        // String forename1 = fields1[1];
+        // String surname1 = fields1[2];
+        // String forename2 = fields2[1];
+        // String surname2 = fields2[2];
+        // String fullName1 = fieldsToName(fields1);
+        // String fullName2 = fieldsToName(fields2);
+
         return score;
     }
 
@@ -185,6 +205,8 @@ public class Ngrams {
         String result = FIELDS_TO_NAME_CACHE.get(fields);
         if (result != null) 
             return result;
+        // extra start/end space is to get boundaries modeled
+        // could additionally prefix with '$' and postfix with '^'
         result = (" " + fields[1] + " " + fields[2] + " ").replaceAll("\\s+"," ");
         FIELDS_TO_NAME_CACHE.put(fields,result);
         return result;
