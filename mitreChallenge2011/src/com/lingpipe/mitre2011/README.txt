@@ -39,7 +39,8 @@ can run the task as follows
 This will write a system response ready for submission to the
 challenge in the default output directory /runs.
 
-The Initial Index
+
+Three-Pass Matching
 --------------------------------
 
 Our approach is based on three passes. 
