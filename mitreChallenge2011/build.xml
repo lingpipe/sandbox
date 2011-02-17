@@ -39,6 +39,9 @@
 <property name="data-dir"
           value="e:\data\mitreChallenge2011\unpacked"/>
 
+<property name="out-prefix"
+          value="runs/lingpipe-demo-"/>
+
 <target name="chars"
         depends="jar">
   <java classname="com.lingpipe.mitre2011.Chars"
@@ -66,6 +69,7 @@
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="${data-dir}"/>
+    <arg value="${out-prefix}"/>
   </java>
 </target>
 
