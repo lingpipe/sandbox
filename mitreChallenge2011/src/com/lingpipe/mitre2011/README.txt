@@ -69,11 +69,3 @@ score passed in.  The maximum number of results surviving the final
 ranking is determiend by the variable MAX_RESULTS.
 
 
-Rescoring 
---------------------------------
-
-There is a rescore() method in the com.lingpipe.mitre2011.Ngrams class
-that may be redefined.  If you redefine it, the results will be determined
-by rescoring every pair in the top matches according to the initial index.
-
-
