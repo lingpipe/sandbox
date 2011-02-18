@@ -34,7 +34,7 @@ tuned.
 If you download the data and unpack it into directory $DATADIR, you
 can run the task as follows
 
-% ant -Ddata.dir=$DATADIR ngrams
+% ant -Ddata-dir=$DATADIR ngrams
 
 This will write a system response ready for submission to the
 challenge in the default output directory /runs.
