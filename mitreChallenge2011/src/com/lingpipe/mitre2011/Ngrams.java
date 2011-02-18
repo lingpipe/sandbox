@@ -3,7 +3,6 @@ package com.lingpipe.mitre2011;
 import com.aliasi.spell.TfIdfDistance;
 
 import com.aliasi.tokenizer.NGramTokenizerFactory;
-import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.TokenizerFactory;
 
 import com.aliasi.util.BoundedPriorityQueue;

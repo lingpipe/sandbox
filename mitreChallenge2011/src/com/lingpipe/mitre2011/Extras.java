@@ -3,7 +3,7 @@ package com.lingpipe.mitre2011;
 import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.TokenizerFactory;
 
-oimport java.util.HashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 // WARNING: NOT DEBUGGED
