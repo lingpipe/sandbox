@@ -37,7 +37,17 @@ can run the task as follows
 % ant -Ddata-dir=$DATADIR ngrams
 
 This will write a system response ready for submission to the
-challenge in the default output directory /runs.
+challenge in the default output directory /runs. 
+
+You may also set the property "out-prefix", which determines where the
+output goes.  The default value is "runs/lingpipe-demo-".  What the
+system does is increment a variable N until it gets to an N where the
+file "runs/lingpipe-demo-N" does not exist.  Thus the first run will
+write into file "runs/lingpipe-demo-0", the second into
+"runs/lingpipe-demo-1" and so on.  
+
+For each run, a dump of the relevant parameters and a time stamp are
+written at the top of the results file as comments.
 
 
 Three-Pass Matching
