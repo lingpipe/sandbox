@@ -66,6 +66,7 @@
 <target name="ngrams"
         depends="jar">
   <java classname="com.lingpipe.mitre2011.Ngrams"
+        maxmemory="3G"
         fork="true">
     <classpath refid="classpath.standard"/>
     <arg value="${data-dir}"/>
