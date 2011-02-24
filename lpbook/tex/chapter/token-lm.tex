@@ -1,0 +1,54 @@
+\chapter{Tokenized Language Models}\label{chap:tok-lm}
+
+In addition to the character-level language models described
+in \refchap{char-lm}, LingPipe provides token-level language
+models.  These may be configured to predict arbitrary texts
+including whitespace, or may be used just for predicting sequences
+of tokens.  
+
+\section{Applications of Tokenized Language Models}
+
+Like character language models, some applications for which were
+discussed in \refsec{char-lm-apps}, tokenized language models may be
+used as the basis for for classification.  An additional applciation
+of tokenized language models is for the discovering of new or
+interesting phrases or collocations.  For significant phrase
+extraction, a background language model characterizes a fixed
+comparison text, such as all the text collected from newspapers in a
+year, and a foreground model characterizes some other text, such as
+the text collected this week; differential analysis is then done to
+find phrases that appear more frequently than one would expect in the
+foreground model, thus modeling a kind of ``hot topic'' detection.
+
+
+\section{Token Language Model Interface}
+
+In addition to the interfaces discussed in \refsec{char-lm-interfaces},
+there is an interface for tokenized language models.
+
+\subsection{Tokens: \code{LanguageModel.Tokenized}}
+
+For language models based on tokens, the interface
+\code{LanguageModel.Tokenized} supplies a method for
+computing the probability of a sequence of tokens,
+%
+\begin{verbatim}
+double tokenLog2Probability(String[] toks, int start, int end);
+\end{verbatim}
+%
+This returns the log (base 2) probability of the specified slice of
+tokens.  As usual, the start is inclusive and the end exclusive, so
+that the tokens used are \code{toks[start]} to \code{toks[end-1]}.
+There is also a method to return the linear probability, which is just
+the result of exponentiating the log probability.  
+
+Unlike character-based probabilities, this token probability only
+counts the probability of the tokens, not the whitespaces (or other
+non-token characters) surrounding them.  
+
+A further disconnect for tokenized language models is that they may
+use a tokenizer that reduces the signal, conflating some of the
+inputs.  In that case, what is being modeled is the probability of
+the sequence of tokens, not the raw character sequence.  For example,
+any two character sequences producing the same tokens will produce
+the same token probability even if they are different strings.
