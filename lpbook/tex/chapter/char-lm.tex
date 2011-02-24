@@ -1,42 +1,41 @@
-\chapter{Language Models}\label{chap:lm}
+\chapter{Character Language Models}\label{chap:char-lm}
 
 A \techdef{language model} is a model that assigns probabilities to
 strings.  Traditionally, these strings are either sequences of bytes,
 sequences of characters, or sequences of tokens.  LingPipe provides
 language model implementations for sequences of characters and
-sequences of tokens.  We are going to focus on character sequences
-that make up natural language text, although language models may be
-applied to arbitrary sequences.  This text may come from anywhere,
-including e-mail or instant messages, blogs, newspapers, fiction
-novels, emergency room discharge summaries, job applicant resume's,
-etc.
+sequences of tokens.  In this chapter, we introduce the basic
+interfaces and character language models.  In \refchap{tok-lm},
+we introduce token language models.
+
+Although language models may be applied to arbitrary sequences, we are
+going to focus on character sequences that make up natural language
+text, This text may come from anywhere, including e-mail or instant
+messages, blogs, newspapers, fiction novels, emergency room discharge
+summaries, job applicant resume's, etc.
 
 The basic operation of language models in LingPipe is to provide them
 training data consisting of a sequence of texts.  After they are
 trained, language models may be used to estimate the probability of
 texts that were not in the training data.  
 
-\section{Applications of Language Models}
+\section{Applications of Language Models}\label{section:char-lm-apps}
 
-LingPipe uses language models as the basis of several other modules,
-including classification, taggers, chunkers, spelling correction, and
-significant phrase extractionnn for exploratory data analysis.  In all
-cases, these applications use one or more language models to estimate
-different kinds of text.  For instance, in language-model based
-classification, there is a language model for each category, and texts
-are classified into the category which assigns them the highest
-probability.  In chunkers, separate language models might be
-constructed for person names, company names, place names, and for text
-that's not part of a name; these are then combined to analyze new text
-for names of entities.  For spelling correction, a single language
-model characterizes the correct spellings and is used to weigh
-alternative corrections against each other.  For significant phrase
-extraction, a background language model characterizes a fixed
-comparison text, such as all the text collected from newspapers in a
-year, and a foreground model characterizes some other text, such as
-the text collected this week; differential analysis is then done to
-find phrases that appear more frequently than one would expect in the
-foreground model, thus modeling a kind of ``hot topic'' detection.
+LingPipe uses character language models as the basis of several other
+modules, including classification, taggers, chunkers, spelling
+correction.  There are further applications for token language models
+discussed in \refchap{tok-lm}.  In all cases, these applications use
+one or more language models to estimate different kinds of text.  For
+instance, in language-model based classification, there is a language
+model for each category, and texts are classified into the category
+which assigns them the highest probability.  In chunkers, separate
+language models might be constructed for person names, company names,
+place names, and for text that's not part of a name; these are then
+combined to analyze new text for names of entities.  For spelling
+correction, a single language model characterizes the correct
+spellings and is used to weigh alternative corrections against each
+other.
+
 
 One of the major applications of language models is in speech
 recognition, where they play the same role as the language model in
@@ -58,7 +57,7 @@ information content of a Chinese character (of which there are tens of
 thousands) with the information content of an English character (of
 which there are dozens).
 
-\section{Language Model Interfaces}
+\section{Language Model Interfaces}\label{section:char-lm-interfaces}
 
 There is a rich set of interfaces for language models and related
 support classes in the LingPipe package \code{com.aliasi.lm}.  The
@@ -127,7 +126,7 @@ The last two methods just repeat the character sequence methods
 with character slices.
 
 
-\subsection{Conditionals: \code{LanguageModel.Conditional}}
+\subsection{Conditional Probabilitiess: \code{LanguageModel.Conditional}}
 
 Conditional language models predict the probability of a character
 given the previous characters.  The interface
@@ -144,32 +143,6 @@ probability of the character \charmention{d} following the
 sequence of characters stringmention{abc}.  There is also
 a method working on character slices.
 
-\subsection{Tokens: \code{LanguageModel.Tokenized}}
-
-For language models based on tokens, the interface
-\code{LanguageModel.Tokenized} supplies a method for
-computing the probability of a sequence of tokens,
-%
-\begin{verbatim}
-double tokenLog2Probability(String[] toks, int start, int end);
-\end{verbatim}
-%
-This returns the log (base 2) probability of the specified slice of
-tokens.  As usual, the start is inclusive and the end exclusive, so
-that the tokens used are \code{toks[start]} to \code{toks[end-1]}.
-There is also a method to return the linear probability, which is just
-the result of exponentiating the log probability.  
-
-Unlike character-based probabilities, this token probability only
-counts the probability of the tokens, not the whitespaces (or other
-non-token characters) surrounding them.  
-
-A further disconnect for tokenized language models is that they may
-use a tokenizer that reduces the signal, conflating some of the
-inputs.  In that case, what is being modeled is the probability of
-the sequence of tokens, not the raw character sequence.  For example,
-any two character sequences producing the same tokens will produce
-the same token probability even if they are different strings.
 
 \subsection{Bounded: \code{LanguageModel.Sequence}}
 
