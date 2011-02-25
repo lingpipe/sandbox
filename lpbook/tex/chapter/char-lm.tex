@@ -5,7 +5,7 @@ strings.  Traditionally, these strings are either sequences of bytes,
 sequences of characters, or sequences of tokens.  LingPipe provides
 language model implementations for sequences of characters and
 sequences of tokens.  In this chapter, we introduce the basic
-interfaces and character language models.  In \refchap{tok-lm},
+interfaces and character language models.  In \refchap{token-lm},
 we introduce token language models.
 
 Although language models may be applied to arbitrary sequences, we are
@@ -24,7 +24,7 @@ texts that were not in the training data.
 LingPipe uses character language models as the basis of several other
 modules, including classification, taggers, chunkers, spelling
 correction.  There are further applications for token language models
-discussed in \refchap{tok-lm}.  In all cases, these applications use
+discussed in \refchap{token-lm}.  In all cases, these applications use
 one or more language models to estimate different kinds of text.  For
 instance, in language-model based classification, there is a language
 model for each category, and texts are classified into the category
@@ -56,6 +56,88 @@ compare the entropy of Chinese and English, measuring the average
 information content of a Chinese character (of which there are tens of
 thousands) with the information content of an English character (of
 which there are dozens).
+
+
+\section{The Basics of $N$-Gram Language Models}
+
+LingPipe's character- and token-based language models are based on
+\techdef{$n$-grams}.  An $n$-gram is nothing more than a sequence of
+$n$ symbols.  In this chapter, we consider character-based $n$-grams;
+in \refchap{token-lm}, we consider tokens as symbols.
+
+The basis of an $n$-gram model is storing counts for $n$-grams seen in
+a training corpus of text.  These are then used to infer the
+probability of a new sequence of symbols.  They key technical feature
+of $n$-gram models is that they model the probability of a character
+in a sequence based only on the previous $n-1$ characters.  Models
+such as these with finite memories are called Markov chains.  
+
+The chain rule allows us to model the probability of a sequence of
+characters based on a model of a single character following a sequence
+of characters before it.  For instance, with the character sequence
+\stringmention{tooth} using 3-grams (trigrams), we decompose the
+total probability of a sequence into the product of a sequence of
+character probabilities, with
+%
+\begin{equation}
+p(\stringmention{tooth})
+= p(\stringmention{t})
+\times
+p(\stringmention{o}|\stringmention{t})
+\times
+p(\stringmention{o}|\stringmention{to})
+\times
+p(\stringmention{t}|\stringmention{oo})
+\times
+p(\stringmention{h}|\stringmention{ot}).
+\end{equation}
+%
+To prevent the possibilty of underflow from multiplying long sequences
+of numbers less than 1, we almost always work on the log scale.  This
+also has the pleasant property of converting multiplication to
+addition, yielding
+%
+\begin{equation}
+\log p(\stringmention{tooth})
+= \log p(\stringmention{t})
++
+\log p(\stringmention{o}|\stringmention{t})
++ 
+\log p(\stringmention{o}|\stringmention{to})
++
+\log p(\stringmention{t}|\stringmention{oo})
++ 
+\log p(\stringmention{h}|\stringmention{ot}).
+\end{equation}
+
+
+\section{Character-Level Language Models and Unicode}
+
+LingPipe's character-based language models are models of sequences of
+Java \code{char} values, which as you should recall from
+\refsec{char-primitive}, represent UTF-16 byte pairs.  When LingPipe's
+language models were coded, every Unicode code point could be coded in
+a single UTF-16 byte pair.  As we discussed, this is enough to cover
+Unicode's basic multilingual plane (BMP), which includes most
+characters for most languages.%
+%
+\footnote{As of Unicode 4.1, there are characters with code points
+  outside of the BMP.  To code such characters requires two 16-bit
+  \code{char} values, known as a surrogate pair.  For the purposes of
+  LingPipe's language models, characters are 16 bit UTF-16 values and
+  a code point beyond the BMP is considered two characters.  What this
+  will mean in practice is that LingPipe's language models will assign
+  non-zero probability to sequences of \code{char} values that do not
+  correspond to legal UTF-16 encodings, and thus don't correspond to
+  Unicode strings.  This is internally consistent and does not affect
+  most of the applications of language models.  The exception is
+  untokenized spelling correction, where we have to be careful not to
+  suggest corrections that are illegal sequences of \code{char}
+  values.  In other cases, we just lose some modeling efficiency (in
+  the statistical sense of efficiency, not the run-time sense).}
+
+
+
 
 \section{Language Model Interfaces}\label{section:char-lm-interfaces}
 
@@ -183,11 +265,175 @@ for every \code{n}, we have
 %
 
 
-\section{Character Language Models}
+\section{Process Character Language Models}
 
-LingPipe's language models come in two main flavors, character-based
-and token-based.  The character-based models are further subdivided as
-to whether they model the start and end of a string or not.
+As we saw in the last section, language models have a particularly
+simple interface.  We just give them text to train and then they
+can model new text. 
+
+The simplest language model implementation supplied by LingPipe is
+\code{NGramProcessLM}, in package \code{com.aliasi.lm}.  This class
+implements several interfaces, including several of the basic language
+model interfaces, \code{LanguageModel}, the unbounded interface,
+\code{LanguageModel.Process}, the trainable interface
+\code{LanguageModel.Dynamic}, and conditional prediction interface
+\code{LanguageModel.Conditional} (see \refsec{} for descriptions
+of these interfaces).
+
+In addition to the LM interfaces, the \code{NGramProcessLM} class also
+implements \code{ObjectHandler<CharSequence>} (see
+\refsec{corpus-handlers} for a description of the handler interface).
+This allows language models to be integrated into the general
+parser/handler/corpus interfaces (see \refchap{corpus} for more
+details).
+
+Furthermore, process character LMs are both serializable (see
+\refsec{io-object-data-io}) and compilable (see
+\refsec{io-compilable}).  As we will see later in this section,
+compilation produces a very efficient, but no longer dynamic
+version of the language model, whereas serialization will allow
+it to be written out and read back in.
+
+
+\subsection{Basic LM Training and Inference Demo}
+
+Perhaps the simplest way to get a feel for how language models work is
+to code one up.  We provide an example in the class
+\code{ProcessLmDemo} in this chapter's package,
+\code{com.lingpipe.book.charlm}.  
+
+\subsubsection{Code Walkthrough}
+
+As with all of our demos, it's set up as a simple \code{main()} method
+that reads its arguments from the command line.  Specifically, we need
+an n-gram length (\code{ngram}), a text on which to train
+(\code{textTrain}) and a text on which to test (\code{textTest}),
+which are supplied as the first three arguments.  The training and
+evaluation are then almost trivial.
+%
+\codeblock{ProcessLmDemo.1}
+%
+We start by creating a new instance of an \code{NGramProcessLM}
+supplying the n-gram length to the constructor.  We then take the
+training text string and pass it to the language model's
+\code{handle(CharSequence)} method, which adds the text to the
+training data.  Finally, we compute the log (base 2) of the
+probaiblity of the test text using the language model's
+\code{log2Estimate(CharSequence)} method.  
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{process-demo} runs the command, using
+the property \code{ngram} for $n$-gram length, the property
+\code{text.train} for the training text, and the property
+\code{text.test} for the test text.  It is thus run as
+follows.
+%
+\commandlinefollow{ant -Dngram=5 -Dtext.train="abracadabra" -Dtext.test="candelabra" process-demo}
+\begin{verbatim}
+ngram=5    train=|abracadabra|    test=|candelabra|
+log2 p(test|train)=-69.693
+\end{verbatim}
+%
+The command-line arguments are first printed (with vertical bars to
+denote the boundaries of the strings) and then the log probability of
+the test sequence given the training data is shown.
+
+One way of thinking of language models is as measuring a kind
+of text similarity.  The more similar the test text is to the
+training text, the higher its probability.  For instance, consider
+
+If the text is very predictable, the log2 probability will be lower
+(larger here means smaller absolute value, because logarithms of
+values in $[0,1]$ are always negative).  For instance, consider
+the following case.
+%
+\commandlinefollow{ant -Dngram=2 -Dtext.train="ababababab" -Dtext.test="ababab" process-demo}
+\begin{verbatim}
+ngram=2    train=|ababababab|    test=|ababab|
+log2 p(test|train)=-3.060
+\end{verbatim}
+
+In general, shorter texts are more predictable.  For instance,
+consider the same training text as above with a test text
+that's a subsequence of the test text above:
+%
+\commandlinefollow{ant -Dngram=2 -Dtext.train="ababababab" -Dtext.test="abab" process-demo}
+\begin{verbatim}
+ngram=2    train=|ababababab|     test=|abab|
+log2 p(test|train)=-2.419
+\end{verbatim}
+%
+Note that -2.419 is greater than -3.060.  In linear probability terms,
+that's $2^{-2.419} = 0.225$, whereas $2^{-3.060} = 0.120$.  In other
+words, the model, after training, says that \stringmention{abab} is
+almost twice as likely as \stringmention{ababab}.
+
+For process language models, which don't model boundaries, substrings
+always have higher (log) probability.  This will not necessarily be
+the case for the boundary language models we consider in the next section.
+
+A language model will assign probabilities to any texts of any length.
+The characters don't need to have been seen in the training data.  For
+instance, consider our first example above, where the characters
+\charmention{e}, \charmention{n}, and \charmention{l} were new to the
+training data.  Characters that were not seen in the training data tend
+to have fairly low probabilities.  For instance, consider
+%
+\commandlinefollow{ant -Dngram=2 -Dtext.train="ababababab" -Dtext.test="xyxy" process-demo}
+\begin{verbatim}
+ngram=2    train=|ababababab|    test=|xyxy|
+log2 p(test|train)=-71.229
+\end{verbatim}
+%
+Again, it's clear why we use the log scale --- $2^-{71}$ is a very low
+probability indeed.
+
+The $n$-gram length is the most important of the tuning parameters,
+the rest of which we turn to in the next section.  A longer $n$-gram
+will provide a tighter model of the training text than shorter
+$n$-grams.  The longer the $n$-gram, the higher the probability
+assigned to the training text itself as well as to very similar text
+(again measuring by $n$-gram frequency).  For instance, consider
+
+\commandlinefollow{ant -Dngram=2 -Dtext.train="abcdef" -Dtext.test="abcdef" process-demo}
+\begin{verbatim}
+ngram=2    train=|abcdef|    test=|abcdef|
+log2 p(test|train)=-11.334
+\end{verbatim}
+
+and
+
+\commandlinefollow{ant -Dngram=3 -Dtext.train="abcdef" -Dtext.test="abcdef" process-demo}
+\begin{verbatim}
+ngram=3    train=|abcdef|    test=|abcdef|
+log2 p(test|train)=-10.884
+\end{verbatim}
+
+The improvement is relatively small.  If we had repeated the training
+text many times or if it had been longer, the effect would be
+stronger.  Here, if you actually go up to 4-grams, the probability
+estimate gets worse.  The reason for this is the default smoothing
+parameters, which we discuss in \refsec{char-lm-smoothing}.
+
+One thing to beware of is that increasing the $n$-gram size tends to
+have a dramatic impact on the amount of memory required.  This is
+apparent when you consider that for basic English, there are only a
+few dozen characters and thus only a few dozen unigrams (1-grams).
+But there are thousands of bigrams (2-grams), and millions of
+5-grams and 6-grams.  Even with 40 characters, there are over
+2.5 million potential 4-grams.  Luckily, text is fairly predictable,
+so the set of $n$-grams actually observed tends to grow more
+slowly than this worst case may lead you to believe.  
+
+
+\section{Additive Smoothing}\label{section:char-lm-smoothing}
+
+
+
+
+
+
 
 
 
