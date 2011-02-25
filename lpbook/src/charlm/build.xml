@@ -33,6 +33,9 @@
     </jar>
   </target>
 
+  <property name="ngram" value="5"/>
+  <property name="text.train" value="abracadabra"/>
+  <property name="text.test" value="candelabra"/>
   <target name="process-demo"
           depends="jar">
     <java classname="com.lingpipe.book.charlm.ProcessLmDemo"
