@@ -1,9 +1,13 @@
 package com.lingpipe.mitre2011;
 
 import com.aliasi.spell.TfIdfDistance;
+//import com.aliasi.spell.JaccardDistance;
 
 import com.aliasi.tokenizer.NGramTokenizerFactory;
+import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.TokenizerFactory;
+import com.aliasi.tokenizer.ModifyTokenTokenizerFactory;
+import com.aliasi.tokenizer.Tokenizer;
 
 import com.aliasi.util.BoundedPriorityQueue;
 import com.aliasi.util.Scored;
@@ -19,24 +23,28 @@ import java.io.Writer;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Date;
 
 public class Ngrams {
 
-    static final boolean DEBUG = true;
+    static final boolean DEBUG = false;
 
     static final int INDEX_NGRAM = 4;
     static final int MATCH_NGRAM_MIN = 3;
-    static final int MATCH_NGRAM_MAX = 5;
+    static final int MATCH_NGRAM_MAX = 3;
 
     static final String COMMENT_PREFIX = "# ";
 
-    static final int MAX_RESULTS_INDEX = 2000;
-    static final int MAX_RESULTS = 500;
+    static final int MAX_RESULTS_INDEX = 1000000;
+    static final int MAX_RESULTS = 100;
 
     static final double MIN_INDEX_PROXIMITY = 0.5;
 
@@ -52,7 +60,6 @@ public class Ngrams {
         File outFile = null;
         for (int i = 0; true; ++i) {
             String path = outPrefix + i;
-            System.out.println("path=" + path);
             outFile = new File(path);
             if (!outFile.exists())
                 break;
@@ -78,16 +85,22 @@ public class Ngrams {
         printer.write(COMMENT_PREFIX + "MIN_INDEX_PROXIMITY=" + MIN_INDEX_PROXIMITY + "\n");
         printer.write(COMMENT_PREFIX + new Date() + "\n");
 
+        
+        
+
+        TokenizerFactory tf = createMatchTokenizerFactory();
+
+        // JaccardDistance distance = new JaccardDistance(tf);
+
         if (DEBUG)
             System.out.println("Training TF/IDF");
-        TokenizerFactory tf 
-            = new NGramTokenizerFactory(MATCH_NGRAM_MIN,
-                                        MATCH_NGRAM_MAX);
         TfIdfDistance distance = new TfIdfDistance(tf);
         for (String[] fields : corpus.mIndex)
             distance.handle(fieldsToName(fields));
         for (String[] fields : corpus.mQueries)
             distance.handle(fieldsToName(fields));
+
+
 
         if (DEBUG)
             System.out.println("Building Reverse Index");
@@ -110,11 +123,9 @@ public class Ngrams {
         int count = 0;
         for (String[] fields1 : corpus.mQueries) {
             if ((count++ % 100) == 0) {
-                if (DEBUG) {
-                    System.out.println("\n==================================");
-                    System.out.println("COUNT=" + count);
-                    System.out.println("==================================\n");
-                }
+                System.out.println("\n==================================");
+                System.out.println("COUNT=" + count);
+                System.out.println("==================================\n");
             }
             
             String id1 = fields1[0];
@@ -150,6 +161,12 @@ public class Ngrams {
                 = new BoundedPriorityQueue<ScoredObject<String>>(
                                                   ScoredObject.comparator(),
                                                   MAX_RESULTS);
+
+            BoundedPriorityQueue<ScoredObject<String>> debugQueue
+                = new BoundedPriorityQueue<ScoredObject<String>>(
+                                                  ScoredObject.comparator(),
+                                                  MAX_RESULTS);
+
                 
             for (Match match : queue) {
                 double finalScore = rescore(match.mFields1,match.mFields2,
@@ -158,13 +175,18 @@ public class Ngrams {
                     = new ScoredObject<String>(match.mFields2[0],
                                                finalScore);
                 resultQueue.offer(result);
+                if (DEBUG)
+                    debugQueue.offer(new ScoredObject<String>(fieldsToName(match.mFields2),
+                                                              finalScore));
+            }
+                                     
 
-                if (DEBUG) {
-                    String name2 = fieldsToName(match.mFields2);
-                    double origScore = match.mScore;
-                    System.out.printf("%5.3f -> %5.3f|%s|%s|\n",
-                                      origScore, finalScore,
-                                      name1,name2);
+            if (DEBUG) {
+                for (ScoredObject<String> so : debugQueue) {
+                    System.out.printf("|%4.2f|%s|%s|\n",
+                                      so.score(),
+                                      name1,
+                                      so.getObject());
                 }
             }
 
@@ -187,14 +209,44 @@ public class Ngrams {
     static double rescore(String[] fields1, String[] fields2, double score) {
 
         // pull out components
-        // String forename1 = fields1[1];
-        // String surname1 = fields1[2];
-        // String forename2 = fields2[1];
-        // String surname2 = fields2[2];
-        // String fullName1 = fieldsToName(fields1);
-        // String fullName2 = fieldsToName(fields2);
+        String forename1 = fields1[1];
+        String surname1 = fields1[2];
+        String forename2 = fields2[1];
+        String surname2 = fields2[2];
+        String fullName1 = fieldsToName(fields1);
+        String fullName2 = fieldsToName(fields2);
 
-        return score;
+        int k1 = forename1.indexOf(' ');
+        if (k1 > 0)
+            forename1 = forename1.substring(0,k1);
+        int k2 = forename1.indexOf(' ');
+        if (k2 > 0)
+            forename2 = forename2.substring(0,k2);
+
+        double modifier = 1.0;
+
+        // prefer exact surname matches
+        if (!surname1.equals(surname2))
+            modifier *= .8;
+
+        // prefer exact forename or weak forename matches
+        if (!forename1.equals(forename2))
+            modifier *= .95;
+        if (!weakMatch(forename1,forename2))
+            modifier *= 0.8;
+
+        // penalize forename to surname matches
+        if (forename1.equals(surname2) || forename2.equals(surname1))
+            if (!surname1.equals(surname2))
+                modifier *= 0.9;
+
+        return score * modifier;
+    }
+
+    static boolean weakMatch(String s1, String s2) {
+        if (s1.equals(s2)) return true;
+        return (s1.length() == 1 || s2.length() == 1)
+            && s1.charAt(0) == s2.charAt(0);
     }
 
     static Map<String[],String> FIELDS_TO_NAME_CACHE
@@ -206,9 +258,74 @@ public class Ngrams {
             return result;
         // extra start/end space is to get boundaries modeled
         // could additionally prefix with '$' and postfix with '^'
-        result = (" " + fields[1] + " " + fields[2] + " ").replaceAll("\\s+"," ");
+        result = ("$ " + fields[1] + " " + fields[2] + " ^").replaceAll("\\s+"," ");
         FIELDS_TO_NAME_CACHE.put(fields,result);
         return result;
+    }
+
+    static TokenizerFactory createMatchTokenizerFactory() {
+        TokenizerFactory tf1Base
+            = new NGramTokenizerFactory(MATCH_NGRAM_MIN,
+                                        MATCH_NGRAM_MAX);
+        
+        TokenizerFactory tf1
+            = new ModifyTokenTokenizerFactory(tf1Base) {
+                    public String modifyToken(String token) {
+                        return "*" + token;
+                    }
+                };
+        
+        // whole names
+        TokenizerFactory tf2
+            = new RegExTokenizerFactory("\\S+");
+        
+        // initials
+        TokenizerFactory tf3
+            = new ModifyTokenTokenizerFactory(tf2) {
+                    public String modifyToken(String token) {
+                        return token.substring(0,1); // long enough by \\S+ pattern
+                    }
+                };
+        
+        return new CompoundTokenizerFactory(tf1,tf2,tf3);
+    }
+
+    static class CompoundTokenizerFactory implements TokenizerFactory {
+        private final List<TokenizerFactory> mTokFacts;
+        public CompoundTokenizerFactory(TokenizerFactory... tokFacts) {
+            this(Arrays.asList(tokFacts));
+        }
+        public CompoundTokenizerFactory(List<TokenizerFactory> tokFacts) {
+            mTokFacts = tokFacts;
+        }
+        public Tokenizer tokenizer(char[] cs, int start, int end) {
+            List<Tokenizer> toks = new ArrayList<Tokenizer>();
+            for (TokenizerFactory tf : mTokFacts)
+                toks.add(tf.tokenizer(cs,start,end));
+            return new CompoundTokenizer(toks);
+        }
+    }
+
+    static class CompoundTokenizer extends Tokenizer {
+        private final Iterator<Tokenizer> mTokIt;
+        private Tokenizer mTokenizer;
+        private int mCount = 0;
+        public CompoundTokenizer(List<Tokenizer> toks) {
+            mTokIt = toks.iterator();
+        }
+        public String nextToken() {
+            while (true) {
+                if (mTokenizer == null) {
+                    if (!mTokIt.hasNext())
+                        return null;
+                    mTokenizer = mTokIt.next();
+                }
+                String token = mTokenizer.nextToken();
+                if (token != null)
+                    return token;
+                mTokenizer = null;
+            }
+        }
     }
 
 
