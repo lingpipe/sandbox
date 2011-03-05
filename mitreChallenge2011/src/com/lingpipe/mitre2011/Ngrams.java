@@ -1,7 +1,7 @@
 package com.lingpipe.mitre2011;
 
 import com.aliasi.spell.TfIdfDistance;
-//import com.aliasi.spell.JaccardDistance;
+import com.aliasi.spell.JaccardDistance;
 
 import com.aliasi.tokenizer.NGramTokenizerFactory;
 import com.aliasi.tokenizer.RegExTokenizerFactory;
@@ -35,18 +35,18 @@ import java.util.Date;
 
 public class Ngrams {
 
-    static final boolean DEBUG = false;
+    static final boolean DEBUG = true;
 
     static final int INDEX_NGRAM = 4;
-    static final int MATCH_NGRAM_MIN = 3;
-    static final int MATCH_NGRAM_MAX = 3;
+    static final int MATCH_NGRAM_MIN = 2;
+    static final int MATCH_NGRAM_MAX = 4;
 
     static final String COMMENT_PREFIX = "# ";
 
     static final int MAX_RESULTS_INDEX = 1000000;
-    static final int MAX_RESULTS = 100;
+    static final int MAX_RESULTS = 500;
 
-    static final double MIN_INDEX_PROXIMITY = 0.5;
+    static final double MIN_INDEX_PROXIMITY = 0.3;
 
     public static void main(String[] args) throws IOException {
         File corpusDir = new File(args[0]);
@@ -90,15 +90,15 @@ public class Ngrams {
 
         TokenizerFactory tf = createMatchTokenizerFactory();
 
-        // JaccardDistance distance = new JaccardDistance(tf);
+        JaccardDistance distance = new JaccardDistance(tf);
 
-        if (DEBUG)
-            System.out.println("Training TF/IDF");
-        TfIdfDistance distance = new TfIdfDistance(tf);
-        for (String[] fields : corpus.mIndex)
-            distance.handle(fieldsToName(fields));
-        for (String[] fields : corpus.mQueries)
-            distance.handle(fieldsToName(fields));
+        // if (DEBUG)
+        // System.out.println("Training TF/IDF");
+        // TfIdfDistance distance = new TfIdfDistance(tf);
+        // for (String[] fields : corpus.mIndex)
+        // distance.handle(fieldsToName(fields));
+        // for (String[] fields : corpus.mQueries)
+        // distance.handle(fieldsToName(fields));
 
 
 
@@ -122,6 +122,9 @@ public class Ngrams {
             System.out.println("Matching");
         int count = 0;
         for (String[] fields1 : corpus.mQueries) {
+            if (DEBUG)
+                System.out.println(Arrays.asList(fields1));
+
             if ((count++ % 100) == 0) {
                 System.out.println("\n==================================");
                 System.out.println("COUNT=" + count);
@@ -206,6 +209,8 @@ public class Ngrams {
     }
 
     // use this for rescoring a hypothesis match
+    // this is a completely ad hoc heuristic
+    // rescoring that does a bit better than the raw score
     static double rescore(String[] fields1, String[] fields2, double score) {
 
         // pull out components
@@ -219,7 +224,7 @@ public class Ngrams {
         int k1 = forename1.indexOf(' ');
         if (k1 > 0)
             forename1 = forename1.substring(0,k1);
-        int k2 = forename1.indexOf(' ');
+        int k2 = forename2.indexOf(' ');
         if (k2 > 0)
             forename2 = forename2.substring(0,k2);
 
@@ -252,13 +257,41 @@ public class Ngrams {
     static Map<String[],String> FIELDS_TO_NAME_CACHE
         = new HashMap<String[],String>();
 
+    static final String SPACES_REGEX = "\\s+";
+
+    static String removeSpaces(String s) {
+        return s.replaceAll(SPACES_REGEX,"");
+    }
+
     static String fieldsToName(String[] fields) {
         String result = FIELDS_TO_NAME_CACHE.get(fields);
         if (result != null) 
             return result;
         // extra start/end space is to get boundaries modeled
-        // could additionally prefix with '$' and postfix with '^'
-        result = ("$ " + fields[1] + " " + fields[2] + " ^").replaceAll("\\s+"," ");
+        // could remove some of this norm; haven't used it in
+        // submissions yet
+        result 
+            = (" " + fields[1] + " " + fields[2] + " ")
+            .toLowerCase()
+            .replaceAll("mm","m")
+            .replaceAll("nn","n")
+            .replaceAll("ss","s")
+            .replaceAll("ll","l")
+            .replaceAll("dd","d")
+            .replaceAll("tt","t")
+            .replaceAll("rr","r")
+            .replaceAll("pp","p")
+            .replaceAll("bb","b")
+            // .replaceAll("hs","x")
+            //.replaceAll("ch","j")
+            .replaceAll("'"," ")
+            // .replaceAll("z","s")
+            // .replaceAll("[aeiouy]+","a")
+            // .replaceAll("k","c")
+            // .replaceAll("w","v")
+            // .replaceAll("d","t")
+            .replaceAll("-"," ")
+            .replaceAll("\\s+"," ");
         FIELDS_TO_NAME_CACHE.put(fields,result);
         return result;
     }
