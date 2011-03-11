@@ -19,7 +19,7 @@
 
 \usepackage{graphicx}
 
-\usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={black},filecolor={black},linkcolor={black},urlcolor={black},pdfauthor={Bob Carpenter},pdftitle={LingPipe 4.0}]{hyperref}
+\usepackage[bookmarks={false},pdftex,unicode,colorlinks,citecolor={black},filecolor={black},linkcolor={black},urlcolor={black},pdfauthor={Bob Carpenter},pdftitle={Text Analysis with LingPipe 4}]{hyperref}
 
 \usepackage{makeidx}
 \makeindex
@@ -205,8 +205,17 @@
 \newcommand{\dchisq}[1]{\distro{ChiSq}(#1)}
 \newcommand{\dnorm}[2]{\distro{Norm}(#1,#2)}
 
+\newcommand{\pmle}{p_{\mbox{\footnotesize MLE}}}
+\newcommand{\punif}{p_{\mbox{\footnotesize U}}}
+
+%Strings
+\newcommand{\emptystring}{\epsilon}
+\newcommand{\cnt}[1]{\mbox{\rm cnt}(#1)}
+
+\newcommand{\extcnt}[1]{\mbox{\rm excnt}(#1)}
+
 % Math
-\newcommand{\indicator}[1]{\mbox{I}(#1)}
+\newcommand{\indicator}[1]{\mbox{\rm I}(#1)}
 
 % Matrices
 \newcommand{\vecext}[1]{\langle #1 \rangle}
