@@ -427,8 +427,324 @@ so the set of $n$-grams actually observed tends to grow more
 slowly than this worst case may lead you to believe.  
 
 
-\section{Additive Smoothing}\label{section:char-lm-smoothing}
+\section{Language Model Smoothing by Interpolation}\label{section:char-lm-smoothing}
 
+Maximum likelihood estimation would provide weights for characters
+that are based only on the empirically observed counts in a training
+set.  The problem with this is that we are likely to run into
+sequences of characters in new test data that were not in the training
+data.  We would like to assign these unseen sequences non-zero
+probabilities so that the documents we observe in testing are assigned
+non-zero probabilities.
+
+\subsection{The Problem with Maximum Likelihood}
+
+For example, suppose we're trying to model the probability of the
+letter \charmention{r} following the sequence \stringmention{the new
+  cha} with a 7-gram model.  In a pure maximum likelihood 7-gram, the
+probability of seeing the letter \charmention{r} will be given by
+dividing the number of times \stringmention{ew char} occurred in the
+training corpus by the number of times \stringmention{ew cha} showed
+up followed by any character.  For instance, there might be two
+instances of \stringmention{ew chai}, perhaps as a part of
+\stringmention{new chair} (furniture) or \stringmention{new chai}
+(beverage) and one of \stringmention{ew chas}, perhaps as part of
+\stringmention{grew chastened}, in the corpus.  In this case, the
+probability of the next letter being \charmention{i} is estimated at
+2/3 and the probability of the next letter being \charmention{s} at
+1/3.  Note that there is no probability left over for the possibility
+of \charmention{r} being next.  Thus our model says the string we
+observe during testing is impossible.  
+
+\subsection{Witten-Bell Smoothing}
+
+To get around this problem, we use a a technique known as
+\techdef{interpolative smoothing} to ensure that every sequence of
+characters is assigned a non-zero probability.  
+
+LingPipe uses an approached to smoothing developed by Ian Witten and Timothy Bell.%
+%
+\footnote{Witten, Ian H.\ and Timothy C.~Bell. 1991. The zero-frequency
+  problem: estimating the probabilities of novel events in adaptive
+  text compression. {\it IEEE Transactions on Information Theory} {\bf 37}(4).}
+%
+The idea behind Witten-Bell smoothing for $n$-grams involves blending
+order $n$ predictions with order $n-1$ predictions, all the way down
+to a basic uniform distribution at order 0.  Thus even if we haven't
+ever seen \stringmention{ew char} in the corpus, we will still assign
+it a non-zero probability.  That probability will be a weighted
+average of the 7-gram estimate of \charmention{r} given
+\stringmention{ew cha}, the 6-gram estimate of \charmention{r} given
+\stringmention{w cha}, the 5-gram estimate of \charmention{r} given
+\stringmention{ cha} (with an initial space), the 4-gram estimate of
+\charmention{r} given \stringmention{cha}, the 3-gram estimate of
+\charmention{r} given \stringmention{ha}, the 2-gram estimate of
+\charmention{r} given \stringmention{a}, the 1-gram estimate of
+\charmention{r} given \stringmention{} (empty context).  
+
+\subsection{Bottoming Out at the Uniform Model}
+
+This recursion bottoms out at the uniform estimate, which we consider
+a 0-gram estimate for the sake of consistency.  In the uniform
+estimate, each character is given equal probabilty.  If there are 256
+possible characters, as in Latin 1, then each has a 1/256 probability
+estimate in the uniform base case.  
+
+Because we have a uniform base case, LingPipe's character language
+models require the number of possible characters to be specified in
+the constructor.  The default is \code{Character.MAX\_VALUE}, which is
+$2^{16}-1$, which is a slight overestimate of the number of Unicode
+UTF-16 values (see \refsec{char-primitive}).  The number of characters
+can be set lower if we know we are dealing with ASCII or Latin 1 or
+another restricted subset of Unicode characters.
+
+\subsection{Weighting the Models}
+
+We have so far said that we take a weighted average of the predictions
+of an $n$-gram, $(n-1)$-gram, down to a uniform model.  What we haven't
+said is how the weights for each model are determined.  We'll provide
+precise mathematical definitions in \refsec{char-lm-math}.  For now, we
+will provide a more descriptive explanation.
+
+The first thing to note is that the weighting is context dependent in
+that it depends on the characters in the context from which we are
+predicting the next character.  That is, if we are predicting the next
+character from context \stringmention{ew char} we will likely have
+different weightings than if we predict from context \stringmention{t
+  of th}.
+
+The weight assigned to the order $n$-gram model in the interpolated
+model is based on two factors determined from the context for the
+prediction and one parameter in the constructor.  For deciding how
+heavily to weight an $n$-gram context in prediction, we take into
+account how many times that context has been seen in the training
+data.  The more we have seen it in the training data, the more heavily
+it is weighted.  The second factor for weighting is how many different
+outcomes we've seen given that context.  If we have a context with
+many different outcomes, we will weight it less for prediction.  
+
+In addition to these contextual factors, there is also a parameter
+given to the constructor (with variable named \code{lambdaFactor})
+that determines how much to weight higher-order contexts relative to
+lower-order contexts.  The higher the value of this factor, the more
+agressively we smooth.  In other words, with high values of the lambda
+factor, the more heavily the lower-order $n$-grams are weighted.
+
+
+\section{The Mathematical Model}\label{section{char-lm-math}}
+
+The mathematics of character language models are straightforward.
+We'll begin with the process language model and move onto the
+bounded language model.
+
+\subsection{Strings}
+
+First we'll establish some notation for talking about strings
+mathematically.  Suppose we have an alphabet $\Sigma$ of characters.%
+%
+\footnote{In practice, $\Sigma$ will be a subset of Unicode code
+  points.}
+%
+Let $\Sigma^n$ be the set of all sequences of such characters of
+length $n$, which are called strings.  We let $\Sigma^* = \bigcup_{n
+  \in \nats} \Sigma^n$ be the set of all strings.  We'll let
+$\emptystring$ be the \techdef{empty string}, which is defined as the
+unique sequence of length 0.
+
+
+\subsubsection{The Chain Rule}
+
+The basic idea of $n$-gram language models is
+to use the chain rule to factor the probabiltiy of a string into
+the product of the probabilities of each of its characters given
+the characters that came before it.  In symbols, suppose we have
+a string $\sigma = s_1,\ldots,s_k$ of length $k$.  The
+chain rule tells us we can compute its probability as
+%
+\begin{equation}
+p(s_1,\ldots,s_k) = p(s_1) \times p(s_2|s_1) \times \cdots \times p(s_k|s_1,\ldots,s_{k-1}).
+\end{equation}
+%
+
+\subsection{Markov Chains}
+
+The point of using a limited-context-length $n$-gram is that you only
+look back at most $(n-1)$ characters.  This gives us
+%
+\begin{equation}
+p(s_1,\ldots,s_k) 
+= p(s_1) \times p(s_2|s_1) \times \cdots \times p(s_k|s_{k-n+1},\ldots,s_{k-1}).
+\end{equation}
+%
+For instance, if we have a 2-gram model and string \stringmention{abra},
+our model is
+%
+\begin{equation}
+p(\stringmention{abra}) 
+= p(\stringmention{a}) 
+\times p(\stringmention{b}|\stringmention{a}) 
+\times p(\stringmention{r}|\stringmention{b}) 
+\times p(\stringmention{a}|\stringmention{r}).
+\end{equation}
+%
+Assuming that our history is bounded in this way to a finite history
+leads to what is known as a \techdef{Markov model}, with a sequence of
+characters generated from it called a \techdef{Markov chain}.  In a
+Markov model of character string generation, each character is
+generated based on finitely many previous characters.  Note that being
+Markovian doesn't say how the probabilty of the next character is
+estimated, but only that it depends on at most a bounded finite
+history.
+
+\subsection{Training Data Sequence Counts}
+
+Now suppose we have seen training data in the form of a set of $M$
+strings $\sigma_1,\ldots,\sigma_M$.  Given such a training set, let
+$\cnt{s}$ be the number of times the string $s$ appeared as a
+substring of one of the training strings $\sigma_m$.  For instance, if
+the training strings are \stringmention{abe} and
+\stringmention{abracadabra}, the substring \stringmention{ab} shows up
+3 times, once in the first string and twice in the second.
+
+Let $\extcnt{\sigma}$ be the count of all extensions by one character
+of the string $\sigma$, that is
+%
+\begin{equation}
+\extcnt{\sigma} = \sum_{s' \in \Sigma} \cnt{\sigma \cdot s}.
+\end{equation}
+%
+For instance, in the training data, the count of \stringmention{ra} is
+2, but the extension count of \stringmention{ra} is only 1, because
+the second training string ends with \stringmention{ra} which is not
+extended.
+
+
+\subsection{Maximum Likelihood Estimates}
+
+We'll use the notation $\pmle(s_n|s_1,\ldots,s_{n-1})$ for
+the maximum likelihood estimate of the conditional probabilty of a
+seeing the character $s_n$ given the previous $(n-1)$ characters
+$s_1,\ldots,s_{n-1}$.  The maximum likelihood estimate model is
+derived in the usual way, by counting in the training data.
+%
+\begin{equation}
+\pmle(s_n|s_1,\ldots,s_{n-1})
+= \frac{\cnt{s_1,\ldots,s_{n-1},s_{n}}}
+       {\extcnt{s_1,\ldots,s_{n-1}}}.
+\end{equation}
+%
+That is, we count up all the times we've seen the character in
+question following the string and divide by the number of times
+the string was extended by any character.
+
+These maximum likelihood estimates will almost certainly assign zero
+probability to many characters in even relatively modest length
+$n$-grams. 
+
+\subsection{Witten-Bell Smoothing}
+
+We follow Witten and Bell's approach to smoothing these maximum
+likelihood estimates through interpolation.  The basic definition is
+recursive, interpolating the maximum likelihood estimate at length $n$
+with the smoothed estimate of length $(n-1)$.  In symbols, we let
+$\lambda_{s_1,\ldots,s_{n-1}} \in [0,1]$ be the weight of the maximum
+likelihood estimate for predicting the next character given that the
+previous characters were $s_1,\ldots,s_{n-1}$.  The recursive case
+of the definition is then given by
+%
+\begin{equation}
+p(s_n|s_1,\ldots,s_{n-1})
+= \lambda_{s_1,\ldots,s_{n-1}} \times \pmle(s_n|s_1,\ldots,s_{n-1})
++
+(1 - \lambda_{s_1,\ldots,s_{n-1}}) \times p(s_n|s_1,\ldots,s_{n-2}).
+\end{equation}
+%
+On each application of this rule, the context is shortened by one
+character.
+
+The recursion bottoms out by interpolating with the uniform
+distribution $\punif(s_n)$, where if $N$ is the total number
+of characters, then 
+%
+\begin{equation}
+\punif(s_n) = 1/N.
+\end{equation}
+%
+The exact form of the base case interpolates with the 1-gram
+model.
+%
+\begin{equation}
+p(s_n) = \lambda_{\emptystring} \times \pmle(s_n)
++ (1 - \lambda_{\emptystring}) \times \punif(s_n).
+\end{equation}
+
+
+\subsection{Process Language Models}
+
+A process language model assigns probabilities to strings
+in such a way that the probabilities of all strings of a given
+length sums to 1.%
+%
+\footnote{The terminology, which is not standard in the
+  language-modeling literature, derives from the fact that generating
+  the sequence of characters forms what is known as a \techdef{random
+    process.}}
+%
+For process language models, if we let $p(s)$ be the probability of a
+string $s$, then
+%
+\begin{equation}
+\sum_{s \in \Sigma^n} p(s) = 1.
+\end{equation}
+%
+
+
+\subsection{Sequence Language Models}
+
+Unlike the process language models, for which the probabilities of all
+strings of a given length sum to 1, a bounded language model is a
+proper model of arbitrary character sequences.  Thus a bounded
+language model, with probability $p(s)$, is such that
+%
+\begin{equation}
+\sum_{s \in \Sigma^n} p(s) = 1.\label{equation:lm-seq-norm}
+\end{equation}
+%
+Thus we think of sequence language models as generating finite
+sequences of characters then stopping; a process language model
+goes on generating characters indefinitely.
+
+We follow fairly standard (though often undocumented) procedure of
+definining bounded language models in terms of process language
+models.  Suppose we are definining sequences over the character set
+$\Sigma$.  We will choose a new character, $b$, called the boundary
+character, such that $b \not\in \Sigma$.  We then define a process
+language model over the alphabet $\Sigma \cup \setext{b}$ and use it
+to define our sequence language model distribution.
+
+We define the probability of a string $s = s_1,\ldots,s_M \in \Sigma^*$
+as
+%
+\begin{equation}
+p_B(s_1,\ldots,s_M) = p(s_1,\ldots,s_M,b|b),\label{equation:lm-seq-def}
+\end{equation}
+%
+where $p_B$ is the sequence language model probability distribution.
+In words, we start with the boundary character $b$ as context, then
+generate our string $s = s_1,\ldots,s_M$, then generate a final
+boundary character $b$.  Note that we chose $s$ from the unaugmented
+set of strings  $\Sigma^*$.  
+
+Because we now have a termination condition for our character
+generating process, it is fairly straightforward to verify that the
+process generates a probability distribution normalized over all
+strings, as shown in \refeq{lm-seq-norm}.  We start with the boundary
+character, though don't generate it, which is why it's in the context
+in \refeq{lm-seq-def}.  We then continue generating, at each point
+deciding whether to generate the boundary character $b$ and stop or to
+generate a non-boundary character and keep going.  Because the sum of
+each next character in the augmented alphabet $\Sigma \cup \setext{b}$
+sums to 1.0, the normalization in \refeq{lm-seq-norm} holds.
 
 
 
