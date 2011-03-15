@@ -2802,19 +2802,27 @@ estimates which translates into downstream uncertainty in our adjusted
 estimates, but we'll take our Bayesian hats off for the time being and
 pretend our point estimates are correct.}
 %
-In practice, we
-don't know the values of $I$ or $J$, but we will know $M$ and $N$.  So
-we get a pair of equations:
+In practice, we don't know the values of $I$ or $J$, but we will know
+$M$ and $N$.  We are left with a pair of equations,
 %
 \begin{align}
 \theta_1 I + (1-\theta_0) J &= M, \mbox{ and}
 \\[4pt]
-(1-\theta_1) I + \theta_0 J &= N,
+(1-\theta_1) I + \theta_0 J &= N.
 \end{align}
 %
-which allows us to solve for $I$ and $J$ in terms of $M, N, \theta_0$,
-and $\theta_1$.  This allows us to estimate the prevalence of positive
-responses, even though we have a biased classifier.
+Solving for $I$ and $J$ in terms of $M, N, \theta_0$, and $\theta_1$
+yields
+%
+\begin{align}
+J &= \frac{\theta_1 N + \theta_1 M - M}
+         {\theta_1 + \theta_2 - 1}, \mbox{ and}
+\\[8pt]
+I &= M+N-J.
+\end{align}
+%
+Thus This allows us to estimate the prevalence of positive
+responses, even though we have a biased classifier.  
 
 
 \section{Post-Stratification}\label{section:classifier-eval-post-stratification}
