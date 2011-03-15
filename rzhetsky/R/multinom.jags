@@ -1,13 +1,13 @@
 var I, J, K, N, ii[N], jj[N], y[N], alpha[K], beta[K,K], pi[K], theta[J,K,K], z[I]
 
 model {
-    pi[1:K] ~ ddirch(alpha)
+    pi ~ ddirch(alpha)
     for (i in 1:I) {
-        z[i] ~ dcat(pi[1:K])
+        z[i] ~ dcat(pi)
     }
     for (j in 1:J) {
         for (k in 1:K) {
-           theta[j,k,1:K] ~ ddirch(beta[k,1:K]) 
+           theta[j,k,] ~ ddirch(beta[k,]) 
         }
     }
     for (n in 1:N) {

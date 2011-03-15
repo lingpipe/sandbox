@@ -40,17 +40,19 @@ y = array(y,dim=c(N))
 test.data <- list("I","J","K","N","ii","jj","alpha","beta","y");
 test.params <- c("pi","theta","z");
 test.inits <- function() {
-    list(pi=c(1/4,1/4,1/2))
+    list(pi=pi,
+         theta=theta,
+         z=z)
 }
 test.fit =
     jags(model.file="multinom.jags",
          data=test.data,
          inits=NULL,
 	 parameters.to.save=test.params,
-         n.iter=100,
-         n.chains=3,
+         n.iter=50,
+         n.chains=1,
          DIC=FALSE,
          n.thin=1,
-         n.burnin=50);
+         n.burnin=1);
          
 
