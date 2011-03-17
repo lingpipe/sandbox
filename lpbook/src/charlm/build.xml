@@ -47,7 +47,22 @@
     </java>
   </target>
 
+  <property name="csv.train" 
+            value="abra,cadabra,candle,stick"/>
+  <target name="seq-demo"
+          depends="jar">
+    <java classname="com.lingpipe.book.charlm.SequenceLmDemo"
+          classpathref="classpath"
+          fork="true">
+       <arg value="${ngram}"/>
+       <arg value="${csv.train}"/>
+       <arg value="${text.test}"/>
+    </java>
+  </target>
+
+
   <target name="run"
-          depends="process-demo"/>
+          depends="process-demo,
+		   seq-demo"/>
 
 </project>

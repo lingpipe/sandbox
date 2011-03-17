@@ -107,7 +107,7 @@ addition, yielding
 +
 \log p(\stringmention{t}|\stringmention{oo})
 + 
-\log p(\stringmention{h}|\stringmention{ot}).
+\log p(\stringmention{h}|\stringmention{ot}).\label{eq:char-lm-log-scale}
 \end{equation}
 
 
@@ -277,8 +277,8 @@ implements several interfaces, including several of the basic language
 model interfaces, \code{LanguageModel}, the unbounded interface,
 \code{LanguageModel.Process}, the trainable interface
 \code{LanguageModel.Dynamic}, and conditional prediction interface
-\code{LanguageModel.Conditional} (see \refsec{} for descriptions
-of these interfaces).
+\code{LanguageModel.Conditional} (see \refsec{char-lm-interfaces} for
+descriptions of these interfaces).
 
 In addition to the LM interfaces, the \code{NGramProcessLM} class also
 implements \code{ObjectHandler<CharSequence>} (see
@@ -295,7 +295,7 @@ version of the language model, whereas serialization will allow
 it to be written out and read back in.
 
 
-\subsection{Basic LM Training and Inference Demo}
+\subsection{Process Character Language Model Demo}\label{section:char-lm-process-demo}
 
 Perhaps the simplest way to get a feel for how language models work is
 to code one up.  We provide an example in the class
@@ -427,7 +427,221 @@ so the set of $n$-grams actually observed tends to grow more
 slowly than this worst case may lead you to believe.  
 
 
-\section{Language Model Smoothing by Interpolation}\label{section:char-lm-smoothing}
+\section{Sequence Character Language Models}
+
+In this section, we describe the second kind of character language
+model available in LingPipe, the sequence models.  Sequence models are
+applied when there are either boundary or length effects.  They
+provide a properly normalized probability model to compare the
+probabilities of strings of different lengths; the process models only
+allow comparison of probabilities of strings of the same length.  The
+sequence models in LingPipe are built on top of process language
+models and use exactly the same interfaces for training and evaluation.
+
+Sequence character language models are the basis for generating words
+in LingPipe's hidden Markov model taggers and chunkers.  They are also
+used for smoothing token generation in token-based language models.  A
+slight variant of sequence character LMs is also used to model
+sequences for spell checking.  Like process language models, sequence
+models may also be used as the basis of classifiers.  The right
+language model to use depends on the data.  If there are boundary
+effects and the sequences are relatively short, such as words or
+sentences as opposed to full documents, use sequence language models.
+
+\subsection{Boundary and Length Effects}
+
+The process character language models, which we saw in the last
+section, treat the stream of characters as an ongoing process with no
+start and no end.  One consequence of the process model is that the
+initial and final characters in a language model are not treated any
+differently than those in the middle. 
+
+Suppose we wanted to build a language model for words, or for
+sentences.  Note that a subsequence of a word is not necessarily a
+word; for instance, consider \stringmention{saril}, which is a
+substring of \stringmention{necessarily}, is not an English word.
+Being like a word is graded, though, with \stringmention{saril}
+being more word like than the substring \stringmention{bseq} of 
+\stringmention{subsequence}.
+
+Although it seems obvious, it is important statistically that each
+word or sentence is of finite length (though there is, in principle,
+no bound on this length other than the ability of our interlocuters to
+understand us and the amount of time we have).  Words in most
+languages are not uniform from start to end.  For instance, in
+English, there are suffixes like \stringmention{ing} and
+\stringmention{s} that appear far more often at the ends of words than
+at the beginning of words.  
+
+Another effect arises at the syllable level in English from
+pronounciation.  Syllables tend to follow the \techdef{sonority
+  hierarchy}, meaning that sonority tends to rise toward the middle of
+the syllable and fall at the end.  For instance, vowels like
+\stringmention{o} are the most sonorous, then nasals like
+\stringmention{n} and \stringmention{m}, then consonants like
+\charmention{r}, then stops like \charmention{t}.  For instance, the
+one syllable sequences \stringmention{tram} and \stringmention{mart}
+are words, and both have sonorities that increase toward the voewl and
+then fall.  In contrast, \stringmention{rtam} is not pronounceable in
+English, with the usual reason given that it violates the syllable
+sonority principle, because \charmention{r} is more sonorous than
+\charmention{t}.
+
+In English sentences, we tend to find the first word capitalized more
+often than would be expected if the generation of characters was
+completely uniform.  And the sentence terminating punctuation
+characters, like the period and question mark show up more frequently
+at the end of sentences than elsewhere.  Perhaps more importantly,
+regular characters tend not to show up at the ends of sentences in
+well-edited text.
+
+\subsection{Coding Sequences as Processes}
+
+A standard trick used in both computer languages and mathematical
+models for converting a process-type model into a bounded
+sequence-type model is to add distinguished end-of-string characters.
+For instance, this is the technique used by the C programming language
+to encode strings.  The byte zero (\code{0x00}) is used to encode the
+end of a string.  Thus (ASCII) strings in C are stored in arrays one
+byte longer than the string itself.  Similarly, lines in many
+file-oriented formats are delineated by end-of-line characters, such
+as the carriage return (\unicode{000D}).  In order to present multiple
+sequences, characters such as the comma are used in comma-separated
+values (CSV) file formats used for spreadsheets.  These commas are
+not part of the strings themselves, but act as separators.
+
+To encode sequence models as processes, we add a distinguished
+end-of-string character.  When we generate the end-of-string
+character, we stop generating characters.  This leads to a bound on
+the process.  If the probabilty of generating the next character
+includes the possiblity of generating the end-of-string character,
+then the result is a bounded model that's properly normalized over all
+strings.  That is, the sum of the probabilities of all strings sums to
+1, so we have a proper model of strings.  The process model generates
+sequences in which the sum of the probabilities of strings of a given
+length was 1.  The upshot of this is that there's no way to use the
+process language models to compare string probabilities to each other
+when the strings are different lengths.
+
+The use of a distinguished end-of-string character also handles
+boundary effects.  Because we have to generate the end-of-string given
+the suffix of the word, we can model the fact that strings are more
+likely to end following some character sequences than others.  For
+instance, if we use \charmention{\$} as our end-of-string marker, then
+we might find \stringmention{runs\$} to be more likely than
+\stringmention{ru\$} because of the probability of generating
+\charmention{\$} given \stringmention{runs} can be much higher than
+the probabilty of generating \charmention{\$} given
+\stringmention{ru\$}; in symbols, we can have
+%
+\begin{equation}
+p(\charmention{\$}|\stringmention{runs}) >> p(\charmention{\$}|\stringmention{ru}).
+\end{equation}
+
+We also use a distinguished begin-of-string character which
+we use to condition the probabilities for the string's prefix.
+Suppose we use \charmention{{\^{}}} as our begin-of-string character.
+What we do is reduce the probability of generating a string
+like \stringmention{runs} to that of generating 
+\stringmention{runs\$} given \charmention{\^{}}, thus setting
+%
+\begin{equation}
+p_{\mbox{\footnotesize seq}}(\stringmention{runs})
+= p_{\mbox{\footnotesize pr}}(\stringmention{runs\$}|\stringmention{\^{}}).
+\end{equation}
+%
+This defines the probability of \stringmention{runs} in the
+sequence model, $p_{\mbox{\footnotesize seq}}()$, in terms of
+a conditional probability calculation in a process model,
+$p_{\mbox{\footnotesize pr}}()$.
+
+\subsection{Sequence Character Language Model Demo}
+
+The demo code is in the class file \path{SequenceLmDemo} in this
+chapter's package, \code{com.lingpipe.book.charlm}.  The code
+is almost identical to the process LM demo introduced in
+\refsec{char-lm-process-demo}.
+
+\subsubsection{Code Walkthrough}
+
+There are three command line arguments, populating the \code{ngram}
+integer, \code{csvTrain} string and \code{textTest}.  Here, the
+training data is assumed to be a sequence of texts separated by
+commas.  The work is done in constructing a trainable instance
+of the boundary language model, training on each text, then estimating
+the probability of the test text.
+%
+\codeblock{SequenceLmDemo.1}
+%
+As usual, we do not show the print statements or the boilerplate
+for the \code{main()} method or arguments.
+
+\subsubsection{Running the Demo}
+
+The Ant target \code{seq-demo} runs the demo, with arguments
+specified as properties \code{ngram} for $n$-gram length, 
+\code{csv.train} for the comma-separated training texts,
+and \code{text.test} for the test text.  For example,
+%
+\commandlinefollow{ant -Dngram=4 -Dcsv.train="runs,jumps,eating,sleeping" -Dtext.test="jumps" seq-demo}
+\begin{verbatim}
+ngram=4   train=|runs|jumps|eating|sleeping|   test=|jumps|
+log2 p(test|train)=-9.877
+\end{verbatim}
+%
+Thus the log (base 2) probability of seeing the string
+\stringmention{jump} in the model trained on the four specified words
+is roughly -10, which translates to $2^{-10}$, or about 1/1000 on the
+linear scale.  The reason the probability is so low is due to the
+smoothing in the model (see \refsec{char-lm-smoothing}).
+
+In contrast to the process model, in the sequence model, prefixes
+are not always more probable than longer strings.  For
+instance, consider \charmention{jump} instead of \code{jumps}.
+%
+\commandlinefollow{ant -Dngram=4 -Dcsv.train="runs,jumps,eating,sleeping" -Dtext.test="jump" seq-demo}
+\begin{verbatim}
+ngram=4   train=|runs|jumps|eating|sleeping|   test=|jump|
+log2 p(test|train)=-13.037
+\end{verbatim}
+%
+Under this model (4-grams with default parameters) with the specified
+four training instances, the probability of \stringmention{jumps} is
+about 8 times as likely as the probability of \stringmention{jump}
+($2^{-13}$ is approximately 1/8000).
+
+One of the most useful parts of the sequence model is how it
+generalizes endings and beginnings.  For instance,
+\stringmention{running} is estimated to be fairly probable (log
+probabilty -21.5).  Even an unseen word such as
+\stringmention{blasting} (log probability -46.4) is modeled as more
+likely than substrings like \stringmention{blast} (log probability
+-46.6), because the model has learned that words are likely to end in
+\stringmention{ing}. 
+
+
+\subsubsection{Configuring the Boundary Character}
+
+The boundary character in the bounded language models may be specified
+by the client.  The default is the reserved Unicode character
+\unicode{FFFF}.  This must be set in the constructor, as it remains
+immutable during training and/or compilation.
+
+
+
+\section{Tuning Language Model Smoothing}\label{section:char-lm-smoothing}
+
+Language models provide two parameters for tuning in addition to the
+length of $n$-gram.  One of these controls the degree to which
+lower-order $n$-grams are blended with higher-order $n$-grams for
+smoothing.  The second controls the number of characters in the
+0-order model.  We describe both in this section.
+
+Operationally, the tuning parameters may be set at any time before
+compilation.  These will dynamically change the behavior of the
+dynamic language models.
+
+\subsection{The Problem with Maximum Likelihood}
 
 Maximum likelihood estimation would provide weights for characters
 that are based only on the empirically observed counts in a training
@@ -436,8 +650,6 @@ sequences of characters in new test data that were not in the training
 data.  We would like to assign these unseen sequences non-zero
 probabilities so that the documents we observe in testing are assigned
 non-zero probabilities.
-
-\subsection{The Problem with Maximum Likelihood}
 
 For example, suppose we're trying to model the probability of the
 letter \charmention{r} following the sequence \stringmention{the new
@@ -482,7 +694,7 @@ average of the 7-gram estimate of \charmention{r} given
 \charmention{r} given \stringmention{a}, the 1-gram estimate of
 \charmention{r} given \stringmention{} (empty context).  
 
-\subsection{Bottoming Out at the Uniform Model}
+\subsection{Uniform Base Distribution}
 
 This recursion bottoms out at the uniform estimate, which we consider
 a 0-gram estimate for the sake of consistency.  In the uniform
@@ -498,7 +710,7 @@ UTF-16 values (see \refsec{char-primitive}).  The number of characters
 can be set lower if we know we are dealing with ASCII or Latin 1 or
 another restricted subset of Unicode characters.
 
-\subsection{Weighting the Models}
+\subsection{Weighting the $n$-Grams}
 
 We have so far said that we take a weighted average of the predictions
 of an $n$-gram, $(n-1)$-gram, down to a uniform model.  What we haven't
@@ -531,7 +743,113 @@ agressively we smooth.  In other words, with high values of the lambda
 factor, the more heavily the lower-order $n$-grams are weighted.
 
 
-\section{The Mathematical Model}\label{section{char-lm-math}}
+\section{Underlying Sequence Counter}
+
+The boundary language models are based on the sequence models.  The
+sequence model probabilities are based on keeping a count of character
+subsequences.  For both boundary and sequence models, the object that
+manages the counts is accessible through the method
+\code{substringCounter()}.  This returns an instance of
+\code{TrieCharSeqCounter}.  The name reflects the data structure used,
+a \techdef{trie}.  
+
+With the sequence counter, raw counts of arbitrary substrings in
+the training data may be queried and updated.  It is unlikely that
+a client of the language model class will need to directly modify
+the underlying counter by any operation other than pruning (see
+\refsec{char-lm-pruning}.  
+
+All of the counts are based on \code{long} values.  The sequence
+counter efficiently stores values for low count sequences using
+shorter integer representations.%
+%
+\footnote{Carpenter, Bob.  2005.  Scaling high-order character
+language models to gigabytes. {\it ACL Software Workshop}.}
+
+
+
+\section{Pruning Counts}\label{section:char-lm-pruning}
+
+One problem with the naive application of $n$-gram character
+language models is that the size of the model increases with
+the amount of training data.  Although the model size increases
+sublinearly due to repeated subsequences, it can grow almost
+arbitrarily large with long $n$-grams.
+
+One way to keep the memory constrained is to prune the underlying
+counts from time to time.  Pruning works by removing all strings whose
+count falls below some minimum value.  If there are millions of such
+contexts, removing the ones with low count often has very little
+effect on the overall probabilities assigned by the model.  One reason
+for this is that the low counts tend to be associated with long
+sequences that are low frequency.  These tend to have shorter
+sequences which are almost as representative, but slightly higher
+frequency.  Another reason is that the low frequency counts are for
+low frequency training events which tend to occur less often in new
+data than high frequency training events (if not, there's something
+wrong with the training data that's making it unlike the test data).
+
+
+\section{Compling and Serializing Character LMs}
+
+Character language models can be compiled in the ordinary way.
+They may also be serialized, but not using the standard Java
+serialization.
+
+\subsection{Compilation}
+
+Like many of LingPipe's statistical models, the character language
+model implementations come in two flavors.  First, there are the two
+classes we've discussed already, \code{NGramProcessLM} and
+\code{NGramBoundaryLM}, which implement handlers for character
+sequences for training.  These two classes are both compilable (see
+\refsec{io-compilable} for a general overview of the \code{Compilable}
+interface in LingPipe).  Compiling an instance of one of these classes
+produces instances of \code{CompiledNGramProcessLM} and
+\code{CompiledNGramBoundaryLM}.  Although based on shared abstract
+superclasses, these abstract bases are not public because there is a
+sufficiently rich set of interfaces (see \refsec{char-lm-interfaces}
+for the complete list).
+
+Compiled character language models are much much faster than the
+dynamic language models that allow training.  The reason for this is
+threefold.  First, all of the smoothing is done at compile time, so
+only a single $n$-gram need be evaluated, the one with the longest
+matching context.  Second, a suffix tree data structure is used to
+make it efficient to find the longest suffix for sequences of
+evaluations.  Third, all of the logarithms are precomputed, so only
+addition is required at run time (see \refeq{char-lm-log-scale}).  
+
+Compiled language models only support the estimation interfaces,
+though they support both the joint (sequence of characters) and
+conditional (one character given previous characters) forms of
+estimation.  The only other method they support is
+\code{observedCharacters()}, which returns an array containing all of
+the characters that have been seen (including the boundary character
+for sequence models).
+
+The classes that depend on character language models use the dynamic
+forms of language models for training and the compiled form in compiled
+models.
+
+\subsection{Serialization-like Behavior}
+
+Language models do not support the Java \code{Serializable}
+interface.
+
+
+\section{Thread Safety}
+
+As with most of LingPipe's classes, language models are thread safe
+under read-write synchronization.  Specifically, any number of
+operations that read from language models, including all of the
+estimation and sequence counter operations may be run concurrently
+with each other. Write operations on the other hand, like training,
+pruning, and setting configuration parameters like the interpolation
+ratio, must operate exclusively of all other read or write operations.
+
+
+\section{The Mathematical Model}\label{section:char-lm-math}
 
 The mathematics of character language models are straightforward.
 We'll begin with the process language model and move onto the
@@ -707,7 +1025,7 @@ proper model of arbitrary character sequences.  Thus a bounded
 language model, with probability $p(s)$, is such that
 %
 \begin{equation}
-\sum_{s \in \Sigma^n} p(s) = 1.\label{equation:lm-seq-norm}
+\sum_{s \in \Sigma^n} p(s) = 1.\label{eq:lm-seq-norm}
 \end{equation}
 %
 Thus we think of sequence language models as generating finite
@@ -726,7 +1044,7 @@ We define the probability of a string $s = s_1,\ldots,s_M \in \Sigma^*$
 as
 %
 \begin{equation}
-p_B(s_1,\ldots,s_M) = p(s_1,\ldots,s_M,b|b),\label{equation:lm-seq-def}
+p_B(s_1,\ldots,s_M) = p(s_1,\ldots,s_M,b|b),\label{eq:lm-seq-def}
 \end{equation}
 %
 where $p_B$ is the sequence language model probability distribution.
