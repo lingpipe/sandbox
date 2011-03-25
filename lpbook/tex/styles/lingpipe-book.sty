@@ -211,17 +211,23 @@
 %Strings
 \newcommand{\emptystring}{\epsilon}
 \newcommand{\cnt}[1]{\mbox{\rm cnt}(#1)}
+\newcommand{\strcat}[2]{#1 \cdot #2}
+\newcommand{\strlen}[1]{|#1|}
 
 \newcommand{\extcnt}[1]{\mbox{\rm excnt}(#1)}
+\newcommand{\numexts}[1]{\mbox{\rm numext}(#1)}
 
 % Math
 \newcommand{\indicator}[1]{\mbox{\rm I}(#1)}
+\newcommand{\bigO}[1]{{\mathcal O}(#1)}
 
 % Matrices
 \newcommand{\vecext}[1]{\langle #1 \rangle}
 
 %Sets
 \newcommand{\setext}[1]{\{ #1 \}}
+\newcommand{\setcomp}[2]{\{ #1 \, | \, #2 \}}
+\newcommand{\cardinality}[1]{|#1|}
 
 
 \makeatletter
