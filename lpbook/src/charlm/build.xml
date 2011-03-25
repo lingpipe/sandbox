@@ -61,8 +61,29 @@
   </target>
 
 
+  <property name="num.chars"
+            value="128"/>
+  <property name="lambda.factor"
+            value="4.0"/>
+  <property name="data.dir"
+            value="..\..\data\canterbury"/>
+  <target name="learning-curve"
+          depends="jar">
+    <java classname="com.lingpipe.book.charlm.LmLearningCurve"
+          classpathref="classpath"
+          fork="true">
+       <arg value="${ngram}"/>
+       <arg value="${num.chars}"/>
+       <arg value="${lambda.factor}"/>
+       <arg value="${data.dir}"/>
+    </java>
+  </target>
+
+
+
   <target name="run"
           depends="process-demo,
-		   seq-demo"/>
+		   seq-demo,
+		   learning-curve"/>
 
 </project>
