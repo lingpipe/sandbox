@@ -67,23 +67,86 @@ The latent Dirichlet allocation (LDA) model we consider in
 the assumption that every document is a mixture of topics blended
 according to some document-specific ratio that the model infers.
 
-\subsection{First-Best, Ranked and Probabilistic Results}
+\subsection{First-Best Classifiers and Classifications}
 
 A simple first-best classifier need only return its best guess for the
 category of each input item.  Some applications only allow a single
 best guess, and thus some evaluations are geared toward evaluating
-only a classifiers' first-best guess for an input.
+only a classifiers' first-best guess for an input.  
+
+A first-best classifier will implement the interface \code{BaseClassifier<E>},
+providing classifications of type \code{E} objects.  The interface defines
+a single method, \code{classify(E)}, which returns a first-best
+classification for the specified input.  
+
+The return type of the classify method is \code{Classification}.  The
+\code{Classification} base class implements a single method
+\code{bestCategory()}, which returns a string representing the
+category.  While this could've been done with a return type consisting
+of just a string, the base class \code{Classification} is going to be
+extended to richer types of classification, which would not be possible
+with \code{String}.
+
+A \code{Classification} instance is constructing from the string
+corresponding to its best category, using constructor
+\code{Classification(String)}.
+
+
+\subsection{Ranking Classifiers and Classifications}
 
 A ranking classifier returns the possible categories in rank order of
 their match to the input.  The top ranked answer is the first-best
 result.  We still assume exhaustive and exclusive categories, but the
 classfier supplies its second-best guess, third-best guess and so on.
 
+A ranking classifier implements the interface \code{RankedClassifier}
+which extends \code{BaseClassifier}.  In addition to returning the
+best category, a ranked classifier is able to return additional
+guesses along with their ranks.  The idea is that the higher the rank,
+the more confident the classifier.  Because there is more than one
+result, a ranked classifier implements a method \code{size()}
+returning an integer indicating the number of categories in the
+classification.  The method \code{category(int)} returns the string
+corresponding to the category at a specific rank.  Assuming the size
+is non-zero, the method call \code{category(0)} will return the same
+value as \code{bestCategory()}.  If there are at least two categories,
+the call \code{category(1)} returns the second-highest ranking
+classification by the classifier, and so on.
+
+A ranked classifier is constructed from a sequence of categories
+ordered from best guess to worst guess using the constructor
+\code{RankedClassification(String[])}.  
+
+
+\subsection{Scored Classifiers and Classifications}
+
 A scoring classifier goes one step further and assigns a (floating
 point) score to each categories.  These may then be sorted to provide
 a ranking and a first-best result, with higher scores taken to be
 better matches.  For example, LingPipe's implementations of averaged
 perceptrons returns scored results.
+
+A scored classifier implements the interface \code{ScoredClassifier},
+which extends \code{RankedClassifier}.  In addition to returning sizes
+and categories at ranks, the method \code{score(int)} returns a
+double-precision floating-point score for the result at the specified
+rank.  These scores should be decreasing as the rank decreases.  
+That is, \code{score(0)} should be less than or equal to \code{score(1)}
+and so on.
+
+A \code{ScoredClassification} is constructed from parallel arrays of
+of categories and scores using the constructor
+\code{ScoredClassification(String[],double[])}.  The scores must be
+sorted in decreasing order; if they are not, the constructor throws an
+illegal argument exception.  There is a utility method
+\code{create(List<ScoredObject<String>>)} that creates a scored
+classification from an unsored list of scored strings.  The
+\code{ScoredObject} class, in LingPipe's package \code{com.aliasi.util}
+is such that an instance of \code{ScoredObject<String>} implements
+a method \code{getObject()} returning a string and a method \code{score()}
+returning a double-precision floating-point score.
+ 
+\subsection{Conditional Classifiers and Classifications}\label{section:conditional-classifier}
 
 Scores for categories given an input are often normalized so that they
 represent an estimate of the conditional probability of a category
@@ -95,12 +158,93 @@ about genomics and 60\% probability that it is not about genomics.
 Because the outcomes are exhaustive and exclusive, the probabilities
 assigned to the categories must sum to 1.
 
+A conditional classifier implements the interface
+\code{ConditionalClassifier}, which extends \code{ScoredClassifier}.  
+It adds a method \code{conditionalProbability(int)} for returning
+the conditional probability of the result at the specified rank.
+It also contains a method \code{conditionalProbability(String)} which
+returns the probability estimate for a specified category.
+
+There are several constructors for conditional classifiers.  The
+basic constructor is \code{ConditionalClassifier(String[],double[])},
+which takes a pair of parallel arrays representing the categories
+and their conditional probabilities, in order.  The sum of the
+probabilities must be 1.  An optional third argument may be provided
+to specify the tolerance of the probabilities summing to 1.  
+A second constructor is \code{Conditional(String[],double[],double[])},
+with three parallel arrays, the first floating point one of which
+contains scores and the second of which contains conditional probabilities.
+The scores do not need to be the same as the conditional probabilities,
+but both must be presented in descending order.  If the scores or
+probabilities are not in descending order, an illegal argument exception
+is raised.  An exception is also raised if the arrays do not ahve the
+same length.
+
+There are two convenience static factory method for creating
+conditional classifications.  The first,
+\code{createLogProbs(String[],double[])} takes probabilities on the
+log scale and normalizes them to proper probabilities by
+exponentiating and sorts them appropriately.%
+%
+\footnote{The normalization is the usual softmax operation.  With
+$K$ categories with log probability scaled scores $x_k$, we set
+$\mbox{Pr}(\mbox{cat}=k) \propto \exp(x_k)$, so that 
+\begin{equation*}
+\mbox{Pr}(\mbox{cat}=k) = \frac{\exp(x_k)}{\sum_{k'=1}^K \exp(x_{k'})}.
+\end{equation*}}
+%
+The second static factory method has the same signature with a
+different name, \code{createProbs(String[],double[])}.  This takes
+unnormalized probabilities on the linear scale, which must be
+non-negative, normalizes them to sum to 1, sorts them, then returns
+the corresponding conditional classifier.%
+%
+\footnote{The normalization is the usual rescaling.  With $K$
+categories with linear probability scaled scores $y_k$, we set
+$\mbox{pr}(\mbox{cat}=k) \propto y_k$, so that
+\begin{equation*}
+\mbox{Pr}(\mbox{cat}=k) = \frac{y_k}{\sum_{k'=1}^K y_{k'}}.
+\end{equation*}}
+
+
+
+\subsection{Joint Classifiers and Classifications}
+
 In the case of generative statistical models, such as naive Bayes
 classifiers or hidden Markov models, the score represents the joint
 probabilty of the output category and the input being classified.
 Given the joint probabilities, we can use the rule of total
 probability to compute conditional probabilities of categories given
 inputs.
+
+A joint classifier implements the interface \code{JointClassifier},
+which extends \code{ConditionalClassifier}.  The reason it can extend
+the conditional classifier class is that given joint probabilities,
+it's possible to calculate conditional probabilities, but not
+vice-versa.  The joint classifier interface defines a classify method
+that returns a \code{JointClassification}, which extends the
+\code{ConditionalClassification} class.
+
+The basic constructor is \code{JointClassification(String[],double[])},
+where the first array is the array of categories and the second
+the array of log (base 2) joint probabilities.  The arrays must be
+the same length and the probabilities must be in descending order.
+A second constructor, \code{JointClassification(String[],double[],double[])},
+takes separate score and joint probability arrays in the same way
+as we saw for conditional classifiers.  The joint probabilities are
+used to define conditional probabilities in the usual way.%
+%
+\footnote{If we have $K$ categories with log (base 2) joint
+  probabilities and $w$ is the input, let $y_k = \log_2 \mbox{Pr}(\mbox{cat}=k,\mbox{in}=w)$ be the
+  log (base 2) joint probability of category $k$ and input $w$.  
+  where $c_k$ is a category and $w_k$ is the object being classified,
+  $\mbox{Pr}(\mbox{cat}=k|\mbox{in}=w) \propto 2^{y_k}$ and we normalize
+  as with any probabilities that are known up to a proportion, by 
+%
+\begin{equation*}
+\mbox{Pr}(\mbox{cat}=k|\mbox{in}=w) = \frac{2^{y_k}}{\sum_{k'=1}^K 2^{y_{k'}}}.
+\end{equation*}}
+
 
 \subsection{Ordinals, Counts, and Scalars}
 

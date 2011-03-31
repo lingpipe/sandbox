@@ -8,7 +8,7 @@
            value="lp-book"/>
 
   <property name="version"
-            value="0.3"/>
+            value="0.4"/>
 
   <property name="java.src"
             value="src/"/>
