@@ -1,0 +1,18 @@
+\chapter{Tagging with Hidden Markov Models}\label{chap:hmm}
+
+Hidden Markov models (HMMs) provide a generative statistical model of
+tagging (see \refchap{tagging} for a general discussion of taggers).
+HMMs may be thought of as a sequentially structured generalization of
+naive Bayes classifiers (see \refchap{naive-bayes}).  Like language
+models (see \refchap{char-lm}), their sequential structure is
+Markovian.  What this means is that we only use a finite window of
+past history in order to predict the tag for a given token.  Unlike
+language models, the state depends on previous tags, not on previous
+tokens.  These tags are not directly observable, which is the
+etymology of the term ``hidden'' in their name.
+
+As with classifiers, many tasks that do not superficially appear
+to involve tagging, such as named-entity chunking, can be reduced
+to tagging problems.
+
+
