@@ -1,0 +1,496 @@
+\chapter{Tagging}\label{chap:tagging}
+
+Consider the problem of trying to assign a grammatical category such
+as noun or verb to every word in a sentence.  This is what is known as
+a tagging problem and the labels assigned to the words are called
+part-of-speech tags.  
+
+One productive way of viewing a tagging problem is as a structured
+classification problem.  A tagging for a given sequence of tokens
+consists of a sequence of tags, one for each token.  These tags are
+like the categories assigned by a classifier, only now there is a
+whole sequence of such categories that must be assigned.
+
+LingPipe provides two standard statistical taggers, hidden Markov
+models (HMM) and conditional random fields (CRF); we cover these in
+detail in \refchap{hmm} and \refchap{crf}, respectively.  HMMs provide
+a generative model of tagging that is analogous to naive Bayes
+classifiers.  CRFs provide a discriminative model of tagging that is
+closely related to logistic regression.  
+
+Like their analogous classifiers, LingPipe's taggers implement
+not only first-best tagging, but also $n$-best tagging at the
+sequence level based on sequence probabilities and $n$-best
+tagging at the token level based on marginal probabilities.
+
+Like their analogous classifiers, taggers are defined through
+a suite of tagging-specific interfaces and evaluated with
+interface-specific evaluators.  Before covering HMMs and CRFs,
+we introduce the tagging interfaces and evaluators in this
+chapter.
+
+
+\section{Taggings}
+
+LingPipe provides a base class for representing a complete tagging
+of a sequence as well as some specialized subclasses which we use
+heavily for $n$-best output and natural-language inputs.
+
+LingPipe locates its general tagging interfaces and evaluators in the
+package \code{com.aliasi.tag}.  Within that package, the generic class
+\code{Tagging<E>} represents taggings of sequences of type \code{E}.
+For example, \code{Tagging<String>} provides taggings over sequences
+of strings, such as tokens.  
+
+\subsection{Base Tagging Class}\label{section:tagging-tagger}
+
+A tagging is nothing more than a lightweight wrapper for the sequence
+of tags assigned to a sequence of symbols.  Unless you write your own
+tagger, you will likely only need tagging objects that are produced by
+existing taggers.
+
+\subsubsection{Constructing a Tagging}
+
+The constructor \code{Tagging(List<E> syms, List<String> tags)}
+creates a tagging consisting of a list of symbols of type \code{E} and
+a parallel list of tags of type \code{String}.  These lists must be
+the same length, because the tag at position $i$ is taken to
+correspond to the symbol at position $i$; in Java terms,
+\code{tags.get(i)} is the tag for symbol \code{syms.get(i)}.  If the tags
+are not the same length, the constructor will throw an illegal argument
+exception.
+
+\subsubsection{Accessing Tags and Symbols}
+
+The entire list of tags and list of tokens are available through the
+methods \code{tags()} and \code{tokens()}.  Both of these methods
+return immutable views of the underlying tags and tokens as produced
+by the static utility method \code{unmodifiableList(List<T>)} in
+Java's utility class \code{Collections} in package \code{java.util}.
+The return result is a list, but it throws unsupported operation
+exceptions if an attempt is made to modify it using methods such as
+\code{add()}.
+
+The tags and tokens may also be accessed on a position-by-position
+basis.  The method \code{size()} returns the lengths of the lists of
+tags and symbols.  For each integer between 0 (inclusive) and the
+size of the lists (exclusive), the methods \code{token(int)} and
+\code{tag(int)} return the symbol and tag at a specified position.
+If an integer out of this range is suppolied, the methods throw
+index out of bounds exceptions.
+
+The object method \code{toString()} may be used to render the entire
+tagging in a human-readable format (assuming the symbols and tags are
+human readable, of course).
+
+Like most of LingPipe's objects, taggings are immutable in the sense
+that once they are constructed, their content is constant in the sense
+can't be modified.  One advantage of this design is that all of
+the tagging classes are entirely thread safe without any synchronization.
+
+
+\subsection{Scored Taggings}\label{section:tagging-scored-tagging}
+
+The class \code{ScoredTagging<E>} extends \code{Tagging<E>}, and thus
+serves as a tagging itself.  Scored taggings also implement the
+general LingPipe interface \code{Scored} in \code{com.aliasi.util}.
+
+\subsubsection{Constructing Scored Taggings}
+
+As with regular taggings, these are most commonly created by taggers
+rather than by users.  A scored tagging is constructured using
+\code{ScoredTagging(List<E>,List<String>,double)}, with the first two
+arguments passed to the supertype constructor
+\code{Tagging(List<E>,List<String>)} and the double being used for the
+score.
+
+Like base taggings, scored taggings are immutable. 
+
+\subsubsection{Accessing Scores}
+
+The \code{Scored} interface defines a single method \code{score()}
+returning a double-precision floating-point value.  The advantage of
+encapsulating having a score in an interface is that it makes it
+easy to sort \code{Scored} instances by their scores.  For example,
+there are predefined comparators for scored objects, accessible
+through static methods \code{ScoredObject.comparator()} and
+\code{ScoredObject.reverseComparator()} for sorting in increasing or
+decreasing order of score respectively.  The class \code{ScoredObject<E>}
+provides a general implementation of \code{Scored} that also holds
+an immutable reference to an object of type \code{E}.
+
+
+\subsection{String Taggings}
+
+The class \code{StringTagging} also extends the base
+\code{Tagging<E>}, but with the generic type \code{E} fixed to
+\code{String}.  In addition to the toekns and tags, a string tagging
+stores an underlying character sequence from which the tokens were
+derived along with the start and end position of each token in the
+sequence.  
+
+\subsubsection{Constructing String Taggings}
+
+A string tagging is construccted using
+\code{StringTagging(List<String> toks, List<String> tags, CharSequence
+  cs, int[] tokenStarts, int[] tokenEnds)}.  The tokens and tags are
+passed to the superclass constructor
+\code{Tagging(List<String>,List<String>)}, so must be the same length.
+The arrays of token starts and token ends must also be the same length
+as the lists of tokens and tags; if they aren't, an illegal argument
+exception will be thrown.  The character sequence is copied into a
+local string object.
+
+Like the other tagging classes, string taggings are immutable.
+
+\subsubsection{Underlying String and Tokens}
+
+The method \code{characters()} returns a \code{String}
+corresponding to the sequence of charcters undelrying this tagging.
+
+The methods \code{tokenStart(int)} and \code{tokenEnd(int)} provide
+the position of a token, with the start position being inclusive and
+the end position being exclusive.  The method \code{rawToken(int)} is
+a convenience method to return the slice of the underlying string
+spanning the token at the specified psoition.  As with the tag and
+token access methods, these methods throw index out of bounds
+execptions if the indices are out of range.
+
+The string tagging class overrides \code{toString()} to provide
+human-readable output.
+
+
+\subsubsection{Equality and Hash Codes}
+
+The basic \code{Tagging} and extended \code{ScoredTagging} classes
+define equality by refernece (by not overriding the definition of
+\code{equals(Object)} inherited from \code{java.util.Object}).  That
+is, a tagging and scored tagging are only equal if they are reference
+equal.  
+
+String taggings have an equality method defined in terms of their
+contents, with a corresponding hash code method.
+
+
+\section{Tag Lattices}
+
+The \code{Tagging} class provides an output representating for
+first-best taggers that return their best estimate of a tagging.  The
+\code{ScoredTagging} class is sufficient for $n$-best output, which
+consists of a sequence of taggings with scored attached.  For marginal
+taggers, output takes the form of a tag lattice.  A tag lattice
+encapsulates a rich computation of probabilities for individual
+tags given the rest of the output.
+
+In this section, we describe the abstract class \code{TagLattice<E>}.
+Like for regular taggings, the generic type parameter \code{E}
+represents the type of symbols being tagged.  Additional methods
+provide the means to estimate the probabilities of specific tags.
+
+\subsection{Constructing Tag Lattices}
+
+Tag lattices are constructed by marginal taggers and returned to
+clients.  If you are not defining your own marginal tagger, you should
+not need to construct a tag lattice.  There is a private
+implementation in the \code{tag} package if you'd like to examine a
+simple implementation.  
+
+There are concrete implementations for both HMMs and CRFs.  The
+HMM-specific subclass is not public, so is not accessible through the
+API.  If you're curious, the code is availabe in the class
+\code{TagWordLattice} in the package \code{com.aliasi.hmm}.  There is
+a public subclass \code{ForwardBackwardTagLattice} in the \code{crf}
+package which we describe along with conditional random fields in
+\refchap{crf}; it provides some extra functionality beyond that provided
+by the abstract base class described in this section.
+
+\subsection{Accessing Tag Probabilities}
+
+The primary service provided by tag lattices is encapsulating
+probability estimates for tags for individual symbols.  For instance,
+consider the sentence \stringmention{The dog barked.}.  With a
+standard English tokenization, such as LingPipe's built in
+\code{IndoEuropeanTokenizerFactory}), the sentence consists of four
+tokens \stringmention{The}, \stringmention{dog},
+\stringmention{barked}, and \stringmention{.}  
+
+Given this sentence, with LingPipe's HMM and CRF taggers, it's
+possible to estimate the probabilty that the token
+\stringmention{barked} is a past tense verb as well as the probability
+that it is a past particple verb.  Note that because
+\stringmention{barked} may be used for simple past tense or the past
+participle, it's not possible to determine the category by looking at
+just the word.  Instead, we want to know what the chance
+\stringmention{barked} is a past participle in the context of the
+sentence \stringmention{The dog barked.} (the answer is that it should
+be pretty low; the existence of a preceding noun and the absence of an
+auxiliary verb form of \stringmention{have} are both evidence that the
+word in question is a simple past tense usage. 
+
+\subsubsection{Underlying Tokens}
+
+The underlying set of tokens may be retrieved using methods similar to
+the simple taggings.  The number of tokens in the input is provided by
+the method \code{numTokens()}. The token at a given position is
+retrieved using \code{token(int)}, which returns an instance of
+\code{E}, the type of symbols in the tagging.  An immutable view of
+the entire list of tokens is given by \code{tokenList()}.
+
+\subsubsection{Per-Token Marginal Probability Estimates}
+
+The simplest way to access the probability estimates for each tag for
+a given token is through the method \code{tokenClassification(int)}.
+Given an index, this method returns an instance of
+\code{ConditionalClassification}, which is able to provide
+the probability of each category for the token given the context
+of the entire input string (see \refsec{conditional-classifier}
+for more conditional classifications).
+
+\subsubsection{Tag Set as Symbol Table}
+
+Because a tag lattice provides a probability estimate for each tag for
+each token position, it is helpful to be able to access the entire set
+of possible tags.  The tags are represented in a symbol table, a copy
+or immutable view of which is returned by \code{tagSymbolTable()}; see
+\refchap{symbol-tables} for an overview of LingPipe's symbol tables.
+The basic idea of the symbol table is that it lets you retrieve an
+integer identifier for each tag and vice-versa.
+
+It's also possible to retrieve the sequence of tags in symbol-table
+order using the method \code{tagList()}, which returns a list of strings.
+
+\subsubsection{Simple Tag Probabilities}
+
+The method \code{logProbability(int token, int tag)} returns the
+(natural) log of the probability of the token with the specified index
+being assigned to the tag with the specified identifier.
+
+\subsubsection{Tag Sequence Probabilities}
+
+Because the lattice stores such a rich set of probability information,
+it is possible to extend the calculation of the probability of a
+single category for a single token to the calculation of a sequence of
+categories for a sequence of tokens, all conditional on the entire
+input sequence.  The method \code{logProbability(int n, int[] tags)}
+returns the (natural) log probability of the sequence of tags starting
+at position \code{n}.  The tag positions must all be within the
+sequence, so that $0 \leq \mbox{\code{n}}$ and $\mbox{\code{n}} +
+\mbox{\code{tags.length}} \leq \mbox{\code{numTokens}}$.  
+
+
+\section{Taggers}
+
+The \code{com.aliasi.tag} package defines three tagging interfaces,
+corresponding to the three kinds of tag outputs.  The two statistical
+tagging implementations in LingPipe, hidden Markov models (HMM) and
+conditional random fields (CRF), implement all three interfaces.  
+
+The interfaces are broken out to allow simpler run-time interfaces.
+For instance, this lets us define separate evaluation interfaces for
+each mode of operation, as well as leaving open the option for
+taggers that do not implement all three interfaces.
+
+\subsection{First-Best Taggers}
+
+The first-best tagging interface is \code{Tagger<E>}, with the
+type parameter \code{E} determining the kind of tokens that
+are tagged.  The interface defines a single method,
+%
+\begin{verbatim}
+Tagging<E> tag(List<E> tokens);
+\end{verbatim}
+%
+That is, given a list of tokens of type \code{E}, return a first-best
+tagging over that type.  The return type \code{Tagging} is described
+in \refsec{tagging-tagger}.
+
+\subsection{$N$-Best Taggers}
+
+The $n$-best tagging interface is \code{NBestTagger<E>}, and
+like the first-best interface, the type parameter \code{E}
+determines the type of tokens that are tagged.  The $n$-best
+tagger interface extends the simple \code{Tagger<E>} interface,
+so that any $n$-best tagger may be used as a simple tagger.
+
+There are two methods specified in this interface, differing in terms
+of their score normalizations.
+
+The first method is
+%
+\begin{verbatim}
+Iterator<ScoredTagging<E>> tagNBest(List<E>,int);
+\end{verbatim}
+%
+where the input list is the list of tokens to parse and the integer
+argument specifies the maximum number of results to generate.  Setting
+the maximum number of results lower than \code{Integer.MAX\_VALUE} can
+save space during tagging by allowing taggings that are known to be
+beyond the result set to be pruned.  
+
+The return result is an iterator over scored taggings, which are
+described in \refsec{tagging-scored-tagging}.  Essentially, a scored
+tagging combines a tagging with a score.  The interface specifies that
+the scored taggings are returned in decreasing order of score.  Thus
+the best tagging is returned first, the second-best next, and so on.
+This is what allows any $n$-best tagger to implement first-best
+tagging; it just returns the first-result from \code{tagNBest()} as
+the result for the superinterface's \code{tag()} method.%
+%
+\footnote{This presupposes that there is always at least one tagging
+  result, which is the case for all of the taggers of which we are
+  aware.  While the \code{tag()} method could be defined to return
+  \code{null}, that would not play nicely with other interfaces which
+  expect non-null taggings.}
+
+The second method specifiedin the interface has a different name, but
+with identical argument and result types,
+%
+\begin{verbatim}
+Iterator<ScoredTagging<E>> tagNBestConditional(List<E>,int);
+\end{verbatim}
+%
+The difference between this method and the simple \code{tagNBest()}
+method is that this method requires the scores to be conditional
+probabilities of the tagging given the input tokens.%
+%
+\footnote{Both the conditional probability normalization and the
+order are informal requirements, because they are beyond the expressive
+power of Java's type system.}
+%
+The difference between $n$-best and conditionally normalized $n$-best
+taggers is the same as that between scored classifiers and conditional
+classifiers (see \refsec{conditional-classifier}).
+
+The \code{tagNBestConditional()} method is specified in the interface
+to throw an \code{UnsupportedOperationException} if the method is not
+supported.  Thus it's possible to write an unnormalized $n$-best
+tagger.  
+
+
+\subsection{Marginal Taggers}
+
+The third tagging interface is \code{MarginalTagger<E>}.  It produces
+an entire tag lattice as output in oen method call, specified by the
+single interface method
+%
+\begin{verbatim}
+TagLattice<E> tagMarginal(List<E>);
+\end{verbatim}
+%
+As with the other interfaces, the type parameter \code{E} picks out
+the type of the tokens that are being tagged.  
+
+The marginal tagger interface does not extend the basic tagging
+interface.  That's because it's not in general possible to extract
+a coherent first-best result from a tag lattice, because the
+first-best tags on a per-token basis may not be consistent as an
+entire tag sequence;  we'll see examples when we consider using taggers
+for chunking.
+
+
+\section{Tagger Evaluators}
+
+Like classifier evaluators, which we discussed in
+\refchap{classifier-evaluation}, there is a separate tagger evaluator
+for each of the tagging interfaces.  Each of the the three interfaces is
+named for the tagger interface it evaluates.
+
+\subsection{First-Best Tagger Evaluation}
+
+The simplest evaluator is the \code{TaggerEvaluator<E>}, which evaluates
+taggers over type \code{E} tokens.  
+
+As with the classifier evaluators, a tagger evaluator is constructed
+from a tagger.  The constructor,
+%
+\begin{verbatim}
+TaggerEvaluator(Tagger<E>,boolean);
+\end{verbatim}
+%
+takes an argument for the tagger that will be evaluated.  This tagger
+may be null at construction time and reset later using the method
+\code{setTagger(Tagger<E>)}.  The tagger must be either supplied in the
+constructor or set before cases are evaluated.  The second argument
+indicates whether the tokens in the test cases are saved along with
+the tags.
+
+\subsubsection{Adding Test Cases}
+
+Like the classifier evaluators, the tagger evaluators implement object
+handlers, in this case implementing the interface
+\code{ObjectHandler<Tagging<E>{>}} (see \refsec{corpus-handlers}),
+which specifies the single method
+%
+\begin{verbatim}
+void handle(Tagging<E>);
+\end{verbatim}
+%
+As explained in \refsec{corpus-handlers} and the rest of
+\refchap{corpus}, this allows the handlers to be plugged together with
+corpora and parsers.
+
+The second way to add test cases is directly through the \code{addCase()}
+method, which has signature
+%
+\begin{verbatim}
+void addCase(Tagging<E> ref, Tagging<E> resp);
+\end{verbatim}
+%
+The two tagging arguments represent the gold-standard reference
+tagging and the system's response, respectively.
+
+
+\subsubsection{Basic Input Profile}
+
+A tagger evaluator has various utility methods that provide
+information about the data that has been seen so far.  The method
+\code{numCases()} returns the number of examples seen so far, which is
+just the number of calls to \code{handle()} or \code{addCase()}).
+The method \code{numTokens()} represents the total number of tokens
+seen so far.  The method \code{tags()} returns a list of the tags
+seen so far, each of which is a string.  
+
+The method \code{inputSizeHistogram()} returns a histogram, represented
+as an object to counter map of integers,
+%
+\begin{verbatim}
+ObjectToCounterMap<Integer> inputSizeHistogram();
+\end{verbatim}
+%
+The result maps integers representing the number of tokens in an input
+to the number of cases seen so far with that many input tokens.
+
+The underlying tagger is returned by the method \code{tagger()} and
+the flag indicating whether or not to store tokens is returned
+by \code{storeTokens()}.
+
+\subsubsection{Evaluations}
+
+There are several methods that return the evaluation results.  The
+simplest is \code{caseAccuracy()}, which returns a \code{double}
+between 0 and 1 representing the fraction of cases that were tagged
+completely correctly.  A response tagging is case correct if every
+tag matches matches the corresponding reference tagging.  
+
+The method \code{tokenEval()} returns an evaluation on a
+token-by-token basis.  It treats the tagging of each token as a
+classification problem, and hence is able to return an instance of
+\code{BaseClassifierEvaluator<E>}, where \code{E} is the type
+of the tokens.  This provides all the evaluations that are available
+for base classifiers.
+
+The token-by-token evaluation can be restricted to a set of tokens not
+in a given set.  The main use for this is to evaluate performance on
+tokens that were not seen in the training data.  The method
+%
+\begin{verbatim}
+BaseClassifierEvaluator<E> unknownTokenEval(Set<E>);
+\end{verbatim}
+%
+takes a set of tokens as an argument, and returns an evaluation restricted
+to tokens not in the argument set.  If the argument set is the set of
+tokens in the training data, the resulting evaluation is on tokens
+that are not in the training set.  
+
+
+
