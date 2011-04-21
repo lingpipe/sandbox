@@ -57,12 +57,9 @@
   </target>
 
   <target name="book">
-    <mkdir dir="build/tex-aux"/>
+    <mkdir dir="build/"/>
     <exec executable="pdflatex"
           dir="tex">
-      <arg value="-aux-directory=../build/tex-aux"/>
-      <!-- <arg value="-output-directory=../build"/> -->
-      <arg value="-include-directory=styles"/>
       <arg value="${title}.tex"/>
     </exec>
     <exec executable="makeindex"
@@ -74,12 +71,9 @@
   </target>
 
   <target name="lucene-tut">
-    <mkdir dir="build/luc/tex-aux"/>
+    <mkdir dir="build"/>
     <exec executable="pdflatex"
           dir="tex">
-      <arg value="-aux-directory=../build/luc/tex-aux"/>
-      <arg value="-output-directory=../build/luc"/>
-      <arg value="-include-directory=styles"/>
       <arg value="lucene-3-tutorial.tex"/>
     </exec>
   </target>
@@ -153,9 +147,10 @@
     </tar>
     <!-- End Lucene -->
 
-    <copy file="build/lp-book.pdf" 
+    <copy file="tex/lp-book.pdf" 
           tofile="build/lingpipe-book-${version}.pdf"/>
 
+    <mkdir dir="build/luc"/>
     <tar destfile="build/lingpipe-book-site-${version}.tgz"
          compression="gzip">
       <tarfileset dir="build"
