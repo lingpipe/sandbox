@@ -14,11 +14,14 @@
             value="src/"/>
 
   <property name="java2tex.out"
-            value="build/tex/out"/>
+            value="tex/auto_code"/>
 
   <target name="clean"
           depends="clean-demos">
     <delete dir="build"/>
+    <delete includeEmptyDirs="true">
+              
+    </delete>
   </target>
 
   <target name="jar">
@@ -56,7 +59,7 @@
     <exec executable="pdflatex"
           dir="tex">
       <arg value="-aux-directory=../build/tex-aux"/>
-      <arg value="-output-directory=../build"/>
+      <!-- <arg value="-output-directory=../build"/> -->
       <arg value="-include-directory=styles"/>
       <arg value="${title}.tex"/>
     </exec>
