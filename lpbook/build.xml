@@ -20,6 +20,7 @@
           depends="clean-demos">
     <delete dir="build"/>
     <delete dir="${java2tex.out}"/>
+    <delete file="tex/lucene-3-tutorial.pdf"/>
     <delete file="tex/lp-book.pdf"/>
     <delete includeEmptyDirs="true">
         <fileset dir="tex" includes="**/*.aux **/*.log **/*.idx **/*.toc **/*.ind **/*.ilg"/>
