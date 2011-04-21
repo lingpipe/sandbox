@@ -22,7 +22,7 @@
     <delete dir="${java2tex.out}"/>
     <delete file="tex/lp-book.pdf"/>
     <delete includeEmptyDirs="true">
-        <fileset dir="tex" includes="**/*.aux **/*.log **/*.idx **/*.toc"/>
+        <fileset dir="tex" includes="**/*.aux **/*.log **/*.idx **/*.toc **/*.ind **/*.ilg"/>
     </delete>
   </target>
 
@@ -66,9 +66,9 @@
       <arg value="${title}.tex"/>
     </exec>
     <exec executable="makeindex"
-          dir="build/tex-aux">
+          dir="tex">
       <arg value="-s"/>
-      <arg value="../../tex/styles/lingpipe-book.ist"/>
+      <arg value="styles/lingpipe-book.ist"/>
       <arg value="${title}.idx"/>
     </exec>
   </target>
