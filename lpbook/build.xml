@@ -19,8 +19,10 @@
   <target name="clean"
           depends="clean-demos">
     <delete dir="build"/>
+    <delete dir="${java2tex.out}"/>
+    <delete file="tex/lp-book.pdf"/>
     <delete includeEmptyDirs="true">
-              
+        <fileset dir="tex" includes="**/*.aux **/*.log **/*.idx **/*.toc"/>
     </delete>
   </target>
 
