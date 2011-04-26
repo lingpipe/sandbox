@@ -210,7 +210,7 @@ public class LingBlastMedline extends AbstractCommand {
             mLogger.info("Read dictionary "+mDictFilePath);
             ExactDictionaryChunker dictionaryChunkerTT
                 = new ExactDictionaryChunker(dictionary,
-                                             IndoEuropeanTokenizerFactory.FACTORY,
+                                             IndoEuropeanTokenizerFactory.INSTANCE,
                                              true,true);
             LingBlast lb = new LingBlast(mMedlineSearcher,
                                          mEntrezGeneSearcher,

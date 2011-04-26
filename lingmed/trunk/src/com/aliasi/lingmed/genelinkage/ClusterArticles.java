@@ -43,7 +43,6 @@ import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Counter;
 import com.aliasi.util.Distance;
 import com.aliasi.util.Files;
-import com.aliasi.util.NBestSet;
 import com.aliasi.util.ObjectToCounterMap;
 import com.aliasi.util.Pair;
 import com.aliasi.util.ScoredObject;

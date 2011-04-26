@@ -24,11 +24,11 @@ import com.aliasi.lingmed.medline.parser.MedlineCitation;
 import com.aliasi.lingmed.medline.parser.MedlineHandler;
 import com.aliasi.lingmed.medline.parser.MedlineParser;
 
-import com.aliasi.tokenizer.EnglishStopListFilterTokenizer;
+import com.aliasi.tokenizer.EnglishStopTokenizerFactory;
 import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;
-import com.aliasi.tokenizer.LowerCaseFilterTokenizer;
+import com.aliasi.tokenizer.LowerCaseTokenizerFactory;
 import com.aliasi.tokenizer.NGramTokenizerFactory;
-import com.aliasi.tokenizer.PorterStemmerFilterTokenizer;
+import com.aliasi.tokenizer.PorterStemmerTokenizerFactory;
 import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.tokenizer.TokenizerFactory;
@@ -159,11 +159,11 @@ public class MedlineCodec implements Codec<MedlineCitation> {
 
         static class StandardTokenizerFactory implements TokenizerFactory {
             public Tokenizer tokenizer(char[] cs, int start, int length) {
-                Tokenizer tokenizer = SIMPLE_TOKENIZER_FACTORY.tokenizer(cs,start,length);
-                tokenizer = new LowerCaseFilterTokenizer(tokenizer);
-                tokenizer = new EnglishStopListFilterTokenizer(tokenizer);
-                tokenizer = new PorterStemmerFilterTokenizer(tokenizer);
-                return tokenizer;
+                TokenizerFactory tokenizerFactory = SIMPLE_TOKENIZER_FACTORY;
+                tokenizerFactory = new LowerCaseTokenizerFactory(tokenizerFactory);
+                tokenizerFactory = new EnglishStopTokenizerFactory(tokenizerFactory);
+                tokenizerFactory = new PorterStemmerTokenizerFactory(tokenizerFactory);
+                return tokenizerFactory.tokenizer(cs,start,length);
             }
         } // acts like Lucene's StandardAnalyzer
         public TokenizerFactory TEXT_TOKENIZER_FACTORY
@@ -174,7 +174,7 @@ public class MedlineCodec implements Codec<MedlineCitation> {
             = new RegExTokenizerFactory("\\p{L}+|\\p{Digit}+");
 
         public static final TokenizerFactory EXACT_TEXT_TOKENIZER_FACTORY 
-            = IndoEuropeanTokenizerFactory.FACTORY;
+            = IndoEuropeanTokenizerFactory.INSTANCE;
 
         public static final TokenizerFactory NGRAM_TEXT_TOKENIZER_FACTORY
             = new NGramTokenizerFactory(3,3);

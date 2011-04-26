@@ -302,7 +302,9 @@ public class DownloadMedline extends AbstractCommand {
 	    }
 	    mLogger.info("File contains a proper checksum");
 	    Thread.sleep(SECOND);
-	    String gzFileName = Files.prefix(fileName);
+	    String gzFileName = fileName;
+            int idxDot = fileName.lastIndexOf(".");
+            if (idxDot > 0) gzFileName = fileName.substring(0,idxDot);
 	    downloadFile(gzFileName,mTargetMd5Dir);
 	    mLogger.info("Downloaded file: " + gzFileName);
 	    gz = new File(mTargetMd5Dir,gzFileName);

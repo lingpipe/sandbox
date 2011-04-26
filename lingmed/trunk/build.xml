@@ -66,8 +66,11 @@
 <property name="jar"
           value="lingmed-${version}.jar"/>
 
+<!-- <property name="lingpipe-jar"
+          value="lib/lingpipe-3.9.3.jar"/> -->
+
 <property name="lingpipe-jar"
-          value="lib/lingpipe-3.9.3.jar"/>
+          value="lib/lingpipe-4.0.1.jar"/>
 
 <property name="lucene-jar"
           value="lib/lucene-core-2.9.4.jar"/>

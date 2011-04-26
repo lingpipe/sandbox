@@ -243,9 +243,13 @@ public class DictionaryBuilder extends AbstractCommand {
                         if (mGenHtml) mHtmlOut.println("<TD>yes</TD></TR>");
                     }
 
-                    String[] categoryArray = new String[ids.size()];
-                    categoryArray = ids.toArray(categoryArray);
-                    String category = Arrays.arrayToCSV(categoryArray);
+                    StringBuilder sbCategoryCsv = new StringBuilder();
+                    for (String c : ids) {
+                        sbCategoryCsv.append(c);
+                        sbCategoryCsv.append(",");
+                    }
+                    if (sbCategoryCsv.length() > 0) sbCategoryCsv.setLength(sbCategoryCsv.length()-1);
+                    String category = sbCategoryCsv.toString();
                     DictionaryEntry<String> dictEntry = new DictionaryEntry<String>(alias,category,1.00d);
                     mTrieDict.addEntry(dictEntry);
                 } catch (DaoException de) {

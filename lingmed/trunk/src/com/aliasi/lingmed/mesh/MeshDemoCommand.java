@@ -51,7 +51,7 @@ public class MeshDemoCommand {
      */
     public static void main(String[] args) throws IOException, SAXException {
         File meshGzipFile = new File(args[0]);
-        String fileURL = Files.fileToURLName(meshGzipFile);
+        String fileURL = meshGzipFile.toURI().toURL().toString();
         System.out.println("FILE URL=" + fileURL);
 
         MeshParser parser = new MeshParser();

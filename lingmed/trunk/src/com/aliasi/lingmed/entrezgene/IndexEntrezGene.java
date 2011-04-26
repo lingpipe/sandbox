@@ -25,7 +25,6 @@ import com.aliasi.lingmed.utils.Logging;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Files;
-import com.aliasi.util.Reflection;
 import com.aliasi.util.Streams;
 import com.aliasi.util.Strings;
 
@@ -175,7 +174,7 @@ public class IndexEntrezGene extends AbstractCommand {
             inReader = new InputStreamReader(gzipIn,Strings.UTF8);
             bufReader = new BufferedReader(inReader);
             inSource = new InputSource(bufReader);
-            inSource.setSystemId(Files.fileToURLName(file));
+            inSource.setSystemId(file.toURI().toURL().toString());
             parser.parse(inSource);
         } finally {
             Streams.closeReader(bufReader);

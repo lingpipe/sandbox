@@ -47,7 +47,7 @@ public class MeshDictionaryCommand {
         File dictChunkerFile = new File(args[1]);
         dictChunkerFile.mkdirs();
 
-        String fileURL = Files.fileToURLName(meshGzipFile);
+        String fileURL = meshGzipFile.toURI().toURL().toString();
         System.out.println("FILE URL=" + fileURL);
 
         MeshParser parser = new MeshParser();

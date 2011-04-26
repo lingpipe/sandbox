@@ -29,7 +29,6 @@ import com.aliasi.lingmed.utils.Logging;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Files;
-import com.aliasi.util.Reflection;
 import com.aliasi.util.Streams;
 import com.aliasi.util.Strings;
 
@@ -45,7 +44,7 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Properties;
-import java.util.zip.*;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
@@ -300,10 +299,10 @@ public class IndexMedline extends AbstractCommand {
     }
 
     void parseFile(MedlineParser parser, File file) throws IOException, SAXException {
-        if (Files.suffix(file.getName()).equals("xml")) {
+        if (file.getName().endsWith("xml")) {
             InputSource inSource = new InputSource(file.getAbsolutePath());
             parser.parse(inSource);
-        } else if (Files.suffix(file.getName()).equals("gz")) {
+        } else if (file.getName().endsWith("gz")) {
             parseGZip(parser,file);
         } else { 
             String msg = "Unknown file extension. File=" + file.getName();
@@ -324,7 +323,8 @@ public class IndexMedline extends AbstractCommand {
             inReader = new InputStreamReader(gzipIn,Strings.UTF8);
             bufReader = new BufferedReader(inReader);
             inSource = new InputSource(bufReader);
-            inSource.setSystemId(Files.fileToURLName(file));
+            inSource.setSystemId(file.toURI().toURL().toString());
+
             parser.parse(inSource);
         } finally {
             Streams.closeReader(bufReader);
