@@ -22,7 +22,6 @@ import com.aliasi.corpus.XMLParser;
 import com.aliasi.util.Strings;
 
 import com.aliasi.xml.DelegatingHandler;
-import com.aliasi.xml.SAXWriterFilter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -67,14 +66,11 @@ public class HomologeneParser
 	ObjectHandler<HomologeneGroup> mHandler;
 	HomologeneHandler mHomologeneHandler;
 	ByteArrayOutputStream mBytesOut = new ByteArrayOutputStream();
-	SAXWriterFilter mSaxFilter;
 
 	public HomologeneSetFilterHandler(ObjectHandler<HomologeneGroup> handler) throws IOException {
 	    mHandler=handler;
 	    mHomologeneHandler = new HomologeneHandler();
-	    // wrap handler in SAXWriterFilter in order to collect raw XML
-	    mSaxFilter = new SAXWriterFilter(mBytesOut,Strings.UTF8,mHomologeneHandler);
-	    setDelegate(HomologeneTags.HG_ENTRY_ELT, mSaxFilter);
+	    setDelegate(HomologeneTags.HG_ENTRY_ELT, mHomologeneHandler);
 	}
 	
 	public void finishDelegate(String qName, DefaultHandler handler) {

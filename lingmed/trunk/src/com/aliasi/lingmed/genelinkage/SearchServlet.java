@@ -19,7 +19,6 @@ import com.aliasi.lingmed.medline.parser.Abstract;
 import com.aliasi.lingmed.medline.parser.Article;
 import com.aliasi.lingmed.medline.parser.MedlineCitation;
 
-import com.aliasi.util.NBestSet;
 import com.aliasi.util.Pair;
 import com.aliasi.util.Strings;
 

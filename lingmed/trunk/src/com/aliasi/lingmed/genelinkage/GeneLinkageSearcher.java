@@ -28,7 +28,7 @@ import com.aliasi.lingmed.medline.parser.Abstract;
 import com.aliasi.lingmed.medline.parser.Article;
 import com.aliasi.lingmed.medline.parser.MedlineCitation;
 
-import com.aliasi.util.NBestSet;
+import com.aliasi.util.BoundedPriorityQueue;
 import com.aliasi.util.Pair;
 import com.aliasi.util.Strings;
 
@@ -87,7 +87,7 @@ public class GeneLinkageSearcher {
             return new ArticleMention[0];
         }
         Comparator<ArticleMention> byScore = new ArticleMentionComparator();
-        NBestSet<ArticleMention> tops = new NBestSet<ArticleMention>(limit,byScore);
+        BoundedPriorityQueue<ArticleMention> tops = new BoundedPriorityQueue<ArticleMention>(byScore,limit);
         int limitx10 = limit*10;
         Map<String,Pair<Double,Set<Chunk>>> articleMentions =
             mGeneLinkageDao.getNArticleMentionsForGeneId(geneId,limitx10);

@@ -103,6 +103,7 @@ public class LingBlast {
         return new Pair(genomicsCrossEntropyRate,null);
     }
 
+
     private Chunking lingblastGenes(CharSequence input) throws IOException, ClassNotFoundException {
         Set<String> allGeneIds = new HashSet<String>();
         Chunking geneNames = mDictionaryChunker.chunk(input);
@@ -118,7 +119,7 @@ public class LingBlast {
                               + " start=" + start
                               + " end=" + end
                               + " genes=" + genes);
-            String[] geneArray = Arrays.csvToArray(genes);
+            String[] geneArray = genes.split(",");
             for (String gene : geneArray) {
                 allGeneIds.add(gene);
             }
@@ -141,7 +142,7 @@ public class LingBlast {
             String geneId = entry.getKey();
             double score = entry.getValue();
             for (Chunk chunk : geneNames.chunkSet()) {
-                String[] geneArray = Arrays.csvToArray(chunk.type());
+                String[] geneArray = chunk.type().split(",");
                 if (Arrays.member(geneId,geneArray)) {
                     Chunk newChunk = ChunkFactory.createChunk(chunk.start(),chunk.end(),geneId,score);
                     resultChunkSet.add(newChunk);

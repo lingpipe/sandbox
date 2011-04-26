@@ -16,10 +16,10 @@
 
 package com.aliasi.lingmed.lucene;
 
-import com.aliasi.tokenizer.EnglishStopListFilterTokenizer;
+import com.aliasi.tokenizer.EnglishStopTokenizerFactory;
 import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;
-import com.aliasi.tokenizer.LowerCaseFilterTokenizer;
-import com.aliasi.tokenizer.PorterStemmerFilterTokenizer;
+import com.aliasi.tokenizer.LowerCaseTokenizerFactory;
+import com.aliasi.tokenizer.PorterStemmerTokenizerFactory;
 import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.tokenizer.TokenizerFactory;
@@ -92,34 +92,36 @@ public class LuceneAnalyzer extends Analyzer {
         = new RegExTokenizerFactory(".+",Pattern.DOTALL);
 
     public static final TokenizerFactory INDOEUROPEAN_TOKENIZER_FACTORY
-        = IndoEuropeanTokenizerFactory.FACTORY;
+        = IndoEuropeanTokenizerFactory.INSTANCE;
 
-	static class IndoEuropeanLowerCaseTokenizerFactory implements TokenizerFactory {
-		public Tokenizer tokenizer(char[] cs, int start, int length) {
-			Tokenizer tokenizer = INDOEUROPEAN_TOKENIZER_FACTORY.tokenizer(cs,start,length);
-			tokenizer = new LowerCaseFilterTokenizer(tokenizer);
-			return tokenizer;
-		}
+    static class IndoEuropeanLowerCaseTokenizerFactory implements TokenizerFactory {
+	public Tokenizer tokenizer(char[] cs, int start, int length) {
+	    TokenizerFactory tokenizerFactory = INDOEUROPEAN_TOKENIZER_FACTORY;
+	    tokenizerFactory = new LowerCaseTokenizerFactory(tokenizerFactory);
+	    return tokenizerFactory.tokenizer(cs,start,length);
+	    
 	}
+    }
     public static final TokenizerFactory INDOEUROPEAN_LC_TOKENIZER_FACTORY
         = new IndoEuropeanLowerCaseTokenizerFactory();
 
-	// like Lucene's analysis.SimpleAnalyzer, but with digits, too
-	public static final TokenizerFactory SIMPLE_TOKENIZER_FACTORY
-		= new RegExTokenizerFactory("\\p{L}+|\\p{Digit}+");
+    // like Lucene's analysis.SimpleAnalyzer, but with digits, too
+    public static final TokenizerFactory SIMPLE_TOKENIZER_FACTORY
+        = new RegExTokenizerFactory("\\p{L}+|\\p{Digit}+");
 
-	// STANDARD_TOKENIZER_FACTORY acts like Lucene's StandardAnalyzer
-	static class StandardTokenizerFactory implements TokenizerFactory {
-		public Tokenizer tokenizer(char[] cs, int start, int length) {
-			Tokenizer tokenizer = SIMPLE_TOKENIZER_FACTORY.tokenizer(cs,start,length);
-			tokenizer = new LowerCaseFilterTokenizer(tokenizer);
-			tokenizer = new EnglishStopListFilterTokenizer(tokenizer);
-			tokenizer = new PorterStemmerFilterTokenizer(tokenizer);
-			return tokenizer;
-		}
-	} 
-	public TokenizerFactory STANDARD_TOKENIZER_FACTORY
-		= new StandardTokenizerFactory();
+    // STANDARD_TOKENIZER_FACTORY acts like Lucene's StandardAnalyzer
+    static class StandardTokenizerFactory implements TokenizerFactory {
+        public Tokenizer tokenizer(char[] cs, int start, int length) {
+            TokenizerFactory tokenizerFactory = SIMPLE_TOKENIZER_FACTORY;
+            tokenizerFactory = new LowerCaseTokenizerFactory(tokenizerFactory);
+            tokenizerFactory = new EnglishStopTokenizerFactory(tokenizerFactory);
+            tokenizerFactory = new PorterStemmerTokenizerFactory(tokenizerFactory);
+            return tokenizerFactory.tokenizer(cs,start,length);
+
+        }
+    } 
+    public TokenizerFactory STANDARD_TOKENIZER_FACTORY
+        = new StandardTokenizerFactory();
 
 
 }

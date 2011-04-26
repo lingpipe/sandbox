@@ -22,7 +22,6 @@ import com.aliasi.corpus.XMLParser;
 import com.aliasi.util.Strings;
 
 import com.aliasi.xml.DelegatingHandler;
-import com.aliasi.xml.SAXWriterFilter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -71,14 +70,11 @@ public class EntrezParser
 	ObjectHandler<EntrezGene> mHandler;
 	EntrezgeneHandler mEntrezgeneHandler;
 	ByteArrayOutputStream mBytesOut = new ByteArrayOutputStream();
-	SAXWriterFilter mSaxFilter;
 
 	public EntrezSetFilterHandler(ObjectHandler<EntrezGene> handler) throws IOException {
 	    mHandler=handler;
 	    mEntrezgeneHandler = new EntrezgeneHandler();
-	    // wrap handler in SAXWriterFilter in order to collect raw XML
-	    mSaxFilter = new SAXWriterFilter(mBytesOut,Strings.UTF8,mEntrezgeneHandler);
-	    setDelegate(EntrezTags.ENTREZGENE_ELT, mSaxFilter);
+            setDelegate(EntrezTags.ENTREZGENE_ELT, mEntrezgeneHandler);
 	}
 	
 	public void finishDelegate(String qName, DefaultHandler handler) {
