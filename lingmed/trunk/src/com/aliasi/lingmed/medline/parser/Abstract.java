@@ -20,7 +20,14 @@ import com.aliasi.xml.DelegateHandler;
 import com.aliasi.xml.DelegatingHandler;
 import com.aliasi.xml.TextAccumulatorHandler;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * An <code>Abstract</code> represents the abstract of a MEDLINE
@@ -34,47 +41,23 @@ import org.xml.sax.SAXException;
  * <P>Some documents may contain an {@link OtherAbstract} as well as
  * an abstract.
  *
- * <P>The text of an abstract created before 2001  may be truncated.
- * One of the following may appear at the end of the text of a
- * truncated abstract:
- * 
- * <blockquote>
- * <table border='1' cellpadding='5'>
- * <tr><td><i>Truncation Marker</i></td></tr>
- * <tr><td><code>(ABSTRACT TRUNCATED AT 250 WORDS)</code></td></tr>
- * <tr><td><code>(ABSTRACT TRUNCATED AT 400 WORDS)</code></td></tr>
- * <tr><td><code>(ABSTRACT TRUNCATED)</code></td></tr>
- * </table>
- * </blockquote>
+ * <P>As of 2011 the specification of the Abstract and AbstractText 
+ * elements were changed.  Before an abstract contained a single
+ * unit of text.  Now an abstract can contain one or more texts.
+ * Therefore the text of the abstract is now modeled as a list of
+ * {@link AbstractText} objects.
  *
- * The message without an explicit word length only shows up on
- * abstracts of more than 4,096 characters from records created
- * between 1996 and 2001.
- *
- * @author  Bob Carpenter
- * @version 2.0
+ * @author  Bob Carpenter, Mitzi Morris
+ * @version Lingmed1.3
  * @since   LingPipe2.0
  */
 public class Abstract {
 
-    private static final String TRUNCATION_MARKER_250 
-        = "(ABSTRACT TRUNCATED AT 250 WORDS)";
-    private static final String TRUNCATION_MARKER_400
-        = "(ABSTRACT TRUNCATED AT 400 WORDS)";
-    private static final String TRUNCATION_MARKER_4096
-        = "(ABSTRACT TRUNCATED)";
-    private static final String[] TRUNCATION_MARKERS
-        = new String[] {
-            TRUNCATION_MARKER_250,
-            TRUNCATION_MARKER_400,
-            TRUNCATION_MARKER_4096 
-        };
-
-    private final String mText;
+    private final AbstractText[] mTexts;
     private final String mCopyrightInformation;
 
-    Abstract(String text, String copyrightInformation) {
-        mText = text;
+    Abstract(AbstractText[] texts, String copyrightInformation) {
+        mTexts = texts;
         mCopyrightInformation = copyrightInformation;
     }
 
@@ -84,23 +67,8 @@ public class Abstract {
      *
      * @return The text of this abstract.
      */
-    public String text() {
-        return mText;
-    }
-
-    /**
-     * Returns <code>true</code> if the text of the abstract
-     * has been truncated.  This is determined by inspecting
-     * the last characters in the abstract as indicated in
-     * the class documentation above.
-     *
-     * @return <code>true</code> if this abstract has been truncated.
-     */
-    public boolean isTruncated() {
-        for (int i = 0; i < TRUNCATION_MARKERS.length; ++i)
-            if (text().endsWith(TRUNCATION_MARKERS[i]))
-                return true;
-        return false;
+    public AbstractText[] texts() {
+        return mTexts;
     }
 
     /**
@@ -111,25 +79,15 @@ public class Abstract {
      * markers removed.
      */
     public String textWithoutTruncationMarker() {
-        return textWithoutTruncationMarker(text());
-    }
-
-
-    /**
-     * Returns a trimmed version of the specified text with any
-     * final truncation markers removed.
-     *
-     * @param text Input text.
-     * @return Trimmed output with truncation markers stripped.
-     */
-    public static String textWithoutTruncationMarker(String text) {
-        String trimmedText = text.trim();
-        for (int i = 0; i < TRUNCATION_MARKERS.length; ++i)
-            if (trimmedText.endsWith(TRUNCATION_MARKERS[i]))
-                return trimmedText.substring(0,
-                                      trimmedText.length()
-                                      - TRUNCATION_MARKERS[i].length());
-        return trimmedText;
+	StringBuilder sb = new StringBuilder();
+	if (texts().length > 0) {
+	    for (AbstractText text : texts()) {
+		sb.append(text.textWithoutTruncationMarker());
+		sb.append(" ");
+	    }
+	    sb.setLength(sb.length()-1);
+	}
+	return sb.toString();
     }
 
     /**
@@ -155,8 +113,9 @@ public class Abstract {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append('{');
-        sb.append("Text=");
-        sb.append(text());
+	for (AbstractText text : mTexts) {
+	    sb.append(text.toString());
+	}
         if (copyrightInformation().length() > 0) {
             sb.append(" Copyright Information=");
             sb.append(copyrightInformation());
@@ -166,20 +125,27 @@ public class Abstract {
     }
 
     static class Handler extends DelegateHandler {
-        private final TextAccumulatorHandler mTextHandler
-            = new TextAccumulatorHandler();
+        private final List<AbstractText> mAbstractTexts = new ArrayList<AbstractText>();
+        private final AbstractText.Handler mAbstractTextHandler;
         private final TextAccumulatorHandler mCopyrightInformationHandler
             = new TextAccumulatorHandler();
         public Handler(DelegatingHandler delegator) {
             super(delegator);
+	    mAbstractTextHandler = new AbstractText.Handler();
             setDelegate(MedlineCitationSet.ABSTRACT_TEXT_ELT,
-                        mTextHandler);
+                        mAbstractTextHandler);
             setDelegate(MedlineCitationSet.COPYRIGHT_INFORMATION_ELT,
                         mCopyrightInformationHandler);
         }
         public void reset() {
-            mTextHandler.reset();
+	    mAbstractTexts.clear();
             mCopyrightInformationHandler.reset();
+        }
+        @Override
+        public void finishDelegate(String qName, DefaultHandler handler) {
+            if (qName.equals(MedlineCitationSet.ABSTRACT_TEXT_ELT)) {
+                mAbstractTexts.add(mAbstractTextHandler.getAbstractText());
+            }
         }
         @Override
         public void startDocument() throws SAXException {
@@ -187,9 +153,13 @@ public class Abstract {
             reset();
         }
         public Abstract getAbstract() {
-            return new Abstract(mTextHandler.getText(),
+            AbstractText[] texts
+                = mAbstractTexts.toArray(EMPTY_ABSTRACT_TEXT_ARRAY);
+            return new Abstract(texts,
                                 mCopyrightInformationHandler.getText());
         }
     }
+
+    static final AbstractText[] EMPTY_ABSTRACT_TEXT_ARRAY = new AbstractText[0];
 
 }
