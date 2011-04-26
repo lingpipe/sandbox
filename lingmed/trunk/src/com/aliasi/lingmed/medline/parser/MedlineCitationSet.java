@@ -1,6 +1,6 @@
 /*
  * LingPipe v. 3.9
- * Copyright (C) 2003-2010 Alias-i
+ * Copyright (C) 2003-2011 Alias-i
  *
  * This program is licensed under the Alias-i Royalty Free License
  * Version 1 WITHOUT ANY WARRANTY, without even the implied warranty of
@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * The <code>MedlineCitationSet</code> provides static constants for
  * the XML elements, attributes and constant values used in MEDLINE.
- * The current version is for the 2008 MEDLINE baseline and update
+ * The current version is for the 2011 MEDLINE baseline and update
  * releases.
  *
  * <P>For more information, see the LingPipe tutorial on parsing MEDLINE.
@@ -38,8 +38,8 @@ import java.util.Set;
  * </blockquote>
  *
  * The DTDs for MEDLINE citations are available in the same directory
- * as this file, and the small sample file is available in LingPipe's
- * <code>demos/data</code> directory.  The DTDs and further sample files
+ * as this file, and the small sample file is available in Lingmed's
+ * <code>data/sample/medline</code> directory.  The DTDs and further sample files
  * are available from:
  *
  * <blockquote>
@@ -574,6 +574,16 @@ public class MedlineCitationSet {
     public static final String PUB_MODEL_ATT = "PubModel";
 
     /**
+     * The <code>Label</code> attribute for abstract text blocks.
+     */
+    public static final String ABSTRACT_TEXT_LABEL_ATT = "Label";
+
+    /**
+     * The <code>NlmCategory</code> attribute for abstract text blocks.
+     */
+    public static final String ABSTRACT_TEXT_NLM_CATEGORY_ATT = "NlmCategory";
+
+    /**
      * The <code>Y</code> value.
      */
     public static final String YES_VALUE = "Y";
@@ -679,12 +689,47 @@ public class MedlineCitationSet {
      */
     public static final String ELECTRONIC_PRINT_VALUE = "Electronic-Print";
 
+    /**
+     * The <code>Geographic</code> value for MeshTopic Type attribute.
+     */
+    public static final String GEOGRAPHIC_VALUE = "Geographic";
+
+    /**
+     * The <code>UNLABELLED</code> value for abstract text block NlmCategory attribute
+     */
+    public static final String UNLABELLED_VALUE = "UNLABELLED";
+
+    /**
+     * The <code>BACKGROUND</code> value for abstract text block NlmCategory attribute
+     */
+    public static final String BACKGROUND_VALUE = "BACKGROUND";
+
+    /**
+     * The <code>OBJECTIVE</code> value for abstract text block NlmCategory attribute
+     */
+    public static final String OBJECTIVE_VALUE = "OBJECTIVE";
+
+    /**
+     * The <code>METHODS</code> value for abstract text block NlmCategory attribute
+     */
+    public static final String METHODS_VALUE = "METHODS";
+
+    /**
+     * The <code>RESULTS</code> value for abstract text block NlmCategory attribute
+     */
+    public static final String RESULTS_VALUE = "RESULTS";
+
+    /**
+     * The <code>CONCLUSIONS</code> value for abstract text block NlmCategory attribute
+     */
+    public static final String CONCLUSIONS_VALUE = "CONCLUSIONS";
+
 
     /**
      * The name of the NLM Medline DTD, namely 
      *
      * <blockquote><pre>
-     * -//NLM//DTD Medline Citation, 1st January, 2010//EN</pre></blockquote>
+     * -//NLM//DTD Medline Citation, 1st January, 2011//EN</pre></blockquote>
      *
      * <p>As of 2010, Medline citations use this single DTD, which has no
      * references.  
@@ -694,16 +739,16 @@ public class MedlineCitationSet {
      * path defined by {@link #MEDLINE_DTD_RESOURCE_PATH}.
      */
     public static final String NLM_MEDLINE_DTD_NAME
-        = "-//NLM//DTD Medline Citation, 1st January, 2010//EN";
+        = "-//NLM//DTD Medline Citation, 1st January, 2011//EN";
 
     /**
      * The path to the Medline DTD in the LingPipe jar.  May be used
      * to recover the DTD as a resource.  The value of this constant is:
      *
      * <blockquote><pre>
-     * /com/aliasi/medline/nlmmedlinecitationset_100101.dtd</pre></blockquote>
+     * /com/aliasi/medline/nlmmedlinecitationset_110101.dtd</pre></blockquote>
      */
     public static final String MEDLINE_DTD_RESOURCE_PATH
-        = "/com/aliasi/lingmed/medline/nlmmedlinecitationset_100101.dtd";
+        = "/com/aliasi/lingmed/medline/nlmmedlinecitationset_110101.dtd";
 
 }

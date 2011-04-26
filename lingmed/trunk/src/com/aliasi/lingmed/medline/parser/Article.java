@@ -388,7 +388,7 @@ public class Article {
         if (pagination().length() > 0) {
             sb.append(" Pagination=" + pagination());
         }
-        if (abstrct() != null && abstrct().text().length() > 0) {
+        if (abstrct() != null && abstrct().texts().length > 0) {
             sb.append(" Abstract=");
             sb.append(abstrct());
         }
@@ -503,7 +503,6 @@ public class Article {
             mPagination = null;
             mStartPageHandler.reset();
             mEndPageHandler.reset();
-            mAbstractHandler.reset();
             mAffiliationHandler.reset();
             mAuthorListHandler.reset();
             mLanguageList.clear();

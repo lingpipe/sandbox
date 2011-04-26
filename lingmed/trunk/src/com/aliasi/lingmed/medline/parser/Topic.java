@@ -33,11 +33,13 @@ import org.xml.sax.SAXException;
 public class Topic {
 
     private final boolean mMajor;
+    private final boolean mGeographic;
     private final String mTopic;
 
-    Topic(String topic, boolean major) {
+    Topic(String topic, boolean major,  boolean geographic) {
         mTopic = topic;
         mMajor = major;
+        mGeographic = geographic;
     }
     
     /**
@@ -49,6 +51,16 @@ public class Topic {
      */
     public boolean isMajor() {
         return mMajor;
+    }
+
+    /**
+     * Returns <code>true</code> if topic type is geographic.
+     *
+     * @return <code>true</code> if topic type is geographic.
+     * topic.
+     */
+    public boolean isGeographic() {
+        return mGeographic;
     }
 
     /**
@@ -67,23 +79,29 @@ public class Topic {
      */
     @Override
     public String toString() {
-        return mTopic + (isMajor() ? " [MAJ=Y]" : " [MAJ=N]");
+        return mTopic 
+	    + (isMajor() ? " [MAJ=Y]" : " [MAJ=N]")
+	    + (isGeographic() ? " [GEOGRAPHIC=Y]" : " [GEOGRAPHIC=N]");
     }
 
     static class Handler extends TextAccumulatorHandler {
         private boolean mMajor;
+        private boolean mGeographic;
         @Override
         public void startElement(String namespaceURI, String localName,
                                  String qName, Attributes atts)
             throws SAXException {
 
             super.startElement(namespaceURI,localName,qName,atts);
+	    mGeographic = MedlineCitationSet
+		.GEOGRAPHIC_VALUE
+		.equals(atts.getValue(MedlineCitationSet.TYPE_ATT));
             mMajor = MedlineCitationSet
                 .YES_VALUE
                 .equals(atts.getValue(MedlineCitationSet.MAJOR_TOPIC_YN_ATT));
         }
         public Topic getTopic() {
-            return new Topic(getText(),mMajor);
+            return new Topic(getText(),mMajor,mGeographic);
         }
     }
 }

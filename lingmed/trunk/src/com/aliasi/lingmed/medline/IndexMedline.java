@@ -16,18 +16,16 @@
 
 package com.aliasi.lingmed.medline;
 
-import com.aliasi.corpus.ObjectHandler;
-import com.aliasi.corpus.Parser;
-
 import com.aliasi.io.FileExtensionFilter;
 
 import com.aliasi.lingmed.lucene.Fields;
-import com.aliasi.lingmed.utils.FileUtils;
-import com.aliasi.lingmed.utils.Logging;
 
 import com.aliasi.lingmed.medline.parser.MedlineCitation;
 import com.aliasi.lingmed.medline.parser.MedlineHandler;
 import com.aliasi.lingmed.medline.parser.MedlineParser;
+
+import com.aliasi.lingmed.utils.FileUtils;
+import com.aliasi.lingmed.utils.Logging;
 
 import com.aliasi.util.AbstractCommand;
 import com.aliasi.util.Files;
@@ -36,23 +34,21 @@ import com.aliasi.util.Streams;
 import com.aliasi.util.Strings;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.StringReader;
 
 import java.lang.reflect.Constructor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Properties;
 import java.util.zip.*;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -61,9 +57,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.index.Term;
-
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
 
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -77,8 +70,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
 
 /** 
  * <P>The <code>IndexMedline</code> command processes a
@@ -188,15 +179,12 @@ public class IndexMedline extends AbstractCommand {
     // initialize instance variables per command line args
     private IndexMedline(String[] args) throws Exception {
         super(args,DEFAULT_PARAMS);
-	mLogger.setLevel(Level.INFO);
         mIndexName = getExistingArgument(LUCENE_INDEX);
         mDistDirPath = getExistingArgument(DIST_DIR);
         mType = getExistingArgument(DIST_TYPE);
         mSleep = getArgumentInt(SLEEP_PARAM);
         reportParameters();
         if (mType.equalsIgnoreCase("baseline")) sIsBaseline = true;
-        if (sIsBaseline) mIndex = FileUtils.checkIndex(mIndexName,true);
-        else mIndex = FileUtils.checkIndex(mIndexName,false);
         mDistDir = new File(mDistDirPath);
         FileUtils.ensureDirExists(mDistDir);
 	

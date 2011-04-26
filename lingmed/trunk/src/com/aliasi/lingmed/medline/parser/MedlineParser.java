@@ -38,7 +38,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
- * A <code>MedlineParser</code> is able to parse 2009 MEDLINE citations
+ * A <code>MedlineParser</code> is able to parse 2011 MEDLINE citations
  * from an input source.  The parser takes a visitor in the form of a
  * <code>MedlineHandler</code>, which processes the MEDLINE citations
  * as they are extracted by the parser.
@@ -192,7 +192,6 @@ public class MedlineParser
             throws SAXException {
 
             if (!MedlineCitationSet.NLM_MEDLINE_DTD_NAME.equals(publicId)) {
-                System.out.println("publicId=|" + publicId + "|");
                 return super.resolveEntity(publicId,systemId);
             }
             InputStream in = this.getClass().getResourceAsStream(MedlineCitationSet.MEDLINE_DTD_RESOURCE_PATH);
