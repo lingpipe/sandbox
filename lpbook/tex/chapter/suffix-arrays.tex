@@ -1,0 +1,280 @@
+\chapter{Suffix Arrays}\label{chap:suffix-arrays}
+
+Suffix arrays provide a convenient data structure for finding repeated
+substrings in text.  Suffix arrays efficiently support operations such
+as finding all of the repeated substrings in a larger string.
+LingPipe provides suffix arrays that operate at either the character
+level or the token level.
+
+\section{What is a Suffix Array?}
+
+A simple example will suffice to illustrate the basic workings of
+suffix arrays.  Suppose we have the string \stringmention{abracadabra},
+which has character indexes as follows.
+%
+\begin{verbatim}
+      abracadabra
+      012345678901
+      0         1
+\end{verbatim}
+%
+
+A suffix array represents the suffixes of a string.  For instance, the
+string \stringmention{abracadabra} has the following suffixes, given
+with their starting position in the string.
+%
+\begin{center}
+\begin{tabular}{rl}
+\tblhead{Pos} & \tblhead{Suffix}
+\\ \hline
+0 & \stringmention{abracadabra} \\
+1 & \stringmention{bracadabra} \\
+2 & \stringmention{racadabra} \\
+3 & \stringmention{acadabra} \\
+\end{tabular}
+%
+\hspace*{0.5in}
+%
+\begin{tabular}{rl}
+\tblhead{Pos} & \tblhead{Suffix}
+\\ \hline
+4 & \stringmention{cadabra} \\
+5 & \stringmention{adabra} \\
+6 & \stringmention{dabra} \\
+7 & \stringmention{abra} \\
+\end{tabular}
+%
+\hspace*{0.5in}
+%
+\begin{tabular}{rl}
+\tblhead{Pos} & \tblhead{Suffix}
+\\ \hline
+8 & \stringmention{bra} \\
+9 & \stringmention{ra} \\
+10 & \stringmention{a} \\
+{} & {}
+\end{tabular}
+\end{center}
+%
+
+A suffix array sorts the character indexes based on the strings
+corresponding to the suffixes.  The suffix array for our running
+example is as follows, listing the suffix array index, the position
+in the undelrying string, and the suffix it represents.
+%
+\begin{center}
+\begin{tabular}{rrl}
+\tblhead{Idx} & \tblhead{Pos} & \tblhead{Suffix}
+\\ \hline
+0 & 10 & \stringmention{a} \\
+1 & 7 & \stringmention{abra} \\
+2 & 0 & \stringmention{abracadabra} \\
+3 & 3 & \stringmention{acadabra} \\
+4 & 5 & \stringmention{adabra} \\
+5 & 8 & \stringmention{bra} \\
+\end{tabular}
+%
+\hspace*{0.5in}
+%
+\begin{tabular}{rrl}
+\tblhead{Idx} & \tblhead{Pos} & \tblhead{Suffix}
+\\ \hline
+6 & 1 & \stringmention{bracadabra} \\
+7 & 4 & \stringmention{cadabra} \\
+8 & 6 & \stringmention{dabra} \\
+9 & 9 & \stringmention{ra} \\
+10 & 2 & \stringmention{racadabra} \\
+{} & {}
+\end{tabular}
+\end{center}
+%
+
+The suffix array itself is just the array of first-character
+positions for the suffixes.  In our example, the suffix array is
+the following array of \code{int} values.
+%
+\begin{verbatim}
+{ 10, 7, 0, 3, 5, 8, 1, 4, 6, 9 , 2 }
+\end{verbatim}
+%
+The indexes are implicit, as is usual for an array, and
+the suffix itself may be retrieved given the underlying
+string and the position of the first character. 
+
+The utility of a suffix array is that it brings together suffixes that
+share common prefixes.  For instance, it is easy to see that there are
+two suffixes that start with the sequence \stringmention{bra}, one
+starting at position 8 and one starting at position 1.  We can also see
+that there are five substrings starting with \stringmention{a},
+two starting with \stringmention{abra}.  
+
+Every substring of our original string is representable as a prefix
+of a suffix.  for instance, the substring \stringmention{ca} spanning
+from position 7 (inclusive) to 9 (exclusive) is the two-character
+prefix of the suffix \stringmention{cadabra} starting at position 7.
+
+Thus we can easily find all the matching substrings in a string.  For
+instance, if we want to find all the instances of strings of length
+three or more that occur two or more times in the text, we just scan
+down the suffix array, where we will find \stringmention{abr} and
+\stringmention{bra} both occur twice.
+
+
+
+
+\section{Character Suffix Arrays}
+
+LingPipe implements suffix arrays where the symbols are characters in
+the class \code{CharSuffixArray} in the package
+\code{com.aliasi.suffixarray}.  We cover token suffix arrays in the
+next section).
+
+\subsection{Demo Code Walkthrough}
+
+We have provided a demo in class \code{CharSuffixArrayDemo} in
+this chapter's package, \code{com.lingpipe.book.suffixarray}.  
+The demo class does little more than build a suffix array and then
+walk over it extracting the suffixes in order.  The relevant code,
+after assigning the input argument to a string \code{text} is
+%
+\codeblock{CharSuffixArrayDemo.1}
+%
+The code uses the constructor without a specification on the maximum
+length.  Then it walks through all of the positions, up to the length
+of the suffix array.  From each, it extracts the position in the
+underlying string and the suffix running from that position to the end
+of the string.  We have elided the print statements, as usual.
+
+The second part of the demo extracts all of the repeated substrings.
+As such, it starts with a loop over the length of matching substrings,
+then extracts them inside.
+%
+\codeblock{CharSuffixArrayDemo.2}
+%
+We start from the maximum possible match, which is one less
+than the length of the string, and repeat for all lengths above 1.
+Within the loop, we call the \code{prefixMatches()} method on the
+suffix array with the specified length.  This returns a list of
+spans represented as integer arrays.  If the size is zero, there
+are no repeated substrings of the specified length, and we continue
+to the next iteration of the loop.  
+
+If there are matches, we iterate over the arrays of positions.
+For each such position, we extract the start and end position,
+assigning them to local variables for readability.  Finally, we
+loop over the matching positions from first (inclusive) to last
+(exclusive), and for each match, pull out the position, then generate
+the string corresponding to the match.  We do not show the print
+routines for these values, but show examples in the next section.
+
+
+\subsection{Running the Demo}
+
+We've provided an Ant target \code{char-demo} to run the demo.  
+The property \code{text} specifies the text for which to build
+a suffix array.  Using our running example, we have
+%
+\commandlinefollow{ant -Dtext=abracadabra char-demo}
+\begin{verbatim}
+abracadabra
+012345678901
+0         1
+
+Idx  Pos  Suffix           Idx  Pos  Suffix
+  0   10  a                  6    1  bracadabra
+  1    7  abra               7    4  cadabra
+  2    0  abracadabra        8    6  dabra
+  3    3  acadabra           9    9  ra
+  4    5  adabra            10    2  racadabra
+  5    8  bra
+\end{verbatim}
+%
+As before, the index is the (implicit) index into the
+suffix array, the position indicates the position in the
+original string, and the suffix is the range of characters
+from the position to the end of the original string.
+
+After writing out the basic suffix array, the demo carries on with
+writing out the positiosn of all repeated substrings of length greater
+than one.
+%
+\begin{verbatim}
+start=  7 len=  4  abra       start=  7 len=  2  ab
+start=  0 len=  4  abra       start=  0 len=  2  ab
+
+start=  7 len=  3  abr        start=  8 len=  2  br
+start=  0 len=  3  abr        start=  1 len=  2  br
+
+start=  8 len=  3  bra        start=  9 len=  2  ra
+start=  1 len=  3  bra        start=  2 len=  2  ra
+\end{verbatim}
+%
+For instance, this indicates that the substring \stringmention{abra}
+appeared twice, once starting at position 7 and once starting at
+position 0.  
+
+Although there are only pairs of matches here, the number can
+quickly grow with repetitive strings.  The worst case situation for
+overlaps is with a sequence of the same character. 
+%
+\commandlinefollow{ant -Dtext=yyyyy char-demo}
+\begin{verbatim}
+yyyyy
+012345
+
+Idx   Pos  Suffix      Idx   Pos  Suffix
+  0     4  y             3     1  yyyy
+  1     3  yy            4     0  yyyyy
+  2     2  yyy
+
+
+start=  1 len=  4  yyyy       start=  3 len=  2  yy
+start=  0 len=  4  yyyy       start=  2 len=  2  yy
+                              start=  1 len=  2  yy
+start=  2 len=  3  yyy        start=  0 len=  2  yy
+start=  1 len=  3  yyy
+start=  0 len=  3  yyy
+\end{verbatim}
+%
+In this example, the suffixes are merely sorted by length, and
+there are two matches of length four, three of length three, and
+four of length two.
+
+
+
+
+
+
+
+
+
+\section{Implementation Details} 
+
+Suffix arrays are constructed in the obvious way.  An array of all
+integer positions is created and then sorted based on the suffixes.
+
+The initial implementation in LingPipe 4 is based on \code{Integer}
+(object) indexes and a simple \code{Comparator} implementation for
+sorting.
+
+
+Thus the overall construction time is no worse than $\bigO{n \log n}$
+comparisons, where $n$ is the length of the string.  Although the
+comparisons appear to require another $\bigO{n}$ to carry out, the
+operations may be amortized in the following way.  When we are doing
+comparisons for sorting, the divide-and-conquer nature of sorting
+algorithms allows us to deduce the entire array we're going to sort
+shares the same initial characters.  These prefix comparisons can then
+be skipped in subsequent calculations for the subblock of data with
+shared prefixes.
+
+
+
+
+
+
+
+
+
+
+
