@@ -9,9 +9,7 @@
 
   <path id="classpath">
     <pathelement location="${jar}"/>
-    <pathelement location="../../lib/icu4j-4_4_1.jar"/>
   </path>
-            
 
   <target name="clean">
     <delete dir="build"/>
