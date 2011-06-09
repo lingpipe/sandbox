@@ -42,6 +42,7 @@
     </java>
   </target>
 
+
   <target name="token-demo"
           depends="jar">
     <java classname="com.lingpipe.book.suffixarray.TokenSuffixArrayDemo"
@@ -51,10 +52,23 @@
     </java>
   </target>
 
+  <property name="dir" value="../../data/20news/20news-bydate-test"/>
+  <property name="len" value="40"/>
+  <target name="doc-demo"
+          depends="jar">
+    <java classname="com.lingpipe.book.suffixarray.DocSuffixArrayDemo"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${dir}"/>
+      <arg value="${len}"/>
+    </java>
+  </target>
+
 
   <target name="run"
           depends="char-demo,
-                   token-demo"/>
+                   token-demo,
+                   doc-demo"/>
 
 
 </project>

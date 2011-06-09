@@ -139,11 +139,11 @@ next section).
 
 \subsection{Demo Code Walkthrough}
 
-We have provided a demo in class \code{CharSuffixArrayDemo} in
-this chapter's package, \code{com.lingpipe.book.suffixarray}.  
-The demo class does little more than build a suffix array and then
-walk over it extracting the suffixes in order.  The relevant code,
-after assigning the input argument to a string \code{text} is
+We have provided a demo in class \code{CharSuffixArrayDemo} in this
+chapter's package.  The demo class does little more than build a
+suffix array and then walk over it extracting the suffixes in order.
+The relevant code, after assigning the input argument to a string
+\code{text} is
 %
 \codeblock{CharSuffixArrayDemo.1}
 %
@@ -249,19 +249,22 @@ there are two matches of length four, three of length three, and
 four of length two.
 
 
-\section{Token-based Suffix Arrays}
+\section{Token Suffix Arrays}
 
-LingPipe also supports token-base suffix arrays, with the class
-\code{TokenSuffixArray}.   Token suffix arrays work exactly the
-same way as character suffix arrays, only at the granularity of
-tokens. 
+LingPipe's class \code{TokenSuffixArray}, in package
+\code{suffixarray}, supports token-based suffix arrays.  Token suffix
+arrays work exactly the same way as character suffix arrays, only at
+the granularity of tokens.
 
-\subsection{Advantages of Token-Based Arrays}
+\subsection{Advantages of Token Arrays}
 
-There are three main advantages to using token-based suffix
-arrays.  First, they are more efficient at representing texts,
-as the suffix arrays will not be as large.  The saving depends
-on the average token length. 
+There are three main advantages to using token-based suffix arrays.
+First, they are more efficient at representing texts and finding
+long substrings, as the suffix array itself will not be as large.  The
+saving depends on the average token length.  With the overhead of
+the tokenization object and the tokens themselves, a token suffix
+array may wind up being larger in memory than a character suffix array.
+But it should be faster to construct and faster to find long matches.
 
 The second gain is in understandability of matches.  Usually in
 language-processing applications, we only care about matches including
@@ -276,7 +279,7 @@ over the matching.
 \subsection{Token-Based Array Demo}
 
 The class \code{TokenSuffixArrayDemo} in this chapter's package,
-\code{com.lingpipe.book.suffixarray} illustrates the basic usage
+\code{suffixarray}, illustrates the basic usage pattern
 for token suffix arrays.  
 
 \subsubsection{Code Walk Through}
@@ -289,13 +292,13 @@ follows.
 %
 We first access the singleton tokenizer factory for Indo-European
 languages, then wrap it in a lower-case filter that downcases all of
-the text in the tokens (see \refchap{tokenizer} for more on tokenizers
+the text in the tokens (see \refchap{tokenization} for more on tokenizers
 and tokenizer factories).  We then construct the tokenization itself
 using the text and the tokenizer factory.  The \code{Tokenization}
 encapsulates the raw text, the list of tokens extracted, and each
 token's start and end position in the raw text.  This allows us to map
 the tokens back to their positions in the underlying text (see
-\refsec{tokenizer-tokenization-class} for details of the
+\refsec{tokenization-tokenization-class} for details of the
 \code{Tokenization} class).  Finally, we construct the token suffix
 array itself using just the tokenization, which defaults to unbounded
 suffix lengths and the default document separator (we cover document
@@ -312,9 +315,8 @@ Next, we iterate through the suffixes themselves.
 \codeblock{TokenSuffixArrayDemo.3}
 %
 Here we consider all positions up to the length of the suffix
-array, pull out the value of the suffix array, which is
-an index into the tokens in the tokenization.  Then, we print out
-the substring given the suffix array index.
+array, pulling out the value of the suffix array, which is
+an index into the tokens in the tokenization.  
 
 The final section of the demo finds subsequences of tokens
 of a specified length that match in the text.  
@@ -325,11 +327,11 @@ As with the character suffix array, we consider different lengths and
 for each length, find all the matches using the \code{prefixMatches()}
 method on token suffix arrays.  Each match is an array of integers
 recording the start (inclusive) and end (exlcusive) position in the
-suffix array.  Note that these positions are contiguous given that
-the suffix array is sorted; this is why we can just loop incrementing
-the variable \code{j}.  Then, given a position in the suffix array,
-we find the position in the text and the corresponding suffix.  As
-with our other demos, we've elided the print statements.
+suffix array.  Note that these positions are contiguous in the suffix
+array because the suffix array is sorted; this is why we can just loop
+incrementing the variable \code{j}.  Finally, given a position in the
+suffix array, we find the position in the text and the corresponding
+suffix.  As with our other demos, we've elided the print statements.
 
 
 \subsubsection{Running the Demo}
@@ -394,9 +396,121 @@ match.  This time, we've also printed the length 1 matches.
 \label{section:suffix-arrays-doc-sa}
 
 The third class implemented in LingPipe's \code{suffixarray} package
-is for managing collections of documents in a suffix array.
+is for managing collections of documents in a suffix array.  This
+class is based on an underlying token suffix array whose text is
+derived by concatenating all the documents together with a distinguished
+separator.  This process is all handled internally in the document
+suffix array.
+
+\subsection{Demo}
+
+The document suffix array demo is in the file \code{DocSuffixArrayDemo}
+in this chapter's package.  The demo will walk over a directory recursively
+and add the text of every plain file to the document collection.  It
+will then index these documents in a suffix array so as to support
+searching for shared substrings.
+
+\subsubsection{Code Walkthrough}
+
+A document suffix array is constructed from a mapping from
+string-based document identifiers to text strings.  We start
+with a path assigned to file variable \code{dir} and an integer
+match length \code{len}.  We create a map to hold the
+identifier-to-document mapping and then call the static helper
+method \code{addFiles()} to create it from the directory.
+%
+\codeblock{DocSuffixArrayDemo.1}
+%
+The \code{addFiles()} function is defined recursively in the
+obvious way, using the path to the file as the file identifier
+and the character content of the file as its text.
+%
+\codeblock{DocSuffixArrayDemo.2}
+%
+The result is that we have a map from document identifier strings
+to the text of the document.
+
+Next, we create a tokenizer factory that lowercases tokens extracted
+by the Indo-European tokenizer and filters out any non-word
+tokens (where words are defined as containing only ASCII alpha-numeric
+characters).
+%
+\codeblock{DocSuffixArrayDemo.3}
+
+With the document mapping and tokenizer factory, we are ready to
+build a document suffix array.
+%
+\codeblock{DocSuffixArrayDemo.4}
+%
+First, we set a boundary token of \stringmention{eeooff}.  Note that this
+boundary token must tokenize to itself in the tokenizer, or the
+constructor will throw an exception.  We also set a maximum suffix
+length to be the maximum possible length.
+
+Once we've constructed the document suffix array, we pull out the
+underlying token suffix array using the method \code{suffixArray()},
+then find and print the matches.
+%
+\codeblock{DocSuffixArrayDemo.5}
+%
+The same method, \code{prefixMatches(int)}, is used to pull out
+the matches.  The primary utility of the document suffix array is
+to manage the document identifiers and map matches back to them,
+as seen in the following code that loops over the matches. 
+
+As with the token-based suffix arrays, we get a contiguous range
+of indexes into the suffix array, here assigned to integer value
+\code{j}.  We then pull the text that was matched out just as evore,
+using the \code{substring()} method on token suffix arrays.  We also
+find the position of the token in the underlying text using the
+method \code{suffixArray()}, which returns the value of the suffix
+array for its argument.  We then use this position to pull out
+the identifier for the document using the document suffix array
+method \code{textPositionToDocId()}.  As usual, we have elided
+the print statements and boilerplate.
 
 
+\subsubsection{Running the Demo}
+
+First, we need to gather data.  We have used the test section of the
+20 newsgroups corpus for that purpose; see
+\refsec{corpora-20-newsgroups} for download instructions and a
+description of the corpus.  The documents are newsgroup postings, so
+they contain a large degree of overlapping text because of the heavy
+use of quoting previous messages.  We assume the data have been
+unpacked into the directory \code{data/20news/20news-bydate-test}, which
+we have placed in the top-level for the book.
+
+The Ant target \code{doc-demo} runs the demo, using the properties
+\code{len} for the required match length and \code{dir} for a path
+to the directory containing the documents.
+%
+\commandlinefollow{ant -Dlen=100 -Ddir=../../data/20news/20news-bydate-test doc-demo}
+\begin{verbatim}
+Extracting files from path=C:\lpb\data\20news\20news-bydate-test
+Match length=100
+# of docs=7532
+# of tokens=2298193
+\end{verbatim}
+%
+There are roughly 7500 documents and 2.3 million tokens, and it takes
+a little less than 30 seconds and 2GB of memory to build the array on
+my aging workstation using 64-bit Java 1.6.
+
+It then starts dumping out matches, which are prohibitively long, so
+we truncate their tails here for readability:
+%
+\begin{verbatim}
+rec.sport.hockey\53942  0 0 0.00 0 0 0 0 1.000 WAS Byron Dafoe ...
+rec.sport.hockey\54274  0 0 0.00 0 0 0 0 1.000 WAS Byron Dafoe ...
+...
+\end{verbatim}
+%
+These are the first two results, which are reports of player
+statistics in two different posts on the \code{rec.sport.hockey}
+newsgroup.  The text printed out is the text spanned by the matching
+tokens in the original document.  Given the various access methods, it'd
+also be possible to retrieve the tokens that actually matched.
 
 
 \section{Implementation Details} 

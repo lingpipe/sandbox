@@ -22,7 +22,7 @@ public class TokenSuffixArrayDemo {
         TokenSuffixArray tsa = new TokenSuffixArray(tok);
         /*x*/
 
-        CharSuffixArrayDemo.print_text_pos(text);
+        CharSuffixArrayDemo.printTextPos(text);
 
         System.out.println("\nTOKENS");
 
@@ -40,10 +40,10 @@ public class TokenSuffixArrayDemo {
 
         /*x TokenSuffixArrayDemo.3 */
         for (int i = 0; i < tsa.suffixArrayLength(); ++i) {
-            int suffix_array_i = tsa.suffixArray(i);
+            int suffixArrayI = tsa.suffixArray(i);
             String suffix = tsa.substring(i,Integer.MAX_VALUE);
         /*x*/
-            System.out.printf("  %3d %3d %s\n", i, suffix_array_i, suffix);
+            System.out.printf("  %3d %3d %s\n", i, suffixArrayI, suffix);
         }
 
         System.out.println("\nMATCHING SUBSTRINGS");
@@ -55,10 +55,10 @@ public class TokenSuffixArrayDemo {
             List<int[]> prefixMatches = tsa.prefixMatches(len);
             for (int[] match : prefixMatches) {
                 for (int j = match[0]; j < match[1]; ++j) {
-                    int text_pos = tsa.suffixArray(j);
+                    int textPos = tsa.suffixArray(j);
                     String suffix = tsa.substring(j,len);
         /*x*/
-                    System.out.printf("  %3d  %3d  %3d  %s\n", len, j, text_pos, suffix);
+                    System.out.printf("  %3d  %3d  %3d  %s\n", len, j, textPos, suffix);
                 }
             }
         }
