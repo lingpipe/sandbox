@@ -9,14 +9,7 @@ public class CharSuffixArrayDemo {
     public static void main(String[] args) {
         String text = args[0];
         
-        System.out.println("TEXT:\n" + text);
-        for (int i = 0; i <= text.length(); ++i)
-            System.out.print(Integer.toString(i%10));
-        System.out.println();
-        if (text.length() > 10) 
-            for (int i = 0; i <= text.length(); ++i)
-                System.out.print((i % 10 == 0) ? Integer.toString(i/10 % 10) : " ");
-        System.out.println();
+        CharSuffixArrayDemo.print_text_pos(text);
         
         System.out.printf("\n%5s %5s  %s\n", "Idx", "Pos", "Suffix");
         
@@ -49,5 +42,17 @@ public class CharSuffixArrayDemo {
         }
         
     }
+
+    static void print_text_pos(String text) {
+        System.out.println("TEXT:\n" + text);
+        for (int i = 0; i <= text.length(); ++i)
+            System.out.print(Integer.toString(i%10));
+        System.out.println();
+        if (text.length() > 10) 
+            for (int i = 0; i <= text.length(); ++i)
+                System.out.print((i % 10 == 0) ? Integer.toString(i/10 % 10) : " ");
+        System.out.println();
+    }
+
 
 }

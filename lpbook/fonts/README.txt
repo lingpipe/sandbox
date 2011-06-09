@@ -5,7 +5,10 @@ http://www.pctex.com/kb/74.html
 [Bob's note:  I literally copied the contents using sudo
 sudo cp -R lucimatx/texmf/* /usr/local/texlive/texmf-local 
 
-Note: The directions below are for MacTeX or gwTeX installations under OS X. If your installation uses teTeX please see Installing under teTeX. Also consider joining the TeX on Mac OS X mailing list (http://www.apfelwiki.de/forum/viewtopic.php?t=348)].
+Note: The directions below are for MacTeX or gwTeX installations under
+OS X. If your installation uses teTeX please see Installing under
+teTeX. Also consider joining the TeX on Mac OS X mailing list
+(http://www.apfelwiki.de/forum/viewtopic.php?t=348)].
 
 1. Copy the contents of
 

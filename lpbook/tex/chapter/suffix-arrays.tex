@@ -1,16 +1,21 @@
 \chapter{Suffix Arrays}\label{chap:suffix-arrays}
 
-Suffix arrays provide a convenient data structure for finding repeated
-substrings in text.  Suffix arrays efficiently support operations such
-as finding all of the repeated substrings in a larger string.
+Suffix arrays provide a convenient data structure for finding all of
+the repeated substrings of arbitrary length in texts.  They also have
+applications to indexing.  They are used for applications ranging
+from plagiarism detection to language modeling to indexing for phrase
+searches.
+
 LingPipe provides suffix arrays that operate at either the character
-level or the token level.
+level or the token level.  At the token level, there is a further
+class that manages collections of documents.  Applications include
+plagiarism detection, language modeling, indexing
 
 \section{What is a Suffix Array?}
 
 A simple example will suffice to illustrate the basic workings of
 suffix arrays.  Suppose we have the string \stringmention{abracadabra},
-which has character indexes as follows.
+presented here with the positions in the sequence numbered.
 %
 \begin{verbatim}
       abracadabra
@@ -20,7 +25,7 @@ which has character indexes as follows.
 %
 
 A suffix array represents the suffixes of a string.  For instance, the
-string \stringmention{abracadabra} has the following suffixes, given
+example string \stringmention{abracadabra} has the following suffixes, given
 with their starting position in the string.
 %
 \begin{center}
@@ -57,10 +62,11 @@ with their starting position in the string.
 \end{center}
 %
 
-A suffix array sorts the character indexes based on the strings
-corresponding to the suffixes.  The suffix array for our running
-example is as follows, listing the suffix array index, the position
-in the undelrying string, and the suffix it represents.
+A suffix array is nothing more than the set of suffixes
+sorted.  The suffixes are represented by their starting
+positions.  For our running example, we have the following
+sorted list of suffixes.
+
 %
 \begin{center}
 \begin{tabular}{rrl}
@@ -97,19 +103,18 @@ the following array of \code{int} values.
 { 10, 7, 0, 3, 5, 8, 1, 4, 6, 9 , 2 }
 \end{verbatim}
 %
-The indexes are implicit, as is usual for an array, and
-the suffix itself may be retrieved given the underlying
-string and the position of the first character. 
+Note that the suffix itself may be retrieved given the underlying
+string and the position of the first character.
 
 The utility of a suffix array is that it brings together suffixes that
 share common prefixes.  For instance, it is easy to see that there are
 two suffixes that start with the sequence \stringmention{bra}, one
 starting at position 8 and one starting at position 1.  We can also see
-that there are five substrings starting with \stringmention{a},
+that there are five substrings starting with \stringmention{a} and
 two starting with \stringmention{abra}.  
 
 Every substring of our original string is representable as a prefix
-of a suffix.  for instance, the substring \stringmention{ca} spanning
+of a suffix.  For instance, the substring \stringmention{ca} spanning
 from position 7 (inclusive) to 9 (exclusive) is the two-character
 prefix of the suffix \stringmention{cadabra} starting at position 7.
 
@@ -117,9 +122,12 @@ Thus we can easily find all the matching substrings in a string.  For
 instance, if we want to find all the instances of strings of length
 three or more that occur two or more times in the text, we just scan
 down the suffix array, where we will find \stringmention{abr} and
-\stringmention{bra} both occur twice.
+\stringmention{bra} both occur twice.  
 
-
+LingPipe provides a class for creating suffix arrays of characters
+from texts, suffix arrays of tokens from texts and a tokenizer
+factory, and suffix arrays of tokens from a collection of named
+documents and a tokenizer.
 
 
 \section{Character Suffix Arrays}
@@ -241,32 +249,184 @@ there are two matches of length four, three of length three, and
 four of length two.
 
 
+\section{Token-based Suffix Arrays}
+
+LingPipe also supports token-base suffix arrays, with the class
+\code{TokenSuffixArray}.   Token suffix arrays work exactly the
+same way as character suffix arrays, only at the granularity of
+tokens. 
+
+\subsection{Advantages of Token-Based Arrays}
+
+There are three main advantages to using token-based suffix
+arrays.  First, they are more efficient at representing texts,
+as the suffix arrays will not be as large.  The saving depends
+on the average token length. 
+
+The second gain is in understandability of matches.  Usually in
+language-processing applications, we only care about matches including
+all or none of a token.  Substring matching involving partial tokens
+is rarely useful at an application level.
+
+The third gain is in the ability to relax the comparison criteria.
+For instance, tokenizers can case normalize, stop list, dispose of
+whitespace and punctuation, and so on.  This allows greater control
+over the matching.
+
+\subsection{Token-Based Array Demo}
+
+The class \code{TokenSuffixArrayDemo} in this chapter's package,
+\code{com.lingpipe.book.suffixarray} illustrates the basic usage
+for token suffix arrays.  
+
+\subsubsection{Code Walk Through}
+
+The command-line input is set to the \code{String} variable
+\code{text}, and then a suffix array based on tokens is constructed as
+follows.
+%
+\codeblock{TokenSuffixArrayDemo.1}
+%
+We first access the singleton tokenizer factory for Indo-European
+languages, then wrap it in a lower-case filter that downcases all of
+the text in the tokens (see \refchap{tokenizer} for more on tokenizers
+and tokenizer factories).  We then construct the tokenization itself
+using the text and the tokenizer factory.  The \code{Tokenization}
+encapsulates the raw text, the list of tokens extracted, and each
+token's start and end position in the raw text.  This allows us to map
+the tokens back to their positions in the underlying text (see
+\refsec{tokenizer-tokenization-class} for details of the
+\code{Tokenization} class).  Finally, we construct the token suffix
+array itself using just the tokenization, which defaults to unbounded
+suffix lengths and the default document separator (we cover document
+separators in \refsec{suffix-arrays-doc-sa}).
+
+We see the tokenization in action in the next section of the code,
+which accesses the tokenization from the suffix array and prints out
+its tokens and their positions.
+%
+\codeblock{TokenSuffixArrayDemo.2}
+
+Next, we iterate through the suffixes themselves.
+%
+\codeblock{TokenSuffixArrayDemo.3}
+%
+Here we consider all positions up to the length of the suffix
+array, pull out the value of the suffix array, which is
+an index into the tokens in the tokenization.  Then, we print out
+the substring given the suffix array index.
+
+The final section of the demo finds subsequences of tokens
+of a specified length that match in the text.  
+%
+\codeblock{TokenSuffixArrayDemo.4}
+%
+As with the character suffix array, we consider different lengths and
+for each length, find all the matches using the \code{prefixMatches()}
+method on token suffix arrays.  Each match is an array of integers
+recording the start (inclusive) and end (exlcusive) position in the
+suffix array.  Note that these positions are contiguous given that
+the suffix array is sorted; this is why we can just loop incrementing
+the variable \code{j}.  Then, given a position in the suffix array,
+we find the position in the text and the corresponding suffix.  As
+with our other demos, we've elided the print statements.
 
 
+\subsubsection{Running the Demo}
 
+The Ant target \code{token-demo} runs the demo, with property
+\code{text} providing the text input.
+
+\commandlinefollow{ant -Dtext="John ran HOME and Mary ran home." token-demo}
+\begin{verbatim}
+TEXT:
+John ran HOME and Mary ran home.
+012345678901234567890123456789012
+0         1         2         3
+
+TOKENS
+  0 (  0,  4) john        4 ( 18, 22) mary
+  1 (  5,  8) ran         5 ( 23, 26) ran
+  2 (  9, 13) home        6 ( 27, 31) home
+  3 ( 14, 17) and         7 ( 31, 32) .
+\end{verbatim}
+%
+The first part of the output just reports the tokens
+and their start (inclusive) and end (exclusive) positions 
+in the text.  
+
+After this, we see the suffix array itself, with the
+index into the basic list of tokens and the suffix itself.
+%
+\begin{verbatim}
+SUFFIX ARRAY (idx,array,suffix)
+    0   7 .
+    1   3 and Mary ran home.
+    2   6 home.
+    3   2 HOME and Mary ran home.
+    4   0 John ran HOME and Mary ran home.
+    5   4 Mary ran home.
+    6   5 ran home.
+    7   1 ran HOME and Mary ran home.
+\end{verbatim}
+%
+Note that the sorting is on the tokens, not the suffixes,
+so that \stringmention{HOME}, \stringmention{John}, and
+\stringmention{Mary} sort as if they were lower case.  Finally,
+we see the matching substrings, this time at a token level.
+%
+\begin{verbatim}
+MATCHING SUBSTRINGS
+  len   sa  txt  suffix           len   sa  txt  suffix
+    2    6    5  ran home           1    6    5  ran
+    2    7    1  ran HOME           1    7    1  ran
+
+    1    2    6  home
+    1    3    2  HOME
+\end{verbatim}
+%
+Note that the comparison is also done by token, so taht
+\stringmention{ran home} and \stringmention{ran HOME} are considered a
+match.  This time, we've also printed the length 1 matches.
+
+
+\section{Document Collections as Suffix Arrays}%
+\label{section:suffix-arrays-doc-sa}
+
+The third class implemented in LingPipe's \code{suffixarray} package
+is for managing collections of documents in a suffix array.
 
 
 
 
 \section{Implementation Details} 
 
-Suffix arrays are constructed in the obvious way.  An array of all
-integer positions is created and then sorted based on the suffixes.
-
-The initial implementation in LingPipe 4 is based on \code{Integer}
-(object) indexes and a simple \code{Comparator} implementation for
-sorting.
-
+Suffix arrays are represented internally very directly as an array of
+\code{int} values.  During construction, an array of \code{Integer}
+positions is created and sorted using a \code{Comparator} for
+suffixes.  This boxing of \code{int} values as \code{Integer}
+positions requires an object per position in the suffix array and also
+an \code{int} at the point the array is being written out, both of
+which are relatively costly.
+%
+\footnote{In the future, we may replace this crude implementation with
+  a more efficient version that is able to sort the \code{int} values
+  in a suffix array directly.}
 
 Thus the overall construction time is no worse than $\bigO{n \log n}$
-comparisons, where $n$ is the length of the string.  Although the
-comparisons appear to require another $\bigO{n}$ to carry out, the
-operations may be amortized in the following way.  When we are doing
-comparisons for sorting, the divide-and-conquer nature of sorting
-algorithms allows us to deduce the entire array we're going to sort
-shares the same initial characters.  These prefix comparisons can then
-be skipped in subsequent calculations for the subblock of data with
-shared prefixes.
+comparisons, where $n$ is the length of the string.  The current
+implementation uses a very naive comparator that may require up to
+$\bigO{n}$ operations to compare suffixes where \code{n} is the number
+of matching characters in the prefixes of the suffixes.  Texts
+with long repeated substrings, like our earlier example
+\stringmention{yyyyyy}, present worst-case scenarios.%
+%
+\footnote{A more efficient comparator implementation would dynamically
+track the number of matching prefix characters in its divide-and-conquer
+step --- merge sort is particularly easy to understand in this way.  We
+would then start all comparisons after the matching characters in the
+subsegment of data being sorted.}
+
 
 
 

@@ -42,9 +42,19 @@
     </java>
   </target>
 
+  <target name="token-demo"
+          depends="jar">
+    <java classname="com.lingpipe.book.suffixarray.TokenSuffixArrayDemo"
+          classpathref="classpath"
+          fork="true">
+      <arg value="${text}"/>
+    </java>
+  </target>
+
 
   <target name="run"
-          depends="char-demo"/>
+          depends="char-demo,
+                   token-demo"/>
 
 
 </project>
