@@ -1,18 +1,23 @@
 \chapter*{Preface}
 \pagestyle{fancy}%
 
-\firstchar{L}ingPipe is a software library for natural language processing
-implemented in Java.  This book explains the tools that are available
-in LingPipe and provides examples of how they can be used to build
-natural language processing (NLP) applications for multiple languages
-and genres, and for many kinds of applications.
+\firstchar{J}ava provides an extensive set of tools for manipulating
+character-based data, including byte-to-character conversion, input
+and output streams including sockets and compression, memory-mapping
+files, and high-level methods for manipulating sequences of characters
+like buffers and regular expressions.  We also cover the use of the
+Apache Lucene search library.
 
-LingPipe's application programming interface (API) is tailored to
-abstract over low-level implementation details to enable components
-such as tokenizers, feature extractors, or classifiers to be swapped
-in a plug-and-play fashion.  LingPipe contains a mixture of heuristic
-rule-based components and statistical components, often implementing
-the same interfaces, such as chunking or tokenization.
+As a preliminary, we provide a warmup chapter on using the various
+tools required for text editors to version control to the Ant build
+system for Java.  
+
+This book explains the basics of text processing in Java.  It 
+assumes you are familiar with basic coding in a language like
+Java, but that you may not be familiar with low-level representations
+of bytes and integers, the representation and manipulation of
+strings, how to access objects from the classpath as resources,
+or how to write non-greedy regular expressions based on Unicode.
 
 The presentation here will be hands on.  You should be comfortable
 reading short and relatively simple Java programs.  Java programming idioms
@@ -24,51 +29,21 @@ expression processing will be discussed in more depth.  We will also
 go into some detail on collections, XML/HTML parsing with SAX, and
 serialization patterns.
 
-We do not presuppose any knowledge of linguistics beyond a simple
-understanding of the terms used in dictionaries such as words,
-syllables, pronunciations, and parts of speech such as noun and
-preposition.  We will spend considerable time introducing linguistic
-concepts, such as word senses or noun phrase chunks, as they relate to
-natural language processing modules in LingPipe.
+This book grew out of work on its companion volume, {\it Natural
+Language Processing with LingPipe}.  We found that the background material
+on Java was growing to the point where it made more sense to pull it
+out into its own standalone package.  We have included a few examples
+of basic text processing using LingPipe. 
 
-We will do our best to introduce LingPipe's modules and their
-application from a hands-on practical API perspective rather than a
-theoretical one.  In most cases, such as for logistic regression
-classifiers and conditional random field (CRF) taggers and chunkers,
-it's possible learn how to effectively fit complex and useful models
-without fully understanding the mathematical basis of LingPipe's
-estimation and optimization algorithms.  In other cases, such as naive
-Bayes classifiers, hierarchical clusterers and hidden Markov models
-(HMM), the models are simpler, estimation is a matter of counting,
-and there is almost no hand-tuning required.
+Other open-source software dependencies include the International
+Components for Unicode (ICU) library and Apache Lucene search library.
 
-Deeper understanding of LingPipe's algorithms and statistical models
-requires familiarity with computational complexity analysis and basic
-probability theory including information theory.  We provide suggested
-readings in algorithms, statistics, machine learning, and linguistics
-in \refappendix{reading}.
-
-After introducing LingPipe's modules and their applications at a
-programming level, we will provide mathematically precise definitions.
-The goal is a complete description of the mathematical models
-underlying LingPipe.  To understand these sections will require a
-stronger background in algorithms and statistical modeling than
-the other sections of the book.
-
-We hope you have as much fun with LingPipe as we've had.  We'd love to
-hear from you, so feel free to drop us a line at
+We hope you have as much fun with text processing in Java as we've
+had.  We'd love to hear from you, so feel free to drop us a line at
 \urlin{info@lingpipe.com} with any kind of question or comment you
 might have.
 
-If you'd like to join the LingPipe mailing list, it's at
-%
-\urldisplay{http://tech.groups.yahoo.com/group/LingPipe/}
-%
-We also have a blog at
-%
-\urldisplay{http://lingpipe-blog.com/}
-
-
+\vspace*{0.125in}
 
 \newlength{\sigWidth}
 \settowidth{\sigWidth}{{\small\sc Bob Carpenter}}
@@ -77,8 +52,11 @@ We also have a blog at
 \parbox{\sigWidth}{
 Bob Carpenter
 \\[2pt]
+Mitzi Morris
+\\[2pt]
 Breck Baldwin
 \\[2pt]\small
+\\
 \it New York
 \\
 \today}
