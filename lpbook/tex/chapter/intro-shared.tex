@@ -650,13 +650,11 @@ The first thing in any Ant build file is the XML declaration, here
 %
 This just tells Ant's XML parser that what it's looking at is an XML
 file and that the ASCII character encoding is being used for
-subsequent data.  (See
-\refchap{char} for more information on character encodings).  
-We chose ASCII because we didn't anticipate using any non-ASCII
-characters; we could have chosen Latin1 or UTF-8 or even Big5 and
-written the build file in Chinese.  Most XML parsers are robust enough
-to infer the character encoding, but it's always good practice to make
-it explicit.
+subsequent data.  We chose ASCII because we didn't anticipate using
+any non-ASCII characters; we could have chosen Latin1 or UTF-8 or even
+Big5 and written the build file in Chinese.  Most XML parsers are
+robust enough to infer the character encoding, but it's always good
+practice to make it explicit.
 
 The ellipses (\code{...}) indicate ellided material that will be
 filled in (or not) in continuing discussion.  
@@ -1024,7 +1022,7 @@ equal sign (\code{=}), colon (\code{:}) or a whitespace character
 been done).
 
 Character escapes, including Unicode escapes, are parsed pretty much
-as in Java string literals (see \refsec{char-unicode-java}) with a bit
+as in Java string literals with a bit
 more liberal syntax, a few additional escapes (notably for the colon
 and equals sign) and some excluded characters (notably backspace).
 

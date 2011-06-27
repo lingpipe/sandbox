@@ -130,13 +130,16 @@ addition, yielding
 \section{Character-Level Language Models and Unicode}
 
 LingPipe's character-based language models are models of sequences of
-Java \code{char} values, which represent UTF-16 byte pairs (see
-\refsec{char-primitive}).  When LingPipe's language models were coded,
+Java \code{char} values, which represent UTF-16 byte pairs (see the
+section on byte representations for primitive types in the
+introductory Java section of the companion volume, {\it Text
+  Processing in Java}.  When LingPipe's language models were coded,
 every Unicode code point could be coded in a single UTF-16 byte pair.
 As we discussed, this is enough to cover Unicode's basic multilingual
 plane (BMP), which includes most characters for most languages.%
 %
-\footnote{As discussed in \refsec{char-primitive}, Unicode 4.1,
+\footnote{As discussed in the section on character primitives in the
+  companion volume, {\it Text Processing in Java}, Unicode 4.1,
   introduced characters with code points beyond the BMP.  To code such
   characters requires two 16-bit \code{char} values, known as a
   surrogate pair.  For the purposes of LingPipe's language models,
@@ -184,7 +187,8 @@ probabilty of 0.25 (this is roughly the case for open-domain English
 text), the probability of a sequence of 600 tokens has a $0.25^{600} =
 2^{-1200}$ probabilty, which is too small to fit into a Java
 double-precision floating point value (the minimum value for which is
-$2^{-1074}$; see \refsec{java-numbers}).
+$2^{-1074}$; see the section on Java primitive types in the companion
+volume, {\it Text Processing in Java}).
 
 \subsection{Trainable: \code{LanguageModel.Dynamic}}
 
@@ -328,12 +332,12 @@ This allows language models to be integrated into the general
 parser/handler/corpus interfaces (see \refchap{corpus} for more
 details).
 
-Furthermore, process character LMs are both serializable (see
-\refsec{io-object-data-io}) and compilable (see
-\refsec{io-compilable}).  As we will see later in this section,
-compilation produces a very efficient, but no longer dynamic
-version of the language model, whereas serialization will allow
-it to be written out and read back in.
+Furthermore, process character LMs are both serializable (see the
+sections on object I/O in the I/O chapter in the companion volume,
+{\it Text Processing in Java}).  As we will see later in this section,
+compilation produces a very efficient, but no longer dynamic version
+of the language model, whereas serialization will allow it to be
+written out and read back in.
 
 
 \subsection{Process Character Language Model Demo}\label{section:char-lm-process-demo}
@@ -832,7 +836,8 @@ Because we have a uniform base case, LingPipe's character language
 models require the number of possible characters to be specified in
 the constructor.  The default is \code{Character.MAX\_VALUE}, which is
 $2^{16}-1$, which is a slight overestimate of the number of legal Unicode
-UTF-16 values (see \refsec{char-primitive}).  The number of characters
+UTF-16 values (see the section on primitive data types in Java in
+the companion volume, {\it Text Processing in Java}).  The number of characters
 can be set lower if we know we are dealing with ASCII or Latin 1 or
 another restricted subset of Unicode characters.  
 
@@ -1196,8 +1201,9 @@ wrong with the training data that's making it unlike the test data.
 
 Both implementations of character language models,
 \code{NGramProcessLM} and \code{NGramBoundaryLM}, implement Java's
-\code{Serializable} interface (see \refsec{io-serializable}) and
-LingPipe's \code{Compilable} interface (see \refsec{io-compilable}).
+\code{Serializable} interface (see the sections on Java serialization
+and LingPipe compilation in the I/O chapter of the companion volume,
+{\it Text Processing in Java}).
 
 \subsection{Compilation}
 
@@ -1206,8 +1212,9 @@ model implementations come in two flavors.  First, there are the two
 classes we've discussed already, \code{NGramProcessLM} and
 \code{NGramBoundaryLM}, which implement handlers for character
 sequences for training.  These two classes are both compilable (see
-\refsec{io-compilable} for a general overview of the \code{Compilable}
-interface in LingPipe).  Compiling an instance of one of these classes
+the section on object compilation in the I/O chapter of the companion volume, {\it 
+Text Processing in Java}).
+Compiling an instance of one of these classes
 produces instances of \code{CompiledNGramProcessLM} and
 \code{CompiledNGramBoundaryLM}.  Although based on shared abstract
 superclasses, these abstract bases are not public because there is a

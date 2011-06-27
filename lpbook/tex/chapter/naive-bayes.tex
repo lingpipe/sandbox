@@ -270,7 +270,9 @@ and set of categories represented as strings.
 \codeblock{TradNbDemo.2}
 %
 The regular expression \code{{\bk}P\{Z\}+} (see
-\refsec{regex-unicode-classes}) produces a tokenizer factory that
+the section on Unicode classes in the regular expression chapter of
+the companion volume, {\it Text Processing in Java})
+produces a tokenizer factory that
 defines tokens to be maximal sequences of characters which Unicode
 considers not whitespace.  We have used the \code{asSet()} method in
 LingPipe's \code{CollectionUtils} class to define a set of strings
@@ -953,9 +955,9 @@ Rank= 0  cat=hers  p(c|txt)=0.94  log2 p(c,txt)= -6.71
 
 The traditional naive Bayes classifier class implements both Java's
 \code{Serializable} interface and LingPipe's \code{Compilable}
-interface.  See \refsec{io-object-data-io} for object reading and
-writing, including serializability, and \refsec{io-compilable} for a
-general description of LingPipe's compilation interface.
+interface.  See the sections on Java serialization and LingPipe
+compilation in the chapter on I/O in the companion volume, {\it Text
+Processing in Java}.
 
 Serializing a traditional naive Bayes classifier and reading it
 back in results in an instance of \code{TradNaiveBayesClassifier} in
@@ -1143,8 +1145,9 @@ classifier instance.
 After visiting the training data, the classifier's ready to use.
 Instead of using it directly, we compile it to a more efficient form.
 This is done with the utility method \code{compile()} in LingPipe's
-\code{AbstractExternalizable} class (see \refsec{io-compilable} for
-more information on LingPipe's general compilation interface).  The
+\code{AbstractExternalizable} class (see the section on compilation in
+the I/O chapter of the companion volume, {\it Text Processing in Java}).
+The
 required cast may throw I/O exceptions and the implicit
 deserialization may throw a class-not-found exception, so those are
 declared on the top-level \code{main()} method.  Note that we have

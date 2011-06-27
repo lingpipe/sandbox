@@ -298,9 +298,9 @@ handler we just defined.
 %
 The last thing the main method does before printing out the tag set is
 walk over all the files ending in \code{ioc} and parse each of them,
-declaring the character encoding to be ASCII (see
-\refsec{io-file-extension-filter} for more information on LingPipe's
-file extension filter class).
+declaring the character encoding to be ASCII (see the section on I/O
+in the companion volume {\it Text Processing in Java} for more
+information on LingPipe's file extension filter class).
 
 \subsubsection{Running the Demo}
 
@@ -377,8 +377,9 @@ of type \code{CharSequence}, are the texts of the posts themselves.
 
 The constructor takes the corpus file, which is presumed to be
 directory structures that have been tarred and then compressed with
-GZIP (see \refsec{io-tar} and \refsec{io-gzip} for more information on
-tar and GZIP).  The corpus file is saved for later use.  
+GZIP (see the sections in the I/O chapter of the companion volume {\it
+  Text Processing in Java} for more information on tar and GZIP).  The
+corpus file is saved for later use.
 
 The \code{visitTrain()} method sends all the classified character
 sequences in the training data to the specified hander.
@@ -688,8 +689,9 @@ it contains are serializable.
 \subsubsection{Thread Safety and Concurrent Cross-Validation}
 
 Cross-validating corpus instances must be read-write synchronized (see
-\refsec{java-read-write-synchronization}).  The read operations are in
-the handle, permute and set methods.
+the section in the companion volume {\it Text Processing in Java} for
+information on read-write synchronization).  The read operations are
+in the handle, permute and set methods.
 
 The obstacle to using a cross-validating corpus across threads is that
 the fold is set on the class itself.  To get around this limitation,
