@@ -535,7 +535,7 @@ A single abstract method needs to be implemented by concrete
 subclasses, \code{write(int)}, which writes a byte in unsigned
 notation to the output stream.  The low-order byte in the integer is
 written and the three high-order bytes are simply ignored (see
-\refappendix{java-bytes} for more on the byte organization of integers).
+\refsec{java-bytes} for more on the byte organization of integers).
 Thus the value should be an unsigned representation of a byte between
 0 (inclusive) and 255 (inclusive).
 
@@ -1592,7 +1592,7 @@ third string using 10 characters; if they are too short, they align to
 the right, and if they are too long, they run over their alloted
 space.  The second \code{printf()} uses \code{\%4d} for a four place
 integer (right aligned), and \code{\%4h} for a four-digit hexadecimal
-representation.  Note that auto-boxing (see \refappendix{java-autoboxing})
+representation.  Note that auto-boxing (see \refsec{java-autoboxing})
 converts the integers \code{i} and \code{counts[i]} to instances of
 \code{Integer} to act as inputs to \code{printf()}.  Formatted prints
 do not automatically occupy a line; we have manually added UNIX-style
