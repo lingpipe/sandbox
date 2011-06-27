@@ -101,7 +101,7 @@
   <target name="update-version">
      <replace dir="."
               summary="yes"
-              token="lingpipe-4.0.1.jar"
+              token="lingpipe-4.1.0.jar"
               value="lingpipe-4.1.0.jar"
               includes ="**/build.xml">
      </replace>
@@ -175,7 +175,7 @@
                   prefix="lucene-3-tutorial-code-${version}"
                   mode="775">
         <include name="lib/lucene*"/>
-        <include name="lib/lingpipe-4.0.1.jar"/>
+        <include name="lib/lingpipe-4.1.0.jar"/>
         <include name="src/applucene/**/*"/>
         <exclude name="**/*~"/>
         <exclude name="**/.svn/*"/>

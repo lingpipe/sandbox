@@ -9,7 +9,7 @@
 
   <path id="classpath">
     <pathelement location="${jar}"/>
-    <pathelement location="../../lib/lingpipe-4.0.1.jar"/>
+    <pathelement location="../../lib/lingpipe-4.1.0.jar"/>
   </path>
 
   <target name="clean">
