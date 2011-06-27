@@ -200,8 +200,9 @@ given our static array \code{TEXTS} of character sequences:
 The regex-based tokenizer factory is used with a regex defining tokens
 as maximal sequences of characters in the Unicode letter class (see
 \refsec{tok-regex-tokenizer-factory} for regex tokenizer factories and
-\refsec{regex-unicode-classes} for Unicode regex classes).  This will
-pull out each of the words in our documents.  
+for Unicode regex classes, the section of the chapter on regular
+expressions in the companion volume, {\it Text Processing in Java}).
+This will pull out each of the words in our documents.
 
 Next, we create a symbol table (see \refsec{symbol-map-symbol-table})
 which we will use to provide integer indexes to each of the tokens.
@@ -960,8 +961,9 @@ from the synthetic demo include the parser for the compressed data and
 a custom tokenizer for the Wormbase data.  
 
 The method to read the corpus into an array of character sequences is
-based on LingPipe's \code{FileLineReader} utility (see
-\refsec{io-file-line-reader}).  It just scans the lines and
+based on LingPipe's \code{FileLineReader} utility (see the section on
+LingPipe's line reader in the I/O chapter of the companion volume,
+{\it Text Processing in Java}).  It just scans the lines and
 accumulates texts and adds them to an accumulating list.
 
 The tokenization scheme is more interesting.  We create it with
@@ -1124,8 +1126,9 @@ the following lines of code.
 %
 This shows the production of an LDA instance from a sample using the
 \code{lda()} method on the sample.  Then we use LingPipe's abstract
-extenalizable utility (see \refsec{io-abstract-externalizable}) to
-write its serialized form to a file.  We also serialize the map symbol
+extenalizable utility (see the section on \code{AbstractExternalizable}
+in the chapter on I/O in the companion volume, {\it Text Processing in Java})
+to write its serialized form to a file.  We also serialize the map symbol
 table to file.
 
 We will be able to deserialize this model from disk and use it to

@@ -169,10 +169,10 @@
     </tar>
 
     <!-- Lucene Tutorial -->
-    <tar destfile="build/lucene-3-tutorial-code.tgz"
+    <tar destfile="build/lucene-3-tutorial-code-${version}.tgz"
          compression="gzip">
       <tarfileset dir="."
-                  prefix="lucene-3-tutorial-code"
+                  prefix="lucene-3-tutorial-code-${version}"
                   mode="775">
         <include name="lib/lucene*"/>
         <include name="lib/lingpipe-4.0.1.jar"/>
@@ -185,6 +185,9 @@
 
     <copy file="tex/lp-book.pdf" 
           tofile="build/lingpipe-book-${version}.pdf"/>
+
+    <copy file="tex/java-text-book.pdf" 
+          tofile="build/java-text-book-${version}.pdf"/>
 
     <mkdir dir="build/luc"/>
     <tar destfile="build/lingpipe-book-site-${version}.tgz"
@@ -209,12 +212,12 @@
       <tarfileset dir="build/luc"
                   prefix="lingpipe-book/"
                   mode="775">
-	<include name="lucene-3-tutorial.pdf"/>
+	<include name="lucene-3-tutorial-${version}.pdf"/>
       </tarfileset>
       <tarfileset dir="build"
                   prefix="lingpipe-book/"
                   mode="775">
-	<include name="lucene-3-tutorial-code.tgz"/>
+	<include name="lucene-3-tutorial-code-${version}.tgz"/>
       </tarfileset>
       <!-- End Lucene -->
       

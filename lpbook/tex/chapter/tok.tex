@@ -286,7 +286,8 @@ that a surrogate pair consisting of a high surrogate UTF-16 value and
 low surrogate UTF-16 value, which represent a single Unicode code
 point, will produce two tokens.  Specifically, unicode code points
 outside of the basic multilingual plane (BMP), that is with values at
-or above \unicode{10000}, will produce two tokens (see \refsec{utf-16} for more
+or above \unicode{10000}, will produce two tokens (see the section on UTF-16
+in the companion volume, {\it Text Processing in Java}, for more
 information).
 
 The class is thread safe and serializable.  There is no constructor,
@@ -305,9 +306,10 @@ also popular for natural language processing.
 
 LingPipe's \code{RegExTokenizerFactory} implements tokenizers where
 the tokens are defined by running regular expression matchers in find
-mode (see \refsec{regex-find}).  An instance may be constructed from a
+mode (see the section in the companion volume {\it Text Processing in Java}
+for more on the find operation).  An instance may be constructed from a
 \code{Pattern}, or from a \code{String} representing a regular
-expression with optional integer flags (see \refsec{pattern-modes} for
+expression with optional integer flags (see the section on modes in patterns in the regular expression chapter of the companion volume, {\it Text Processing in Java}, for
 information on how to use the flags and their numerical values).
 
 The demo class \code{RegexTokens} implements a simple regular expression
@@ -426,7 +428,9 @@ token.  It is just a convenience class extending
 \code{RegExTokenizerFactory} supplying the regex \code{.+}.  
 
 Line termination is thus defined as for regular expression patterns (see
-\refsec{regex-lines} for the full set of line-end sequences
+the section on line-ending in the regular expression chapter of the companion
+volume, {\it Text Processing in Java}, 
+for the full set of line-end sequences
 recognized).  Final empty lines are not included in the sequence of
 tokens.
 
@@ -530,7 +534,8 @@ constructor and definition of the modify operation,
 \codeblock{ReverseTokenTokenizerFactory.1}
 %
 In addition, the class implements a serialization proxy (see
-\refsec{io-serialization-proxy}).
+the section on serialization proxies in the I/O chapter of the
+companion volume, {\it Text Processing in Java}).
 
 The \code{main()} method for the demo reads a command line
 argument into the variable \code{text}, then constructs a token-reversing
@@ -1434,10 +1439,10 @@ Double Metaphone.
 \section{Character Normalizing Tokenizer Filters}
 
 We demonstrated how to use the International Components for Unicide
-(ICU) package for normalizing sequences of Unicode characters in
-\refsec{icu-unicode-normalization}.  In this section, we'll show how
-to plug that together with tokenization to provide tokenizers that
-produce output with normalized text.  
+(ICU) package for normalizing sequences of Unicode characters in the
+companion volume, {\it Text Processing in Java}.  In this section,
+we'll show how to plug that together with tokenization to provide
+tokenizers that produce output with normalized text.
 
 The alternative to normalizing with a token filter would be to
 normalize the text before input.  As a general rule, we prefer not to
@@ -1447,10 +1452,11 @@ be an XML and HTML document.
 
 \subsection{Demo: ICU Transliteration}
 
-We wrote a demo class, \code{UnicodeNormTokenizerFactory}, which
-uses the the \code{Transliterate} class from ICU to do the work (see
-\refsec{char-unicode-transliterate} for an introduction to the class and
-more examples).  A transliterator is configured with a transliteration
+We wrote a demo class, \code{UnicodeNormTokenizerFactory}, which uses
+the the \code{Transliterate} class from ICU to do the work (see the
+section on transliteration in the companion volume, {\it Text
+  Processing in Java}, for an introduction to the class and more
+examples).  A transliterator is configured with a transliteration
 scheme, so we configure our factory the same way,
 %
 \codeblock{UnicodeNormTokenizerFactory.1}
@@ -1469,7 +1475,8 @@ to reconstruct the transliterating tokenizer.
 
 The Ant target \code{unicode-norm-tokens} runs the program,
 using the property \code{translit.scheme} to define the
-transliteration scheme (see \refsec{char-unicode-transliterate} for
+transliteration scheme (see the section on Unicode transliteration
+with ICU in the companion volume, {\it Text Processing in Java}, for
 a description of the available schemes and the language for
 composing them) and property \code{text} for the text to modify.
 %
@@ -1486,7 +1493,8 @@ START   END TOKEN
 \end{verbatim}
 %
 To get the output encoded correctly, we had to reset \code{System.out}
-to use UTF-8 (see \refsec{io-reset-system-out}).
+to use UTF-8 (see the section on standard input and output in the
+the companion volume, {\it Text Processing in Java}).
 
 
 \section{Penn Treebank Tokenization}
@@ -1623,27 +1631,28 @@ instance.
 
 In the first processing step, we override the tokenization method
 itself to trasnform the input text using a sequence of regex replace
-operations (see \refsec{regex-replace}),
+operations (see the section on replace in the regular expression chapter
+of the companion volume, {\it Text Processing in Java}),
 %
 \codeblock{PennTreebankTokenizerFactory.2}
 %
 The \code{replaceAll()} methods chain, starting with a string produced
 from the character slice input.  The first replacement replaces an
-instance of \unicode{0022}, \unicodedesc{quotation mark}, (\charmention{"}),
-the ordinary typewriter non-directional quotation mark symbol, with 
-\unicode{201C}, \unicodedesc{left double quotation mark} (\charmention{``{}}).
-The second replacement replaces a quotation mark after characters of
-class \code{Z} (separators such as spaces, line or paragraph
-separators) or class \code{Ps}, the start-punctuation class, which
-includes all the open brackets specified in the original SED script.
-The context characters are specified as a non-capturing lookbehind
-(see \refsec{regex-lookbehind}), The third replacement converts
-remaining quote characters
-\unicode{201D}, \unicodedesc{right double quotation mark}
+instance of \unicode{0022}, \unicodedesc{quotation mark},
+(\charmention{"}), the ordinary typewriter non-directional quotation
+mark symbol, with \unicode{201C}, \unicodedesc{left double quotation
+  mark} (\charmention{``{}}).  The second replacement replaces a
+quotation mark after characters of class \code{Z} (separators such as
+spaces, line or paragraph separators) or class \code{Ps}, the
+start-punctuation class, which includes all the open brackets
+specified in the original SED script.  The context characters are
+specified as a non-capturing lookbehind (see the relevant section of
+the companion volume). The third replacement converts remaining quote
+characters \unicode{201D}, \unicodedesc{right double quotation mark}
 (\charmention({}'')).  The fourth replacement converts any character
 typed as initial quote punctuation (\code{Pi}) and replaces it with a
 left double quotation mark, and similarly for final quote punctuation
-(\code{Pf}).  
+(\code{Pf}).
 
 We take the final string and convert it to a character array to send
 the superclass's implementation of \code{tokenizer()}.  We have been
@@ -1839,7 +1848,8 @@ but will be broken into three tokens by the current tokenizer.
 
 \section{Adapting to and From Lucene Analyzers}\label{section:tok-adapting-lucene-analyzers}
 
-In \refsec{lucene-analysis}, we discuss the role of Lucene's
+In the section Lucene analysis in the Lucene chapter of the companion
+volume, {\it Text Processing in Java},  we discuss the role of Lucene's
 analyzers in the indexing process.  A Lucene document maps field names
 to text values.  A Lucene analyzer maps a field name and text to a
 stream of tokens.  In this section, we show how to convert a Lucene
