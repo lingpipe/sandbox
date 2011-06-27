@@ -302,9 +302,7 @@ negation.
 The syntax for compound character classes uses brackets around a
 character class expression.  The atomic character class expressions
 are single characters like \code{a}, and the character class escapes
-like \code{{\bk}p\{Lu\}} for is any uppercase Unicode character.
-Compound character classes may also be nested.  For example,
-
+like \code{{\bk}p\{Lu\}} matches any uppercase Unicode letter character.
 
 Character classes may be unioned, which confusingly uses a
 concatenation syntax.  For instance, \code{[aeiou]} is the character
@@ -377,7 +375,7 @@ attachment for character class operations is
 \\
 4 & Union & \code{ab}, \code{[0-9][ab]}, 
 \\
-5 & Intersection & \code{[a-z\&\&[aeiou]]}
+5 & Intersection & \code{[[a-z]\&\&[\^{}aeiou]]}
 \end{tabular}
 \end{center}
 %

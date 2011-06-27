@@ -67,6 +67,99 @@ The latent Dirichlet allocation (LDA) model we consider in
 the assumption that every document is a mixture of topics blended
 according to some document-specific ratio that the model infers.
 
+
+
+\subsection{Ordinals, Counts, and Scalars}
+
+A classifier is an instance of what statisticians call categorical
+models.  The outcome of a classification is one of finitely many
+categories, not a continuous scalar value like a floating-point number.
+
+Classifiers deal with categorical outcomes.  Ordinal outcomes are like
+categorical outcomes, only they come with an order.  Examples of
+ordinal outcomes include rating movies on a $\{ 1, 2, 3, 4, 5 \}$
+scale, answering a survey question with strongly-disagree, disagree,
+neutral, agree, or strongly agree, and rating a political attitude as
+left, center, or right.
+
+In many cases, we will be dealing with counts, which are non-negative
+integers, which are also called ``natural numbers''.  Examples of
+count variables include the number of times a word appears in a
+document, the length of a document's title in characters, and the
+number of home runs a baseball player gets in a season.  Classifiers
+like naive Bayes convert word count data into categorical outcomes
+based on a probability model for documents (see
+\refchap{naive-bayes}).
+
+Scalar outcomes are typically continuous.  Examples of continuous
+scalar variables include a person's height, the length of the vowel
+sequence in milliseconds in the pronunciation of the word
+\charmention{lion}, or the number of miles between two cities.  
+
+Rating movies on an ordinal 1-5 scale doesn't allow ratings like
+1.793823.  Half-star ratings could be accomodated by including
+additional discrete outcomes like 1.5, 2.5, 3.5 and 4.5, leaving a
+total of 9 possible ratings.  When there are 100 possible ratings, it
+makes less sense to treat the outcome as ordinal.  Often, it is
+approximated by a continuous scalar variable.
+
+Models that predict or estimate the values of ordinal, count and
+scalar values all have different evaluation metrics than categorical
+outcomes.  In this section, we focus exclusively on categorical
+outcomes.
+
+
+\subsection{Reductions to Classification Problems}
+
+Many problems that don't at first blush appear to be classification
+problems may be reduced to classification problems.  For instance, the
+standard document search problem (see \refchap{lucene}) may be recast
+as a classification problem.  Given a user query, such as
+\searchquery{be-bim-bop recipe}, documents may be classified as
+relevant or not-relevant to the search.  
+
+Another popular reduction is that for ranking.  If we want to rank a
+set of items, we can build a binary classifier for assessing whether
+one item is greater than another in the ordering.  In this case, it is
+then a challenge to piece back together all these binary decisions to
+get a final rank ordering.
+
+Ordinal classification problems may also be reduced to
+classifications.  Suppose we have a three-outcome ordered result, say
+$N \in \{ 1, 2, 3 \}$.  We can develop a pair of binary classifiers
+and use them as an ordinal three-way classifier.  The first classifier
+will test if $N < 2$ and the second if $N < 3$.  If the first
+classifier returns true, the response is 1, else if the second
+classifier returns true the response is 2, else the response is 3.
+Note that if the first classifier returns true and the second false,
+we have an inconsistent situation, which we have resolved by returning
+1.
+
+Just about any problem that may be cast in a hypothesize-and-test
+algorithm may use a classifier to do the testing, with a simple binary
+outcome of accept or reject.  For instance, we can generate possible
+named-entity mention chunkings of a text and then use a binary
+classifier to evaluate if they are correct or not.  
+
+Such reductions are often not interpetable probabilistically in the
+sense of assigning probabilities to possible outcomes.
+
+
+\section{Kinds of Classifiers}
+
+LingPipe provides several varieties of classifiers.  These are
+ordered in terms of the amount of information they provide as
+the result of classification.  In this section, we describe them
+in order from least informative output to most informative.
+
+The reason there are multiple classification classes is that
+different classification techniques have different capabilities.
+
+Each type of classifier comes with its own evaluation class
+which is tailored to the information provided by that kind of
+classifier.
+
+
 \subsection{First-Best Classifiers and Classifications}
 
 A simple first-best classifier need only return its best guess for the
@@ -90,6 +183,13 @@ with \code{String}.
 A \code{Classification} instance is constructing from the string
 corresponding to its best category, using constructor
 \code{Classification(String)}.
+
+Evaluation of first-best classifiers is carried out using the class
+\code{BaseClassifierEvaluator}.  Base evaluators track confusion
+matrices, which represent the full empirical response profile of a
+first-best classifier by category.  From a confusion matrix, it's
+possible to derive all sorts of other evaluations, which are described
+in the Javadoc for the evaluator and exemplified later in this chapter.
 
 
 \subsection{Ranking Classifiers and Classifications}
@@ -116,6 +216,13 @@ classification by the classifier, and so on.
 A ranked classifier is constructed from a sequence of categories
 ordered from best guess to worst guess using the constructor
 \code{RankedClassification(String[])}.  
+
+A ranked classifier is evaluated using the \code{RankedClassifierEvaluator}.
+The ranked evaluator extends the base evaluator the same way that
+a ranked classifier extends a base classifier and a ranked classification
+extends a first-best classification.  A ranked classifier evaluator
+adds ranked evaluation statistics like the mean reciprocal rank of the
+true answer.
 
 
 \subsection{Scored Classifiers and Classifications}
@@ -145,6 +252,14 @@ classification from an unsored list of scored strings.  The
 is such that an instance of \code{ScoredObject<String>} implements
 a method \code{getObject()} returning a string and a method \code{score()}
 returning a double-precision floating-point score.
+
+A scored classifier is evaluated with a \code{ScoredClassifierEvaluator},
+which extends the ranked evaluator class.  The results of a scored
+classifier evaluation rare stored in a \code{ScoredPrecisionRecallEvaluation}
+object.  This evaluation class supports results like precision-recall and
+ROC curves, recall at specific ranks, and other evaluations depending on
+scores.
+
  
 \subsection{Conditional Classifiers and Classifications}\label{section:conditional-classifier}
 
@@ -206,6 +321,11 @@ $\mbox{pr}(\mbox{cat}=k) \propto y_k$, so that
 \mbox{Pr}(\mbox{cat}=k) = \frac{y_k}{\sum_{k'=1}^K y_{k'}}.
 \end{equation*}}
 
+A conditional classifier is evaluated using a
+\code{ConditionalClassifierEvaluator}, which extends the scored
+classifier evaluator class.  A conditional classifier provides
+average conditional probabilities as well as conditional one-versus-all
+evaluations.  
 
 
 \subsection{Joint Classifiers and Classifications}
@@ -245,79 +365,12 @@ used to define conditional probabilities in the usual way.%
 \mbox{Pr}(\mbox{cat}=k|\mbox{in}=w) = \frac{2^{y_k}}{\sum_{k'=1}^K 2^{y_{k'}}}.
 \end{equation*}}
 
-
-\subsection{Ordinals, Counts, and Scalars}
-
-A classifier is an instance of what statisticians call categorical
-models.  The outcome of a classification is a category, not a number.
-
-Classifiers deal with categorical outcomes.  Ordinal outcomes are like
-categorical outcomes, only they come with an order.  Examples of
-ordinal outcomes include rating movies on a $\{ 1, 2, 3, 4, 5 \}$
-scale, answering a survey question with strongly-disagree, disagree,
-neutral, agree, or strongly agree, and rating a political attitude as
-left, center, or right.
-
-In many cases, we will be dealing with counts, which are non-negative
-natural numbers.  Examples of count variables include the number of
-times a word appears in a document, the length of a document's title
-in characters, and the number of home runs a baseball player gets in a
-season.  Classifiers like naive Bayes convert word count data into
-categorical outcomes based on a probability model for documents (see
-\refchap{naive-bayes}).
-
-Scalar outcomes are typically continuous.  Examples of continuous
-scalar variables include a person's height, the length of the vowel
-sequence in milliseconds in the pronunciation of the word
-\charmention{lion}, or the number of miles between two cities.  
-
-Rating movies on an ordinal 1-5 scale doesn't allow ratings like
-1.793823.  Half-star ratings could be accomodated by including
-additional discrete outcomes like 1.5, 2.5, 3.5 and 4.5, leaving a
-total of 9 possible ratings.  When there are 100 possible ratings, it
-makes less sense to treat the outcome as ordinal.  Often, it is
-approximated by a continuous scalar variable.
-
-Models that predict or estimate the values of ordinal, count and
-scalar values all have different evaluation metrics than categorical
-outcomes.  In this section, we focus exclusively on categorical
-outcomes.
-
-
-\subsection{Reductions to Classification Problems}
-
-Many problems that don't at first blush appear to be classification
-problems may be reduced to classification problems.  For instance, the
-standard document search problem (see \refchap{lucene}) may be recast
-as a classification problem.  Given a user query, such as
-\searchquery{be-bim-bop recipe}, documents may be classified as
-relevant or not-relevant to the search.  
-
-Another popular reduction is that for ranking.  If we want to rank a
-set of items, we can build a binary classifier for assessing whether
-one item is greater than another in the ordering.  In this case, it is
-then a challenge to piece back together all these binary decisions to
-get a final rank ordering.
-
-Ordinal classification problems may also be reduced to
-classifications.  Suppose we have a three-outcome ordered result, say
-$N \in \{ 1, 2, 3 \}$.  We can develop a pair of binary classifiers
-and use them as an ordinal three-way classifier.  The first classifier
-will test if $N < 2$ and the second if $N < 3$.  If the first
-classifier returns true, the response is 1, else if the second
-classifier returns true the response is 2, else the response is 3.
-Note that if the first classifier returns true and the second false,
-we have an inconsistent situation, which we have resolved by returning
-1.
-
-Just about any problem that may be cast in a hypothesize-and-test
-algorithm may use a classifier to do the testing, with a simple binary
-outcome of accept or reject.  For instance, we can generate possible
-named-entity mention chunkings of a text and then use a binary
-classifier to evaluate if they are correct or not.  
-
-Such reductions are often not interpetable probabilistically in the
-sense of assigning probabilities to possible outcomes.
+A joint classifier is evaluated using an instance of
+\code{JointClassifierEvaluator}, which extends the conditional classifier
+evaluator.  Additional functionality includes joint probability
+evaluations.  These are the traditional evaluation measures for
+joint statistical models and are based on the probabilty assigned to
+the training or test instances by the model.  
 
 
 
