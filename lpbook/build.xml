@@ -23,6 +23,7 @@
           depends="clean-demos">
     <delete dir="build"/>
     <delete dir="${java2tex.out}"/>
+    <delete file="tex/lucene-3-tutorial-${version}.pdf"/>
     <delete file="tex/lucene-3-tutorial.pdf"/>
     <delete file="tex/lp-book.pdf"/>
     <delete file="tex/java-text-book.pdf"/>
@@ -101,7 +102,7 @@
   <target name="update-version">
      <replace dir="."
               summary="yes"
-              token="lingpipe-4.1.0.jar"
+              token="lingpipe-4.0.1.jar"
               value="lingpipe-4.1.0.jar"
               includes ="**/build.xml">
      </replace>
@@ -189,6 +190,9 @@
     <copy file="tex/java-text-book.pdf" 
           tofile="build/java-text-book-${version}.pdf"/>
 
+    <copy file="tex/lucene-3-tutorial.pdf"
+          tofile="tex/lucene-3-tutorial-${version}.pdf"/>
+
     <mkdir dir="build/luc"/>
     <tar destfile="build/lingpipe-book-site-${version}.tgz"
          compression="gzip">
@@ -196,6 +200,11 @@
                   prefix="lingpipe-book/"
                   mode="775">
 	<include name="lingpipe-book-${version}.pdf"/>
+      </tarfileset>
+      <tarfileset dir="build"
+                  prefix="lingpipe-book/"
+                  mode="775">
+	<include name="java-text-book-${version}.pdf"/>
       </tarfileset>
       <tarfileset dir="web"
                   prefix="lingpipe-book/"
@@ -207,9 +216,14 @@
                   mode="775">
 	<include name="lingpipe-book-code-${version}.tgz"/>
       </tarfileset>
+      <tarfileset dir="build"
+                  prefix="lingpipe-book/"
+                  mode="775">
+	<include name="java-text-book-code-${version}.tgz"/>
+      </tarfileset>
 
       <!-- Lucene Tutorial -->
-      <tarfileset dir="build/luc"
+      <tarfileset dir="tex"
                   prefix="lingpipe-book/"
                   mode="775">
 	<include name="lucene-3-tutorial-${version}.pdf"/>
