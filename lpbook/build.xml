@@ -7,7 +7,7 @@
   <property name="title"
            value="lp-book"/>
 
-  <property name="txt-title"
+  <property name="text-title"
            value="java-text-book"/>
 
   <property name="version"
@@ -75,17 +75,17 @@
     </exec>
   </target>
 
-  <target name="txt-book">
+  <target name="text-book">
     <mkdir dir="build/"/>
     <exec executable="pdflatex"
           dir="tex">
-      <arg value="${txt-title}.tex"/>
+      <arg value="${text-title}.tex"/>
     </exec>
     <exec executable="makeindex"
           dir="tex">
       <arg value="-s"/>
       <arg value="styles/lingpipe-book.ist"/>
-      <arg value="${txt-title}.idx"/>
+      <arg value="${text-title}.idx"/>
     </exec>
   </target>
 
@@ -135,8 +135,8 @@
     <antcall target="j2t"/>
     <antcall target="book"/>
     <antcall target="book"/>
-    <antcall target="txt-book"/>
-    <antcall target="txt-book"/>
+    <antcall target="text-book"/>
+    <antcall target="text-book"/>
     <antcall target="lucene-tut"/>
     <antcall target="lucene-tut"/>
 
@@ -154,10 +154,10 @@
       </tarfileset>
     </tar>
 
-    <tar destfile="build/java-txt-book-code-${version}.tgz"
+    <tar destfile="build/java-text-book-code-${version}.tgz"
          compression="gzip">
       <tarfileset dir="."
-                  prefix="java-txt-book-code-${version}"
+                  prefix="java-text-book-code-${version}"
                   mode="775">
         <include name="lib/**/*"/>
         <exclude name="lib/java2tex*"/>
