@@ -1,0 +1,407 @@
+\chapter{Further Reading}\label{appendix:reading}
+
+\firstchar{I}n order to fully appreciate contemporary approaches to natural language
+processing requires three fairly broad areas of expertise:
+linguistics, statistics, and algorithms.  We don't pretend to
+introduce these areas in any depth in this book.  Instead, we
+recommend the following textbooks, sorted by area, from among the many
+that are currently available.
+
+\section{Unicode}
+
+Given that we're dealing with text data, and that Java uses Unicode
+internally, it helps to be familiar with the specification.  Or at
+least know where to find more information.  The actual specification
+reference book is quite readable.  The latest available in print is
+for version 5.0,
+%
+\begin{itemize}
+\bibanno{Unicode Consortium, The.  
+{\it The Unicode Standard 5.0}.  
+Addison-Wesley.}
+{This is the final word on the unicode standard, and
+quite readable.}
+\end{itemize}
+%
+You can also find the latest version (currently 5.2) online at
+%
+\urldisplay{http://unicode.org}
+%
+This includes all of the code tables for the latest version, which are
+available in PDF files or through search, at 
+%
+\begin{quote}
+\hrefurl{http://unicode.org/charts/}
+\end{quote}
+
+
+\section{Java}\label{section:reading-java}
+
+\subsection{Overviews of Java}
+%
+For learning Java, we recommend the following three books pitched at
+beginners and intermediate Java programmers,
+%
+\begin{itemize}
+\bibanno{Arnold, Ken, James Gosling and David Holmes.  2005.
+{\it The Java Programming Language}, 4th Edition.  Prentice-Hall.}
+{Gosling invented Java, and this is the ``official'' introduction to the
+language.  It's also very good.}
+%
+\bibanno{Bloch, Joshua. 2008. {\it Effective Java}, 2nd Edition.  Prentice-Hall.}
+{Bloch was one of the main architects of Java from
+version 1.1 forward.  This book is about taking Java program design
+to the next level.}
+%
+\bibanno{Fowler, Martin, Kent Beck, John Brant, William Opdyke, and Don Roberts.
+1999.
+{\it Refactoring: Improving the Design of Existing Code}.
+Addison-Wesley.}
+{Great book on making code better, both existing
+code and code yet to be created.}
+\end{itemize}
+%
+
+\subsection{Books on Java Libraries and Packages}\label{appendix:java-libs}
+
+\noindent
+There is a substantial collection of widely used libraries for Java.
+Here are reference books for the Java libraries we use in this book.
+%
+\begin{itemize}
+%
+\bibanno{
+Loughran, Steve and Erik Hatcher. 2007
+{\it Ant in Action}.  Manning.}
+{This is technically the second edition of their 2002
+book, {\it Java Development with Ant}.  Both authors are committers for
+the Apache Ant project.}
+%
+\bibanno{Tahchiev, Peter, Felipe Leme,
+Vincent Massol, and Gary Gregory. 2010.
+{\it JUnit in Action}, Second Edition.  Manning.}
+{A good overview for JUnit.  Should be up-to-date with
+the latest attribute-driven versions, unlike either Kent Beck's book
+(he's the author of Ant).  As much as we liked {\it The Pragmatic
+Programmer}, Hunt and Thomas's book on JUnit is not particularly useful.}
+%
+\bibanno{McCandless, Michael, Erik Hatcher and Otis Gospodneti\'c.
+2010.
+{\it Lucene in Action}, Second Edition. Manning.}
+{A fairly definitive overview of the Apaceh Lucene
+search engine by three project committers.}
+%
+\bibanno{Hunter, Jason and William Crawford. 2001. {\it Java Servlet Programming}, Second Edition. O'Reilly.}
+{It only covers version 2.2, so it's a bit out of date
+relative to recent standards, but the basics haven't changed, and
+although there are more elementary introductions, this book is a very
+good introduction to what servlets can do.  It also explains HTTP
+itself quite clearly.  The first author is an Apache Tomcat developer
+and was involved in developing the original servlet standard.}
+%
+\bibanno{Goetz, Brian, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug Lea. 2006. {\it
+Java Concurrency in Practice}.  Addison-Wesley.}
+{This fantastic book covers threading and concurrency
+patterns and their application, along with implementations in Java's
+\code{java.util.concurrent} package.  Doug Lea was the original author
+of \code{util.concurrent} before it was brought into Java itself, and
+his previous book, {\it Concurrent Programming in Java}, Second
+Edition (1999; Prentice Hall), is wroth reading for a deeper theoretical
+understanding of concurrency in Java.}
+%
+\bibanno{Hitchens, Ron. 2002.  {\it Java NIO}. O'Reilly.}
+{A concise and readable introduction to the ``new'' I/O package, \code{java.nio} and
+the concepts behind it, like buffers and multicast reads.}
+%
+\bibanno{McLaughlin, Brett and Justin Edelson. 2006. {\it Java and XML}, Third Edition. O'Reilly.}
+{A good introduction to the set of tools available in
+Java for parsing and generating XML with SAX and DOM, specifying structure
+with DTDs and XML Schema, transforming XML with XSLT, as well as the general 
+high-level libraries JAXP and JAXB.}
+\end{itemize}
+
+\subsection{General Java Books}
+
+There are also general-purpose books about Java that do
+not focus on particular classes or applications.
+%
+\begin{itemize}
+%
+\bibanno{Shirazi, Jack. 2003. {\it Java Performance Tuning}, 2nd
+  Edition. O'Reilly} 
+{Although already dated, it provides a good introduction to
+  profiling and thinking about performance tuning.  The author and friends
+  also run the web site \code{javaperformancetuning.com}, which is a
+  monthly digest of Java performance tuning tips (and advertising).
+  If you know C, start with Jon Bentley's classic, {\it Programming
+  Pearls} (Addison-Wesley).}
+%
+\end{itemize}
+
+
+\subsection{Practice Makes Perfect}
+
+\noindent
+Really, the only way to learn how to code is to practice.  Being a
+good coder means two things: being fast and efficient (assuming
+accuracy).  By accurate, we mean writing code that does what it's
+supposed to do.  By fast, we mean the coding goes quickly.  By efficient,
+we mean the resulting code is efficient.
+
+For practice, we highly recommend the algorithm section of the
+TopCoder contests.  TopCoder provides a complete online Java
+environment, well thought out problems at varying specified levels of
+difficulty, unit tests that check your submissions, and examples of
+what others did to provide code-reading practice.
+%
+\begin{quote}
+\hrefurl{http://www.topcoder.com/tc}
+\end{quote}
+%
+
+
+
+\section{General Programming}
+
+\noindent
+We would also recommend a book about programming in general, 
+especially for those who have not worked collaboratively with
+a good group of professional programmers.
+%
+\begin{itemize}
+\bibanno{Hunt, Andrew and David Thomas.
+1999.
+{\it The Pragmatic Programmer}.
+Addison-Wesley.}
+{Read this book and follow its advice, which is just as relevant now
+as when it was written.  The best book on how to program
+we know.  A competitor to books like Steve McConnell's {\it Code Complete} (2004)
+and books on ``agile'' or ``extreme'' programming.}
+%
+\bibanno{Collins-Susman, Ben, Brian W.\ Fitzpatrick,
+and C. Michael Pilato.
+2010.
+Collins-Sussman et al.'s
+\booktitle{Version Control with Subversion}. Subversion 1.6.
+CreateSpace.}
+{This is the official guide to Subversion from the
+authors.  It's also available online at
+%
+\urldisplay{http://svnbook.red-bean.com/}
+}
+\end{itemize}
+
+
+%
+
+
+\section{Algorithms}
+
+\noindent
+Because natural language processing requires comptuational
+implementations of its models, a good knowledge of algorithm analysis
+goes a long way in understanding the approaches found in a tool kit
+like LingPipe.
+
+\begin{itemize}
+%
+\bibanno{Cormen, Thomas H., Charles E.\ Leiserson, Ronald L.\ Rivest, and
+Clifford Stein. 
+2009.
+{\it Introduciton to Algorithms}, Third Edition.
+MIT Press.}
+{A thorough yet readable introduction to algorithms.}
+%
+\bibanno{Durbin, Richard, Sean R.\ Eddy, Anders Krogh, Grame Mitchison.
+{\it Biological Sequence Analysis: Probabilistic Models of Proteins
+and Nucleic Acids}.
+Cambridge University Press.}
+{Even though it focuses on biology, it has great
+descriptions of several key natural language processing algorithms
+such as hidden Markov models and probabilistic context-free grammars.}
+%
+\bibanno{Gusfield, Dan.
+1997.
+{\it Algorithms on Strings, Trees and Sequences}.
+Cambridge University Press.}
+{Incredibly detailed and thorough introduction to
+string algorithms, mainly aimed at computational biology, but
+useful for all string and tree processing.}
+%
+\end{itemize}
+
+
+
+
+
+
+\section{Probability and Statistics}
+
+\noindent
+Most of the tools in LingPipe are statistical in nature.  To fully
+understand modern natural language processing it's necessary to
+understand the statistical models which make up their foundation.
+To do this requires an understanding of the basics of statistics.
+Much of the work in natural language processing is Bayesian, so
+understanding Bayesian statistics is now a must for understanding
+the field.  Much of it also relies on information theory, which is
+also introduced in the machine learning textbooks.
+
+\begin{itemize}
+%
+\bibanno{
+Bulmer, M.~G.
+1979.
+{\it Principles of Statistics}.
+Dover.}
+{Packs an amazing amount of information into
+a readable little volume, though it assumes some mathematical
+sophistication.}
+%
+\bibanno{Cover, Thomas M.\ and Joy A.\ Thomas.
+2006.
+{\it Elements of Information Theory}, Second Edition.
+Wiley.}
+{This is the classic textbook for information theory.}
+%
+\bibanno{DeGroot, Morris H.\ and Mark J.\ Schervish.
+2002.
+{\it Probability and Statistics},  Third Edition.
+Addison-Wesley.}
+{Another introduction to classical frequentist
+statistical hypothesis testing and estimation but with some Bayesian
+concepts thrown into the mix.}
+%
+\bibanno{Gelman, Andrew and Jennifer Hill.
+2006.
+{\it Data Analysis Using Regression and Multilevel/Hierarchical Models}.
+Cambridge University Press.}
+{A great practical introduction to regression from a Bayesian
+perspective with an emphasis on multilevel models.  Much less mathematically
+demanding than the other introductions, but still very rigorous.}
+%
+\bibanno{Gelman, Andrew, John B.~Carlin, Hal S.\ Stern, and Donald B.\ Rubin.
+2003.
+{\it Bayesian Data Analysis}, Second Edition.
+Chapman and Hall.}
+{The bible for Bayesian methods.  Presupposes high
+mathematical sophistication and a background in classical probability
+and statistics to the level of DeGroot and Schervish or Larsen
+and Marx's books.}
+%
+\bibanno{Larsen, Richard J.\ and Morris L.\ Marx.
+2005.
+{\it Introduction to Mathematical Statistics and Its Applications}, Fourth Edition.
+Prentice-Hall.}
+{A nice intro to classical frequentist statistics.}
+%
+
+\bibanno{Agresti, A. 2002. {\it Categorical Data Analysis}, Second Edition. Wiley.}
+{A thorough survey of classical approaches to analyzing categorical data,
+focusing on contingency tables.}
+
+\end{itemize}
+
+
+\section{Machine Learning}
+
+\noindent
+Machine learning, in contrast to statistics, focuses on implementation
+details and tends to concentrate on predictive inference for larger
+scale applications.  As such, understanding machine learning requires
+a background in both statistics and algorithms.
+
+\begin{itemize}
+\bibanno{Bishop, Christopher M.
+2007.
+{\it Pattern Recognition and Machine Learning}.
+Springer.}%
+{Introduction to general machine learning
+techniques that is self contained, but assumes more mathematical
+sophistication than this book.}
+%
+\bibanno{Hastie, Trevor, Robert Tibshirani and Jerome Friedman.
+2009.
+{\it The Elements of Statistical Learning}, Second Edition.
+Springer.}
+{Presupposes a great deal of mathematics, providing
+fairly rigorous introductions to a wide range of algorithms and
+statistical models.}
+%
+\bibanno{MacKay, David J.~C.
+2002.
+{\it Information Theory, Inference, and Learning Algorithms}.
+Cambridge University Press.}
+{More of a set of insightful case studies than a coherent textbook.
+Presupposes a high degree of mathematical sophistication.}
+%
+\bibanno{Witten, Ian H.\ and Eibe Frank. 2005. {\it Data Mining: Practical
+Machine Learning Tools and Techniques} (Second Edition).  Elsevier.}
+{The most similar to this book, explaining general machine
+learning techniques at a high level and 
+linking to the Java implementations (from their widely used Weka toolkit).}
+%
+\end{itemize}
+
+
+
+
+\section{Linguistics}
+
+\noindent
+Natural language processing is about language.  To fully appreciate
+the models in LingPipe, it is necessary to have some background in
+linguistics.  Unfortunately, most of the textbooks out there are based
+on traditional Chomskyan theoretical linguistics which divorces
+language from its processing, and from which natural language
+processing diverged several decades ago.
+
+\begin{itemize}
+%
+\bibanno{Bergmann, Anouschka, Kathleen Currie Hall, and Sharon Miriam Ross (editors).
+2007.
+{\it Language Files}, Tenth Edition.
+Ohio State University Press.}
+{Easy to follow and engaging overview of just about every
+aspect of human language and linguistics.  Books on specific areas of
+linguistics tend to be more theory specific.}
+%
+\end{itemize}
+
+
+\section{Natural Language Processing}
+
+\noindent
+Natural language processing is largely about designing and coding computer
+programs that operate over natural language data.  Because most NLP is
+statistical these days, this requires not only a knowledge of linguistics,
+but also of algorithms and statistics.
+
+\begin{itemize}
+\bibanno{Jurafsky, Daniel, James H.\ Martin.
+2008.
+{\it Speech and Language Processing}, Second Edition.
+Prentice-Hall.}
+{High-level overview of both speech and language
+processing.}
+%
+\bibanno{Manning, Christopher D., Raghavan Prabhakar, and Hinrich Sch\"utze.
+2008.
+{\it Introduction to Information Retrieval}.
+Cambridge University Press.}
+{Good intro to IR and better intro to some NLP than
+Manning and Sch\"utze's previous book, which is starting to feel
+dated.}
+%
+\bibanno{Manning, Christopher D.\ and Hinrich Sch\"utze.
+1999.
+{\it Foundations of Statistical Natural Language Processing}.
+MIT Press.}
+{Needs a rewrite to bring it up to date, but still
+worth reading given the lack of alternatives.}
+\end{itemize}
+
+% HACK TO GET RID OF UGLINESS ON MARKED PAGES
+% \clearpage
+% \thispagestyle{empty}
+% \cleardoublepage
