@@ -306,12 +306,15 @@ The first step is to create the analyzer.
 Here we've used Lucene's \code{StandardAnalyzer}, in package
 \code{org.apache.lucene.analysis.standard}, which applies case
 normalization and English stoplisting to the simple tokenizer, which
-pays attention to issues like periods and e-mail addresses (see
-\refchap{tokenization} for an overview of natural language
-tokenization in LingPipe, as well as adapters between Lucene analyzers
-and LingPipe tokenizer factories).  Note that it's constructed with a
-constant for the Lucene version, as the behavior has changed over
-time.
+pays attention to issues like periods and e-mail addresses.%
+%
+\footnote{See the tokenization chapter in the companion volume, {\it
+    Natural Language Processing in LingPipe} for an overview of
+  natural language tokenization in LingPipe, as well as adapters
+  between Lucene analyzers and LingPipe tokenizer factories).}
+%
+Note that it's constructed with a constant for the Lucene version, as
+the behavior has changed over time.
 
 The standard analyzer, like almost all of Lucene's built-in analyzers,
 ignores the name of the field that is passed in.  Such analyzers
@@ -322,13 +325,15 @@ tokenizer factories.%
   stream factory interface to produce token streams from text inputs.
   Then it would be natural to construct an analyzer by associating
   token stream factories with field names.  We follow this pattern in
-  adapting LingPipe's tokenizer factories to analyzers in
-  \refsec{tok-adapting-lucene-analyzers}.  Lucene's sister package,
-  Solr, which embeds Lucene in a client-server architecture, includes
-  a token stream factory interface \code{TokenizerFactory}, which is
-  very much like LingPipe's other than operating over readers rather
-  than character sequences and providing Solr-specific initialization
-  and configuration management.}
+  adapting LingPipe's tokenizer factories to analyzers in the companion
+  volume, {\it Natural Language Processing with LingPipe}, in the
+  section on adapting Lucene analyzers.
+
+Lucene's sister package, Solr, which embeds Lucene in a client-server
+architecture, includes a token stream factory interface
+\code{TokenizerFactory}, which is very much like LingPipe's other than
+operating over readers rather than character sequences and providing
+Solr-specific initialization and configuration management.}
 
 The next step of the \code{main()} method constructs the token stream
 given the string values of the command-line arguments \code{fieldName}
