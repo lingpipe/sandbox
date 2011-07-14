@@ -7,7 +7,7 @@ import com.aliasi.chunk.Chunking;
 import com.aliasi.chunk.ChunkFactory;
 import com.aliasi.chunk.ChunkingImpl;
 
-import com.aliasi.corpus.ChunkHandler;
+import com.aliasi.corpus.ObjectHandler;
 import com.aliasi.corpus.XMLParser;
 
 import com.aliasi.xml.DelegatingHandler;
@@ -62,7 +62,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version 3.2
  * @since   LingPipe3.2
  */
-public class AnnotatorCorpusParser extends XMLParser<ChunkHandler> {
+public class AnnotatorCorpusParser extends XMLParser<ObjectHandler<Chunking>> {
 
     final Set<String> mContainingTypeSet;
 
@@ -85,7 +85,7 @@ public class AnnotatorCorpusParser extends XMLParser<ChunkHandler> {
      * @return The SAX handler for this corpus parser.
      */
     protected DefaultHandler getXMLHandler() {
-        return new DocHandler((ChunkHandler)getHandler());
+        return new DocHandler(getHandler());
     }
 
     class DocHandler extends DefaultHandler {
@@ -97,9 +97,9 @@ public class AnnotatorCorpusParser extends XMLParser<ChunkHandler> {
         boolean mInContainer;
         boolean mInEntity;
 
-        ChunkHandler mHandler;
+        ObjectHandler<Chunking> mHandler;
 
-        DocHandler(ChunkHandler handler) {
+        DocHandler(ObjectHandler<Chunking> handler) {
             mHandler = handler;
         }
         public void startDocument() {

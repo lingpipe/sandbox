@@ -1,8 +1,9 @@
 package com.aliasi.annotate.corpora;
 
 import com.aliasi.chunk.CharLmRescoringChunker;
+import com.aliasi.chunk.Chunking;
 
-import com.aliasi.corpus.ChunkHandler;
+import com.aliasi.corpus.ObjectHandler;
 import com.aliasi.corpus.Parser;
 
 import com.aliasi.hmm.HmmCharLmEstimator;
@@ -62,7 +63,7 @@ public class TrainChunker {
         double rescoringInterpolation = 12.0;
 
         TokenizerFactory tokenizerFactory
-            = IndoEuropeanTokenizerFactory.FACTORY;
+            = IndoEuropeanTokenizerFactory.INSTANCE;
 
         HmmCharLmEstimator lmEstimator
             = new HmmCharLmEstimator(hmmNGramSize,
@@ -85,10 +86,10 @@ public class TrainChunker {
 
     public static void handle(File inputDir,
                               Set<String> containingTypes,
-                              ChunkHandler handler)
+                              ObjectHandler<Chunking> handler)
         throws IOException, SAXException {
 
-        Parser<ChunkHandler> parser = new AnnotatorCorpusParser(containingTypes);
+        Parser<ObjectHandler<Chunking>> parser = new AnnotatorCorpusParser(containingTypes);
         parser.setHandler(handler);
 
         File[] files

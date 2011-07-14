@@ -2,7 +2,7 @@ package com.aliasi.annotate.corpora;
 
 import com.aliasi.chunk.*;
 import com.aliasi.classify.*;
-import com.aliasi.corpus.ChunkHandler;
+import com.aliasi.corpus.ObjectHandler;
 
 import com.aliasi.util.Files;
 
@@ -99,7 +99,7 @@ public class InterAnnotatorAgreement {
         return handler.getChunkings();
     }
 
-    static class CollectingHandler implements ChunkHandler {
+    static class CollectingHandler implements ObjectHandler<Chunking> {
         List<Chunking> mChunkingList = new ArrayList<Chunking>();
         public void handle(Chunking chunking) {
             mChunkingList.add(chunking);

@@ -6,18 +6,19 @@ import com.aliasi.annotate.corpora.AnnotatorCorpusParser;
 // LINGPIPE
 import com.aliasi.chunk.Chunk;
 import com.aliasi.chunk.Chunking;
-
-import com.aliasi.corpus.ChunkHandlerAdapter;
-import com.aliasi.corpus.ChunkTagHandlerAdapter;
+import com.aliasi.chunk.IoTagChunkCodec;
+import com.aliasi.chunk.TagChunkCodec;
+import com.aliasi.chunk.TagChunkCodecAdapters;
 
 import com.aliasi.hmm.HmmCharLmEstimator;
 
 import com.aliasi.io.FileExtensionFilter;
 
+import com.aliasi.tag.StringTagging;
+
 import com.aliasi.tokenizer.TokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;
 
-import com.aliasi.util.Reflection;
 import com.aliasi.util.Streams;
 
 import java.awt.Color;
@@ -130,7 +131,7 @@ class DocumentAnnotator extends JPanel {
             throw new IOException("Could not read document.");
 
 
-        mAnnotationPane.setAutoscrolls(true);
+        //        mAnnotationPane.setAutoscrolls(true);
         JScrollPane scrollPane = new JScrollPane(mAnnotationPane);
         scrollPane.getVerticalScrollBar().setUnitIncrement(25);
 
@@ -309,13 +310,13 @@ class DocumentAnnotator extends JPanel {
             if (chunking == null) {
                 chunking = new com.aliasi.chunk.ChunkingImpl(sb);
             }
-            // System.out.println("trying to toTags");
-            mTags[i] = ChunkHandlerAdapter.toTags(chunking,mTokenizerFactory);
-            // System.out.println("done");
+            //   to Tags
+            IoTagChunkCodec codec = new IoTagChunkCodec(mTokenizerFactory,true);
+            StringTagging tagging = codec.toStringTagging(chunking);
+            List<String> tagList = tagging.tags();
+            String[] tags = new String[tagList.size()];
+            mTags[i] = tagList.toArray(tags);
             tagsToComboBoxLabels(mTags[i]);
-            if (mTokens[i].length != mTags[i].length) {
-                throw new IllegalStateException("fooey");
-            }
         }
         updateGUI();
     }
@@ -399,8 +400,8 @@ class DocumentAnnotator extends JPanel {
             mDocument = null;
             return false;
         } finally {
-            Streams.closeReader(reader);
-            Streams.closeInputStream(in);
+            Streams.closeQuietly(reader);
+            Streams.closeQuietly(in);
         }
 
         // InputSource in = new InputSource(mInputFile.toURL().toString());
@@ -552,9 +553,9 @@ class DocumentAnnotator extends JPanel {
             writer = new OutputStreamWriter(bufOut,mOutputCharset);
             outputter.output(mDocument,writer);
         } finally {
-            Streams.closeWriter(writer);
-            Streams.closeOutputStream(bufOut);
-            Streams.closeOutputStream(fileOut);
+            Streams.closeQuietly(writer);
+            Streams.closeQuietly(bufOut);
+            Streams.closeQuietly(fileOut);
         }
     }
 
@@ -916,7 +917,7 @@ class DocumentAnnotator extends JPanel {
 
         // ActionListener
         public void actionPerformed(ActionEvent e) {
-            String tagSelected = (String) getSelection();
+            String tagSelected = getSelection();
 
             mHasBeenEdited = true;  // atomic in event thread
 
