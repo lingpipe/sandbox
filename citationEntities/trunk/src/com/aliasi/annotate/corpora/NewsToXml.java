@@ -29,7 +29,7 @@ public class NewsToXml {
         SentenceModel sentenceModel
             = new IndoEuropeanSentenceModel(true,false);
         Chunker sentenceChunker
-            = new SentenceChunker(IndoEuropeanTokenizerFactory.FACTORY,
+            = new SentenceChunker(IndoEuropeanTokenizerFactory.INSTANCE,
                                   sentenceModel);
 
         File inDir = new File(args[0]);
@@ -91,6 +91,6 @@ public class NewsToXml {
         writer.characters("\n");
         writer.endSimpleElement("doc");
         writer.endDocument();
-        Streams.closeOutputStream(outStream);
+        Streams.closeQuietly(outStream);
     }
 }

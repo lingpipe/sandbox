@@ -9,9 +9,8 @@ import com.aliasi.chunk.CharLmHmmChunker;
 import com.aliasi.chunk.CharLmRescoringChunker;
 import com.aliasi.chunk.Chunk;
 import com.aliasi.chunk.Chunking;
-
-import com.aliasi.corpus.ChunkHandlerAdapter;
-import com.aliasi.corpus.ChunkTagHandlerAdapter;
+import com.aliasi.chunk.TagChunkCodec;
+import com.aliasi.chunk.TagChunkCodecAdapters;
 
 import com.aliasi.hmm.HmmCharLmEstimator;
 
@@ -20,7 +19,6 @@ import com.aliasi.io.FileExtensionFilter;
 import com.aliasi.tokenizer.TokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;
 
-import com.aliasi.util.Reflection;
 import com.aliasi.util.Streams;
 
 import java.awt.Color;
@@ -308,6 +306,7 @@ public class CorpusAnnotator {
         // mTopFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         mTopFrame.setVisible(true);
 
+        System.out.println("top frame visible");
         mAnnotatorQueue = new LinkedBlockingQueue<DocumentAnnotator>(2);
         mQueueWorker = new SwingWorker<Void,Void>() {
             public Void doInBackground() {
@@ -316,6 +315,9 @@ public class CorpusAnnotator {
                         return null;
             }
         };
+
+
+        System.out.println("annotator queue runnning in background");
 
         HmmCharLmEstimator lmEstimator
             = new HmmCharLmEstimator(8,256,8.0,false); // false: no smooth tag
@@ -347,13 +349,17 @@ public class CorpusAnnotator {
 
 
     boolean queueNext() {
+        System.out.println("queueNext");
         // only get next and return true if successful; executed in worker
         for (String fileNameLeft : mFileNamesLeft) {
+            System.out.println("fileNameLeft: " + fileNameLeft);
             if (mFileNamesQueued.contains(fileNameLeft)) continue;
             File inFile = new File(mInDir,fileNameLeft);
             File outFile = new File(mOutDir,fileNameLeft);
+            System.out.println("handles on infile, outfile");
             DocumentAnnotator annotator;
             try {
+                System.out.println("instantiate DocumentAnnotator");
                 annotator
                     = new DocumentAnnotator(this,
                                             inFile,mInCharset,
@@ -390,6 +396,7 @@ public class CorpusAnnotator {
 
 
     void trainTagger() {
+        System.out.println("trainTagger");
         int numFiles = mFileNamesDone.size();
         ProgressMonitor monitor
             = new ProgressMonitor(mTopSplitPane,
@@ -405,12 +412,14 @@ public class CorpusAnnotator {
         monitor.setNote("Completed " + progress
                         + "/" + numFiles + " Files.");
         for (String fileName : mFileNamesDone) {
+            System.out.println("trainining on file: " + fileName);
             File file = new File(mOutDir,fileName);
             trainTagger(file);
             monitor.setProgress(++progress);
             monitor.setNote("Completed " + progress
                             + "/" + numFiles + " Files.");
         }
+        System.out.println("beep beep");
         Toolkit.getDefaultToolkit().beep();
         monitor.close();
     }
@@ -445,6 +454,8 @@ public class CorpusAnnotator {
     }
 
     void nextDocument() throws InterruptedException {
+        System.out.println("nextDocument");
+        System.out.println("num files left: " + mFileNamesLeft.size());
         if (mFileNamesLeft.size() == 0) {
             JLabel doneLabel = new JLabel("<html>Finished.<br />No Files Remaining.</html>");
             doneLabel.setBackground(Color.LIGHT_GRAY);
@@ -456,6 +467,7 @@ public class CorpusAnnotator {
             // put up warning/congrats/exit!!
             return;
         }
+        System.out.println("about to create nextDocWorker");
 
         SwingWorker<DocumentAnnotator,Void> nextDocWorker
             = new SwingWorker<DocumentAnnotator,Void>() {
@@ -466,9 +478,11 @@ public class CorpusAnnotator {
                         if (mQueueWorker.isDone()
                             && mAnnotatorQueue.isEmpty())
                             return null;
+                        System.out.println("not done");
                         DocumentAnnotator annotator
                         = mAnnotatorQueue.take(); // waits indefinitely
                         String fileName = annotator.mInputFile.getName();
+                        System.out.println("process file:" + fileName);
                         if (mFileNamesLeft.remove(fileName)) {
                             mFileNameOpen = fileName;
                             return annotator;
@@ -479,6 +493,7 @@ public class CorpusAnnotator {
                 }
             }
         };
+        System.out.println("about to execute nextDocWorker");
         nextDocWorker.execute();
 
         DocumentAnnotator annotator = null;
@@ -501,9 +516,10 @@ public class CorpusAnnotator {
                                                0,0));
         annotator.setVisible(true);
         annotator.requestFocus();  // just in case no entity found
-        annotator.focusNextEntity();
+        //        annotator.focusNextEntity();
         annotator.revalidate();
         mOpenAnnotator = annotator;
+        System.out.println("l513");
         resetFiles();
     }
 
@@ -673,7 +689,7 @@ public class CorpusAnnotator {
             annotator.setVisible(true);
             annotator.requestFocus();
             annotator.revalidate();
-            annotator.focusNextEntity();
+            //            annotator.focusNextEntity();
             annotator.revalidate();
         } catch (Exception e) {
             String msg = "Exception getting next doc."
@@ -707,13 +723,22 @@ public class CorpusAnnotator {
     static void launchGui(String[] args) {
         try {
             File inDir = new File(args[0]);
+            System.out.println("inDir=" + inDir.getName());
+            
             String inCharset = args[1];
+            System.out.println("inCharset=" + inCharset);
+
             File outDir = new File(args[2]);
             String outCharset = args[3];
             String[] annotatedElements = args[4].split(",");
+            System.out.print("annotatedElements: ");
+            for (String i : annotatedElements) System.out.print(i + " ");
+            System.out.println();
+
             String[] chunkTypes = args[5].split(",");
+            Class tfClass = args[6].getClass();
             TokenizerFactory factory
-                = (TokenizerFactory) Reflection.newInstance(args[6]);
+                = (TokenizerFactory) Class.forName(args[6]).getConstructor(new Class[0]).newInstance(new Object[0]);
             int textFontSize = Integer.parseInt(args[7]);
             boolean autoAnnotate = (args.length < 9) || Boolean.parseBoolean(args[8]);
             System.out.println("Auto annotate=" + autoAnnotate);

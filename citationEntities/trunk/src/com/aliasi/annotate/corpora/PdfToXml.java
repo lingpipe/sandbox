@@ -115,8 +115,8 @@ public class PdfToXml {
             writer.endDocument();
 
         } finally {
-            Streams.closeOutputStream(bufOut);
-            Streams.closeOutputStream(out);
+            Streams.closeQuietly(bufOut);
+            Streams.closeQuietly(out);
         }
     }
 
