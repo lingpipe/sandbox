@@ -6,7 +6,7 @@ import com.aliasi.annotate.corpora.AnnotatorCorpusParser;
 // LINGPIPE
 import com.aliasi.chunk.Chunk;
 import com.aliasi.chunk.Chunking;
-import com.aliasi.chunk.IoTagChunkCodec;
+import com.aliasi.chunk.BioTagChunkCodec;
 import com.aliasi.chunk.TagChunkCodec;
 import com.aliasi.chunk.TagChunkCodecAdapters;
 
@@ -311,7 +311,7 @@ class DocumentAnnotator extends JPanel {
                 chunking = new com.aliasi.chunk.ChunkingImpl(sb);
             }
             //   to Tags
-            IoTagChunkCodec codec = new IoTagChunkCodec(mTokenizerFactory,true);
+            BioTagChunkCodec codec = new BioTagChunkCodec(mTokenizerFactory,true);
             StringTagging tagging = codec.toStringTagging(chunking);
             List<String> tagList = tagging.tags();
             String[] tags = new String[tagList.size()];
@@ -372,7 +372,7 @@ class DocumentAnnotator extends JPanel {
     static String tagToComboBoxLabel(String tag) {
         if (tag.equals("O"))
             return OUT_TAG_LABEL;
-        if (tag.startsWith("B-"))
+        if (tag.startsWith("B_"))
             return tag.substring(2);
         return "...";
     }
@@ -504,6 +504,7 @@ class DocumentAnnotator extends JPanel {
     }
 
     void discard() throws InterruptedException {
+        //        System.out.println("discard file");
         if (mCorpusAnnotator == null) return;
         mCorpusAnnotator.discard(mInputFile.getName());
         mCorpusAnnotator.nextDocument();
@@ -511,13 +512,14 @@ class DocumentAnnotator extends JPanel {
     }
 
     void revert() {
+        //        System.out.println("revert file");
         if (mCorpusAnnotator == null) return;
         mCorpusAnnotator.revert(mInputFile);
     }
 
 
     void finish() throws IOException, InterruptedException {
-
+        //        System.out.println("finish processing file");
         mCorpusAnnotator.finished(mInputFile);
 
         new SwingWorker<Void,Void>() {
@@ -525,6 +527,7 @@ class DocumentAnnotator extends JPanel {
                 try {
                     writeDocument();
                     mCorpusAnnotator.trainTagger(mOutputFile);
+                    //                    System.out.println("trained tagger");
                 }
                 catch (Exception e) {
                     System.out.println("exception writing document=" + e);
@@ -1016,7 +1019,7 @@ class DocumentAnnotator extends JPanel {
 
     void exit() {
         try {
-            System.out.println("Exiting.");
+            //            System.out.println("Exiting.");
         } catch (Throwable t) {
             System.out.println("exc on exit=" + t);
             t.printStackTrace(System.out);
