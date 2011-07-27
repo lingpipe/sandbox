@@ -193,6 +193,7 @@ public class CorpusAnnotator {
                     int index = mFileList.locationToIndex(e.getPoint());
                     String fileName = mFileList.getSelectedValue().toString();
                     try {
+                        //                        System.out.println("remaining files, chose: " + fileName);
                         nextDocument(fileName);
                     } catch (InterruptedException e2) {
                         System.out.println("Ignoring interruption=" + e2);
@@ -227,6 +228,7 @@ public class CorpusAnnotator {
                     String fileName
                         = mFileFinishedList.getSelectedValue().toString();
                     try {
+                        //                        System.out.println("completed files, chose: " + fileName);
                         nextDocument(fileName);
                     } catch (InterruptedException e2) {
                         System.out.println("Ignoring interruption=" + e2);
@@ -306,7 +308,6 @@ public class CorpusAnnotator {
         // mTopFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         mTopFrame.setVisible(true);
 
-        System.out.println("top frame visible");
         mAnnotatorQueue = new LinkedBlockingQueue<DocumentAnnotator>(2);
         mQueueWorker = new SwingWorker<Void,Void>() {
             public Void doInBackground() {
@@ -315,9 +316,6 @@ public class CorpusAnnotator {
                         return null;
             }
         };
-
-
-        System.out.println("annotator queue runnning in background");
 
         HmmCharLmEstimator lmEstimator
             = new HmmCharLmEstimator(8,256,8.0,false); // false: no smooth tag
@@ -349,17 +347,16 @@ public class CorpusAnnotator {
 
 
     boolean queueNext() {
-        System.out.println("queueNext");
+        //        System.out.println("queueNext, files remaining: " + mFileNamesLeft.size());
         // only get next and return true if successful; executed in worker
         for (String fileNameLeft : mFileNamesLeft) {
-            System.out.println("fileNameLeft: " + fileNameLeft);
             if (mFileNamesQueued.contains(fileNameLeft)) continue;
             File inFile = new File(mInDir,fileNameLeft);
             File outFile = new File(mOutDir,fileNameLeft);
-            System.out.println("handles on infile, outfile");
+            //            System.out.println("fileNameLeft: " + fileNameLeft);
             DocumentAnnotator annotator;
             try {
-                System.out.println("instantiate DocumentAnnotator");
+                //                System.out.println("instantiate DocumentAnnotator");
                 annotator
                     = new DocumentAnnotator(this,
                                             inFile,mInCharset,
@@ -396,7 +393,7 @@ public class CorpusAnnotator {
 
 
     void trainTagger() {
-        System.out.println("trainTagger");
+        //        System.out.println("trainTagger");
         int numFiles = mFileNamesDone.size();
         ProgressMonitor monitor
             = new ProgressMonitor(mTopSplitPane,
@@ -412,14 +409,14 @@ public class CorpusAnnotator {
         monitor.setNote("Completed " + progress
                         + "/" + numFiles + " Files.");
         for (String fileName : mFileNamesDone) {
-            System.out.println("trainining on file: " + fileName);
+            //            System.out.println("trainining on file: " + fileName);
             File file = new File(mOutDir,fileName);
             trainTagger(file);
             monitor.setProgress(++progress);
             monitor.setNote("Completed " + progress
                             + "/" + numFiles + " Files.");
         }
-        System.out.println("beep beep");
+        System.out.println("Tagger trained on " + numFiles + " files");
         Toolkit.getDefaultToolkit().beep();
         monitor.close();
     }
@@ -438,13 +435,10 @@ public class CorpusAnnotator {
     synchronized void trainTagger(File file) {
         try {
             mTaggerRwLock.writeLock().lock();
-            System.out.println("Training on file=" + file);
             mAnnotatorTrainingParser.parse(file);
-            System.out.println("     Finished training on file=" + file);
         } catch (IOException e) {
             e.printStackTrace(System.out);
         } finally {
-            System.out.println("     unlocking");
             mTaggerRwLock.writeLock().unlock();
         }
     }
@@ -454,8 +448,7 @@ public class CorpusAnnotator {
     }
 
     void nextDocument() throws InterruptedException {
-        System.out.println("nextDocument");
-        System.out.println("num files left: " + mFileNamesLeft.size());
+        //        System.out.println("nextDocument");
         if (mFileNamesLeft.size() == 0) {
             JLabel doneLabel = new JLabel("<html>Finished.<br />No Files Remaining.</html>");
             doneLabel.setBackground(Color.LIGHT_GRAY);
@@ -464,11 +457,10 @@ public class CorpusAnnotator {
             mEditorPane.removeAll();
             mEditorPane.add(doneLabel);
             mEditorPane.revalidate();
-            // put up warning/congrats/exit!!
             return;
         }
-        System.out.println("about to create nextDocWorker");
-
+        //        System.out.println("files remianing: " + mFileNamesLeft.size());
+        //        System.out.println("about to create nextDocWorker");
         SwingWorker<DocumentAnnotator,Void> nextDocWorker
             = new SwingWorker<DocumentAnnotator,Void>() {
 
@@ -478,11 +470,11 @@ public class CorpusAnnotator {
                         if (mQueueWorker.isDone()
                             && mAnnotatorQueue.isEmpty())
                             return null;
-                        System.out.println("not done");
+                        //                        System.out.println("get next file from queue");
                         DocumentAnnotator annotator
                         = mAnnotatorQueue.take(); // waits indefinitely
                         String fileName = annotator.mInputFile.getName();
-                        System.out.println("process file:" + fileName);
+                        //                        System.out.println("process file:" + fileName);
                         if (mFileNamesLeft.remove(fileName)) {
                             mFileNameOpen = fileName;
                             return annotator;
@@ -493,7 +485,6 @@ public class CorpusAnnotator {
                 }
             }
         };
-        System.out.println("about to execute nextDocWorker");
         nextDocWorker.execute();
 
         DocumentAnnotator annotator = null;
@@ -516,10 +507,9 @@ public class CorpusAnnotator {
                                                0,0));
         annotator.setVisible(true);
         annotator.requestFocus();  // just in case no entity found
-        //        annotator.focusNextEntity();
+        annotator.focusNextEntity();
         annotator.revalidate();
         mOpenAnnotator = annotator;
-        System.out.println("l513");
         resetFiles();
     }
 
@@ -574,7 +564,7 @@ public class CorpusAnnotator {
     }
 
     void revert(File inFile) {
-        System.out.println("REVERT");
+        //        System.out.println("REVERT");
         // could simplify this to just redraw after rereading all
         // then no need to change files
         // and this would mean it wouldn't dance around, too
@@ -629,7 +619,7 @@ public class CorpusAnnotator {
         jList.setListData(filesLeft);
     }
 
-    static DocumentAnnotator sAnnotator = null;
+    //    static DocumentAnnotator sAnnotator = null;
 
     void createAnnotator(final File inFile, final File outFile,
                          final boolean autoAnnotate) {
@@ -666,7 +656,7 @@ public class CorpusAnnotator {
                                         mChunkTypes);
 
             monitor.setProgress(1);
-            sAnnotator = annotator;
+            //            sAnnotator = annotator;
             mEditorPane.removeAll();
             mEditorPane.add(annotator,
                             new GridBagConstraints(0,0, 1,1, 1.0,1.0,
@@ -723,25 +713,22 @@ public class CorpusAnnotator {
     static void launchGui(String[] args) {
         try {
             File inDir = new File(args[0]);
-            System.out.println("inDir=" + inDir.getName());
             
             String inCharset = args[1];
-            System.out.println("inCharset=" + inCharset);
 
             File outDir = new File(args[2]);
             String outCharset = args[3];
             String[] annotatedElements = args[4].split(",");
-            System.out.print("annotatedElements: ");
-            for (String i : annotatedElements) System.out.print(i + " ");
-            System.out.println();
 
             String[] chunkTypes = args[5].split(",");
+
             Class tfClass = args[6].getClass();
             TokenizerFactory factory
                 = (TokenizerFactory) Class.forName(args[6]).getConstructor(new Class[0]).newInstance(new Object[0]);
             int textFontSize = Integer.parseInt(args[7]);
             boolean autoAnnotate = (args.length < 9) || Boolean.parseBoolean(args[8]);
             System.out.println("Auto annotate=" + autoAnnotate);
+
             // creates annotator
             final CorpusAnnotator annotator
                 = new CorpusAnnotator(inDir,inCharset,
