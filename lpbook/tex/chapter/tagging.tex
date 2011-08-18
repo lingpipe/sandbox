@@ -124,7 +124,7 @@ an immutable reference to an object of type \code{E}.
 
 The class \code{StringTagging} also extends the base
 \code{Tagging<E>}, but with the generic type \code{E} fixed to
-\code{String}.  In addition to the toekns and tags, a string tagging
+\code{String}.  In addition to the tokens and tags, a string tagging
 stores an underlying character sequence from which the tokens were
 derived along with the start and end position of each token in the
 sequence.  
@@ -163,7 +163,7 @@ human-readable output.
 \subsubsection{Equality and Hash Codes}
 
 The basic \code{Tagging} and extended \code{ScoredTagging} classes
-define equality by refernece (by not overriding the definition of
+define equality by reference (by not overriding the definition of
 \code{equals(Object)} inherited from \code{java.util.Object}).  That
 is, a tagging and scored tagging are only equal if they are reference
 equal.  
@@ -174,13 +174,13 @@ contents, with a corresponding hash code method.
 
 \section{Tag Lattices}
 
-The \code{Tagging} class provides an output representating for
+The \code{Tagging} class provides an output representation for
 first-best taggers that return their best estimate of a tagging.  The
 \code{ScoredTagging} class is sufficient for $n$-best output, which
-consists of a sequence of taggings with scored attached.  For marginal
-taggers, output takes the form of a tag lattice.  A tag lattice
-encapsulates a rich computation of probabilities for individual
-tags given the rest of the output.
+consists of a sequence of taggings with scores attached to each
+complete tagging.  For marginal taggers, output takes the form of a
+tag lattice.  A tag lattice encapsulates a rich computation of
+probabilities for individual tags given the rest of the output.
 
 In this section, we describe the abstract class \code{TagLattice<E>}.
 Like for regular taggings, the generic type parameter \code{E}
