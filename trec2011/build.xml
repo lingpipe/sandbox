@@ -1,0 +1,49 @@
+<project>
+
+  <property name="jar"
+            value="alias-i-trec-2011.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete file="${jar}"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
+      <classpath refid="classpath"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="unpack">
+    <mkdir dir="data/unpacked"/>
+    <untar src="data/distro/trec11-cs-task2-test.tar.bz2"
+           dest="data/unpacked"
+           compression="bzip2"/>
+  </target>
+
+  <target name="munge"
+          depends="jar">
+    <mkdir dir="data/munged"/>
+    <java classname="Munger"
+          classpathref="classpath"
+          fork="true">
+      <arg value="data/unpacked/trec11-cs-task2-test/data.txt"/>
+      <arg value="data/munged"/>
+    </java>
+  </target>
+
+</project>
