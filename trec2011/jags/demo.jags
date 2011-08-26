@@ -1,0 +1,5 @@
+model {
+  for (n in 1:N) {
+      y[n] ~ dnorm(mu,tau);
+  }
+}

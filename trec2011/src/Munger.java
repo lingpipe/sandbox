@@ -10,19 +10,23 @@ public class Munger {
 	InputStream in = new FileInputStream(dataFile);
 	Reader reader = new InputStreamReader(in,"ASCII");
 	BufferedReader buf = new BufferedReader(reader);
-	String header = buf.readLine();
-	System.out.println("header:\n  " + header);
+	buf.readLine(); // skip header
 	List<String> topics = new ArrayList<String>();
 	List<String> hits = new ArrayList<String>();
 	List<String> workers = new ArrayList<String>();
 	List<String> docs = new ArrayList<String>();
 	List<String> truths = new ArrayList<String>();
 	List<String> labels = new ArrayList<String>();
+	List<String> docTopics = new ArrayList<String>();
+	Map<String,String> docTopicToTruth = new HashMap<String,String>();
+	Map<String,String> docTopicToDoc = new HashMap<String,String>();
+	Map<String,String> docTopicToTopic = new HashMap<String,String>();
 	SymTab topicSymTab = new SymTab();
 	SymTab hitSymTab = new SymTab();
 	SymTab workerSymTab = new SymTab();
 	SymTab docSymTab = new SymTab();
-	Map<String,String> docToTopic = new HashMap<String,String>();
+	SymTab docTopic1SymTab = new SymTab();
+	SymTab docTopic2SymTab = new SymTab();
 	String line;
 	while ((line = buf.readLine()) != null) {
 	    String[] fields = line.split("\\s+");
@@ -34,17 +38,27 @@ public class Munger {
 	    String doc = fields[3];
 	    String truth = fields[4];
 	    String label = fields[5];
-	    docToTopic.put(doc,topic);
+	    String docTopic = doc + "__" + topic;
+
 	    topics.add(topic);
 	    hits.add(hit);
 	    workers.add(worker);
 	    docs.add(doc);
 	    truths.add(truth);
 	    labels.add(label);
+	    docTopics.add(docTopic);
+	    if ("-1".equals(truth)) {
+		docTopic1SymTab.addSym(docTopic);
+	    } else {
+		docTopic2SymTab.addSym(docTopic);
+		docTopicToTruth.put(docTopic,truth);
+	    }
 	    topicSymTab.addSym(topic);
 	    hitSymTab.addSym(hit);
 	    workerSymTab.addSym(worker);
 	    docSymTab.addSym(doc);
+	    docTopicToDoc.put(docTopic,doc);
+	    docTopicToTopic.put(docTopic,topic);
 	}
 	buf.close();
 	System.out.println("#topics=" + topicSymTab.size());
@@ -52,62 +66,65 @@ public class Munger {
 	System.out.println("#workers=" + workerSymTab.size());
 	System.out.println("#docs=" + docSymTab.size());
 	System.out.println("#judgments=" + labels.size());
-	
-	PrintWriter truthPrinter 
-	    = new PrintWriter("data/munged/doc_truth.csv","ASCII");
-	Set<String> nonNistDocs = new HashSet<String>(docs);
-	Map<Integer,String> truthMap = new HashMap<Integer,String>();
-	for (int i = 0; i < truths.size(); ++i) {
-	    if (truths.get(i).equals("-1")) continue;
-	    nonNistDocs.remove(docs.get(i));
-	    truthMap.put(docSymTab.symToId(docs.get(i)),
-			 truths.get(i));
+	System.out.println("#doc/topic pairs=" + docTopicToDoc.size());
+	System.out.println("#truths=" + docTopicToTruth.size());
+
+	PrintWriter p = new PrintWriter("data/munged/ii1_tt1.csv","ASCII");
+	for (int i = 0; i < docTopic1SymTab.size(); ++i) {
+	    String docTopic = docTopic1SymTab.idToSym(i);
+	    p.println(docSymTab.symToId(docTopicToDoc.get(docTopic))
+		      + "," + topicSymTab.symToId(docTopicToTopic
+						  .get(docTopic)));
 	}
-	System.out.println("#NIST judgments=" + truthMap.size());
-	for (Map.Entry<Integer,String> entry : truthMap.entrySet()) {
-	    truthPrinter.println(entry.getKey() + "," + entry.getValue());
+	p.close();
+
+	p = new PrintWriter("data/munged/ii2_tt2_z2.csv","ASCII");
+	for (int i = 0; i < docTopic2SymTab.size(); ++i) {
+	    String docTopic = docTopic2SymTab.idToSym(i);
+	    p.println(docSymTab.symToId(docTopicToDoc.get(docTopic))
+		      + "," + topicSymTab.symToId(docTopicToTopic
+						  .get(docTopic))
+		      + "," + docTopicToTruth.get(docTopic));
 	}
-	truthPrinter.close();
-	System.out.println("#Docs w/o NIST judgments=" + nonNistDocs.size());
+	p.close();
 
-	PrintWriter unknownPrinter
-	    = new PrintWriter("data/munged/doc_unknown.csv");
-	for (String doc : nonNistDocs)
-	    unknownPrinter.println(doc);
-	unknownPrinter.close();
+	p = new PrintWriter("data/munged/ii1_jj1_y1.csv");
+	for (int i = 0; i < topics.size(); ++i) {
+	    String docTopic = docTopics.get(i);
+	    if (docTopicToTruth.containsKey(docTopic)) continue;
+	    String worker = workers.get(i);
+	    String label = labels.get(i);
+	    p.println(docTopic1SymTab.symToId(docTopic)
+			    + "," + workerSymTab.symToId(worker)
+			    + "," + label);
+	}
+	p.close();
 
-	PrintWriter labelPrinter
-	    = new PrintWriter("data/munged/doc_anno_label.csv", "ASCII");
-	for (int i = 0; i < labels.size(); ++i)
-	    labelPrinter.println(docSymTab.symToId(docs.get(i))
-				 + "," + workerSymTab.symToId(workers.get(i))
-				 + "," + labels.get(i));
-	labelPrinter.close();
+	p = new PrintWriter("data/munged/ii2_jj2_y2.csv");
+	for (int i = 0; i < topics.size(); ++i) {
+	    String docTopic = docTopics.get(i);
+	    if (!docTopicToTruth.containsKey(docTopic)) continue;
+	    String worker = workers.get(i);
+	    String label = labels.get(i);
+	    p.println(docTopic2SymTab.symToId(docTopic)
+			    + "," + workerSymTab.symToId(worker)
+			    + "," + label);
+	}
+	p.close();
 
-	PrintWriter docTopicPrinter
-	    = new PrintWriter("data/munged/doc_topic.csv","ASCII");
-	for (Map.Entry<String,String> entry : docToTopic.entrySet())
-	    docTopicPrinter.println(docSymTab.symToId(entry.getKey())
-				    + "," 
-				    + topicSymTab.symToId(entry.getValue()));
-	docTopicPrinter.close();
-
-	printSymTab("topic",topicSymTab);
-	printSymTab("hit",hitSymTab);
-	printSymTab("worker",workerSymTab);
 	printSymTab("doc",docSymTab);
+	printSymTab("topic",topicSymTab);
+	printSymTab("worker",workerSymTab);
     }
 
-    static void printSymTab(String label, SymTab st) 
-	throws IOException {
-	System.out.println("#" + label + "=" + st.mIdToSym.size());
-	PrintWriter printer
+    static void printSymTab(String label, SymTab st) throws IOException {
+	PrintWriter p
 	    = new PrintWriter("data/munged/" + label + "_" + "sym.csv",
 			      "ASCII");
 	int i = 0;
 	for (String sym : st.mIdToSym)
-	    printer.println((++i) + "," + sym);
-	printer.close();
+	    p.println((++i) + "," + sym);
+	p.close();
     }
 			    
     

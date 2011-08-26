@@ -1,0 +1,60 @@
+DATA
+======================================================================
+
+T: # topics
+J: #workers
+
+For doc/topic pairs without NIST truth
+----------------------------------------
+I1: #doc/topic pairs 
+K1: #judgements 
+
+ii1[K1]: doc-topic for doc/topic pair in 1:K1
+tt1[K1]: topic for doc/topic pair in 1:K1
+y1[K1]: label assigned by worker to doc/topic pair for judgment in 1:K1
+
+For doc/topic pairs with NIST truth
+----------------------------------------
+I2: #doc/topic pairs 
+K2: #judgements 
+
+ii2[K2]: doc/topic for judgment in 1:K2
+jj2[K2]: worker for judgment in 1:K2
+y2[K2]: label assigned by worker to doc/topic pair for judgment in 1:K2
+
+z2[I2]: NIST truth for doc/topic in 1:I2
+
+
+DATA FILES: 
+  dd1_tt1.csv     (I1 lines)    [doc_topic_1]  doc-id,topic-id
+  dd2_tt2_z2.csv  (I2 lines)    [doc_topic_2]  doc-id,topic-id,truth
+  ii1_jj1_y1.csv  (K1 lines)    [k1]           doc-topic-id,worker-id,label
+  ii2_jj2_y2.csv  (K2 lines)    [k2]           doc-topic-id,worker-id,label
+
+SYM TAB FILES:
+  doc.csv    (? lines)   [doc-id]     doc
+  topic.csv  (T lines)   [topic-id]   topic
+  worker.csv (J lines)   [worker-id]  worker
+
+OUTPUT FOR TREC (tab separated)
+  <topic-id> <doc-id> <rank-label> <class-label>
+
+  <rank-label>: 1 to N where N is number of docs in the topic
+  <class-label>:  prob of relevance in [0,1]
+  
+
+SYMBOLS
+======================================================================
+doc, topic, worker [label, nist label, hit]
+
+
+PARAMETERS
+======================================================================
+alpha_pi, beta_pi: priors for prevalence
+pi[T]: prevalence of relevant docs for topic in 1:T
+alpha_0, beta_0: priors for specificity
+theta_0[J]: specificity of worker in 1:J
+alpha_1, beta_1: priors for sensitivity
+theta_1[J]: sensitivity of worker in 1:J
+z1[I1]: label for doc/topic in 1:I1
+
