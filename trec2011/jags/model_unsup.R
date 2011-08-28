@@ -17,6 +17,9 @@ model {
         y2[k2] ~ dbern(z2[ii2[k2]] * theta1[jj2[k2]] + 
                          (1 - z2[ii2[k2]]) * (1 - theta0[jj2[k2]]));
     }
+    for (i2 in 1:I2) {
+        z2[i2] ~ dbern(pi[tt2[i2]]);
+    }
     phi_pi ~ dbeta(1,1);
     kappa_pi ~ dpar(1.5,0.1);
     alpha_pi <- kappa_pi * phi_pi;
@@ -33,9 +36,5 @@ model {
     beta_1 <- kappa_1 * (1 - phi_1);
 }
 
-#   do not use because proportion w. truth not representative
-#   for (i2 in 1:I2) {
-#       z2[i2] ~ dbern(pi[tt2[i2]]);
-#   }
 
 
