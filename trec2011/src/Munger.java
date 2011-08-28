@@ -47,7 +47,7 @@ public class Munger {
 	    truths.add(truth);
 	    labels.add(label);
 	    docTopics.add(docTopic);
-	    if ("-1".equals(truth)) {
+	    if ("-1".equals(truth)) { // no truth given
 		docTopic1SymTab.addSym(docTopic);
 	    } else {
 		docTopic2SymTab.addSym(docTopic);
@@ -61,37 +61,44 @@ public class Munger {
 	    docTopicToTopic.put(docTopic,topic);
 	}
 	buf.close();
-	System.out.println("#topics=" + topicSymTab.size());
-	System.out.println("#hits=" + hitSymTab.size());
-	System.out.println("#workers=" + workerSymTab.size());
-	System.out.println("#docs=" + docSymTab.size());
-	System.out.println("#judgments=" + labels.size());
-	System.out.println("#doc/topic pairs=" + docTopicToDoc.size());
-	System.out.println("#truths=" + docTopicToTruth.size());
+	System.out.println("# topics=" + topicSymTab.size());
+	System.out.println("# hits=" + hitSymTab.size());
+	System.out.println("# workers=" + workerSymTab.size());
+	System.out.println("# docs=" + docSymTab.size());
+	System.out.println("# judgments; K1+K2=" + labels.size());
+	System.out.println("# doc/topic pairs; I1+I2=" + docTopicToDoc.size());
+	System.out.println("# truths; I2=" + docTopicToTruth.size());
 
-	PrintWriter p = new PrintWriter("data/munged/ii1_tt1.csv","ASCII");
+	System.out.println("# doc/topic pairs w/o NIST truth; I1=" + docTopic1SymTab.size());
+	PrintWriter p = new PrintWriter("data/munged/dd1_tt1.csv","ASCII");
 	for (int i = 0; i < docTopic1SymTab.size(); ++i) {
 	    String docTopic = docTopic1SymTab.idToSym(i);
-	    p.println(docSymTab.symToId(docTopicToDoc.get(docTopic))
-		      + "," + topicSymTab.symToId(docTopicToTopic
-						  .get(docTopic)));
+	    String doc = docTopicToDoc.get(docTopic);
+	    String topic = docTopicToTopic.get(docTopic);
+	    p.println(docSymTab.symToId(doc)
+		      + "," + topicSymTab.symToId(topic));;
 	}
 	p.close();
 
-	p = new PrintWriter("data/munged/ii2_tt2_z2.csv","ASCII");
+	System.out.println("# doc/topic pairs w NIST truth; I2=" + docTopic2SymTab.size());
+	p = new PrintWriter("data/munged/dd2_tt2_z2.csv","ASCII");
 	for (int i = 0; i < docTopic2SymTab.size(); ++i) {
 	    String docTopic = docTopic2SymTab.idToSym(i);
-	    p.println(docSymTab.symToId(docTopicToDoc.get(docTopic))
-		      + "," + topicSymTab.symToId(docTopicToTopic
-						  .get(docTopic))
-		      + "," + docTopicToTruth.get(docTopic));
+	    String doc = docTopicToDoc.get(docTopic);
+	    String topic = docTopicToTopic.get(docTopic);
+	    String truth = docTopicToTruth.get(docTopic);
+	    p.println(docSymTab.symToId(doc)
+		      + "," + topicSymTab.symToId(topic)
+		      + "," + truth);
 	}
 	p.close();
 
+	int K1 = 0;
 	p = new PrintWriter("data/munged/ii1_jj1_y1.csv");
 	for (int i = 0; i < topics.size(); ++i) {
 	    String docTopic = docTopics.get(i);
-	    if (docTopicToTruth.containsKey(docTopic)) continue;
+	    if (docTopicToTruth.containsKey(docTopic)) continue;	
+	    ++K1;
 	    String worker = workers.get(i);
 	    String label = labels.get(i);
 	    p.println(docTopic1SymTab.symToId(docTopic)
@@ -99,11 +106,14 @@ public class Munger {
 			    + "," + label);
 	}
 	p.close();
+	System.out.println("# judgments for pairs w/o NIST truth; K1=" + K1);
 
+	int K2 = 0;
 	p = new PrintWriter("data/munged/ii2_jj2_y2.csv");
 	for (int i = 0; i < topics.size(); ++i) {
 	    String docTopic = docTopics.get(i);
 	    if (!docTopicToTruth.containsKey(docTopic)) continue;
+	    ++K2;
 	    String worker = workers.get(i);
 	    String label = labels.get(i);
 	    p.println(docTopic2SymTab.symToId(docTopic)
@@ -111,6 +121,7 @@ public class Munger {
 			    + "," + label);
 	}
 	p.close();
+	System.out.println("# judgements for pairs w NIST truth; K2=" + K2);
 
 	printSymTab("doc",docSymTab);
 	printSymTab("topic",topicSymTab);
