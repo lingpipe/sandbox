@@ -31,13 +31,16 @@ jj2 <- ii2_jj2_y2[,2];
 y2 <- ii2_jj2_y2[,3];
 
 print("reading doc symbols", quote=FALSE);
-doc <- scan("../data/munged/doc_sym.csv", what="character");
+doc <- matrix(scan("../data/munged/doc_sym.csv", what="character", sep=","),
+              ncol=2,byrow=T);
 
 print("reading topic symbols, length=T", quote=FALSE);
-topic <- scan("../data/munged/topic_sym.csv", what="character");
+topic <- matrix(scan("../data/munged/topic_sym.csv", what="character", sep=",")
+                ncol=2,byrow=T);
 
 print("reading worker symbols, length=J", quote=FALSE);
-worker <- scan("../data/munged/worker_sym.csv", what="character");
+worker <- matrix(scan("../data/munged/worker_sym.csv", what="character",sep=","),
+                 ncol=2,byrow=T);
 
 T <- length(topic);
 J <- length(worker);
