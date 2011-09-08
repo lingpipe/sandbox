@@ -35,15 +35,15 @@ doc <- matrix(scan("../data/munged/doc_sym.csv", what="character", sep=","),
               ncol=2,byrow=T);
 
 print("reading topic symbols, length=T", quote=FALSE);
-topic <- matrix(scan("../data/munged/topic_sym.csv", what="character", sep=",")
+topic <- matrix(scan("../data/munged/topic_sym.csv", what="character", sep=","),
                 ncol=2,byrow=T);
 
 print("reading worker symbols, length=J", quote=FALSE);
 worker <- matrix(scan("../data/munged/worker_sym.csv", what="character",sep=","),
                  ncol=2,byrow=T);
 
-T <- length(topic);
-J <- length(worker);
+T <- length(topic[,1]);
+J <- length(worker[,1]);
 
 K1 <- length(ii1);
 K2 <- length(ii2);
@@ -52,6 +52,7 @@ I2 <- max(ii2);
 
 print(sprintf("#topic= T =%d",T),quote=FALSE); 
 print(sprintf("#worker= J = %d",J),quote=FALSE); 
+print(sprintf("#doc/topic pairs=%d",I1+I2),quote=FALSE); 
 print(sprintf("#doc/topic pairs w/o truth = I1 = %d",I1),quote=FALSE);
 print(sprintf("#doc/topic pairs w truth = I2 = %d",I2),quote=FALSE);
 print(sprintf("#judgments w/o truth = K1 = %d",K1),quote=FALSE); 
@@ -67,17 +68,22 @@ for (i in 1:I1) {
     z1_voted[i] <- z1_voted[i] / z1_sum[i];
 }
 
+# init to votes;  could make this random by vote
 z1_init <- rep(0.0,I1)
 for (i in 1:I1) {
     if (z1_voted[i] > 0.5) {
         z1_init[i] <- 1;
+    } else if (z1_voted[i] == 0.5) {
+        z1_init[i] <- rbinom(1,1,0.5);
+    } else { # not necessary given rep() above
+        z1_init[i] <- 0;
     }
 }
 
 jags.data <- list("T", "J", 
              "I1", "tt1",
              # "I2", "tt2", # no sample because not prop to prevalence
-               "z2",
+             "z2",
              "K1", "y1", "ii1", "jj1",
              "K2", "y2", "ii2", "jj2");
 
@@ -95,12 +101,15 @@ jags.inits <- function() {
 }
 
 jags.fit <- jags(data=jags.data, inits=jags.inits, jags.params,
-                 n.iter=1000, model.file="../jags/model1.jags");
+                n.iter=2000,
+                n.burnin=1000,
+                n.thin=1,
+                model.file="../jags/model_semisup.jags");
 
-#print(jags.fit);
-#plot(jagsfit);
-#traceplot(jagsfit);                 
+print(jags.fit);
+plot(jags.fit);
+#traceplot(jags.fit);                 
 
-#attach.jags(jags.fit);
+attach.jags(jags.fit);
 
 
