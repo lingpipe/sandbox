@@ -1,0 +1,455 @@
+Welcome to TREC 2011.
+
+You have received this message as a result of being on the TREC 2011
+participants mailing list.  You were put on the participants list either
+because you signed up to participate in TREC 2011, or because you are
+a TREC 2011 program committee member or track organizer.  If your
+organization decides not to participate in TREC 2011, please send mail
+to trec@nist.gov, and we will remove you from the list.
+
+This very long message serves as an introduction to TREC.  Groups
+that have participated in earlier TRECs will need to pay particular
+attention to Section 1, What's New in TREC 2011.  New participants
+should read the entire message carefully at some point to understand
+the TREC process.  You should save this message somewhere
+where you will be able to refer to it easily since you'll need
+to refer to different parts of the message at various times
+in the next 10 months.
+
+Section 1 -- What's New in TREC 2011
+
+   1.  The active participants section of the Web site
+       has a new login/password sequence (case is significant).
+         login:    trec2011
+         password: 2020vision
+       The web site is used as the main communication vehicle
+       for TREC participants.  All data to be downloaded from NIST
+       will be on the Web site, track guidelines will be posted
+       there, and email sent to this mailing list will be archived
+       on the site.  If you think you may have had email problems,
+       please be sure to check the email archive to see if you
+       missed any TREC email.
+
+   2.  There is a different set of tracks being offered
+       in TREC 2011.  The chemical IR, entity, legal,
+       session, and web tracks are continuing, though
+       individual tasks within a track are generally different
+       from previous years.  Three new tracks have been added:
+       crowd-sourcing, medical records, and micro-blogging.
+
+       Different tracks are in different stages of finalizing
+       their task definitions for TREC 2011.  You still have
+       time to comment on the task definition in all of the tracks.
+       Each track has a mailing list: it is important to join the
+       mailing lists of all of the tracks you might possibly
+       participate in so you can have a voice in defining the task,
+       receive the drafts of the track guidelines, and learn about
+       issues, changes, etc. as they occur.  To join a mailing list,
+       please follow the instructions given on the tracks page
+       in the active participants' section.   NIST does
+       not subscribe you to a track mailing list even if your
+       application noted an interest in the track.  If you were
+       subscribed to a track's list in a previous TREC, you do not
+       have to re-subscribe since track mailing lists are for anyone
+       interested in the problem, rather than specifically for TREC
+       participants, and thus carry over from year to year.
+
+       The active participants' Tracks page lists the track's
+       goals, contacts, guidelines, and other
+       information about the track as we receive it from the
+       track coordinators.  Right now, the page generally contains
+       only contact information; it will be updated throughout
+       TREC 2011.
+
+   3.  Each track will have its own deadline for submitting results,
+       which will be given in the final guidelines.  Because of
+       assessing constraints, some deadlines may be as early
+       as mid-June.  If you have particular concerns about deadlines
+       you are welcome to express them (early) on the track
+       mailing list, but please be aware that TREC may not be
+       able to accommodate particular requests.
+
+   4.  When you registered to participate in TREC you selected
+       a team name.  Please include this team name in all TREC
+       correspondence with NIST.  If you are faxing a form back
+       to NIST, include the team name on the cover sheet.
+       If you are emailing with a request or question, please
+       include the team name somewhere in the message.  You will also
+       need to use the team name when you submit your results.
+       Including the team name in all correspondence will help
+       us to serve you better.  TREC generally has about 100
+       participating groups and there are instances where there are
+       multiple groups from within the same organization.  We don't
+       always recognize what specific group is intended when
+       we have just a person's name.
+
+  5.  TREC has evolved a standard set of policies and guidelines
+       that all participants are expected to follow.  The policies
+       are in place to protect the desired pre-competitive nature
+       of the conference and to encourage continued participation
+       in the conference.  The main components of the policy are:
+           * dissemination of TREC results is permitted only in
+             accordance with the "Agreement Concerning Dissemination
+             of TREC Results", which is found in the forms section
+             of the active participants' section of the web site.
+             _All_ TREC 2011 participants are required to sign
+             and return this form (even if your group has signed
+             one in the past).  Have a person who is legally authorized
+             to speak for your organization sign the form and
+             send a scanned pdf of the signed form to
+             lori.buckland@nist.gov.  Include your team name and
+             the fact that it is a TREC 2011 results dissemination form
+             in the subject line.  If you cannot produce a scanned
+             version, fax the signed form to Lori Buckland
+             at 1 301 975-5287, including your team name and the
+             fact that it is a TREC 2011 results dissemination form
+             on your cover sheet.  (Scanned versions are much preferred
+             on our end.)
+
+             We need a signed agreement from each team.
+             We will not release data to you until we have a
+             signed agreement form on file.
+
+           * attendance at the TREC conference in November is
+             limited to organizations that actually submit retrieval
+             results.
+
+           * if you do submit results, they may not be subsequently
+             withdrawn (i.e., all results are archived on the web site
+             and evaluated in the Appendix of the proceedings).
+
+           * all groups that submit results are expected to write
+             a paper for the proceedings that describes how the
+             runs were produced (to the extent intellectual property
+             concerns allow).  If you do not submit results, you may
+             not contribute a paper to the proceedings.
+
+           * the active participants' section contains a "guidelines"
+             link that contains further details about producing
+             retrieval results.  In general, we expect groups
+             to do no training or customizing of their systems
+             with respect to the current year's test data.
+
+---------------------------------------------------------------------------=
+-
+Section 2 -- Instructions
+
+The following is meant to help in answering the various questions we
+have received from those new to TREC.  Please feel free to contact
+Ellen Voorhees (ellen.voorhees@nist.gov) if something is not clear.
+It's much better to ask questions now rather than closer to the
+deadlines.
+
+Email is the only form of communication used in TREC.  NIST strives
+to keep the traffic on the main participants' mailing list to the
+minimum possible, but it is important that you actually read the
+messages posted to the list.  (No other messages on the list will
+be anywhere near as long as this one!)  Also, please make sure that
+everyone in your organization that will be involved with TREC has
+access to the messages.  To simplify our administrative overhead,
+we use exactly one mail address per group on the main participants'
+mailing list, but we encourage the use of internal reflectors or
+local mailing lists.  Send mail to Lori Buckland
+(lori.buckland@nist.gov) if you'd like to change the current
+contact address for the TREC 2011 mailing list to a local
+mailing list address.  Note that all email sent to the list is
+archived in the active participants' section of the TREC web site
+under "Email Archive".
+
+Having said that, please also make sure that you do NOT redistribute
+these messages outside your group.  A common mistake is to post
+the messages to a web site that is accessible to web search engine
+spiders.  The whole point of having the participants' section
+be password protected is to exclude non-participants from
+the current year's TREC data, and that purpose is defeated
+if TREC email is publicly accessible.
+
+The TREC web site, http://trec.nist.gov, plays an important role
+in TREC operations.  NIST tries to ensure that *everything*
+you need to know about the current TREC is available in
+the Active Participants' section of the site.  The TREC web
+site also contains a "Publications" section that contains
+electronic versions of the Proceedings of past TRECs
+and some other TREC-related presentations.
+The "Overview" papers in the Proceedings provide many details about
+the TREC tasks for that year, and give a sense of the overall TREC
+process.  If you have never read a TREC overview paper, we strongly
+encourage you to do so before continuing with this message.  The
+overview paper will provide necessary background for understanding
+the guidelines.
+
+To participate in TREC, you must abide by the conditions set forth in
+the "Agreement Concerning Dissemination of TREC Results".
+The use of the TREC conference results (or the sponsors' names)
+in advertising is not only contrary to the spirit of TREC, but is likely
+to result in difficulties for the sponsoring agencies (which will bring
+a quick end to TREC).  If you feel that your organization cannot adhere
+to these guidelines, then you should withdraw from TREC now.
+You should have already signed this form since it was included
+in the confirmation of your application.  If not, please
+sign and return the form now.  The agreement is located in the
+"forms" section of the active  participants part of the web site.
+
+To attend the TREC workshop in November you must submit
+the retrieval runs for at least one task to NIST by the deadline
+given in the guidelines.  Every year some groups that
+originally intended to participate are unable to submit results
+for one reason or another.  We understand that this can happen,
+and there is no "penalty" other than not being able to attend
+the workshop.  Once the final deadline is passed, we will
+remove organizations that did not submit
+any results from the participants' mailing list (you will be notified
+that we are doing so).  All runs that are submitted to NIST will
+be published in the Appendix of the proceedings and archived in the
+results section of the web site.  You may not withdraw a run after it
+has been submitted to NIST.
+
+Conference attendees receive a notebook containing the drafts of
+participants' proceedings papers.  The actual proceedings are published
+after the conference.  The idea for having both a notebook version and
+a proceedings version of papers is that the notebook gives conference
+attendees something concrete during the meeting itself, while the
+proceedings give participants more time to write and the opportunity
+to incorporate cross-group discussion.  Every group that submits
+results is expected to write a paper describing how those results
+were produced.
+
+Much of the data used in very early TRECs is available to you to use
+in developing your retrieval system.  See the "Data" section
+of the TREC web site for details about previously created
+test collections.  As a TREC participant, you may receive
+the TIPSTER and TREC document disks free of charge
+directly from NIST by following the instructions below.
+Other document sets must be purchased from the respective
+supplier as detailed in the Data section.  These test collections
+are made available as a convenience for you to use to develop
+your retrieval system.  It is important to check the track
+mailing list and guidelines to get information regarding
+what document collection will be used in a particular
+track in TREC 2011.
+
+Relevance judgments in TREC are called "qrels" (from query-relevance
+files).  For traditional TREC test collections, judgments were made
+using a pooling technique (explained in the overview papers).
+For these collections, you can assume the judgments are
+"complete"--- that enough results have been assembled and
+judged to assume that most relevant documents have been
+found.  For some later tracks, including especially the
+million query and legal tracks, judgments were made using
+different sampling techniques, and this assumption does _not_ hold.
+
+The Qrels format is :
+             topicno  iteration  docno  relevancy
+where topicno is the topic number, iteration is the feedback
+       iteration (almost always zero and generally not used), docno is the
+       official document number that corresponds to the docno field
+       in the documents, and relevancy is an integer representing
+       the judgment for that document.
+For traditional collections, all documents not listed in the
+qrels are assumed irrelevant.  The difference between being
+marked as irrelevant in the qrels and not appearing in the
+qrels at all is that the former was looked at by a relevance
+assessor and judged irrelevant while the latter was never looked at.
+The order of documents in the qrels file is not indicative of
+relevance or degree of relevance.  Most qrels give only a
+binary indication of relevant (1) or non-relevant (0).
+A few tasks were judged on a three-way scale using
+non-relevant (0),  relevant (1), and highly relevant (2).
+[Note that trec_eval, the evaluation package available
+from the Tools page on the web site, assumes binary judgments
+and treats any non-zero value as relevant.]
+
+If you want to generate evaluation results similar to those in
+the TREC proceedings, the evaluation package used in TREC
+(trec_eval) is also on the web site in the "Tools" section
+of the Active Participants site.  This is a version
+of trec_eval that prints its output in relational
+(i.e., like a table) form.
+
+
+Instructions for receiving the TIPSTER and TREC disks:
+     Disks will start being shipped on March 1st.  Your disks
+     will be shipped about March 1st or the day we receive
+     your signed forms (including the Dissemination of TREC
+     Results Agreement), whichever is later.
+
+     The organizations supplying the data to us have either
+     provided it free of charge, or for a fee, and it is critical
+     to our continued good relationship with these people that we
+     properly protect its use.  The data is copyrighted, and also
+     has commercial value as data, so we must be careful to use
+     it only for research purposes rather than for its informational
+     uses.  You may not redistribute the documents to anyone else,
+     where redistribution is broadly defined.  For example, you may
+     not use the documents as data for coursework, and the documents
+     cannot be part of a publicly-accessible demo of your system.
+
+     There are permission forms ("User Agreement"'s) that express these
+     ideas in a more formal manner.  These forms must be signed and
+     returned to NIST before you can receive the disks.  The forms are
+     located in the forms section of the web site
+     (http://trec.nist.gov/act_part/forms.html) .  Since the license
+     to use the documents is controlled by separate entities for
+     the different sets of disks, there are two sets of
+     very similar forms (the TIPSTER forms and the TREC forms).
+     For each set of disks there is both an Organization form and an
+     Individual form.  You return the Organization forms to NIST;
+     the Individual forms are retained by the site.  There needs to be
+     one "Organization" form for each disk set per physical site
+     getting data.  You will only receive the set of disks that
+     correspond to the Organization form(s) you send us.  For example,
+     if you send us only the TIPSTER organization form, you will
+     receive only disks 1--3.  (Remember, we also need a signed
+     Agreement Concerning Dissemination of TREC Results form before
+     we will ship any disks to you.)
+
+     Each site is to keep an up-to-date-list of everyone that has
+     access to the documents, and each of these people must sign an
+     Individual form.  Each site is expected to use proper file
+     restrictions so that reasonable care is taken to restrict access
+     to the data to only these individuals.  Do not send the Individual
+     forms to NIST.  If you are participating as an individual,
+     you may use "Self" as the organization name in the organizational
+     form.
+
+     The most convenient method for us to receive your forms is
+     by emailing a signed, scanned .pdf version to Lori Buckland,
+     lori.buckland@nist.gov.  Include the fact that you are email
+     a TREC 2011 form and your team name in the subject line.
+     If necessary, forms can also be returned by by physical mail
+     to the address on the form or faxed to
+       ATTN: Lori Buckland,  TREC 2011 FORMS
+       Fax number 1 301 975 5287
+     In all cases, include a coversheet that includes
+         your name
+         your team name
+         your organization name
+         your email address
+         what you are requesting or submitting
+
+---------------------------------------------------------------------------=
+-
+
+Section 3 -- TREC Guidelines
+
+
+Each track will have its own set of guidelines. The guidelines give a
+precise definition of the task(s) to be performed, a due date for
+the results, and any special instructions for that track.  Guidelines
+are generally posted on the web site and to the track mailing list
+in the spring.
+
+Previous TRECs also had a set of guidelines for the main task.
+While we have not had a main task for some time, these guidelines
+have become generic guidelines that all tracks assume
+unless explicitly stated otherwise.
+
+  1.  System data structures (such as dictionaries, indices, thesauri, etc.
+      whether constructed by hand or automatically) can be built using
+      existing documents, topics, and relevance judgments, but these
+      structures may not be modified in response to the new test
+      topics.  For example, you can't add topic words that are not in your
+      dictionary, nor may the system data structures be based in any way
+      on the results of retrieving documents for the test topics and
+      having a human look at the retrieved documents.  Most of the tasks
+      in TREC represent the real-world problem of an ordinary user
+      seeking information.  If an ordinary user couldn't make
+      the change to the system, you should not make it after receiving
+      the test topics.  A corollary of this rule is that your system
+      may not be tuned to the TREC 2011 topics.
+
+  2.  There are many possible methods for converting the supplied topics
+      into queries that your system can execute.  TREC defines two
+      broad categories of methods, "automatic" and "manual", based on
+      whether manual intervention is used.  Automatic construction is
+      when there is no human involvement of any sort in the query
+      construction process; manual construction is everything else.
+      Note that this is a very broad definition of manual construction,
+      including both runs in which the queries are constructed manually
+      and then run without looking at the results, and runs in which the
+      results are used to alter the queries using some manual operation.
+      Thus when using manual query construction methods it is important
+      to fill in the portion of the system descriptions (see below) that
+      deal with timing and type of person doing the manual query
+      construction so there can be some measure of manual
+      effort required for these runs.
+
+  3.  Many tracks use the same format for submitting retrieval
+      results.  The result of a run is generally a ranking of the top 1000
+      documents retrieved for each topic.  You may submit fewer than
+      1000 documents for a topic, but the ranked retrieval evaluation
+      measures used in TREC evaluate to 1000 and count empty ranks
+      as irrelevant (so your score cannot be hurt by returning 1000
+      documents).  Similarly, systems that do not rank
+      documents perform poorly as evaluated by these measures.
+      Note that trec_eval evaluates a run based strictly on scores,
+      _NOT_ on the ranks you assign in your submission.  If you
+      want the precise ranking you submit to be evaluated,
+      the scores MUST reflect it.
+
+      The format to use when submitting ranked results is as follows,
+      using a space as the delimiter between columns.  The width of the
+      columns in the format is not important, but it is important to
+      include all columns and have some amount of whitespace
+      between the columns.
+
+        30 Q0 ZF08-175-870  0 4238 prise1
+        30 Q0 ZF08-306-044  1 4223 prise1
+        30 Q0 ZF09-477-757  2 4207 prise1
+        30 Q0 ZF08-312-422  3 4194 prise1
+        30 Q0 ZF08-013-262  4 4189 prise1
+           etc.
+     where:
+        * the first column is the topic number.
+
+        * the second column is the query number within that topic.  This is
+          currently unused and should always be Q0.
+
+        * the third column is the official document number of the
+          retrieved document and is the number found in the "docno"
+          field of the document.
+
+        * the fourth column is the rank the document is retrieved, and
+          the fifth column shows the score (integer or floating point)
+          that generated the ranking.  This score MUST be in descending
+          (non-increasing) order and is important to include so that we
+          can handle tied scores (for a given run) in a uniform fashion
+          (trec_eval sorts documents by these scores, not your ranks).
+
+        * the sixth column is called the "run tag" and should be a
+          unique identifier for your group AND for the method used.
+          That is, each run should have a different tag that identifies
+          the group and the method that produced the run.  Please change
+          the tag from year to year, since often we compare across years
+          (for graphs and such) and having the same name show
+          up for both years is confusing.  Also please use 12 or
+          fewer letters and numbers, and *NO* punctuation,
+          to facilitate labeling graphs and such with the tags.
+
+     NIST will release a routine that checks for common errors in the
+     result files including duplicate document numbers for the
+     same topic, invalid document numbers, wrong format,
+     and duplicate tags across runs.
+     This routine will be made available to participants to check their
+     runs for errors prior to submitting them.  Submitting runs is an
+     automatic process done through a web form, and runs that contain
+     errors cannot be processed.
+
+------------------------------------------------------------------------
+Section 4 -- Information to keep track of
+
+We will be asking you for information about your system (to get an idea
+of necessary information, see previous TRECs' "system descriptions"
+on the web site).  Most of this information is easy to put down,
+but you should save the time it took to index, the index storage,
+and information about how long it takes to run the queries.
+The timings should be the time to replicate runs from scratch,
+not including trial runs, etc.  The times should also be
+reasonably accurate.  This sometimes will be difficult, such
+as getting total time for document indexing of
+huge text sections, or manually building a knowledge base.
+Please do your best.
+
+
+
+

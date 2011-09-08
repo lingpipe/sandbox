@@ -1,0 +1,36 @@
+Crowdsourcing track folks,
+ 
+I have posted the check_input scripts for the
+TREC 2011 crowdsourcing track to the "Tools"
+page in the Active Participants' section of the
+TREC web site. There are two different scripts, one for
+each of tasks 1 and 2. The scripts require a list
+of valid topic-docno pairs that should be contained
+in a submission. These lists are also posted on
+that page.
+ 
+The TREC run submission system will invoke the
+appropriate check script on your run when you
+submit it. The submission system will reject any run
+for which the script finds an error and you
+will need to fix the error and resubmit the run to have
+it counted as a TREC run. Thus, you are very strongly
+encouraged to download the check script and run it
+locally yourself before submitting. The scripts are written in perl,
+so you will need a valid perl installation to check
+your runs locally.
+ 
+The submission site itself is not yet open for crowdsourcing
+track runs. I expect that it will open by Aug. 31.
+ 
+Since this is a new track, these are new check scripts,
+and I had to manufacture fake runs to use as test data.
+Since both the manufactured test runs and the check
+scripts themselves reflect the same (my own)
+understanding of what constitutes a valid run, there
+easily could be bugs in the scripts. If you think the
+scripts are disallowing a valid submission, please let me
+know as soon as possible. It is much better to address
+any such issues well before the night of the run deadline.
+ 
+Ellen
