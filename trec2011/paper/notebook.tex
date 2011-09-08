@@ -1,0 +1,461 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+% \usepackage[usenames]{color}
+% \definecolor{gray}{RGB}{128,128,128}
+%\usepackage[bookmarks={false},%
+%pdftex,%
+%unicode,%
+%colorlinks,%
+%citecolor={gray},%
+%filecolor={gray},%
+%linkcolor={gray},%
+%urlcolor={gray},%
+%pdfauthor={Bob Carpenter},%
+%pdftitle={A Hierarchical Bayesian Model of Crowdsourced Relevance Coding}%
+%]%
+%{hyperref}
+
+\renewcommand{\floatpagefraction}{0.95}
+\title{Hierarchical Bayesian Estimation of Observer Error-Rates using
+Gibbs Sampling
+\\[4pt]
+{\Large with Applications to Crowdsourced Relevance Coding}}
+\author{Bob Carpenter
+\\[4pt] Columbia University, Department of Statistics
+\\[4pt] LingPipe, Inc.
+\\[4pt] \texttt{carp@lingpipe.com}}
+
+\begin{document}
+
+\maketitle
+
+\abstract{We apply a generative probabilistic model of noisy
+crowdsourced coding to overlapping relevance judgments for documents
+in several topics (queries).  We demonstrate the model's utility for
+Task 2 of the 2011 TREC Crowdsourcing Track (Karzai and Lease 2011).
+
+Our model extends Dawid and Skene's (1979) approach to inferring gold
+standards from noisy coding in several ways: we add a hierarchical
+model of prevalence of relevant documents in multiple topics
+(queries), semi-supervision using known gold labels, and
+hierarchically modeled priors for coder sensitivity and specificity.
+We also replace Dawid and Skene's maximum likelihood point estimates
+with full Bayesian inference using Gibbs sampling and generalize
+their full-panel design in which every coders labels every document
+to a fully ad hoc design in which a coder may label each document
+zero, one or more times.}
+
+
+\section{The Data}
+
+The training data consists of overlapping crowdsourced relevance
+judgments for pairs of queries and documents along with a seed set of
+known gold-standard labels.  The underlying data was
+collected by Wei and Lease (2011) using Amazon's Mechanical Turk 
+with gold-standard labels provided by NIST.
+
+The data revolves around 100 different structured queries, which are
+called ``topics'' in TREC evaluations.  The topics themselves are not
+part of the data for the challenge in the sense that the only
+information we have about a topic is an identification number.
+
+A total of 19,033 topic/document pairs were annotated by workers.  The
+documents were presented to the workers in HTML form.  The documents
+themselves are not part of the data for the challenge, being available
+only as identification numbers.
+
+A total of 762 workers participated in coding the data, each
+annotating differeing sized subset of the topic/document pairs.  Like
+the topics and documents, the only information we have about the
+workers is an identification number.
+
+Gold-standard judgments (as labeled by NIST) are provided for a total of
+2275 topic/document pairs.  An additional 1000 gold-standard judgments
+on topic/document pairs were held out and will be used for evaluation.
+
+An additional 16,758 topic/document pairs
+are provided with no gold-standard judgment, bringing the total to
+19,033 topic/document pairs. 
+
+For the 2275 topic/document pairs with gold labels, there are an
+additional 13,749 worker-supplied labels.  For the 16,758
+topic/document pairs without gold-standard labels, there are
+75,875 worker-supplied labels.
+
+
+\section{The Challenge}
+
+There are two subtasks making up Task 2 of the TREC 2011 Crowdsourcing
+Track.  
+
+The first subtask is to provide categorical relevance judgments for
+each topic/document pair (0 for irrelevant and 1 for relevant).
+These judgments may be fractions between 0 and 1.
+
+Evaluation for the first task is with the traditional IR measures of
+precision (TP/[TP+FP]) and recall/sensitivity (TP/[TP+FN]).  Because
+precision and recall ignore true negatives, we've been lobbying to
+also have specificity (TN/[TN+FP]) evaluated.  
+
+Given these measures, we are skeptical about the utility of fractional
+judgments (see section~\ref{confusion-matrix-eval-sec}).  
+
+The second subtask is to rank the documents by relevance for each
+topic.  These will be scored by standard TREC ranking evaluations.
+
+
+\section{Overview of Our Entries}
+
+We have entered three systems based on a semi-supervised model and an
+unsupervised model.  For two of these entries, we quantize results to
+0 or 1.  For one entry, we use a Bayesian estimator of relevance
+probability.  Specifically, we're minimizing expected squared
+estimation error, which amounts to using posterior averages for
+estimates.  This is {\it not}\ a method that's tuned to the
+evaluation.
+
+For all entries, we rank based on our Bayesian estimates of
+relevance probability.  
+
+
+\section{The Model}
+
+\subsection{Constants}
+
+Data sizes are given by the following unmodeled constants.
+%
+\begin{itemize}
+\item $J > 0$: number of coders
+\item $T > 0$: number of topics (i.e., queries)
+\item $I > 0$: number of document/topic pairs
+\item $K > 0$: number of judgments of a document/topic pair by a coder
+\end{itemize}
+%
+In a complete panel design, every coder would judge each
+document/topic pair exactly once.  Because of the mixed design of
+the TREC data, it is convenient to use the following constant indexing arrays.
+%
+\begin{itemize}
+\item $tt[i] \in 1{:}T$: topic for document/topic pair $i \in 1{:}I$
+\item $jj[k] \in 1{:}J$: worker for judgment $k \in 1{:}K$
+\item $ii[k] \in 1{:}I$: document/topic pair for judgmenet $k \in 1{:}K$
+\end{itemize}
+
+\subsection{Variables}
+
+The lowest-level random variables in the model are discrete.
+%
+\begin{itemize}
+\item $z[i] \in \{0, 1\}$: relevance of document/topic pair $i \in 1{:}I$
+\item $y[k] \in \{0, 1\}$: label provided by worker $jj[k]$ for
+document/topic pair $ii[k]$ for judgment $k \in 1{:}K$
+\end{itemize}
+%
+The labels $y$ are fully observed and the true relevance status $z$
+is partially observed (in the semi-supervised case) and partially unknown.
+
+The labels and relevances are determined by the following continuous parameters.
+%
+\begin{itemize}
+\item $\pi[t] \in [0,1]$: prevalence of relevant documents in topic $t \in
+1{:}T$
+\item $\theta_0[j] \in [0,1]$: specificity of worker $j \in 1{:}J$
+\item $\theta_1[j] \in [0,1]$: sensitivity of worker $j \in 1{:}J$
+\end{itemize}
+%
+These continuous parameters themselves have priors, which characterize
+the populations of document relevancy, coder specificities and coder
+sensitivities.  In our Bayesian hierarchical model, we also treat
+these as variable.
+%
+\begin{itemize}
+\item $\phi_{\pi}, \phi_0, \phi_1  \in (0,1)$: prior mean for
+prevalence, specificity, and sensitivity
+\item $\kappa_{\pi}, \kappa_0, \kappa_1 \in (0,\infty)$: prior count
+size for prevalence, specificity, and sensitivity
+\end{itemize}
+%
+
+
+\subsection{Probability Model}
+
+The full probability model defines the joint probability density over
+all of the variables.  We define the joint probability using sampling
+notation to represent a directed graphical model.  
+
+Working top down, the top-level prior means are sampled from
+a uniform $\mbox{\sf Beta}(1,1)$ density.
+%
+\begin{itemize}
+\item $\phi_{\pi}, \phi_0, \phi_1 \sim \mbox{\sf Beta}(1,1)$
+\end{itemize}
+%
+The precision parameters are sampled from a weakly informative Pareto
+(inverse polynomial) distribution slightly favoring lower counts.
+%
+\begin{itemize}
+\item $\kappa_{\pi}, \kappa_0, \kappa_1 \sim \mbox{\sf Pareto}(3/2)$
+\end{itemize}
+%
+
+The mid-level population parameters for prevalence in a topic are
+each sampled according to their prior mean and precision.
+%
+\begin{itemize}
+\item $\pi[t] \sim \mbox{\sf Beta}(\kappa_{\pi} \times \phi_{\pi}, \
+\kappa_{\pi} \times (1 - \phi_{pi}))$
+\end{itemize}
+%
+Sensitivity and specificty for annotators are sampled the same way
+from their own priors.
+%
+\begin{itemize}
+\item $\theta_0[j] \sim \mbox{\sf Beta}(\kappa_0 \times \phi_0, 
+\ \kappa_0 \times  (1 - \phi_0))$
+\item $\theta_1[j] \sim \mbox{\sf Beta}(\kappa_1 \times \phi_1, 
+\ \kappa_1 \times  (1 - \phi_1))$
+\end{itemize}
+%
+
+The lowest-level discrete parameters for relevance are generated
+according to prevalence for their topic.
+%
+\begin{itemize}
+\item $z[i] \sim \mbox{\sf Bern}(\pi[tt[i]])$
+\end{itemize}
+%
+The most complex sampling formula is for the labels provided
+by the coders.
+%
+\begin{itemize}
+\item $y[k] \sim \mbox{\sf Bern}(z[ii[k]] \times \theta_1[jj[k]] 
+\ + \ (1 - z[ii[k]]) \times (1 - \theta_0[jj[k]]))$
+\end{itemize}
+%
+In this formula, $ii[k]$ is the document/topic pair being coded and
+$jj[k]$ is the coder.  Thus $\theta_1[jj[k]]$ is the sensitivity of
+the coder (i.e., the coder's accuracy on relevant document/topic
+pairs), and $\theta_0[jj[k]]$ the specificity (i.e., accuracy on
+irrelevant pairs).  The value of $z[ii[k]]$ is the binary relevance of
+the document/topic pair being coded.  If the relevance $z[ii[k]]$ is 1
+(relevant), the label is generated from the coder's sensitivity
+$\theta_1[jj[k]]$; if it is 0 (irrelevant), the label is generated
+from the 1 minus the coder's specificity $\theta_0[jj[k]]$ (the
+inversion is because 0 is the correct answer for an irrelevant pair).
+
+It's now straightforward to read the entire joint probability density
+from the sampling notation by converting indices to products.
+%
+\begin{align*}
+p(\phi_{\pi},\phi_0&{},\phi_1,\kappa_{\pi},\kappa_0,\kappa_1,\pi,\theta_0,\theta_1,y,z)
+\\[6pt] &{} = \mbox{\sf Beta}(\phi_{\pi}|1,1) 
+     \times \mbox{\sf Beta}(\phi_0|1,1) 
+     \times \mbox{\sf Beta}(\phi_1|1,1) 
+\\[6pt] &{} \times \mbox{\sf Pareto}(\kappa_{\pi}|1.5)
+      \times \mbox{\sf Pareto}(\kappa_0|1.5)
+      \times \mbox{\sf Pareto}(\kappa_1|1.5)
+\\ &{} \times \prod_{t = 1}^T \mbox{\sf Beta}(\pi[t] | \phi_{\pi}, \kappa_{\pi})
+\\ &{} \times \prod_{i = 1}^I \mbox{\sf Bern}(z[i]|\pi[tt[i]])
+\\ &{} \times \prod_{k = 1}^K \mbox{\sf Bern}(z[ii[k]] \times \theta_1[jj[k]] 
+\ + \ (1 - z[ii[k]]) \times (1 - \theta_0[jj[k]]))
+\end{align*}
+
+The inference problem presented by the TREC 2011 challenge is
+to estimate the conditional probability of true labels given the
+observed labels from the coders, namely $p(z|y)$.  In the
+semi-supervised case, we take $z = z', z''$, with $z'$ being
+unknown and $z''$ being known.  So the semi-supervised case,
+we infer $p(z'|y,z'')$ and for the fully unsupervised case,
+we infer $p(z',z''|y)$.
+
+Given that we are also interested in the other parameters, we will
+instead draw $N$ samples from the full posterior, here shown for
+the semi-supervised case.
+%
+\begin{equation*}
+p(\phi_{\pi},\phi_0,\phi_1,\kappa_{\pi},\kappa_0,\kappa_1,\pi,\theta_0,\theta_1,z'|y,z'')
+\end{equation*}
+%
+In this formulation, it is clear that the only data observed 
+are the labels $y$ and in the semi-supervised case, the subset
+$z''$ of true labels.  
+
+For inference, we draw from the posterior a sequence of samples,
+%
+\begin{equation*}
+\phi_{\pi}^{(n)}, \phi_0^{(n)}, \phi_1^{(n)},
+\kappa_{\pi}^{(n)}, \kappa_0^{(n)}, \kappa_1^{(n)}, 
+\pi^{(n)}, \theta_0^{(n)}, \theta_1^{(n)},
+z^{(n)}
+\end{equation*}
+%
+for $n in 1{:}N$.  This supports full Bayesian inference.  
+
+
+
+\section{Relation to Dawid and Skene (1979)}
+
+Models very much like ours were applied by Dawid and Skene
+(1979) to the problem of pooling the clinical diagnoses of doctors
+and medical tests.  Our model generalizes Dawid and Skene's model as
+well as their inference procedure.
+
+The first extension is to allow prevalence $\pi[t]$ to vary by topic
+$t$.  Dawid and Skene only considered single cases.  
+
+The second extension is to allow an incomplete survey design.
+Specifically, not all topic/document pairs need to be labeled by each
+worker.  Also, a worker may label a single topic/document pair more
+than once.
+
+The third extension adds general priors for the binomial parameters
+for topic prevalence of relevant documents $\pi[t]$ and worker
+specificity $\theta_0[j]$ and sensitivity $\theta_1[j]$.  Dawid and
+Skene's model approach is equivalent to fixing $\phi_{\pi} = \phi_0 =
+\phi_1 = 1/2$ and $\kappa_{\pi} = \kappa_0 = \kappa_1 = 2$.
+
+On the inference side, we perform full Bayesian inference over the
+posterior using Gibbs sampling, whereas Dawid and Skene computed maximum
+likelihood point estimates via the expectation/maximization algorithm
+(EM).
+
+
+\section{TREC 2011 Crowdsourcing Track}
+
+\section{Posterior Fit}
+
+\begin{figure}
+\begin{center}
+\includegraphics[height=3.0in]{img/vote_vs_estimate.pdf}
+\end{center}
+\caption{\small {\bf Voted versus Estimated Relevance}: {\it Each point
+represents a document/topic pair.  Position on the $x$ axis represents
+the estimate of relevance through equally-weighted voting.  Position
+on the $y$ axis represents the estimated relevance, which adjusts
+votes based on estimated coder sensitivity and specificity and for the
+proportion of relevant documents in the topic.  While the trend is
+monotonic (other than for edge effects of the estimator), it is highly
+non-linear, with estimated values being more extreme, representing
+higher model-based confidence in the estimates after adjusting for
+coder accuracies.}}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[height=3.0in]{img/sens_vs_spec_hat.pdf}
+\end{center}
+\caption{\small {\bf Coder Sensivity vs.\ Specificity}: {\it Each point
+represents a single coder.  The position on the $x$ axis is
+specificity (i.e., accuracy on irrelevant documents, TN/[TN+FP]).  The position
+on the $y$ axis is sensitivity (i.e., accuracy on relevant documents, 
+TP/[TP+FN]).  The diagonal red line is chance performance, for
+which sensitivity = 1 - specificity, $\theta_1[j] =
+1 - \theta_0[j]$. Below the diagonal represents adversarial
+performance, though the estimates shown here below the line are
+likely due to sampling error rather than adversarial coding.}}%
+\label{sens_spec.fig}
+\end{figure}
+
+As shown in Figure~\ref{sens_spec.fig}, estimated sensitivities are
+much higher than specificities.  Even so, there is a broad range of
+accuracies in evidence.
+
+
+\section{Inference}
+
+
+\section{Probabilistic Scoring}
+
+\subsection{Log Loss Scoring}
+
+From a statistics perspective, the most natural way to score would be
+with the log probability of the true answers given the system
+responses.  The negation of log probability is known as ``log loss''
+or (sample) cross-entropy.
+
+Suppose the true answers are given in the vector
+$y$, with $y_n \in \{ 0, 1 \}$ and the system repsonses are continuous
+values $\hat{y}_n \in [0,1]$.  Then log probability of the truth 
+$y$ estimated by system responses $\hat{y}$ is
+%
+\[
+{\mathcal L}(y,\hat{y})  = \sum_{n=1}^N \log (y_n \, ? \, \hat{y}_n : (1 - \hat{y}_n)),
+\]
+%
+where $(y \, ? \, x : z)$ is the ternary operator that evaluates to $x$ if $y
+= 1$ and $z$ if $y = 0$.  This is just the log probability assigned to
+the true labels $y$ by the model estimates $\hat{y}$.
+
+Of course, log probability scoring only makes sense with to
+systems whose responses are interpretable as probabilty estimates of
+relevance.
+
+
+\subsection{Confusion Matrix Scoring}\label{confusion-matrix-eval-sec}
+
+The obvious way to extend the standard confusion matrix measures
+of precision, recall/sensitivity, and specificity is to just count
+fractional responses as partly one response and partly another
+response.  For instance, if the system sets $\hat{y}_n = 0.72$,
+we treat that as if it was 0.72 responses of 1 and 0.28 responses
+of 0. 
+
+The problem with this approach is that it double-counts mistakes.
+Consider an example topic/document pair with a 0.72 probability of
+being relevant.  Now consider the scoring outcomes for a system that
+returns 0.72.  There's a 72\% chance the document/topic pair is
+relevant, yielding 0.72 TPs and 0.28 FNs, and a 28\% chance its
+irrelevant, yielding 0.28 TNs and 0.72 FPs.  So the total
+expectation is for 0.5184 TPs, 0.2016 FPs, 0.2016 FNs, and 
+0.0784 TNs.  
+
+Contrast this with the scoring outcomes for a system that returns 1,
+which yields a total expectation of 0.72 TPs and 0.28 FPs.
+
+I ran a sampler in R that took uniform samples in [0,1] for
+probability estimate, then compared returning the sampled value
+or rounding it to the closer of 0 or 1.  I then randomly sampled
+the true label and simulated.  Expected precision and recall were
+0.75 in the quantized case and 0.66 in the probabilistic return case.
+
+
+\section{Open Source Software}
+
+We've provided Java code for munging the basic data and R and JAGS
+code for marshaling data, sampling, estimation and reporting.  The
+complete set of code may be checked out of the LingPipe sandbox
+using the following anonymous subversion checkout command:
+\\
+\hspace*{24pt}
+{\tt svn co https://aliasi.devguard.com/svn/sandbox/trec2011}
+\\
+If that link goes away, search for the LingPipe sandbox and use
+the project name {\tt trec2011}.
+
+\section*{References}
+
+\begin{itemize}
+%
+\item Dawid, A.~P.\ and A.~M.~Skene. 1979.  Maximum likelihood
+estimation of observer error-rates using the EM algorithm.  {\it
+Journal of the Royal Statistical Society. Series C (Applied
+Statistics)} {\bf 28}(1):20--28.
+%
+\item Plummer, Martyn. 2010.  JAGS, version 2.2.0. 
+\\ {\tt http://www-fis.iarc.fr/~martyn/software/jags/}
+%
+\item Karzai, Gabriella and Matthew Lease. 2011.  TREC 2011
+Crowdsourcing Track.
+%
+\item Tang, Wei and Matthew Lease. 2011.  Semi-supervised consensus
+labeling for crowdsourcing. In {\it ACM SIGIR Workshop on Crowdsourcing for
+Information Retrieval}.
+\end{itemize}
+
+
+\end{document}
+
+
