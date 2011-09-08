@@ -1,0 +1,76 @@
+
+Dear TREC 2011 participants,
+
+Registration is now available for the TREC 2011
+conference.  The registration site is linked from the
+active participants' part of the TREC web site
+(Conference Information->TREC conference registration form).
+Please remember that you must be a member of
+a team that actually submitted a TREC run to attend
+the TREC conference.
+
+The registration fee is $438. Since this figure
+is computed to just cover costs, we do not offer
+discounted fees (such as for students, for example).
+You must register for the conference by 5:00pm EST
+on November 9, 2011.
+
+The General Conference Information page
+also has information about the block of rooms
+that has been reserved for the conference
+at the Holiday Inn Gaithersburg.  You are responsible for
+making your own hotel reservations.  Reservations
+through the room block must be made
+by October 31, 2011.  TREC will provide transportation
+to/from the Holiday Inn and NIST in the mornings and
+evenings of the conference.
+
+
+There are several points that are given on the General
+Conference Information page, but I am going to repeat here
+because they are important:
+    1.  You absolutely *must* pre-register.  You cannot get
+          on to the NIST campus unless we expect you.
+          Registration closes on Nov 9.
+
+    2.  If you are not a US citizen, the registration process
+         will ask you for additional information.  You must
+         provide this information to be granted access to
+         the NIST campus.
+
+    3.  Everyone must present a government-issued photo id
+         on the first day you come to the NIST campus.
+         For non-US citizens, this ID *must* be a passport.
+         If the passport you will use as ID is issued from
+         Cuba, Iran, Sudan, or Syria you *must* contact
+         Lori Buckland before Oct 14 (earlier is much better)
+         since additional  information is required to process
+         your registration.
+
+   4.  You may drive to the NIST campus, but you must show
+         either the car's registration card or rental agreement to
+         get the required parking pass.  Without documentation,
+         you will have to leave the car at the visitor's center
+         and take the NIST Ground Shuttle to the administration
+        building (conference venue).
+
+The conference agenda is not yet created, and won't be finalized
+for some weeks.  I will send out another message in the
+next few days outlining the next steps with respect to TREC
+participation.
+
+For travel planning purposes, the TREC conference
+is scheduled from Tuesday, November 15--Friday, November 18.
+The Tuesday sessions are only in the afternoon: there is an
+introduction to TREC scheduled for 2:00pm on that day, and
+some tracks may hold track-specific workshops on Tuesday
+afternoon.  The main conference will begin on Wednesday morning.
+We have tried in the past to make sure the conference ends
+by 2:00pm on Friday to facilitate travel, but it is not yet clear
+that we can do that this year---TREC 2011 has the largest number
+of tracks that TREC has ever had, and we are on pace to
+have the largest number of participating groups ever, too.
+We may need some more time on Friday afternoon to fit
+everything in.
+
+Ellen
