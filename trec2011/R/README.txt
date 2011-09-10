@@ -23,6 +23,10 @@ Back in R for graphs:
 > p;
 > dev.off();
 
+> source("voted.R")
+> pdf(file="../paper/img/vote_vs_estimate_2.pdf",width=4,height=4);
+> pp;
+> dev.off();
 
 
 Unsupervised
