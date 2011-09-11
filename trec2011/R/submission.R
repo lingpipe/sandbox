@@ -19,14 +19,14 @@ for (t in 1:T) {
                                ties.method="random") ); # random order for ties
 }
 
-write(t(submission), file="../submissions/lingpipe_semisup.csv", 
+write(t(submission), file="../submissions/lingpipe_unsup.csv", 
       ncolumns=4, sep="\t");
 
 submission_q = submission;
 submission_q[,4] = ifelse(submission[,4] > 0.5,1,0);
 
 write(t(submission_q),
-      file="../submissions/lingpipe_semisup_binary.csv",
+      file="../submissions/lingpipe_unsup_binary.csv",
       ncolumns=4, sep="\t");
 
 
