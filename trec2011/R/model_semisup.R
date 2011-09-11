@@ -95,7 +95,8 @@ jags.params <- c("alpha_pi","beta_pi", "pi",
 jags.inits <- function() {
     list("phi_pi"=0.5, "kappa_pi"=4.0, "pi"=rep(0.25,T),
          "phi_0"=0.8, "kappa_0"=4.0, "theta0"=rep(0.8,J),
-         "pi_1"=0.8, "kappa_1"=4.0, "theta1"=rep(0.8,J),
+          # submitted run had "pi_1" error, so went with JAGS inits
+         "phi_1"=0.8, "kappa_1"=4.0, "theta1"=rep(0.8,J),
          "z1"=z1_init
           );
 }

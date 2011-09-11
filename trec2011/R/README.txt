@@ -31,3 +31,7 @@ Back in R for graphs:
 
 Unsupervised
 ------------
+
+> same thing
+
+> but edit submissions file in submission.R (or vice-versa)
