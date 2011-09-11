@@ -7,5 +7,5 @@ for (j in 1:J) {
 }
 p <- qplot(theta0_hat,theta1_hat,geom=c("point"),
            xlab="specificity", ylab="sensitivity", main="Sensitivity vs. Specificity (Estimated)") + geom_abline(intercept = 1, slope = -1,colour="red");
-
+p;
 
