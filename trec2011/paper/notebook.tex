@@ -420,6 +420,22 @@ Certainty grows with the number $N$ of annotations.
 \end{center}
 \end{figure}
 %
+\begin{figure}
+\begin{center}
+\includegraphics[height=4.0in]{img/hyperprior_post.pdf}
+\parbox{5in}{\caption{\small {\bf Posteriors for Hyperpriors}: {\it  
+200 Posterior samples of the hyperpriors for coder specificity
+and sensitivity and prevalence of relevant documents.  The horizontal
+axis is the sample for $\phi$ and the vertical for $\kappa$.  The
+precision of the specificity prior is much lower than that of the
+sensitivity prior and prevalence prior.  The prevalence is so high
+because the corpus consists entirely of documents judged relevant
+by information retrieval systems.}}}\label{hyper_post.fig}
+\end{center}
+\end{figure}
+%
+
+
 In this section, we provide several plots derived from posterior 
 samples.  Figure~\ref{vote_vs_estimate.fig} shows the monotonic relationship
 between voted relevance and estimated relevance in the semi-supervised
