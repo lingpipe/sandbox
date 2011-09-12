@@ -1,0 +1,63 @@
+NIST has successfully processed the following TREC run 
+
+        Run identifier: LingPipeSemi
+        Participating group: LingPipe
+        Email address of submitter: carp@alias-i.com
+
+        Track: crowd
+        MD5 checksum of run: 4f3aeeed0640189bdb2583b501c38d94
+
+	Task: task2
+	Run type: Primary
+	Description of run:
+		Semisupervised hierarchical Bayesian model a la Dawid and Skene (1979).
+
+If the run or any of the information is incorrect, do NOT resubmit the
+run.  Send details of the problem to ellen.voorhees@nist.gov.
+
+Thank you for participating in TREC 2011.
+
+--------------------------------
+
+NIST has successfully processed the following TREC run 
+
+        Run identifier: LingPipeUn
+        Participating group: LingPipe
+        Email address of submitter: carp@alias-i.com
+
+        Track: crowd
+        MD5 checksum of run: 5be63e45d085215a9065835fe747333c
+
+	Task: task2
+	Run type: Secondary
+	Description of run:
+		Unsupervised hierarchical Bayesian model a la Dawid and Skene (1979).
+
+If the run or any of the information is incorrect, do NOT resubmit the
+run.  Send details of the problem to ellen.voorhees@nist.gov.
+
+Thank you for participating in TREC 2011.
+
+-----------------------------
+
+NIST has successfully processed the following TREC run 
+
+        Run identifier: LingPipeSBin
+        Participating group: LingPipe
+        Email address of submitter: carp@alias-i.com
+
+        Track: crowd
+        MD5 checksum of run: e8bf2444ddf3eeb5e2df51586a8c4d00
+
+	Task: task2
+	Run type: Secondary
+	Description of run:
+		Semisupervised hierarchical Bayesian model a la Dawid and Skene (1979) with binary estimates.
+
+If the run or any of the information is incorrect, do NOT resubmit the
+run.  Send details of the problem to ellen.voorhees@nist.gov.
+
+Thank you for participating in TREC 2011.
+
+
+
