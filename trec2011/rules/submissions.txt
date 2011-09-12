@@ -1,76 +1,78 @@
-
-Dear TREC 2011 participants,
-
-Registration is now available for the TREC 2011
-conference.  The registration site is linked from the
-active participants' part of the TREC web site
-(Conference Information->TREC conference registration form).
-Please remember that you must be a member of
-a team that actually submitted a TREC run to attend
-the TREC conference.
-
-The registration fee is $438. Since this figure
-is computed to just cover costs, we do not offer
-discounted fees (such as for students, for example).
-You must register for the conference by 5:00pm EST
-on November 9, 2011.
-
-The General Conference Information page
-also has information about the block of rooms
-that has been reserved for the conference
-at the Holiday Inn Gaithersburg.  You are responsible for
-making your own hotel reservations.  Reservations
-through the room block must be made
-by October 31, 2011.  TREC will provide transportation
-to/from the Holiday Inn and NIST in the mornings and
-evenings of the conference.
-
-
-There are several points that are given on the General
-Conference Information page, but I am going to repeat here
-because they are important:
-    1.  You absolutely *must* pre-register.  You cannot get
-          on to the NIST campus unless we expect you.
-          Registration closes on Nov 9.
-
-    2.  If you are not a US citizen, the registration process
-         will ask you for additional information.  You must
-         provide this information to be granted access to
-         the NIST campus.
-
-    3.  Everyone must present a government-issued photo id
-         on the first day you come to the NIST campus.
-         For non-US citizens, this ID *must* be a passport.
-         If the passport you will use as ID is issued from
-         Cuba, Iran, Sudan, or Syria you *must* contact
-         Lori Buckland before Oct 14 (earlier is much better)
-         since additional  information is required to process
-         your registration.
-
-   4.  You may drive to the NIST campus, but you must show
-         either the car's registration card or rental agreement to
-         get the required parking pass.  Without documentation,
-         you will have to leave the car at the visitor's center
-         and take the NIST Ground Shuttle to the administration
-        building (conference venue).
-
-The conference agenda is not yet created, and won't be finalized
-for some weeks.  I will send out another message in the
-next few days outlining the next steps with respect to TREC
-participation.
-
-For travel planning purposes, the TREC conference
-is scheduled from Tuesday, November 15--Friday, November 18.
-The Tuesday sessions are only in the afternoon: there is an
-introduction to TREC scheduled for 2:00pm on that day, and
-some tracks may hold track-specific workshops on Tuesday
-afternoon.  The main conference will begin on Wednesday morning.
-We have tried in the past to make sure the conference ends
-by 2:00pm on Friday to facilitate travel, but it is not yet clear
-that we can do that this year---TREC 2011 has the largest number
-of tracks that TREC has ever had, and we are on pace to
-have the largest number of participating groups ever, too.
-We may need some more time on Friday afternoon to fit
-everything in.
-
+Dear crowdsourcing track participants,
+ 
+The TREC 2011 crowdsourcing track submission system is now
+ready to accept runs. To submit your run, go to
+http://ir.nist.gov/trecsubmit/crowd.html
+and fill out the web form. You will need the TREC 2011
+active participants' login and password to access the form.
+ 
+The submission form asks for a run tag. This tag is a unique
+identifier for this run across all runs for all tracks, and is restricted
+to 15 alphanumeric characters. Including your group id in the
+run tag is a good way of creating a tag that will be unique
+across all runs from all tracks (we already have most variations of
+'Run1', and 'run1', for example). The naming conventions
+for the file name of your submission are likely to result in
+a name that is too long for a runtag, plus we don't allow
+periods in run tags.
+ 
+The submission system does not enforce the naming conventions
+given in the guidelines, but please use them. Importantly,
+the submission system will remove any characters other than
+alphanumerics, '_', '-', and '.' from the file name when it saves it
+on the NIST end. The system will enforce that the "extra" file
+ends with '.extra' (to ensure that the submission file itself doesn't
+get overwritten). Either or both of the submission file and extra file may
+be compressed using gzip or bz2, and that extension will be removed
+before checking for the .extra.
+ 
+Each group may submit up to three runs for each task. Only one
+of those runs should be marked as the primary run. This is expensive
+to enforce at submission time, so the submission system does
+not do so.
+ 
+Once you select the "Send Form" button, the submission system
+will upload the file(s) you specified and run the check_input script
+on the submission file. If there are errors found by check_input
+(or, the files can't be uploaded, or other form validation checks fail),
+a report will be sent back to the browser. Your run is *not* submitted
+if this happens and no record of the attempted submission is kept at NIST.
+If the run is successfully submitted, that report will also be sent
+to the browser, plus an email confirmation is sent to the address
+entered on the submission form. If you do not receive a confirmation
+message for a run you thought had been successfully submitted
+(after sufficient time to account for the vagaries of email), please first
+check
+your spam filter to see if it got nabbed there. If there is still no sign
+of the confirmation, let me know and I will check whether the run was indeed
+successfully submitted.
+ 
+You cannot "correct" a run by re-submitting with the same run tag
+(there is too much danger of overwriting somebody else's run if we
+allowed that). If you need to replace a run, send me email giving
+me the run tag of the run that is in error. I will mark that run as
+being errorful, which is as if it were not submitted in all respects
+except that the run tag is no longer available to be used. You will
+then need to resubmit a corrected run under a new run tag for
+the run to be considered submitted.
+ 
+I will not debug your run if check_input is rejecting it, so don't email
+a submission file to me. (Though, of course, if you think the
+check script is buggy, please do let me know that.)
+ 
+The submission deadline for both tasks is September 15. As per TREC
+tradition,
+that means the official deadline is 11:59pmEDT on September 15, but the
+effective deadline is a few hours more since no one at NIST will close the
+submission system until the following morning. For those of you who like
+to cut things very fine, I anticipate that it really is only a few hours
+more
+in this case: I have a variety of things I need to do on Sept 16 and will be
+at
+NIST very early.
+ 
+Happy TREC-ing,
+ 
 Ellen
+ 
+
