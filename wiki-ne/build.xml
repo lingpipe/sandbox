@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+
+<project name="Wikipedia Named Entities" 
+         default="jar"
+         basedir=".">
+
+<path id="classpath.standard">
+  <pathelement location="wikine.jar"/>
+  <pathelement location="lib/lingpipe-4.1.0.jar"/>
+</path>
+
+<target name="clean">
+  <delete dir="build"/>
+  <delete dir="munged"/>
+  <delete dir="unpacked"/>
+</target>
+
+<property name="dist" 
+          location="e:\data\wiki-ne\dist"/>
+
+<target name="unpack">
+  <mkdir dir="unpacked/anno"/>
+  <untar src="${dist}/results.tgz" 
+         dest="unpacked/anno"
+         compression="gzip"/>
+
+  <mkdir dir="unpacked/wiki"/>
+  <gunzip src="${dist}/enwiki-20100312-pages-articles.fixed.xml.gz" 
+          dest="unpacked/wiki"/>
+</target>
+
+<target name="compile">
+  <mkdir dir="build/classes"/>
+  <javac srcdir="src" 
+         debug="true"
+         destdir="build/classes">
+    <compilerarg value="-Xlint:all"/>
+    <classpath refid="classpath.standard"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <jar destfile="wikine.jar">
+    <fileset dir="build/classes"
+             includes="**/*.class"/>
+  </jar>
+</target>
+
+<target name="csv"
+        depends="jar">
+  <java classname="Csv"
+        fork="true">
+    <classpath refid="classpath.standard"/>
+    <arg value="temp.csv"/>
+  </java>
+</target>
+
+
+
+</project>
