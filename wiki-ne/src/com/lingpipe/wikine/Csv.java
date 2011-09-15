@@ -21,8 +21,9 @@ public class Csv {
         BufferedReader buf = new BufferedReader(r);
         mText = new String(Streams.toCharArray(buf));
 
-        for (int i = 0; i < mText.length(); ++i)
-            System.out.println("charAt " + i + "=" + mText.charAt(i));
+        // DEBUG
+        // for (int i = 0; i < mText.length(); ++i)
+        // System.out.println("charAt " + i + "=" + mText.charAt(i));
 
         Streams.closeQuietly(buf);
         mHeader = hasHeader ? nextRow() : null;
@@ -72,7 +73,7 @@ public class Csv {
 
 
     List<String> nextRow() {
-        System.out.println("next row, mPos=" + mPos);
+        // DEBUG: System.out.println("next row, mPos=" + mPos);
         if (!hasNextChar())
             return null;
         List<String> row = new ArrayList<String>();
@@ -100,7 +101,7 @@ public class Csv {
     }
 
     void nextQuotedField(StringBuilder sb) {
-        System.out.println("next quoted field, mPos=" + mPos);
+        // DEBUG: System.out.println("next quoted field, mPos=" + mPos);
         while (hasNextChar()) {
             if (nextChar() == '"') {
                 ++mPos;
@@ -120,7 +121,7 @@ public class Csv {
     }
 
     void nextSimpleField(StringBuilder sb) {
-        System.out.println("next simple field, mPos=" + mPos);
+        // DEBUG: System.out.println("next simple field, mPos=" + mPos);
         while (hasNextChar()) {
             if (nextChar() == mFieldSep) {
                 ++mPos;
@@ -149,7 +150,7 @@ public class Csv {
         System.out.println();
         for (int i = 0; i < row.size(); ++i) {
             String field = row.get(i);
-            System.out.println(msg + ", " + i + "=" + field);
+            System.out.println(msg + ", COL " + i + "=|" + field + "|");
         }
     }
 
