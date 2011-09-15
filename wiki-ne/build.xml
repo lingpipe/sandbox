@@ -11,6 +11,9 @@
 
 <target name="clean">
   <delete dir="build"/>
+</target>
+
+<target name="realClean" depends="clean">
   <delete dir="munged"/>
   <delete dir="unpacked"/>
 </target>
@@ -33,7 +36,8 @@
   <mkdir dir="build/classes"/>
   <javac srcdir="src" 
          debug="true"
-         destdir="build/classes">
+         destdir="build/classes"
+         includeantruntime="false">
     <compilerarg value="-Xlint:all"/>
     <classpath refid="classpath.standard"/>
   </javac>
@@ -52,7 +56,8 @@
   <java classname="Csv"
         fork="true">
     <classpath refid="classpath.standard"/>
-    <arg value="temp.csv"/>
+    <arg value="unpacked/anno/results/1-200-result.csv"/>
+    <!-- <arg value="unpacked/anno/results/temp.csv"/> -->
   </java>
 </target>
 
