@@ -1,0 +1,28 @@
+README.forBob
+
+13 data files:
+   10 files of MASC (trained) annotator data, 1 per word, where
+    filename is <word>_<n>ann_all.txt for each of the 10 words,
+    where n is 5 or 6, depending on how many annotators did this
+    word
+
+    3 files of a combination of MASC and turker annotator data, 1
+    for each of the 3 adjectives, where filename is masc_and_<word>.txt
+
+File format:
+   all 13 files have the same tab-separated format
+   row 1 is the header with nothing in the first column, and a<N> in each
+     next column, representing each annotator. note that the same annotator
+     ids (e.g., a101) always index the same annotators.  there are 35
+     different annotators: 6 different masc annotators, and 29 different
+     turkers
+   rows 2-n are for each sentence that was annotated
+   column 1 gives the sentence id
+   colmns 2-n have one column per annotator
+
+Values:
+   all values are of the form 10<N> or 999; N is a WordNet sense id,
+     so 101 in a file for the word "fair-j" means WordNet sense 1
+     of the adjectival use of "fair". 999 represents "other", used
+     in case the word appears as part of a collocation, in the wrong
+     part of speech, or no WordNet sense applies
