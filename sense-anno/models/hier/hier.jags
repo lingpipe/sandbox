@@ -1,0 +1,15 @@
+pi[] ~ ddirch(alpha)
+for (i in 1:I) {
+    z[i] ~ ddisc(pi)
+}
+
+for (j in 1:J) {
+    for (k in 1:K) {
+        theta[j,k,] ~ ddirch(alpha)
+    }
+}
+
+for (n in 1:N) {
+    y[n] ~ dbern(theta[jj[n], z[ii[n]], ]);
+}
+
