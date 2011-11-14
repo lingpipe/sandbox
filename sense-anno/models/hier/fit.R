@@ -1,6 +1,7 @@
 # install.packages("rjags");
 # install.packages("R2jags");
 
+library("rjags");
 library("R2jags");
 
 rawDataTable <- read.table('../../data/fair_5ann_all.txt',header=T,na.strings="\\N");
@@ -21,25 +22,55 @@ y  <- rep(0,N);
 n <- 1;
 for (i in 1:I) {
   for (j in 1:J) {
-    if (!is.na(x[i,j])) {
+    if (!is.na(rawDataTable[i,j])) {
       ii[n] <- i;
       jj[n] <- j;
-      y[n] = senseIdToIdx[x[i,j]];
+      y[n] = senseIdToIdx[rawDataTable[i,j]];
       n <- n + 1;
     }
   }
 }
-alpha <- rep(1,K);
+alpha <- rep(1.0,K);  # uniform
+gamma <- matrix(1.0,K,K);
+# weakly informative accuracy hyperprior; remove loop for uniform
+for (k in 1:K) {
+  # hyperprior mean: acc = RHS/(K+RHS-1);  
+  gamma[k,k] = 1; # RHS
+}
 
-jagsData <- list("I", "J", "K", "N", "ii", "jj", "y", "alpha");
-jagsParams <- c("pi","z","theta");
-jagsInits <- function() { list(); }
-jagsFit <- jags(data=jagsData, inits=jagsInits, n.iter=100,
+
+votes <- matrix(0,I,K);
+piVote <- rep(0,K);
+for (n in 1:N) {
+  votes[ii[n],y[n]] <- votes[ii[n],y[n]] + 1;
+  piVote[y[n]] <- piVote[y[n]] + 1;
+}
+piVote <- piVote / sum(piVote)
+zVote <- rep(1,I);
+for (i in 1:I) {
+  for (k in 2:K) {
+    numTies <- 0;
+    if (votes[i,k] > votes[i,zVote[i]]) {
+      zVote[i] <- k;
+    } else if (votes[i,k] == votes[i,zVote[i]]) {
+      numTies <- numTies + 1;
+      # keep track of numTies so random choice isn't biased
+      zVote[i] <- ifelse(rbinom(1,1,1.0/(1.0 + numTies)),k,zVote[i]);
+    }
+  }
+}
+
+jagsData <- list("I", "J", "K", "N", "ii", "jj", "y", "alpha","gamma");
+jagsParams <- c("pi","z","theta","phi","kappa");
+jagsInits <- function() { list("z"=zVote,
+                               "pi"=piVote,
+                               "kappa"=rep(5.0,K));  }
+jagsFit <- jags(data=jagsData, inits=jagsInits,rep(2.0,K),
+                parameters.to.save=jagsParams,
+                n.iter=2000,
                 model.file="hier.jags");
 print(jagsFit);
+attach.jags(jagsFit);
 
 
 
-
-
-                      
