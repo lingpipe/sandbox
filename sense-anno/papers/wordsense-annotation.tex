@@ -14,6 +14,7 @@
 \usepackage{amsmath}
 \usepackage{multirow}
 \usepackage{url}
+\usepackage{graphicx}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
@@ -42,6 +43,36 @@
 
 \section{Introduction} % 1.0 page
 
+Natural language data annotation typically involves drawing sharp
+categorical distinctions. However, many semantic and pragmatic
+dimensions of language use that are relevant or even important to
+capture are either clearly not categorical, or categorization is
+difficult due to a set of categories that is too numerous, too
+interdependent, or too fluid.
+
+Data annotation proceeds according to each annotator's interpretation
+and application of a coding standard. The coding standard is defined
+by example and by description, but may also evolve through
+inter-annotator communication.
+
+The underlying structure of language corresponding to the category
+distinctions often remains to be discovered. In such cases, data
+annotation is part of the larger project of linguistic research. When
+a linguistic annotation can be applied consistently by different
+annotators, the annotated data may be used to support the discovery
+and analysis of the linguistic phenomena which correlate with the
+categorizations defined by the coding standard.
+
+We address a word sense annotation procedure in which the sense labels
+are relatively numerous and potentially interdependent, and where we
+% INTERDEPENDENT?
+assume that in some cases an instance of a word in context can evoke a
+novel sense reading (fluid senses).
+
+In addition, data annotation is often limited by the cost of training
+annotators and employing them to annotate data. More efficient means
+of using annotation data thus leads to a cost savings per annotation
+and thus a wider range of data that may be annotated.
 
 Much NLP annotation involves categorical distinctions of phenomena
 that can be defined by extension (examples) or intension
@@ -180,8 +211,23 @@ annotator scores within words and across words.
 %% 107    1.3237 2       0.6815 2
 %% 108    1.3669 1       0.7028 1
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{img/GladVsKripp.pdf}
+\end{center}
+\caption{Average Krippendorf $\alpha$ versus Glad $\alpha$ for five
+annotators for the word {\it fair}.  The line is the linear regression
+fit.}
+\end{figure}
+
+\begin{figure*}
+\includegraphics[width=\textwidth]{img/fair-response.pdf}
+\caption{Estimated annotator response to given categorical
+inputs.}
+\end{figure*}
 
 \section{Item Difficulty and Multilabels}
+
 
 \section{Conclusion} % 0.25 page
 
