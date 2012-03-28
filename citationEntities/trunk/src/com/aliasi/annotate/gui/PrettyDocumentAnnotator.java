@@ -305,8 +305,8 @@ class PrettyDocumentAnnotator extends JPanel {
     // autoAnnotateDocument replaces default tag (out-tag)
     // with tags according to current LM.
     void autoAnnotateDocument() {
-        System.out.println("autoAnnotate: " + mInputFile.getName() + " # spans: " + mSpans.length);
-        System.out.flush();
+	//        System.out.println("autoAnnotate: " + mInputFile.getName() + " # spans: " + mSpans.length);
+	//        System.out.flush();
         for (int i = 0; i < mSpans.length; ++i) {
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < mTokens[i].length; ++j) {
@@ -318,8 +318,7 @@ class PrettyDocumentAnnotator extends JPanel {
             if (chunking == null) {
                 chunking = new com.aliasi.chunk.ChunkingImpl(sb);
             }
-            int idx = 0;
-
+            //   to Tags
             BioTagChunkCodec codec = new BioTagChunkCodec(mTokenizerFactory,true);
             StringTagging tagging = null;
             try {
@@ -335,8 +334,8 @@ class PrettyDocumentAnnotator extends JPanel {
             tagsToComboBoxLabels(mTags[i]);
         }
         updateGUI();
-        System.out.println("done auto-annotating");
-        System.out.flush();
+	//        System.out.println("done auto-annotating");
+	//        System.out.flush();
     }
 
     void focusNextEntity() {
@@ -425,7 +424,6 @@ class PrettyDocumentAnnotator extends JPanel {
             Streams.closeQuietly(in);
         }
 
-        // walk over XML Document, get elements with tag "chunk" with attribute "type", value in ChunkTypeSet
         List<Element> elementList = new ArrayList<Element>();
         Iterator descIt = mDocument.getDescendants();
         while (descIt.hasNext()) {
@@ -433,23 +431,13 @@ class PrettyDocumentAnnotator extends JPanel {
             if (isSpan(content))
                 elementList.add((Element)content);
         }
-        // now we've extracted parts of Document to annotate
         mSpans = elementList.<Element>toArray(new Element[elementList.size()]);
+
         mTokens = new String[mSpans.length][];
         mWhitespaces = new String[mSpans.length][];
         mTags = new String[mSpans.length][];
-
         for (int i = 0; i < mSpans.length; ++i) {
             readSpan(i,mSpans[i]);
-	    //            System.out.println("read span: " + i);
-	    //                    System.out.println("tokens: " + mTokens[i].length);
-	    //                        System.out.println("whitespaces: " + mWhitespaces[i].length);
-	    //                        for (int j=0; j< mTokens[i].length; j++) {
-	    //                            System.out.println("i,j:" + i + "," + j
-	    //                                               + " ws: |" + mWhitespaces[i][j] + "|"
-	    //                                               + " tok: " + mTokens[i][j]
-	    //                                               );
-	    //                        }
         }
 
         mTagSelectors = new TagSelector[mSpans.length][];
@@ -461,15 +449,6 @@ class PrettyDocumentAnnotator extends JPanel {
         }
         updateGUI();
         return true;
-    }
-
-
-    static int lineCt(String text) {
-        int result = 1;
-        Pattern p = Pattern.compile("\n");
-        Matcher m = p.matcher(text);
-        while (m.find()) result++;
-        return result;
     }
 
     static final int MIN_TAG_WIDTH = 60;
@@ -496,6 +475,7 @@ class PrettyDocumentAnnotator extends JPanel {
             String[] tokens = mTokens[i];
             String[] tags = mTags[i];
             String[] whitespaces = mWhitespaces[i];
+
             // index linebreaks
             int[] idxRow = new int[tokens.length];
             int[] idxCol = new int[tokens.length];
@@ -516,9 +496,8 @@ class PrettyDocumentAnnotator extends JPanel {
             }
             // create display
             for (int k = 0; k < tokens.length; k++) {
-                //                System.out.println("k: " + k + " row: " + idxRow[k] + ", col: " + idxCol[k] + " tok: " + tokens[k]);
+
                 if (k > 0 && idxCol[k]==0) {
-                    // System.out.println(sbDisplayText.toString());
                     // add current line
                     displayText = sbDisplayText.toString();
                     textDisplay = new JTextArea(displayText,1,displayText.length());
@@ -534,11 +513,11 @@ class PrettyDocumentAnnotator extends JPanel {
                     linePane.setAlignmentY(0.0f);
                     notePane.add(linePane);
                     // reset containers
-                    sbDisplayText.setLength(0);
                     textPane = new JPanel();
                     textPane.setLayout(new FlowLayout(FlowLayout.LEFT,0,5));
                     linePane = new JPanel();
                     linePane.setLayout(new FlowLayout(FlowLayout.LEFT,0,5));
+                    sbDisplayText.setLength(0);
                 }
                 String displayToken = "";
                 if  (k == 0) { 
@@ -556,6 +535,7 @@ class PrettyDocumentAnnotator extends JPanel {
                 textLabel.setFont(mCorpusAnnotator.mTextFont);
                 textLabel.setEditable(false);
                 mLabels[i][k] = textLabel;
+		textLabel.setFocusable(false);
                 textLabel.setLineWrap(false);
                 textLabel.setOpaque(true);
                 textLabel.setBorder(new LineBorder(Color.LIGHT_GRAY));
@@ -575,9 +555,10 @@ class PrettyDocumentAnnotator extends JPanel {
                 tokenTagControl.add(tagSelector);
                 tokenTagControl.add(textLabel);
                 // max width of current tag, current token
-                int tagWidth = mCorpusAnnotator.mTextFont.getSize() * Math.max(tagSelector.getSelection().length(),4);
+                int tagWidth = mCorpusAnnotator.mTextFont.getSize() * Math.max(tagSelector.getSelection().length(),6);
                 int prefWidth = Math.max(tagWidth,(int)textLabel.getPreferredSize().getWidth());
                 tokenTagControl.setPreferredSize(new Dimension(prefWidth,50));
+                tokenTagControl.setMinimumSize(new Dimension(prefWidth,50));
                 tokenTagControl.setAlignmentX(0.0f);
                 tokenTagControl.setAlignmentY(0.0f);
                 linePane.add(tokenTagControl);
@@ -598,6 +579,7 @@ class PrettyDocumentAnnotator extends JPanel {
             linePane.setAlignmentY(0.0f);
             notePane.add(linePane);
             // end get last row
+	    sbDisplayText.setLength(0);
 
             mAnnotationPane.add(containingChunkTypeLabel);
             mAnnotationPane.add(notePane);
@@ -774,8 +756,6 @@ class PrettyDocumentAnnotator extends JPanel {
 
     static class TagSelectionRenderer
         extends JLabel implements ListCellRenderer {
-        static final long serialVersionUID = 7179242060621377692L;
-
         JComboBox mBox;
         public TagSelectionRenderer(JComboBox box) {
             setOpaque(true);
@@ -803,7 +783,6 @@ class PrettyDocumentAnnotator extends JPanel {
 
     class TagSelector extends JComboBox
         implements ActionListener, KeyListener, MouseListener, FocusListener {
-        static final long serialVersionUID = 6169242060621366692L;
 
         final int mSectionIndex;
         final int mTokenIndex;
@@ -816,7 +795,9 @@ class PrettyDocumentAnnotator extends JPanel {
             mSectionIndex = sectionIndex;
             mTokenIndex = tokenIndex;
             setEditable(false); // no adding types on the fly
+
             setSelection(mTags[sectionIndex][tokenIndex]);
+
             super.addActionListener(this);
             mTagSelectors[sectionIndex][tokenIndex] = this;
             super.addKeyListener(this);
@@ -828,14 +809,14 @@ class PrettyDocumentAnnotator extends JPanel {
             super.setLightWeightPopupEnabled(true);
 
             setBackground(BG_COLOR);
-            setRenderer(new TagSelectionRenderer(this));
+	    setRenderer(new TagSelectionRenderer(this));
 
             KeyStroke ctrlL
                 = KeyStroke.getKeyStroke(KeyEvent.VK_L,
                                      KeyEvent.CTRL_DOWN_MASK);
             ActionListener verticalCenterAction = new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        verticalCenter();
+			//                        verticalCenter();
                     }
                 };
 
@@ -1012,15 +993,13 @@ class PrettyDocumentAnnotator extends JPanel {
             case KeyEvent.VK_0:
                 focusNextEntity(mSectionIndex,mTokenIndex+1);
                 break;
+            }
 
             // THESE BOUND BY COMBOBOX:
             // case KeyEvent.VK_ENTER:  // enter
             // case KeyEvent.VK_SPACE:  // space bar
             // case KeyEvent.VK_LEFT:   // left arrow
             // case KeyEvent.VK_RIGHT:  // right arrow
-
-            }
-
         }
         public void keyReleased(KeyEvent e) {
             //
@@ -1032,7 +1011,6 @@ class PrettyDocumentAnnotator extends JPanel {
         // ActionListener
         public void actionPerformed(ActionEvent e) {
             String tagSelected = getSelection();
-
             mHasBeenEdited = true;  // atomic in event thread
 
             // reset labels on box triggering action
@@ -1060,7 +1038,7 @@ class PrettyDocumentAnnotator extends JPanel {
         public void mouseClicked(MouseEvent e) {
         }
         public void mouseEntered(MouseEvent e) {
-            mouseCopy();
+	    mouseCopy();
         }
         public void mouseExited(MouseEvent e) {
         }
