@@ -712,7 +712,10 @@ class DocumentAnnotator extends JPanel {
             mSectionIndex = sectionIndex;
             mTokenIndex = tokenIndex;
             setEditable(false); // no adding types on the fly
+
             setSelection(mTags[sectionIndex][tokenIndex]);
+
+
             super.addActionListener(this);
             mTagSelectors[sectionIndex][tokenIndex] = this;
             super.addKeyListener(this);
@@ -724,7 +727,7 @@ class DocumentAnnotator extends JPanel {
             super.setLightWeightPopupEnabled(true);
 
             setBackground(BG_COLOR);
-            // setRenderer(new TagSelectionRenderer(this));
+	    //	    setRenderer(new TagSelectionRenderer(this));
 
             KeyStroke ctrlL
                 = KeyStroke.getKeyStroke(KeyEvent.VK_L,
