@@ -10,12 +10,7 @@ import com.aliasi.chunk.BioTagChunkCodec;
 import com.aliasi.chunk.TagChunkCodec;
 import com.aliasi.chunk.TagChunkCodecAdapters;
 
-import com.aliasi.hmm.HmmCharLmEstimator;
-
-import com.aliasi.io.FileExtensionFilter;
-
 import com.aliasi.tag.StringTagging;
-import com.aliasi.tag.Tagging;
 
 import com.aliasi.tokenizer.TokenizerFactory;
 import com.aliasi.tokenizer.Tokenizer;
@@ -103,8 +98,6 @@ class PrettyDocumentAnnotator extends JPanel {
                              String[] spanTags,
                              String[] chunkTypes)
         throws IOException, JDOMException, SAXException {
-
-
         super(new GridBagLayout());
 
         mCorpusAnnotator = corpusAnnotator;  // may be null
@@ -352,13 +345,9 @@ class PrettyDocumentAnnotator extends JPanel {
     }
 
     void focusNextEntity(int iStart, int jStart) {
-        //        System.out.println("focusNextEntity");
         if (!atLeastOneEntity()) {
             TagSelector selector = mTagSelectors[0][0];
             selector.requestFocus();
-            //            System.out.println("no entities");
-            //            System.out.println("focus: 0,0");
-            //            System.out.flush();
             return;
         }
         int i = iStart;
@@ -372,8 +361,6 @@ class PrettyDocumentAnnotator extends JPanel {
                     && !CONTINUE_TAG_LABEL.equals(selection)) {
                     TagSelector selector = mTagSelectors[i][j];
                     selector.requestFocus();
-                    //                    System.out.println("focus: i,j: " + i + ", " + j);
-                    //                    System.out.flush();
                     return;
                 }
                 ++j;
@@ -451,7 +438,6 @@ class PrettyDocumentAnnotator extends JPanel {
         return true;
     }
 
-    static final int MIN_TAG_WIDTH = 60;
     void updateGUI() {
         System.out.println("update GUI");
         System.out.flush();
@@ -495,8 +481,8 @@ class PrettyDocumentAnnotator extends JPanel {
                 idxCol[k] = curCol;
             }
             // create display
+	    sbDisplayText.setLength(0);
             for (int k = 0; k < tokens.length; k++) {
-
                 if (k > 0 && idxCol[k]==0) {
                     // add current line
                     displayText = sbDisplayText.toString();
@@ -574,16 +560,13 @@ class PrettyDocumentAnnotator extends JPanel {
             textPane.setAlignmentX(0.0f);
             textPane.setAlignmentY(0.0f);
             notePane.add(textPane);
-            // last row token controls
             linePane.setAlignmentX(0.0f);
             linePane.setAlignmentY(0.0f);
             notePane.add(linePane);
-            // end get last row
-	    sbDisplayText.setLength(0);
 
             mAnnotationPane.add(containingChunkTypeLabel);
             mAnnotationPane.add(notePane);
-        }
+	}
         System.out.println("updateGUI done");
         System.out.flush();
     }
@@ -836,11 +819,6 @@ class PrettyDocumentAnnotator extends JPanel {
             verticalCenter(2);
         }
 
-        // this is wrong.
-        // tag selector is inside a flow layout (line)
-        // line is inside a box layout
-        // make line that contains this tag selector middle of screen.
-        
         void verticalCenter(int amt) {
             TagSelector current = this;
 
@@ -861,7 +839,6 @@ class PrettyDocumentAnnotator extends JPanel {
             before.scrollRectToVisible(before.getBounds(null));
             after.scrollRectToVisible(after.getBounds(null));
             this.scrollRectToVisible(this.getBounds(null));
-
         }
 
 

@@ -88,12 +88,12 @@ public class CorpusAnnotator {
     JFrame mTopFrame;
     JSplitPane mTopSplitPane;
 
-    DocumentAnnotator mOpenAnnotator;
+    PrettyDocumentAnnotator mOpenAnnotator;
 
     // CharLmRescoringChunker mAutoChunker;
     CharLmHmmChunker mAutoChunker;
 
-    LinkedBlockingQueue<DocumentAnnotator> mAnnotatorQueue;
+    LinkedBlockingQueue<PrettyDocumentAnnotator> mAnnotatorQueue;
 
     SwingWorker<Void,Void> mQueueWorker;
 
@@ -308,7 +308,7 @@ public class CorpusAnnotator {
         // mTopFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         mTopFrame.setVisible(true);
 
-        mAnnotatorQueue = new LinkedBlockingQueue<DocumentAnnotator>(2);
+        mAnnotatorQueue = new LinkedBlockingQueue<PrettyDocumentAnnotator>(2);
         mQueueWorker = new SwingWorker<Void,Void>() {
             public Void doInBackground() {
                 while (true)
@@ -347,18 +347,15 @@ public class CorpusAnnotator {
 
 
     boolean queueNext() {
-        //        System.out.println("queueNext, files remaining: " + mFileNamesLeft.size());
         // only get next and return true if successful; executed in worker
         for (String fileNameLeft : mFileNamesLeft) {
             if (mFileNamesQueued.contains(fileNameLeft)) continue;
             File inFile = new File(mInDir,fileNameLeft);
             File outFile = new File(mOutDir,fileNameLeft);
-            //            System.out.println("fileNameLeft: " + fileNameLeft);
-            DocumentAnnotator annotator;
+            PrettyDocumentAnnotator annotator;
             try {
-                //                System.out.println("instantiate DocumentAnnotator");
                 annotator
-                    = new DocumentAnnotator(this,
+                    = new PrettyDocumentAnnotator(this,
                                             inFile,mInCharset,
                                             outFile,mOutCharset,
                                             mTokenizerFactory,
@@ -393,7 +390,6 @@ public class CorpusAnnotator {
 
 
     void trainTagger() {
-        //        System.out.println("trainTagger");
         int numFiles = mFileNamesDone.size();
         ProgressMonitor monitor
             = new ProgressMonitor(mTopSplitPane,
@@ -461,20 +457,18 @@ public class CorpusAnnotator {
         }
         //        System.out.println("files remianing: " + mFileNamesLeft.size());
         //        System.out.println("about to create nextDocWorker");
-        SwingWorker<DocumentAnnotator,Void> nextDocWorker
-            = new SwingWorker<DocumentAnnotator,Void>() {
+        SwingWorker<PrettyDocumentAnnotator,Void> nextDocWorker
+            = new SwingWorker<PrettyDocumentAnnotator,Void>() {
 
-            public DocumentAnnotator doInBackground() {
+            public PrettyDocumentAnnotator doInBackground() {
                 while (true) {
                     try {
                         if (mQueueWorker.isDone()
                             && mAnnotatorQueue.isEmpty())
                             return null;
-                        //                        System.out.println("get next file from queue");
-                        DocumentAnnotator annotator
+                        PrettyDocumentAnnotator annotator
                         = mAnnotatorQueue.take(); // waits indefinitely
                         String fileName = annotator.mInputFile.getName();
-                        //                        System.out.println("process file:" + fileName);
                         if (mFileNamesLeft.remove(fileName)) {
                             mFileNameOpen = fileName;
                             return annotator;
@@ -487,7 +481,7 @@ public class CorpusAnnotator {
         };
         nextDocWorker.execute();
 
-        DocumentAnnotator annotator = null;
+        PrettyDocumentAnnotator annotator = null;
         try {
             annotator
                 = nextDocWorker.get(); // waits indefinitely
@@ -549,7 +543,7 @@ public class CorpusAnnotator {
 
     void finished(File inFile) throws InterruptedException {
         String name = inFile.getName();
-        DocumentAnnotator annotator = mOpenAnnotator;
+        PrettyDocumentAnnotator annotator = mOpenAnnotator;
         mOpenAnnotator = null;
         annotator.setVisible(false);
         mEditorPane.removeAll();
@@ -569,7 +563,7 @@ public class CorpusAnnotator {
         // then no need to change files
         // and this would mean it wouldn't dance around, too
 
-        DocumentAnnotator annotator = mOpenAnnotator;
+        PrettyDocumentAnnotator annotator = mOpenAnnotator;
         mOpenAnnotator = null;
         annotator.setVisible(false);
         mEditorPane.removeAll();
@@ -587,7 +581,7 @@ public class CorpusAnnotator {
     }
 
     void discard(String fileName) throws InterruptedException {
-        DocumentAnnotator annotator = mOpenAnnotator;
+        PrettyDocumentAnnotator annotator = mOpenAnnotator;
         mOpenAnnotator = null;
         annotator.setVisible(false);
         mEditorPane.removeAll();
@@ -619,7 +613,7 @@ public class CorpusAnnotator {
         jList.setListData(filesLeft);
     }
 
-    //    static DocumentAnnotator sAnnotator = null;
+    //    static PrettyDocumentAnnotator sAnnotator = null;
 
     void createAnnotator(final File inFile, final File outFile,
                          final boolean autoAnnotate) {
@@ -647,8 +641,8 @@ public class CorpusAnnotator {
         try {
             monitor.setProgress(0);
             monitor.setNote("Loading Annotator");
-            final DocumentAnnotator annotator
-                = new DocumentAnnotator(this,
+            final PrettyDocumentAnnotator annotator
+                = new PrettyDocumentAnnotator(this,
                                         inFile,mInCharset,
                                         outFile,mOutCharset,
                                         mTokenizerFactory,
