@@ -441,15 +441,15 @@ class PrettyDocumentAnnotator extends JPanel {
 
         for (int i = 0; i < mSpans.length; ++i) {
             readSpan(i,mSpans[i]);
-            System.out.println("read span: " + i);
-                    System.out.println("tokens: " + mTokens[i].length);
-                        System.out.println("whitespaces: " + mWhitespaces[i].length);
-                        for (int j=0; j< mTokens[i].length; j++) {
-                            System.out.println("i,j:" + i + "," + j
-                                               + " ws: |" + mWhitespaces[i][j] + "|"
-                                               + " tok: " + mTokens[i][j]
-                                               );
-                        }
+	    //            System.out.println("read span: " + i);
+	    //                    System.out.println("tokens: " + mTokens[i].length);
+	    //                        System.out.println("whitespaces: " + mWhitespaces[i].length);
+	    //                        for (int j=0; j< mTokens[i].length; j++) {
+	    //                            System.out.println("i,j:" + i + "," + j
+	    //                                               + " ws: |" + mWhitespaces[i][j] + "|"
+	    //                                               + " tok: " + mTokens[i][j]
+	    //                                               );
+	    //                        }
         }
 
         mTagSelectors = new TagSelector[mSpans.length][];
