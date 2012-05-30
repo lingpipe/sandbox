@@ -203,6 +203,7 @@
       <arg value="person,location,organization"/>
       <arg value="com.aliasi.tokenizer.IndoEuropeanTokenizerFactory"/>
       <arg value="14"/>
+      <arg value="false"/>
     </java>
 </target>
 
@@ -285,7 +286,7 @@
       <arg value="UTF-8"/>
       <arg value="document"/>
       <arg value="bibliography"/>
-      <arg value="com.aliasi.tokenizer.LineTokenizerFactory"/>
+      <arg value="com.aliasi.annotate.corpora.LineTokenizerWrapper"/>
       <arg value="${text.font.size}"/>
     </java>
 </target>
@@ -308,7 +309,7 @@
       <arg value="bibliography"/>
       <arg value="article,book,caselaw,conference,booklet,inbook,inproceedings,manual,mastersthesis,misc,patent,phdthesis,proceedings,software,techreport,unpublished,web"/>
       <!-- -incollection -->
-      <arg value="com.aliasi.tokenizer.LineTokenizerFactory"/>
+      <arg value="com.aliasi.annotate.corpora.LineTokenizerWrapper"/>
       <arg value="${text.font.size}"/>
     </java>
 </target>
