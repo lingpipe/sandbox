@@ -13,7 +13,7 @@ public class DocDemo {
         /*x DocDemo.1 */
         Document doc = new Document();
         doc.add(new Field("title", "Fast and Accurate Read Alignment",
-                          Store.YES,Index.ANALYZED, TermVector.NO));
+                          Store.YES,Index.ANALYZED));
         doc.add(new Field("author", "Heng Li",
                           Store.YES,Index.ANALYZED));
         doc.add(new Field("author", "Richard Durbin",

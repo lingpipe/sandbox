@@ -9,7 +9,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 import org.apache.lucene.util.Version;
 
@@ -24,11 +24,10 @@ public class LuceneAnalysis {
     public static void main(String[] args) throws IOException {
         String fieldName = args[0];
         String text = args[1];
-
         
         /*x LuceneAnalysis.1 */
         StandardAnalyzer analyzer 
-            = new StandardAnalyzer(Version.LUCENE_30);
+            = new StandardAnalyzer(Version.LUCENE_36);
         /*x*/
         
         /*x LuceneAnalysis.2 */
@@ -37,8 +36,8 @@ public class LuceneAnalysis {
         TokenStream tokenStream 
             = analyzer.tokenStream(fieldName,textReader);
 
-        TermAttribute terms 
-            = tokenStream.addAttribute(TermAttribute.class);
+        CharTermAttribute terms = 
+            tokenStream.addAttribute(CharTermAttribute.class);
 
         OffsetAttribute offsets 
             = tokenStream.addAttribute(OffsetAttribute.class);
@@ -55,7 +54,7 @@ public class LuceneAnalysis {
             int increment = positions.getPositionIncrement();
             int start = offsets.startOffset();
             int end = offsets.endOffset();
-            String term = terms.term();
+            String term = terms.toString();
         /*x*/
             System.out.printf("%5d (%5d, %5d) %s\n",increment,start,end,term);
         }
