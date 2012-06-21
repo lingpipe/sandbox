@@ -32,6 +32,7 @@
     </delete>
   </target>
 
+  <!-- do we need this target? -->
   <target name="jar">
     <mkdir dir="build/classes"/>
     <javac optimize="on"
@@ -39,6 +40,7 @@
            debuglevel="source,lines,vars"
            destdir="build/classes">
       <src path="src/java/main"/>
+      <!-- ??? path="src/java/main" no such path exists ??? -->
     </javac>
     <jar destfile="${jar}">
       <fileset dir="build/classes"
