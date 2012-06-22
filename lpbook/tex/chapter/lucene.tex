@@ -616,36 +616,67 @@ as an example document collection.
 %
 \commandlinefollow{ant -Ddoc.dir=../../data/federalist-papers/texts -Dindex.dir=temp.idx lucene-index}
 \begin{verbatim}
-Index Directory=C:\lpb\src\applucene\temp.idx
-Doc Directory=C:\lpb\data\federalist-papers\texts
+Index Directory=/Users/mitzimorris/aliasi/lpbook/src/applucene/temp.idx
+Doc Directory=/Users/mitzimorris/aliasi/lpbook/data/federalist-papers/texts
 num docs=85
-num chars=1154664
 \end{verbatim}
 %
-Lucene's very fast.  On my workstation, it takes less than a second to
-run the demo, including forking a new JVM.  The run indexed 85
+Lucene's very fast.  On a workstation, it takes less than a second to
+run the demo, including forking a new JVM.  On my wimpy notebook,
+it takes two seconds. The run indexed 85
 documents consisting of approximately 1.1 million words total.
 
 After indexing, we can look at the contents of the index directory.
 %
-\commandlinefollow{ls -l temp.idx}
+\commandlinefollow{export BLOCKSIZE=1024; ls -s temp.idx}
 \begin{verbatim}
--rwxrwxrwx 1 Admin None  355803 Aug 24 17:48 _0.cfs
--rwxrwxrwx 1 Admin None 1157101 Aug 24 17:48 _0.cfx
--rwxrwxrwx 1 Admin None      20 Aug 24 17:48 segments.gen
--rwxrwxrwx 1 Admin None     235 Aug 24 17:48 segments_2
+total 1544
+1160 \_0.fdt
+   4 \_0.fdx
+   4 \_0.fnm
+  84 \_0.frq
+   4 \_0.nrm
+ 192 \_0.prx
+   4 \_0.tii
+  84 \_0.tis
+   4 segments.gen
+   4 segments\_1
 \end{verbatim}
-%
-These files contain binary representations of the index.  The
-\code{.cfs} file contains the index (including the position of each
-token in each file).  The \code{.cfx} file contains the stored fields. 
-The two segments files contain indexes into these files.  The indexes
-will be stored in memory to allow fast random access to the appropirate
-file contents.
 
-With the standard analyzer, the index file is only a quarter the size of
-the text file, whereas the stored field file is slightly larger than the
-set of texts indexed.
+%
+These files contain binary representations of the index.  
+The file segements.gen is a global file which contains the generation number of the index.
+The file segments\_1 contains the per-commit list of segments.
+
+The per-segment files begin with an underscore and have suffixes
+which identify the type of data they contain.
+The field info file, suffix \code{.fnm}, contains the field names and infos.
+The term dictionary files, \code{.tis} and \code{.tii}, are used to navigate the index to
+retrieve information for each term.
+Term frequencies are stored in the \code{.frq} file
+and term positions are stored in the \code{.prx} file.
+Normalization factors used for scoring are stored in the \code{.nrm} file.
+The files \code{.fdt} and \code{.fdx} contain the raw text data for the stored fields.
+
+The index takes up 1.5M total disk space.
+Most of this space is used for the stored fields file, 1.2M in size,
+which is slightly smaller than the raw text files themselves.
+\commandlinefollow{du -sh ../../data/federalist-papers/texts}
+\begin{verbatim}
+1.3M	../../data/federalist-papers/texts
+\end{verbatim}
+
+\subsection{Luke}
+
+Luke is an index browser for Lucene, also written in Java.
+Downloads are available from \url{http://code.google.com/p/luke/}.
+It provides a quick and easy way to explore the contents of the index.
+
+Using Luke, we can browse our newly created index folder \code{index.tmp}.
+Luke provides an overview of the index, showing the fields and term count
+per field.  The field named ``file'' contains 85 terms, one term per filename indexed.
+The field named ``text'' contains 8,901 terms.  Of these, the 10 top ranking terms are:
+\{all, have, new, would, from, state, york, people, so, other\}.
 
 \subsection{Duplicate Documents}
 
@@ -659,7 +690,7 @@ document with the same fields and values as another document.  It
 keeps them separate internally using its own identifiers.
 
 
-\section{Queries ande Query Parsing}
+\section{Queries and Query Parsing}
 
 Lucene provides a highly configurable hybrid form of search that
 combines exact boolean searches with softer, more
