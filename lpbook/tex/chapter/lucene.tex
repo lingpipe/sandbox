@@ -657,6 +657,8 @@ Term frequencies are stored in the \code{.frq} file
 and term positions are stored in the \code{.prx} file.
 Normalization factors used for scoring are stored in the \code{.nrm} file.
 The files \code{.fdt} and \code{.fdx} contain the raw text data for the stored fields.
+These last two are not used by Lucene for index search and scoring, they are only
+for retrieval of search results.
 
 The index takes up 1.5M total disk space.
 Most of this space is used for the stored fields file, 1.2M in size,
