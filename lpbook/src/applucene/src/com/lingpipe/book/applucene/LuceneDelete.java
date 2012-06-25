@@ -65,7 +65,7 @@ public class LuceneDelete {
         System.out.println("Num docs before delete=" + numDocsBefore);
         System.out.println("Has deleted docs=" + hasDeletedDocs);
         System.out.println("Num docs after delete before commit=" + numDocsAfterDeleteBeforeCommit);
-        System.out.println("Num docs after delete=" + numDocsAfter);
+        System.out.println("Num docs after commit=" + numDocsAfter);
     }
 
 }
