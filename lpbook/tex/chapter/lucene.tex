@@ -626,21 +626,22 @@ run the demo, including forking a new JVM.  On my wimpy notebook,
 it takes two seconds. The run indexed 85
 documents consisting of approximately 1.1 million words total.
 
-After indexing, we can look at the contents of the index directory.
+After indexing, we can look at the contents of the index directory,
+showing file size in kilobytes.
 %
 \commandlinefollow{export BLOCKSIZE=1024; ls -s temp.idx}
 \begin{verbatim}
 total 1544
-1160 \_0.fdt
-   4 \_0.fdx
-   4 \_0.fnm
-  84 \_0.frq
-   4 \_0.nrm
- 192 \_0.prx
-   4 \_0.tii
-  84 \_0.tis
+1160 _0.fdt
+   4 _0.fdx
+   4 _0.fnm
+  84 _0.frq
+   4 _0.nrm
+ 192 _0.prx
+   4 _0.tii
+  84 _0.tis
    4 segments.gen
-   4 segments\_1
+   4 segments_1
 \end{verbatim}
 
 %
@@ -674,11 +675,13 @@ Luke is an index browser for Lucene, also written in Java.
 Downloads are available from \url{http://code.google.com/p/luke/}.
 It provides a quick and easy way to explore the contents of the index.
 
-Using Luke, we can browse our newly created index folder \code{index.tmp}.
-Luke provides an overview of the index, showing the fields and term count
-per field.  The field named ``file'' contains 85 terms, one term per filename indexed.
-The field named ``text'' contains 8,901 terms.  Of these, the 10 top ranking terms are:
-\{all, have, new, would, from, state, york, people, so, other\}.
+\begin{figure}[!hb]
+%\begin{center}
+\includegraphics[width=5.0in]{pngs/luke1.png}
+%\end{center}%
+\vspace*{-18pt}
+\caption{Screenshot of Luke index brower, showing overview of index temp.idx}
+\end{figure}
 
 \subsection{Duplicate Documents}
 
@@ -691,19 +694,22 @@ uniqueness of document contents.  Lucene will happily create another
 document with the same fields and values as another document.  It
 keeps them separate internally using its own identifiers.
 
-
 \section{Queries and Query Parsing}
 
 Lucene provides a highly configurable hybrid form of search that
 combines exact boolean searches with softer, more
-relevance-ranking-oriented vector-space search methods.  All searches
-are field-specific.
+relevance-ranking-oriented vector-space search methods.  
+All searches are field-specific, because Lucene indexes terms and 
+a term is comprised of a field name and a token.%
 %
-\footnote{Unfortunately, there's no way to easily have a query search
-  over all fields.  Instead, field-specific queries must be disjoined
-  to achieve this effect.  Another approach is to denormalize the
-  documents by creating synthetic fields that concatenate the value of
-  other fields.}
+\footnote{Given that search is carried out over terms, 
+ there's no way to easily have a query search over all fields.
+ Instead, field-specific queries must be disjoined to achieve this
+ effect.  Scoring for this approach may be problematic because
+ hits on a shorter field  will have a higher score than hits on a longer field.
+ Another approach is to denormalize the documents by creating
+ synthetic fields that concatenate the value of other fields.}
+%
 
 \subsection{Constructing Queries Programatically}
 
@@ -914,8 +920,8 @@ with the cdemo in the next section) because the embedded field
 \subsection{The \code{QueryParser} Class}
 
 Lucene's \code{QueryParser} class, in package
-\code{org.apache.lucene.queryparser}, converts string-based using
-Lucene's query syntax into \code{Query} objects.  
+\code{org.apache.lucene.queryparser}, converts string-based queries
+which are well-formed according to Lucene's query syntax into \code{Query} objects.  
 
 The constructor \code{QueryParser(Version,String,Analyzer)} requires a
 Lucene version, a string picking out a default field for unmarked
@@ -927,6 +933,32 @@ which returns a \code{Query}.  The parse method will throw a
 Lucene \code{ParseException}, also in package \code{queryparser}, if
 the query is not well formed.
 
+\subsection{Using Luke to Develop and Test Queries}
+
+The Luke index browser provides interactive search over an index
+via the search tab.
+The top part of this tab contains a set of controls.  The controls
+on the right side specify the behavior of the analyzer and the searcher.
+On the top left side there is a text box in which to enter the query string.
+Below the text box is a display of the result of parsing this query string.
+The bottom half of this tab is given over to search results.
+
+\reffig{luke-search} illustrates a simple search over the index temp.idx that we created in the previous section.
+In the top right, we specify the analyzer and default field used by the query parser to be `text' and 
+\code{StandardAnalyzer} respectively.
+In the top left, we entered the words \stringmention{powers of the judiciary}.
+The parser treats each word as a search term.  The standard analyzer stop-lists
+\stringmention{of} and \stringmention{the} and produces a query consisting of two terms:
+\searchquery{text:powers} and \searchquery{text:judiciary}.
+The search results are displayed in ranked order.
+
+\begin{figure}[!hbt]
+%\begin{center}
+\includegraphics[width=5.1in]{pngs/luke2.png}
+%\end{center}%
+\vspace*{-18pt}
+\caption{Screenshot of Luke index brower, showing search results}\label{fig:luke-search}
+\end{figure}
 
 \section{Search}
 
@@ -985,8 +1017,17 @@ query parser.
 %
 It is important to use the same analyzer in the query parser as is
 used in the creation of the index.  If they don't match, queries that
-should succeed will fail because the tokens won't match.  For
-instance, if we apply stemming in the indexing to reduce
+should succeed will fail because the tokens won't match.%
+%
+\footnote{The analyzers must produce the same tokenization.
+ In the demo programs here, the analyzer used to create the index
+ was a \code{StandardAnalyzer} wrapped  in a 
+ \code{LimitTokenCountAnalyzer}.
+ Since the \code{LimitTokenCountAnalyzer} doesn't change the underlying
+ tokenization and we don't expect our queries to be very long,
+ the query parser uses a \code{StandardAnalyzer}.}
+%
+For instance, if we apply stemming in the indexing to reduce
 \stringmention{codes} to \stringmention{code}, then we better do the
 same thing for the query, because we won't find \stringmention{codes}
 in the index, only its stemmed form \stringmention{code}.
@@ -1029,40 +1070,44 @@ The Ant target \code{lucene-search} invokes the demo with command-line
 arguments provided by the value of properties \code{index.dir},
 \code{query}, and \code{max.hits}.
 %
-\commandlinefollow{ant -Dindex.dir=luceneIndex -Dquery="money power
-  united" -Dmax.hits=15 lucene-search}
+\commandlinefollow{ant -Dindex.dir=temp.idx -Dquery="powers of 
+the judiciary" -Dmax.hits=15 lucene-search}
 \begin{verbatim}
-Index Dir=C:\lpb\src\applucene\luceneIndex
-query=money power united
+Index Dir=/Users/mitzimorris/aliasi/lpbook/src/applucene/temp.idx
+query=powers of the judiciary
 max hits=15
 Hits (rank,score,file name)
-  0 0.16  44.ascii.txt
-  1 0.13  32.ascii.txt
-  2 0.13  80.ascii.txt
+  0 0.29  paper_47.txt
+  1 0.23  paper_48.txt
+  2 0.19  paper_78.txt
 ...
- 13 0.10  23.ascii.txt
- 14 0.10  26.ascii.txt
+ 13 0.10  paper_81.txt
+ 14 0.09  paper_82.txt
 \end{verbatim}
 %
-Lucene returns 15 results numbered 0 to 14.  We see that paper 44 is
-the closest match to our query \code{money power united}.  This
-document contains 4 instances of the term \stringmention{money}, over
-40 instances of the term \stringmention{power}, and 8 instances of
-\stringmention{united}.  This seems like a low score on a 0--1 scale
+We run this demo with the query string \stringmention{powers of the judiciary}.
+As we saw in the previous section, the query parser stop-lists
+the words \stringmention{of} and \stringmention{the}, reducing this
+query to a boolean search for documents which contain the terms
+\searchquery{text:powers} and/or \searchquery{text:judiciary}.
+Lucene returns 15 results numbered 0 to 14.  We see that paper 47 is
+the closest match to our query.  This
+document contains 18 instances of the term \stringmention{powers} and
+24 instances of \stringmention{judiciary}.  This seems like a low score on a 0--1 scale
 for a document which matches all the tokens in the query; the reason
 is because the documents are long, so the percentage of tokens in
 the doucment matching the query tokens is relatively low.
 
 The token \stringmention{food} does not show up in any documents, so
-the query \searchquery{food} returns no hits.  If we consider the
-query \searchquery{money food}, it returns exactly the same hits as
-the query \searchquery{money}, in exactly the same order, but with
-lower scores.  If we use the query \searchquery{money +food}, we are
+the query \searchquery{text:food} returns no hits.  If we enter the query string
+\stringmention{powers of the judiciary food}, it returns exactly the same hits as
+the query string \stringmention{powers of the judiciary}, in exactly the same order, but with
+lower scores.  If we try the query string \stringmention{judiciary +food}, we are
 insisting that the token \stringmention{food} appear in any matching
-document.  Because it doesn't appear in the corpus at all, the query
-\stringmention{money +food} has zero hits.  On the other hand, the
-must-not query \searchquery{money -food} has the same hits with the
-same scores as the query \stringmention{money}.
+document.  Because it doesn't appear in the corpus at all, the query string
+\stringmention{judiciary +food} has zero hits.  On the other hand, the
+must-not query \stringmention{judiciary -food} has the same hits with the
+same scores as does the query for \stringmention{judiciary}.
 
 
 \subsection{Ranking}
@@ -1084,60 +1129,60 @@ on its inverse document frequency (IDF), so that terms that occur in
 fewer documents receive higher weights.  Weights may also be boosted
 or lowered in the query syntax or programatically with a query object.
 
-All else being equal, shorter documents are preferred.  The idea here
-is that if there are the same number of instances of query terms in two
-documents, the shorter one has a higher density of query terms, and is
-thus likely to be a better match.  
+All else being equal, shorter documents are preferred.
+The reason for this is that when two documents contain the same number of
+instances of query terms, the shorter document has a higher proportion of query
+terms and is thus likely to be a better match.
+This proportion may well be higher for a short document which contains only
+a few instances of the query term than it is for a very long document which
+contains many instances of the query term.
+This can be problematic when a document collection contains both
+very short and very long documents.
 
 There is also a component of scoring based on the percentage of the
 query terms that appear in the document.  All else being equal, we
 prefer documents that cover more terms in the query.
 
 
-\section{Deleting Documents}\label{section:lucene-delete}
+\section{Deleting and Updating Documents}\label{section:lucene-delete}
 
-Documents may be deleted through an \code{IndexReader} or an
-\code{IndexWriter}, but the methods available and their behavior is
-slightly different.
+The the \code{IndexWriter} class supports methods to delete documents
+from an index based on a term or query.
+There is also a \code{deleteAll()} method to completely clear the index.
 
-\subsection{Deleting with an Index Reader}
-
-Given an index reader, the method \code{deleteDocument(int)} deletes a
-document specified by its Lucene index.  The reason this method is in
-the reader is that the standard way to access document identifiers is
-through search, which returns a \code{TopDocs} object consisting of an
-ordered array of \code{ScoreDoc} objects, each of which contains a
-document identifier (see \refsec{lucene-search} for an example).
-
-Index reader also implements a method \code{deleteDocuments(Term)}
-which deletes all documents containing the specified term; recall
-that a term consists of a field name and token. 
-
-In many cases, the documents being indexed have unique identifiers.
-For instance, in our file-based index, the file names are meant to
-be unique.%
+In early versions of Lucene, document deletion was handled by
+an \code{IndexReader}.%
 %
-\footnote{Unlike a database, which lets you declare identifiers as
-keys, Lucene requires the programmer to treat fields as keys by
-convention.}
+\footnote{Because the \code{IndexWriter} was originally designed just
+  to append documents to an existing index, it didn't need to keep
+  track of documents already in the index.  But in order to delete a
+  document, first it must be found.  Since this couldn't be done
+  with an \code{IndexWriter}, the \code{deleteDocument} methods were
+  added to the \code{IndexReader} class.}
+%
+However, as of 3.6 these delete document(s) methods on \code{IndexReader} have
+been deprecated and in Lucene 4.0 all write support for this class will be removed.
+
+The the \code{IndexWriter} class supports methods to update a document
+or documents that contain a term.  The update operation consists of first
+deleting the existing document(s) which contain a given term and then
+adding new one(s).  This operation is atomic with respect to any index
+readers open on the index.
+
+In many cases, the documents being indexes have unique identifiers.
+For example, in our file-based index, the file names are meant to be unique.%
+%
+\footnote{Unlike a database, which enforces unique ids by declaration,
+Lucene requires the programmer to treat fields as keys by convention.}
 %
 We can then create a term containing the application's document
 identifier field and delete by term.  For instance, we could call
-\code{deleteDocuments(new Term("file","12.ascii.txt"))} to delete the
-document with file identifier \code{12.ascii.txt}.
-
-\subsection{Deleting with an Index Writer}
-
-Like the index reader, the \code{IndexWriter} class supports the same
-\code{deleteDocuments(Term)} method as an index reader.  It also
-deletes all documents containing the specified term.  Index writers
-also implement the more general method \code{deleteDocuments(Query)}, 
-which removes all documents matching the specified query.  There
-is also a \code{deleteAll()} method to completely clear the index.
+\code{deleteDocuments(new Term("file","paper\_12.txt"))} to delete the
+document with file identifier \code{paper\_12.txt}.
 
 \subsection{Visibility of Deletes}
 
-When a delete method is called on a reader or writer based on a term
+When a delete method is called on a writer based on a term
 or document identifier, the documents are not immediately physically
 deleted from the index.  Instead, their identifiers are buffered and
 they are treated as if virtually deleted.  
@@ -1145,17 +1190,12 @@ they are treated as if virtually deleted.
 This approach to document deletion was made for the same efficiency
 reasons and faces many of the same issues as concurrent sets of
 variables in Java's memory model.  Even when deletes are called on one
-index, not every reader or writer with a handle on that index will be
-able to see the delete.
-
-With an index reader, any deletions are visibile immediately on that
-reader, but not on other readers attached to the same index.  With
-an index writer, any new reader opened on the index after the
+index, not every reader with a handle on that index will be
+able to see the delete, but any new reader opened on the index after the
 delete will see the deletion.
 
 The storage space for a deleted document in the index directory is
-only reclaimed during a merge step or an optimization, which
-implicitly merges all outstanding small indexes into a single index.
+only reclaimed during a merge step.
 
 \subsection{Lucene Deletion Demo}
 
@@ -1167,21 +1207,22 @@ demo class \code{LuceneDelete}.
 The code is entirely straightforward, with the \code{main()} method
 taking three command-line arguments, the index directory path, along
 with the field name and token used to construct the term to delete.
+We open the index directory and create a default analyzer just as
+we did in the demo class \code{LuceneIndexing}.
 %
 \codeblock{LuceneDelete.1}
 %
-We create an index reader slightly differently than we did for
-search.  Here we provide a boolean flag set to \code{false} to
-allow us to delete documents; if the flag is \code{true}, as in
-the default, the reader gets read-only access to the index.
-
-We then construct a term out of the field and token and pass them to
-the reader's delete method.  After the deletion, we close the reader
-using its \code{close()} method.  One side effect of the close
-method is that the deletions are committed to the index.
-
-If we had an index searcher wrapping the index reader, we could
-see how the deletes affect search.
+We create an \code{IndexWriterConfig} object that will be passed
+in to the \code{IndexWriter} constructor, but this time
+we set the open mode to
+\code{IndexWriterConfig.OpenMode.APPEND}.
+%
+\codeblock{LuceneDelete.2}
+%
+We then construct a term out of the field and token and pass it to
+the index writer's delete method.  After the deletion, we query the
+writer to find out if deletions are pending.
+We check the number of docs before and after the call to the \code{commit()} method.
 
 \subsubsection{Running the Demo}
 
@@ -1193,27 +1234,38 @@ Make sure that before you run this demo, you've run the indexing
 demo exactly once.  You can always delete the index directory and
 rebuild it if it gets messed up.
 %
-\commandlinefollow{ant -Dindex.dir=luceneIndex -Dfield.name=file -Dtoken=12.ascii.txt lucene-delete}
+\commandlinefollow{ant -Dindex.dir=temp.idx -Dfield.name=file -Dtoken=paper\_12.txt lucene-delete}
 \begin{verbatim}
-index.dir=C:\lpb\src\applucene\luceneIndex 
-field.name=file    token=12.ascii.txt  
-Num docs < delete=85    Num docs > delete=84   Num deleted docs=1
+index.dir=/Users/mitzimorris/aliasi/lpbook/src/applucene/temp.idx
+field.name=file
+token=paper_12.txt
+Num docs before delete=84
+Has deleted docs=true
+Num docs after delete before commit=84
+Num docs after delete=84
 \end{verbatim}
 
 After the demo is run, we can look at the index directory again.
 %
-\commandlinefollow{ls -l luceneIndex}
+\commandlinefollow{export BLOCKSIZE=1024; ls -1 -s temp.idx}
 \begin{verbatim}
--rwxrwxrwx 1 Admin None  355803 Aug 26 14:13 _0.cfs
--rwxrwxrwx 1 Admin None 1157101 Aug 26 14:13 _0.cfx
--rwxrwxrwx 1 Admin None      19 Aug 26 16:40 _0_1.del
--rwxrwxrwx 1 Admin None      20 Aug 26 16:40 segments.gen
--rwxrwxrwx 1 Admin None     235 Aug 26 16:40 segments_3
+total 1524
+1144 _0.fdt
+   4 _0.fdx
+   4 _0.fnm
+  84 _0.frq
+   4 _0.nrm
+ 188 _0.prx
+   4 _0.tii
+  80 _0.tis
+   4 _0_1.del
+   4 segments.gen
+   4 segments_2
 \end{verbatim}
 %
 There is now an extra file with suffix \code{.del} that holds
 information about which items have been deleted.  These deletes will
-now be visible to other index readers that open (or re-open) their
+now be visible to index readers that open (or re-open) their
 indices.  The file containing the deletions will be removed, and the
 actual content deleted, when the index is merged or optimized by an
 index writer.
