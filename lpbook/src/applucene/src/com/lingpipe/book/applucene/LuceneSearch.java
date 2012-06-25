@@ -45,15 +45,15 @@ public class LuceneSearch {
         System.out.println("Hits (rank,score,file name)");
         
     /*x LuceneSearch.2 */
-        Directory dir = FSDirectory.open(indexDir);
-        IndexReader reader = IndexReader.open(dir);
+        Directory fsDir = FSDirectory.open(indexDir);
+        IndexReader reader = IndexReader.open(fsDir);
         IndexSearcher searcher = new IndexSearcher(reader);
 
-        Version v = Version.LUCENE_30;
-        String defaultField = "text";
-        Analyzer analyzer = new StandardAnalyzer(v);
+        String dField = "text";
+        Analyzer stdAn 
+            = new StandardAnalyzer(Version.LUCENE_36);
         QueryParser parser 
-            = new QueryParser(v,defaultField,analyzer);
+            = new QueryParser(Version.LUCENE_36,dField,stdAn);
     /*x*/
 
     /*x LuceneSearch.3 */
@@ -72,6 +72,7 @@ public class LuceneSearch {
             System.out.printf("%3d %4.2f  %s\n",
                               n, score, fileName);
         }
+        reader.close();
     }
 
 }

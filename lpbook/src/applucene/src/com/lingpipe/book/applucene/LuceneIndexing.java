@@ -3,7 +3,6 @@ package com.lingpipe.book.applucene;
 import com.aliasi.util.Files;
 
 import org.apache.lucene.analysis.Analyzer;
-
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.LimitTokenCountAnalyzer;
 
