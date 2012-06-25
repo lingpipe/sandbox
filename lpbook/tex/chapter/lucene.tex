@@ -1150,19 +1150,6 @@ The the \code{IndexWriter} class supports methods to delete documents
 from an index based on a term or query.
 There is also a \code{deleteAll()} method to completely clear the index.
 
-In early versions of Lucene, document deletion was handled by
-an \code{IndexReader}.%
-%
-\footnote{Because the \code{IndexWriter} was originally designed just
-  to append documents to an existing index, it didn't need to keep
-  track of documents already in the index.  But in order to delete a
-  document, first it must be found.  Since this couldn't be done
-  with an \code{IndexWriter}, the \code{deleteDocument} methods were
-  added to the \code{IndexReader} class.}
-%
-However, as of 3.6 these delete document(s) methods on \code{IndexReader} have
-been deprecated and in Lucene 4.0 all write support for this class will be removed.
-
 The the \code{IndexWriter} class supports methods to update a document
 or documents that contain a term.  The update operation consists of first
 deleting the existing document(s) which contain a given term and then
@@ -1179,6 +1166,19 @@ We can then create a term containing the application's document
 identifier field and delete by term.  For instance, we could call
 \code{deleteDocuments(new Term("file","paper\_12.txt"))} to delete the
 document with file identifier \code{paper\_12.txt}.
+
+In earlier versions of Lucene, document deletion was handled by
+an \code{IndexReader}.%
+%
+\footnote{Because the \code{IndexWriter} was originally designed just
+  to append documents to an existing index, it didn't need to keep
+  track of documents already in the index.  But in order to delete a
+  document, first it must be found.  Since this couldn't be done
+  with an \code{IndexWriter}, the \code{deleteDocument} methods were
+  added to the \code{IndexReader} class.}
+%
+However, as of 3.6 these delete document(s) methods on \code{IndexReader} have
+been deprecated and in Lucene 4.0 all write support for this class will be removed.
 
 \subsection{Visibility of Deletes}
 
