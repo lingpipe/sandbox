@@ -407,12 +407,12 @@ Mr. Sutton-Smith will pay $1.20 for the book.
 \end{verbatim}
 %
 The terms are all lowercased, and non-word-internal punctuation has
-been removed.  The stop words \charmention{will}, \charmention{for}
-and \charmention{the} are also removed from the output.  Unlike
+been removed.  The stop words \stringmention{will}, \stringmention{for}
+and \stringmention{the} are also removed from the output.  Unlike
 punctuation, when a stop word is removed, it causes the increment
 between terms to be larger.  For instance, the increment between
-\charmention{smith} and \charmention{pay} is 2, because the stopword
-\charmention{will} was removed between them.  The start (inclusive)
+\stringmention{smith} and \stringmention{pay} is 2, because the stopword
+\stringmention{will} was removed between them.  The start (inclusive)
 and end (exclusive) positions of the extracted terms is also shown.
 
 
@@ -477,7 +477,7 @@ update these properties.
 \subsection{Merging and Optimizing}
 
 Indexing maintains a small buffer of documents in memory,
-occassionally writing the data in that batch of documents out to disk.
+occasionally writing the data in that batch of documents out to disk.
 After enough such batches have been written to disk, Lucene
 automatically merges the individual batches into bigger batches.
 Then, after a number of larger chunks of index accumulate, these are
@@ -490,7 +490,7 @@ indexes.
 It's possible to control the size of the in-memory buffer and the
 frequency of merges via setters on the \code{IndexWriterConfig}.
 
-It's even possible to programatically merge two indexes from different
+It's even possible to programmatically merge two indexes from different
 directories.  Lucene's \code{IndexWriter} class provides a handy
 variable-argument-length method \code{addIndexes(IndexReader...)}
 which adds indexes maintained by the specified readers to the index
@@ -499,7 +499,7 @@ be merged into the writer's index directory.
 
 Being able to merge indexes makes it easy to split the indexing job
 into multiple independent jobs and then either merge the results or
-use all of the indexes together withour merging them (using a
+use all of the indexes together without merging them (using a
 \code{MultiReader}).
 
 
@@ -680,7 +680,7 @@ It provides a quick and easy way to explore the contents of the index.
 \includegraphics[width=5.0in]{pngs/luke1.png}
 %\end{center}%
 \vspace*{-18pt}
-\caption{Screenshot of Luke index brower, showing overview of index temp.idx}
+\caption{Screenshot of Luke index browser, showing overview of index temp.idx}
 \end{figure}
 
 \subsection{Duplicate Documents}
@@ -711,9 +711,9 @@ a term is comprised of a field name and a token.%
  synthetic fields that concatenate the value of other fields.}
 %
 
-\subsection{Constructing Queries Programatically}
+\subsection{Constructing Queries Programmatically}
 
-Queries may be constructed programatically using the dozen or so
+Queries may be constructed programmatically using the dozen or so
 built-in implementations of the the \code{Query} abstract base class
 from the package \code{org.apache.lucene.search}.  
 
@@ -902,7 +902,7 @@ required (see \refsec{character-literals}).
 \subsection{Default Fields, Token Queries, and Term Queries}
 
 When we set up a query parser, we will be supplying a default field.
-Unmarked token queries will then be interrpeted as if constrained to
+Unmarked token queries will then be interpreted as if constrained to
 that field.  For instance, if \code{title} is the default query field,
 then query \searchquery{cell} is the same as the query
 \searchquery{title:cell}.  
@@ -913,7 +913,7 @@ or sequences of tokens, and term-level queries, which match tokens
 within a field.  Thus it's possible to write out queries with rather
 unclear structure, such as \searchquery{text:(money AND
   file:12.ascii.txt)}; this query will actually match (as you can try
-with the cdemo in the next section) because the embedded field
+with the demo in the next section) because the embedded field
 \code{file} takes precedence over the top-level field \code{text}.
 
 
@@ -957,7 +957,7 @@ The search results are displayed in ranked order.
 \includegraphics[width=5.1in]{pngs/luke2.png}
 %\end{center}%
 \vspace*{-18pt}
-\caption{Screenshot of Luke index brower, showing search results}\label{fig:luke-search}
+\caption{Screenshot of Luke index browser, showing search results}\label{fig:luke-search}
 \end{figure}
 
 \section{Search}
@@ -1055,7 +1055,7 @@ over the array, and for each \code{ScoreDoc} object, we pull its score
 out using the public member variable \code{score}.  We then pull its
 document reference number (Lucene's internal identifier for the doc)
 out with the member variable \code{doc}.  With the Lucene document
-identifer, we are able to retrieve the document from the searcher
+identifier, we are able to retrieve the document from the searcher
 (which just delegates this operation to its index reader internally).
 Finally, with the document in hand, we retrieve its file name using
 the \code{get()} method on the document; we use \code{get()} here
@@ -1096,7 +1096,7 @@ document contains 18 instances of the term \stringmention{powers} and
 24 instances of \stringmention{judiciary}.  This seems like a low score on a 0--1 scale
 for a document which matches all the tokens in the query; the reason
 is because the documents are long, so the percentage of tokens in
-the doucment matching the query tokens is relatively low.
+the document matching the query tokens is relatively low.
 
 The token \stringmention{food} does not show up in any documents, so
 the query \searchquery{text:food} returns no hits.  If we enter the query string
@@ -1127,7 +1127,7 @@ The basic idea is that the more instances of query terms in a document
 the better.  Terms are not weighted equally.  A term is weighted based
 on its inverse document frequency (IDF), so that terms that occur in
 fewer documents receive higher weights.  Weights may also be boosted
-or lowered in the query syntax or programatically with a query object.
+or lowered in the query syntax or programmatically with a query object.
 
 All else being equal, shorter documents are preferred.
 The reason for this is that when two documents contain the same number of
@@ -1204,18 +1204,21 @@ demo class \code{LuceneDelete}.
 
 \subsubsection{Code Walkthrough}
 
-The code is entirely straightforward, with the \code{main()} method
-taking three command-line arguments, the index directory path, along
+The code is in the main() method of the demo class \code{LuceneDelete}.
+This method takes three command-line arguments, the index directory path, along
 with the field name and token used to construct the term to delete.
 We open the index directory and create a default analyzer just as
 we did in the demo class \code{LuceneIndexing}.
+
+After setting the command-line arguments and creating the analyzer,
+we create an \code{IndexWriterConfig} object that will be passed
+in to the \code{IndexWriter} constructor.
 %
 \codeblock{LuceneDelete.1}
 %
-We create an \code{IndexWriterConfig} object that will be passed
-in to the \code{IndexWriter} constructor, but this time
-we set the open mode to
+This time we set the open mode to
 \code{IndexWriterConfig.OpenMode.APPEND}.
+Now we can attempt to delete a document from the index.
 %
 \codeblock{LuceneDelete.2}
 %
@@ -1239,10 +1242,10 @@ rebuild it if it gets messed up.
 index.dir=/Users/mitzimorris/aliasi/lpbook/src/applucene/temp.idx
 field.name=file
 token=paper_12.txt
-Num docs before delete=84
+Num docs before delete=85
 Has deleted docs=true
-Num docs after delete before commit=84
-Num docs after delete=84
+Num docs after delete before commit=85
+Num docs after commit=84
 \end{verbatim}
 
 After the demo is run, we can look at the index directory again.
@@ -1266,10 +1269,7 @@ total 1524
 There is now an extra file with suffix \code{.del} that holds
 information about which items have been deleted.  These deletes will
 now be visible to index readers that open (or re-open) their
-indices.  The file containing the deletions will be removed, and the
-actual content deleted, when the index is merged or optimized by an
-index writer.
-
+indices.
 
 \section{Lucene and Databases}
 
