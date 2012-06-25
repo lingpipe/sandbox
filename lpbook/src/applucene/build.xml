@@ -57,7 +57,7 @@
 
 
   <property name="doc.dir" value="../../data/federalist-papers/texts"/>
-  <property name="index.dir" value="luceneIndex"/>
+  <property name="index.dir" value="temp.idx"/>
   <target name="lucene-index"
           depends="jar">
     <java classname="com.lingpipe.book.applucene.LuceneIndexing"
@@ -85,7 +85,7 @@
   </target>
 
   <property name="token" 
-            value="12.ascii.txt"/>
+            value="paper_12.txt"/>
   <target name="lucene-delete"
           depends="jar">
     <java classname="com.lingpipe.book.applucene.LuceneDelete"
