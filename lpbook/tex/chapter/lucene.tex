@@ -29,6 +29,18 @@ back to documents.  To search this index, we construct a term composed
 of the field title and the tokens resulting from applying the same
 stemming and stoplisting to the text we are looking for.
 
+A Lucene search takes a query and returns a set of documents that are
+ranked by relevancy with documents most similar to the query having
+the highest score.  Lucene's search scoring algorithm weights results using
+{TF-IDF}, term frequency-inverse document frequency.
+\emph{Term frequency} means that high frequency terms within
+a document have higher weight than do low-frequency terms.
+\emph{Inverse document frequency} means that terms which occur
+frequently across many documents in a collection of documents are less
+likely to be meaningful descriptors of any given document in a corpus
+and are therefore down-weighted.
+
+
 \section{Fields}
 
 A document is a collection of fields.
@@ -50,6 +62,7 @@ these fields would get a different name, and at search time, the
 client could specify that it was searching for authors or titles or
 both, potentially restricting to a date range and set of journals
 by constructing search terms for the appropriate fields and values.
+
 
 \subsection{Constructing Fields}
 
@@ -98,6 +111,7 @@ which may be supplied as a Java \code{String} or \code{Reader}.%
 %
 The value for a binary field is supplied as a byte array slice.
 
+
 \subsection{Indexing Flags}
 
 As of version 3.0 of Lucene, the constructor for a field has three
@@ -132,6 +146,16 @@ tokenization turned on (see \refsec{lucene-analysis}).  The value
 \code{Index.NOT\_ANALYZED} causes the field value to be treated like a
 single token; it's primarily used for identifier fields that are not
 decomposed into searchable terms.
+
+Lucene's default behavior is to compute term frequency the proportion
+of the number of times a term occurs as opposed to a simple frequency
+count.  It does this by storing a normalizing factor for each field
+that is indexed.  The values \code{Index.ANALYZED\_NO\_NORMS} and
+\code{Index.NOT\_ANALYZED\_NO\_NORMS} disable storage of these
+normalizing factors.  This results in less memory usage during
+search, but will affect search results.  Furthermore, in order for this
+to be effective,  this must be turned off during indexing for all
+documents in the index.
 
 \subsubsection{The \code{Field.TermVector} Enum}
 
@@ -674,13 +698,15 @@ which is slightly smaller than the raw text files themselves.
 Luke is an index browser for Lucene, also written in Java.
 Downloads are available from \url{http://code.google.com/p/luke/}.
 It provides a quick and easy way to explore the contents of the index.
+\reffig{luke-overview} illustrates how Luke presents an overview
+of the contents of the index.
 
 \begin{figure}[!hb]
 %\begin{center}
 \includegraphics[width=5.0in]{pngs/luke1.png}
 %\end{center}%
 \vspace*{-18pt}
-\caption{Screenshot of Luke index browser, showing overview of index temp.idx}
+\caption{Screenshot of Luke index browser, showing overview of index temp.idx}\label{fig:luke-overview}
 \end{figure}
 
 \subsection{Duplicate Documents}
