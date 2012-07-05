@@ -634,9 +634,18 @@ from above code listing).
 
 The Ant target \code{lucene-index} runs the indexing demo.  It
 supplies the values of properties \code{doc.dir} and \code{index.dir}
-to the program as the first two command-line arguments.  We created a
-directory containing the 85 {\it Federalist Papers}, and use them
-as an example document collection.
+to the program as the first two command-line arguments.   
+ In this example
+we will index the 85 {\it Federalist Papers}, and we will continue to use this
+index in subsequent examples in this tutorial. 
+
+The sample code includes the
+subdirectory \code{data/federalist-papers} which contains the Project Gutenberg
+distribution of the plain-text version of the{\it Federalist Papers} along with the
+shell script \code{get\_papers.sh}.  Running this script will create a directory called \stringmention{texts}
+and populate it with the individual papers, one paper per file.  
+Once unpacked, we use this directory as the \code{doc.dir} argument.
+
 %
 \commandlinefollow{ant -Ddoc.dir=../../data/federalist-papers/texts -Dindex.dir=temp.idx lucene-index}
 \begin{verbatim}
@@ -655,15 +664,15 @@ showing file size in kilobytes.
 %
 \commandlinefollow{export BLOCKSIZE=1024; ls -s temp.idx}
 \begin{verbatim}
-total 1544
-1160 _0.fdt
+total 1520
+1144 _0.fdt
    4 _0.fdx
    4 _0.fnm
   84 _0.frq
    4 _0.nrm
- 192 _0.prx
+ 188 _0.prx
    4 _0.tii
-  84 _0.tis
+  80 _0.tis
    4 segments.gen
    4 segments_1
 \end{verbatim}

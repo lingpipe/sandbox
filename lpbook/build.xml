@@ -177,6 +177,7 @@
       <tarfileset dir="."
                   prefix="lucene-3-tutorial-code-${version}"
                   mode="775">
+        <include name="data/federalist-papers/*"/>
         <include name="lib/lucene*"/>
         <include name="lib/lingpipe-4.1.0.jar"/>
         <include name="src/applucene/**/*"/>
