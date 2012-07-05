@@ -196,7 +196,6 @@
     <copy file="tex/lucene-3-tutorial.pdf"
           tofile="tex/lucene-3-tutorial-${version}.pdf"/>
 
-    <mkdir dir="build/luc"/>
     <tar destfile="build/lingpipe-book-site-${version}.tgz"
          compression="gzip">
       <tarfileset dir="build"
