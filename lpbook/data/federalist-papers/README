@@ -1,0 +1,12 @@
+README
+
+pg1404.txt - text of the federalist papers as downloaded from:
+ http://www.gutenberg.org/cache/epub/1404/pg1404.txt
+
+PROJECT_GUTENBERG_LICENSE.txt - licence (exceprted from end of text file)
+
+munge_fedpapers.sh - shell script that breaks out individual papers
+
+texts - result of running munge_fedpapers.sh
+
+
