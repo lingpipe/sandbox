@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<project name="lingmed" default="compile" basedir=".">
+
+<!-- **** CONFIG **** -->
+<property name="lucene.dir"
+          value="lucene/" />
+
+<property name="medline.dir"
+          value="medline_sample_small"/>
+
+<property name="medline.baseline.dir"
+          value="${medline.dir}/2012"/>
+
+<property name="medline.updates.dir"
+          value="${medline.dir}/updates"/>
+
+<property name="medline.baseline.repository"
+          value="/nlmdata/.medleasebaseline/gz"/>
+
+<property name="medline.updates.repository"
+          value="/nlmdata/.medlease/gz"/>
+
+<property name="medline.download.retries"
+          value="3"/>
+
+<property name="medline.lucene.index.dir"
+          value="${lucene.dir}/medline_small_2012"/>
+
+<property name="medline.codec.class"
+          value="com.aliasi.lingmed.medline.SearchableMedlineCodec"/>
+
+<property name="medline.simple.codec.class"
+          value="com.aliasi.lingmed.medline.MedlineCodec"/>
+
+<property name="mxMem" 
+          value="800M" />
+
+<property name="version" 
+          value="1.4"/>
+
+<property name="jar"
+          value="lingmed-${version}.jar"/>
+
+<property name="lucene-jar"
+          value="lib/lucene-core-3.6.0.jar"/>
+
+<path id="classpath.common">
+  <pathelement location="${jar}"/>
+  <pathelement location="${lucene-jar}"/>
+  <pathelement location="lib/commons-net-2.0.jar"/>
+</path>
+
+<path id="classpath.standard">
+  <path refid="classpath.common"/>
+</path>
+
+<path id="classpath.test">
+  <path refid="classpath.standard"/>
+  <pathelement location="lib/junit-4.8.2.jar"/>
+</path>
+
+<!-- **** MACROS **** -->
+
+<macrodef name="downloadMedline">
+  <attribute name="repository"/>
+  <attribute name="target"/>
+  <attribute name="sleep"/>
+  <sequential>
+    <java classname="com.aliasi.lingmed.medline.DownloadMedline"
+        maxMemory="256M"
+        fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-domain=ftp.nlm.nih.gov"/>
+      <arg value="-user=anonymous"/>
+      <arg value="-password=${medline.pwd}"/>
+      <arg value="-maxTries=${medline.download.retries}"/>
+      <arg value="-repositoryPath=@{repository}"/>
+      <arg value="-targetDir=@{target}"/>
+      <arg value="-sleep=@{sleep}"/>
+    </java>
+  </sequential>
+</macrodef>
+
+
+<!-- **** TARGETS **** -->
+
+<target name="clean"
+        description="delete build dir, jarfile">
+  <delete dir="build"/>
+  <delete file="${jar}"/>
+</target>
+
+<target name="cleanData__dangerous"
+        description="removes major lucene and model directories and logs. DO NOT USE unless you know exactly what it does"
+	depends="clean">
+  <delete dir="${lucene.dir}"/>
+</target>
+
+<target name="compile"
+        description="compile java source, excluding tests">
+  <mkdir dir="build/classes"/>
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <src path="src/main"/>
+      <include name="com/aliasi/**"/>
+  </javac>
+</target>
+
+<target name="jar"
+        depends="compile">
+  <copy todir="build/classes">
+    <fileset dir="${basedir}">
+      <patternset id="properties">
+         <include name="src/main/**/*.properties" />
+      </patternset>
+    </fileset>
+  </copy>
+  <copy file="src/main/com/aliasi/lingmed/mesh/desc2012.dtd"
+        todir="build/classes/com/aliasi/lingmed/mesh"/>
+  <copy file="src/main/com/aliasi/lingmed/medline/parser/nlmmedlinecitationset_120101.dtd"
+	todir="build/classes/com/aliasi/lingmed/medline"/>
+  <jar destfile="${jar}">
+    <fileset dir="build/classes"
+             includes="**/*.class **/*.properties **/*.dtd" />
+  </jar>
+</target>
+
+<target name="javadoc"
+        description="Creates javadocs in docs/api">
+    <mkdir dir="docs/api"/>
+    <javadoc destdir="docs/api"
+             author="true"
+             use="false"
+             version="true"
+             doctitle="Alias-i LingMed ${version}"
+             windowtitle="LingMed API"
+             classpathref="classpath.standard">
+      <packageset dir="src/main">
+        <include name="com/aliasi/**"/>
+      </packageset>
+      <link href="http://java.sun.com/javase/6/docs/api/"/>
+    </javadoc>
+</target>
+
+
+<target name="downloadMedlineBaseline"
+        description="download MEDLINE baseline distribution from NLM"
+        depends="jar">
+  <downloadMedline repository="${medline.baseline.repository}"
+                   target="${medline.baseline.dir}"
+                   sleep="-1"/>
+</target>
+
+<target name="downloadMedlineUpdates"
+        description="download MEDLINE update files from NLM"
+        depends="jar">
+  <downloadMedline repository="${medline.updates.repository}"
+                   target="${medline.updates.dir}"
+                   sleep="240"/>
+</target>
+
+<target name="indexMedlineBaseline"
+        description="create Lucene MEDLINE Index from Baseline"
+        depends="jar">
+    <java classname="com.aliasi.lingmed.medline.IndexMedline"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distType=baseline"/>
+      <arg value="-distDir=${medline.baseline.dir}"/>
+      <arg value="-index=${medline.lucene.index.dir}"/>
+      <arg value="-codec=${medline.codec.class}"/>
+      <arg value="-sleep=-1"/>
+    </java>
+</target>
+
+<target name="indexMedlineUpdates"
+        description="add updates to Lucene MEDLINE Index"
+        depends="jar">
+    <java classname="com.aliasi.lingmed.medline.IndexMedline"
+          maxMemory="${mxMem}"
+          fork="true">
+      <classpath refid="classpath.standard"/>
+      <arg value="-distType=updates"/>
+      <arg value="-distDir=${medline.updates.dir}"/>
+      <arg value="-index=${medline.lucene.index.dir}"/>
+      <arg value="-codec=${medline.codec.class}"/>
+      <arg value="-sleep=240"/>
+    </java>
+</target>
+
+<target name="test-compile"
+        depends="compile"
+        description="Compiles test classes">
+  <javac optimize="on"
+         debug="yes"
+         debuglevel="source,lines,vars"
+         destdir="build/classes">
+    <classpath refid="classpath.standard"/>
+    <classpath refid="classpath.test"/>
+    <include name="test/com/aliasi/lingmed/**"/>
+    <src path="src/main"/>
+    <src path="src/test"/>
+  </javac>
+</target>
+
+
+
+
+
+<target name="update-classname"
+        depends=""
+        description="Replace class name">
+    <replace dir="src"
+             includes ="**/*.java">
+      <replacetoken><![CDATA[com.aliasi.lingmed.parser]]></replacetoken>
+      <replacevalue><![CDATA[com.aliasi.lingmed.medline.parser]]></replacevalue>
+    </replace>
+</target>
+
+</project>
