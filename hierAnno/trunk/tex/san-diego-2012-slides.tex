@@ -254,6 +254,20 @@ agreement
 \item Biases arise at the item level (annotator missing knowledge,
   e.g., word sense)
 \item Noise is non-systematic component of error
+\item Can extract information from biased annotations, e.g., high-biased:
+\[ \theta_j = 
+   \begin{array}{r|cccc}
+     & 1 & 2 & 3 & 4
+     \\ \hline
+     1 & {\bf .10} & .70 & .15 & .05
+     \\
+     2 & .05 & {\bf .15} & .60 & .20
+     \\
+     3 & .02 & .05 & {\bf .20} & .73
+     \\ 
+     4 & .00 & .02 & .10 & {\bf .88}
+   \end{array}
+\]
 \end{itemize}
 
 
@@ -418,15 +432,6 @@ $\begin{array}{rcl}
 \end{itemize}
 
 
-\sld{Semi-Supervised Inference}
-
-\begin{itemize}
-\item Include some items $i$ with known categories $z_i$
-\item Straightforward to include in EM for MLE or Gibbs for posterior
-\item Sharpens all estimates
-\end{itemize}
-
-
 \mypart{A Worked Example}
 
 \sld{Five Dentists Diagnosing Caries}
@@ -540,6 +545,7 @@ $\begin{array}{rcl}
 \end{itemize}
 \end{itemize}
 
+
 \sld{Evaluating Annotators}
 \begin{itemize}
 \item Not all annotators have the same accuracy
@@ -565,7 +571,6 @@ $\begin{array}{rcl}
 \end{itemize}
 \item (Alternative to explicitly modeling item difficulty)
 \end{itemize}
-
 
 \sld{Trading Time for Accuracy}
 \begin{itemize}
@@ -598,6 +603,7 @@ $\begin{array}{rcl}
 \item Low mean accuracy indicates a problematic coding standard
 \end{itemize}
 
+
 \sld{Probabilistic Training and Testing}
 \begin{itemize}
 \item Use probabilistic item posteriors for training
@@ -619,19 +625,72 @@ $\begin{array}{rcl}
 \end{itemize}
 
 
+\mypart{Extensions}
+
+\sld{Semi-Supervised Inference}
+\begin{itemize}
+\item Include some items $i$ with known categories $z_i$
+\item Straightforward to include in EM for MLE or Gibbs for posterior
+\item Sharpens all estimates
+\end{itemize}
 
 
+\sld{Item Difficulty}
+
+\begin{itemize}
+\item Clear that some items easy and some hard
+\item Assuming all same leads to suboptimal marginal fit
+\item Hard to estimate even with 10 annotators/item
+\begin{itemize}
+\footnotesize
+\item Posterior intervals too wide for good read on difficulty
+\item Fattens posteriors on annotator accuracies
+\item Better marginal fits (by $\chi^2$)
+\end{itemize}
+\item Problem is multiple explanations
+\begin{itemize}
+\item Good annotator accuracy, but hard items
+\item Mediocre annotator accuracy, medium difficulty items
+\item Poor annotator accuracy, but easy items
+\end{itemize}
+\end{itemize}
 
 
+\sld{Hierarchical Generation of Hyperpriors}
+\begin{itemize}
+\footnotesize
+\item Models annotator population: mean accuracies and variability
+\item Infers appropriate smoothing for low counts
+\item Prior mean accuracy: \ $\alpha/(\alpha+\beta)$
+\item Prior mean scale (inverse variability): \ $(\alpha+\beta)$
+\vspace*{4pt}
+{\footnotesize
+\begin{eqnarray*}
+\alpha_0/(\alpha_0 + \beta_0) & \sim & \mathsf{Beta}(1,1)
+\\
+\alpha_0 + \beta_0 & \sim & \mathsf{Pareto}(1.5)
+\\
+\alpha_1/(\alpha_1 + \beta_1) & \sim & \mathsf{Beta}(1,1)
+\\
+\alpha_1 + \beta_1 & \sim & \mathsf{Pareto}(1.5)
+\end{eqnarray*}}
+\item $\mathsf{Beta}(1,1)$ uniform prior on mean accuracies $\alpha/(\alpha+\beta) \in [0,1]$
+\item $\mathsf{Pareto}(x|1.5) \propto x^{-2.5}$ a diffuse prior for scales $\alpha+\beta \in [0,\infty)$
+\end{itemize}
+
+\sld{Jointly Estimate Model and Annotations}
+\begin{itemize}
+\item Can train a model with inferred (probabilistic) gold standard
+\item May use trained model like another annotator
+\item May be beneficial to train multiple different annotators
+\vfill
+\item (Raykar, Yu, Zhao, Jerebko, Florin, Hermosillo-Valadez, Bogoni, and Moy 2009)
+\end{itemize}
 
 
+\mypart{The End}
 
-
-
-
-
-
-
+\mypart{Some Case Studies}
 
 \sld{Case 1: Named Entities}
 
@@ -1384,25 +1443,6 @@ Also, note that every part of the Hypothesis must be implied by the Text in orde
 
 \mypart{Modeling Item Difficulty}
 
-\sld{Item Difficulty}
-
-\begin{itemize}
-\item Clear that some items easy and some hard
-\item Assuming all same leads to suboptimal marginal fit
-\item Hard to estimate even with 10 annotators/item
-\begin{itemize}
-\footnotesize
-\item Posterior intervals too wide for good read on difficulty
-\item Fattens posteriors on annotator accuracies
-\item Better marginal fits (by $\chi^2$)
-\end{itemize}
-\item Problem is multiple explanations
-\begin{itemize}
-\item Good annotator accuracy, but hard items
-\item Mediocre annotator accuracy, medium difficulty items
-\item Poor annotator accuracy, but easy items
-\end{itemize}
-\end{itemize}
 
 \sld{Mixture Item Difficulty}
 \begin{itemize}
@@ -1529,14 +1569,6 @@ Priors may be estimated as before; leads to pooling of item difficulties.
 \item Use logistic regression with these predictors to model accuracies
 \end{itemize}
 
-\sld{Jointly Estimate Model and Annotations}
-\begin{itemize}
-\item Can train a model with inferred (probabilistic) gold standard
-\item May use trained model like another annotator
-\item May be beneficial to train multiple different annotators
-\vfill
-\item (Raykar, Yu, Zhao, Jerebko, Florin, Hermosillo-Valadez, Bogoni, and Moy 2009)
-\end{itemize}
 
 
 
@@ -1751,7 +1783,6 @@ p(\theta|y) & \propto & p(y|\theta) \ p(\theta)
 
 
 
-\mypart{The End}
 
 \sld{References}
 \begin{itemize}
