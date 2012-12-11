@@ -75,7 +75,7 @@ public class MedlineSearcherImpl extends DaoSearcherImpl<MedlineCitation>
             throw new DaoException("bad year search range: "+fromYear+", "+toYear);
         }
         TermRangeQuery rangeQuery = 
-            new TermRangeQuery(SearchableMedlineCodec.DATE_YEAR_FIELD,
+            new TermRangeQuery(Fields.DATE_YEAR_FIELD,
                                         fromYear,
                                         toYear,
                                         true,
