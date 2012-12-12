@@ -57,7 +57,7 @@
 
 
   <property name="doc.dir" value="../../data/federalist-papers/texts"/>
-  <property name="index.dir" value="temp.idx"/>
+  <property name="index.dir" value="fed-papers.idx"/>
   <target name="lucene-index"
           depends="jar">
     <java classname="com.lingpipe.book.applucene.LuceneIndexing"
@@ -70,7 +70,7 @@
 
 
   <property name="query" 
-            value="power money election"/>
+            value="Powers of the Judiciary"/>
   <property name="max.hits" 
             value="10"/>
   <target name="lucene-search"
