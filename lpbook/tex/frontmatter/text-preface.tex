@@ -1,42 +1,39 @@
 \chapter*{Preface}
 \pagestyle{fancy}%
 
-\firstchar{J}ava provides an extensive set of tools for manipulating
+\firstchar{T}his book explains the basics of text processing in Java.  
+Java provides an extensive set of tools for manipulating
 character-based data, including byte-to-character conversion, input
 and output streams including sockets and compression, memory-mapping
 files, and high-level methods for manipulating sequences of characters
-like buffers and regular expressions.  We also cover the use of the
-Apache Lucene search library.
+like buffers and regular expressions.
 
-As a preliminary, we provide a warmup chapter on using the various
-tools required for text editors to version control to the Ant build
-system for Java.  
-
-This book explains the basics of text processing in Java.  It 
-assumes you are familiar with basic coding in a language like
+This book assumes you are familiar with basic coding in a language like
 Java, but that you may not be familiar with low-level representations
 of bytes and integers, the representation and manipulation of
 strings, how to access objects from the classpath as resources,
 or how to write non-greedy regular expressions based on Unicode.
 
 The presentation here will be hands on.  You should be comfortable
-reading short and relatively simple Java programs.  Java programming idioms
-like loop boundaries being inclusive/exclusive and higher-level design
-patterns like visitors will also be presupposed.  More specific
+reading short and relatively simple Java programs.  Java programming
+idioms like loop boundaries being inclusive/exclusive and higher-level
+design patterns like visitors will also be presupposed.  More specific
 aspects of Java coding relating to text processing, such as streaming
 I/O, character decoding, string representations, and regular
 expression processing will be discussed in more depth.  We will also
 go into some detail on collections, XML/HTML parsing with SAX, and
-serialization patterns.
+serialization patterns.  Open-source software dependencies include the
+International Components for Unicode (ICU) library and Apache Lucene
+search library.  We provide a warmup chapter on using the various
+tools required for text editors to version control to the Ant build
+system for Java.  As a finale, we cover the use of the Apache Lucene
+search library and the Apache Solr search server.
 
 This book grew out of work on its companion volume, {\it Natural
 Language Processing with LingPipe}.  We found that the background material
 on Java was growing to the point where it made more sense to pull it
 out into its own standalone package.  We have included a few examples
 of basic text processing using LingPipe. 
-
-Other open-source software dependencies include the International
-Components for Unicode (ICU) library and Apache Lucene search library.
 
 We hope you have as much fun with text processing in Java as we've
 had.  We'd love to hear from you, so feel free to drop us a line at
@@ -46,7 +43,7 @@ might have.
 \vspace*{0.125in}
 
 \newlength{\sigWidth}
-\settowidth{\sigWidth}{{\small\sc Bob Carpenter}}
+\settowidth{\sigWidth}{{\small\sc September 30, 2012}}
 \mbox{ }
 \hfill
 \parbox{\sigWidth}{
