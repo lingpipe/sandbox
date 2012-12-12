@@ -58,7 +58,6 @@ public class LuceneSearch {
 
     /*x LuceneSearch.3 */
         Query q = parser.parse(query);
-        
         TopDocs hits = searcher.search(q,maxHits);
         ScoreDoc[] scoreDocs = hits.scoreDocs;
 
