@@ -5,7 +5,7 @@
             value="4.0"/>
 
   <property name="jar"
-            value="build/lp-book-appjava-${version}.jar"/>
+            value="build/lp-book-basics-${version}.jar"/>
 
   <target name="clean">
     <delete dir="build"/>
@@ -28,7 +28,7 @@
 
   <target name="byte-table"
           depends="jar">
-    <java classname="com.lingpipe.book.appjava.ByteTable"
+    <java classname="com.lingpipe.book.basics.ByteTable"
           classpath="${jar}"
           fork="true">
     </java>
@@ -36,7 +36,7 @@
 
   <target name="synched-pair"
           depends="jar">
-    <java classname="com.lingpipe.book.appjava.SynchedPair"
+    <java classname="com.lingpipe.book.basics.SynchedPair"
           classpath="${jar}"
           fork="true">
     </java>

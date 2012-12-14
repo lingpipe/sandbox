@@ -1,4 +1,4 @@
-package com.lingpipe.book.java;
+package com.lingpipe.book.basics;
 
 import java.util.Random;
 

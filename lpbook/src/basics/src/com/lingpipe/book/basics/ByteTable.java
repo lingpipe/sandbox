@@ -1,4 +1,4 @@
-package com.lingpipe.book.appjava;
+package com.lingpipe.book.basics;
 
 public class ByteTable {
 

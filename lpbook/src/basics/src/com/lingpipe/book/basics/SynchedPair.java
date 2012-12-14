@@ -1,4 +1,4 @@
-package com.lingpipe.book.appjava;
+package com.lingpipe.book.basics;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
