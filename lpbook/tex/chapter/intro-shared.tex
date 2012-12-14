@@ -17,18 +17,22 @@ set of examples.
 \subsection{Unix Shell Tools}
 
 We present examples as run from a unix-like command-line shell.
-One reason to use the shell is that it's easy to script operations so
-that they may be repeated.  
+We have chosen this minimal approach for several reasons:
+it's a short step from running a program from the command line to
+embedding it in some larger text-processing pipeline or application
+via a scripting language such as Python;
+it avoids dependencies on a particular IDE;
+and this is how we authors like to roll
+when we write software.
 
-The main problem with scripts is that they are not portable across
-operating systems or even types of command-line shells.  In this book,
-we use the so-called ``Bourne Again Shell'' (bash) for Unix-style
-commands.  Bash is the default shell in Cygwin on Windows, for Mac OS
-X, and for Linux, and is also available for Solaris.
+In this book, we use the so-called ``Bourne Again Shell'' (bash) for
+Unix-style commands.  Bash is the default shell in Cygwin on Windows,
+for Mac OS X, and for Linux, and is also available for Solaris.
+
+On the Mac, this is the Terminal.app under Applications/Utilities.
 
 If you're working in Windows (XP, Vista or 7), we recommend the 
 Cygwin suite of Unix command-line tools for Windows.  
-
 Cygwin is released under version 2 of the GNU Public License (GPLv2), with
 terms outlined here:
 %
@@ -96,7 +100,7 @@ Version System (CVS), as well as the increasingly popular Git system,
 which is used by the Linux developers.
 
 The best reference for Subversion of which we are aware is the
-official guide by the authors, available onlie at 
+official guide by the authors, available online at 
 %
 \urldisplay{http://svnbook.red-bean.com/}
 
@@ -175,10 +179,7 @@ Java files are:
 (setq indent-tabs-mode nil)
 \end{verbatim}
 
-
-
-
-\subsection{Java Standard Edition 6}
+\subsection{Java Standard Edition 7}
 
 We chose Java as the basis for LingPipe because we felt it
 provided the best tradeoff among efficiency, usability, portability,
@@ -194,39 +195,28 @@ into greater detail on general features of Java such as concurrency,
 generics, floating point representations, and the collection package.
 
 This book is based on the latest currently supported standard edition
-of the Java platform (Java SE), which is version 6.  You will need the
+of the Java platform (Java SE), which is version 7.  You will need the
 Java development kit (JDK) in order to compile Java programs.  A java
 virtual machine (JVM) is required to execute compiled Java programs.
 A Java runtime environment (JRE) contains platform-specific support
 and integration for a JVM and often interfaces to web browsers for
 applet support.
 
-Java is available in 32-bit and 64-bit versions.  The 64-bit version
+Java is available for the Windows, Mac, Linux, and Solaris operating
+systems in both 32-bit and 64-bit versions.
+The 64-bit version
 is required to allocate JVMs with heaps larger than 1.5 or 2 gigabytes
 (the exact maximum for 32-bit Java depends on the platform).  
-
-
-Licensing terms for the JRE are at
-%
-\urldisplay{http://www.java.com/en/download/license.jsp}
-%
-and for the JDK at
-%
-\urldisplay{http://java.sun.com/javase/6/jdk-6u20-license.txt}
-
-Java is available for the Windows, Linux, and Solaris operating
-systems in both 32-bit and 64-bit versions from
-%
-\urldisplay{http://java.sun.com/javase/downloads/index.jsp}
-%
-The Java JDK and JRE are included as part of Mac OS X.  Updates are
-available through
-%
-\urldisplay{http://developer.apple.com/java/download/}
-%
 Java is updated regularly and it's worth having the latest version.
 Updates include bug fixes and often include performance enhancements,
 some of which can be quite substantial.
+
+All currently supported versions of Java for all platforms can be downloaded from:
+%
+\urldisplay{http://www.oracle.com/technetwork/java/javase/downloads/index.html}
+%
+This page also contains licensing information as well as downloads of
+Java demos, samples, and co-bundled NetBeans IDE.
 
 Java must be added to the operating system's executables path so
 that the shell commands and other packages like Ant can find it.
@@ -247,25 +237,28 @@ should produce similar results.
 %
 \commandlinefollow{java -version}
 \begin{verbatim}
-java version "1.6.0_18"
-Java(TM) SE Runtime Environment (build 1.6.0_18-b07)
-Java HotSpot(TM) 64-Bit Server VM (build 16.0-b13, mixed mode)
+java version "1.7.0_10"
+Java(TM) SE Runtime Environment (build 1.7.0_10-b18)
+Java HotSpot(TM) 64-Bit Server VM (build 23.6-b04, mixed mode)
 \end{verbatim}
 %
 Similarly, you can test for the Java compiler version, using
 %
 \commandlinefollow{javac -version}
 \begin{verbatim}
-javac 1.6.0_20
+javac 1.7.0_10
 \end{verbatim}
 
 
 \subsubsection{Java Source}
 
-You can download the Java source files from the same location as the
-JDK.  The source is subject to yet anoher license, available at
+You can download the Java SE 6 JDK source files from:
 %
-\urldisplay{http://java.sun.com/javase/6/scsl\_6-license.txt}
+\urldisplay{http://download.java.net/jdk6/source/}
+%
+The source is subject to yet another license, available at
+%
+\urldisplay{http://www.java.net/jrl.csp}
 %
 The source provides a fantastic set of examples of how to design,
 code, and document Java programs.  We especially recommend studying
@@ -332,7 +325,7 @@ Apache Ant version 1.8.1 compiled on April 30 2010
 
 \subsection{Integrated Development Environment}
 
-Many pepeople prefer to write (and compile and debug) code in an
+Many people prefer to write (and compile and debug) code in an
 integrated development environment (IDE).  IDEs offer advantages such
 as automatic method, class and constant completion, easily
 configurable text formatting, stepwise debuggers, and automated tools
@@ -500,22 +493,24 @@ invoked by
 which produces the following output
 %
 \begin{verbatim}
-Buildfile: c:\lpb\src\intro\build.xml
+Buildfile: /Users/lpbook/src/intro/build.xml
 
 jar:
-    [mkdir] Created dir: c:\lpb\src\intro\build\classes
-    [javac] Compiling 1 source file to c:\lpb\src\intro\build\classes
-      [jar] Building jar: c:\lpb\src\intro\build\lp-book-intro-4.0.jar
+    [mkdir] Created dir: /Users/lpbook/src/intro/build/classes
+    [javac] Compiling 2 source files to /Users/lpbook/src/intro/
+build/classes
+      [jar] Building jar: /Users/lpbook/src/intro/build/lp-book-
+intro-4.0.jar
 
 hello:
      [java] Hello World
 
 BUILD SUCCESSFUL
-Total time: 1 second
+Total time: 2 seconds
 \end{verbatim}
 %
 First, Ant echoes the name of the build file, here
-\filepath{c:{\bk}lpb{\bk}src{\bk}intro{\bk}build.xml}.  When Ant is
+\filepath{/Users/lpbook/src/intro/build.xml}.  When Ant is
 invoked without specifying a particular build file, it uses the
 \filepath{build.xml} in the directory from which it was called.  
 
@@ -535,7 +530,7 @@ there is more than one line of output, the name of the task is
 repeated.
 
 In this example, the \code{mkdir} task makes a new directory, here the 
-\filepath{build{\bk}classes} directory.  The \code{javac} task runs the
+\filepath{build/classes} directory.  The \code{javac} task runs the
 Java compiler, here compiling a single source file into the
 newly created directory.  The \code{jar} task builds the Java
 library into the build subdirectory \code{build} in file
@@ -656,7 +651,7 @@ Big5 and written the build file in Chinese.  Most XML parsers are
 robust enough to infer the character encoding, but it's always good
 practice to make it explicit.
 
-The ellipses (\code{...}) indicate ellided material that will be
+The ellipses (\code{...}) indicate elided material that will be
 filled in (or not) in continuing discussion.  
 
 \subsection{Top-Level Project Element} 
@@ -752,7 +747,7 @@ files generated by the compiler (typically in a deletable subdirectory
 \code{build}), and the \code{.jar} file produced by the Java archiver
 (typically in the top-level directory).
 
-\subsubsection{Compiliation/Archive Target}
+\subsubsection{Compilation/Archive Target}
 
 The next target is the compilation target, named \code{jar},
 
@@ -813,7 +808,7 @@ for the compilation.  In our opinion, this should have defaulted to
 build files.  If you don't specify this attribute, Ant gripes and
 tells you what it's defaulting to.
 
-The java compilation task here has content, startign with a compiler
+The java compilation task here has content, starting with a compiler
 argument.  The element \code{compilerarg} passes the value of the
 attribute \code{value} to the underlying call to the \code{javac}
 executable in the JDK.  Here, we specified a value of 
@@ -921,7 +916,7 @@ the \code{classpath} attribute on the \code{java} task.  The value here
 is \code{\$\{jar\}}, for which the value of the Java archive for the
 project will be substituted.  In general, there can be multiple archives
 or directories containing compiled classes on the classpath, and the
-classpath may be specifeid with a nested element as well as an attribute.
+classpath may be specified with a nested element as well as an attribute.
 Ant contains an entire syntax for specifying path-like structures.
 
 Finally, there is a flag indicated by attribute \code{fork} being
@@ -955,6 +950,14 @@ arguments to the Java virtual machine such as the maximum amount of
 memory to use or to use ordinary object pointer compression, set Java
 system properties, and so on.
 
+The attributes and elements of the Ant \code{java} task code up the
+command-line arguments to the java executable.
+The command-line equivalent of the \code{hello} task would be:
+%
+\begin{verbatim}
+java -classpath build/lp-book-intro-4.0.jar com.lingpipe.book.intro.HelloWorld
+\end{verbatim}
+%
 
 \subsection{Property Files}
 
@@ -1033,5 +1036,10 @@ In Ant, whichever property is read first survives.  The command
 line properties precede any other properties, followed by properties
 read in from a command-line properties file, followed by the
 properties read in from Ant build files in the order they appear.
+
+\subsection{Troubleshooting Ant}
+
+Invoking Ant with the \code{-v} flag causes ant to be extra verbose and can be
+very useful when trying to understand unexpected behaviors.
 
 
