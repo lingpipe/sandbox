@@ -1,6 +1,6 @@
 \chapter{Java Basics}\label{chapter:java}
 
-In this appendix, we go over some of the basics of Java that are
+In this chapter, we go over some of the basics of Java that are
 particularly relevant for text and numerical processing.  
 
 \section{Numbers}\label{section:java-numbers}
@@ -94,12 +94,11 @@ numbers\index{hexadecimal!notation} are distinguished by prefixing
 them with \code{0x}.  For example,
 \code{0xB2F} is the hexadecimal equivalent of the decimal 2863.
 
-\subsection{Bytes WTF?}\label{section:java-bytes} 
-
+\subsection{Bytes}\label{section:java-bytes} 
 
 The basic unit of organization in contemporary computing systems is
 the byte.  By this we mean it's the smallest chunk of data that may be
-accessed programatically, though in point of fact, hardware often
+accessed programmatically, though in point of fact, hardware often
 groups bytes together into larger groups that it operates on all at
 once.  For instance, 32-bit architectures often operate on a sequence
 of 4 bytes at once and 64-bit architectures on 8 bytes at once.  The
@@ -107,13 +106,13 @@ term ``word'' is ambiguously applied to a sequence of two bytes, or to
 the size of the sequence of bytes at which a particular piece of
 hardware operates.
 
-A \techdef{byte}{byte} is a sequence of 8 bits, and is sometimes
+A \techdef{byte} is a sequence of 8 bits, and is sometimes
 called an octet for that reason.  Thus there are 256 distinct bytes,
 ranging from \code{00000000} to \code{11111111}.  The bits are read
 from the high (left) end to the low (right end).
 
 In Java, the \code{byte} primitive type\index{Java!primitive!byte} is
-signed.  Any number between \code{00000000} and \code{01111111} is
+signed.  Bytes between \code{00000000} and \code{01111111} are
 interpreted as a binary number with decimal value between 0 and 127
 (inclusive).  If the high order bit is 1, the value is interpreted as
 negative.  The negative value is value of the least significant 7 bits
@@ -132,9 +131,9 @@ represented by sequences of bytes.
 
 \subsection{Code Example: Integral Number Bases}
 
-There is a simple program in the code directory for this appendix
+There is a simple program in the code directory for this chapter
 %
-\displ{\filepath{src/java/src/com/lingpipe/book/appjava/ByteTable.java}}
+\displ{\filepath{src/java/src/com/lingpipe/book/basics/ByteTable.java}}
 %
 for displaying bytes, their corresponding unsigned value, and the
 conversion of the unsigned value to octal, hexadecimal and binary
@@ -305,7 +304,7 @@ Java supports multithreaded applications as part of its language
 specification.  The primitives for synchronization are built on top of
 the \code{Object} class.  Each object may be used as a lock to
 synchronize arbitrary blocks of code using the \code{synchronized}
-keyword.  Methods may also be marked with \code{synchornized}, which
+keyword.  Methods may also be marked with \code{synchronized}, which
 is equivalent to explicitly marking their code block as synchronized.
 
 In addition, there are three \code{wait()} methods that cause the
@@ -383,7 +382,7 @@ slightly.
 
 \subsection{Number Objects}
 
-For each of the primitive number types, there is a corrsponding class
+For each of the primitive number types, there is a corresponding class
 for representing the object.  Specifically, the number classes for
 integers are \code{Byte}, \code{Short}, \code{Integer}, and
 \code{Long}.  For floating point, there is \code{Float} and
@@ -424,7 +423,7 @@ underlying primitive value.  The current JVM implementations are smart
 enough to save and reuse numerical objects rather than creating new
 ones.  The preferred way to acquire a reference to a numerical object
 is to use the \code{valueOf()} static factory method from the
-approrpiate class.  For example, \code{Integer.valueOf(42)} returns an
+appropriate class.  For example, \code{Integer.valueOf(42)} returns an
 object that is equal to the result of \code{new~Integer(42)}, but is
 not guaranteed to be a fresh instance, and thus may be reference equal
 (\code{==}) to other \code{Integer} objects.
@@ -516,7 +515,7 @@ the sense of allowing arbitrary concurrent calls to its methods.
 
 \subsubsection{(Effectively) Final Member Variables}
 
-In LingPipe's immutable objects, almost all member variabls are
+In LingPipe's immutable objects, almost all member variables are
 declared to be final or implemented to behave as if they are declared
 to be final.  
 
@@ -538,7 +537,7 @@ private int hash;
 \end{verbatim}
 %
 The final member variables \code{value}, \code{offset}, and
-\code{count} represent the characte slice on which the string is
+\code{count} represent the character slice on which the string is
 based.  This is not enough to guarantee true immutability, because the
 values in the value array may change.  The design of the \code{String}
 class guarantees that they don't.  Whenever a string is constructed,
@@ -608,7 +607,7 @@ number of lock interfaces and implementations in the subpackage
 
 The \code{util.concurrent} base interface \codeVar{Lock} generalizes Java's
 built-in \code{synchronized} blocks to support more fine-grained forms
-of lock acquisition and relaese, allowing operations like acquisitions
+of lock acquisition and release, allowing operations like acquisitions
 that time out.  
 
 The subinterface \code{ReentrantLock} adds reentrancy to the basic
@@ -667,7 +666,7 @@ We can test the method with the following command-line program.
 \codeblock{SynchedPair.4}
 %
 It constructs a \code{SynchedPair} and assigns it to the variable
-\code{pair}, which is delcared to be final so as to allow its usage in
+\code{pair}, which is declared to be final so as to allow its usage in
 the anonymous inner class runnable.  It then creates an array of threads,
 setting each one's runnable to do a sequence of paired sets where the
 two values are the same.  It tests first that the values it reads are
