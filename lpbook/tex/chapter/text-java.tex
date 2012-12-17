@@ -348,8 +348,9 @@ may be used as an argument to \code{java} on 64-bit JVMs to instruct
 them to compress their ordinary object pointers (OOP) to 32-bit
 representations.  This saves an enormous amount of space, cutting the
 size of a simple \code{Object} in half.  It does limit the heap size
-to around four billion objects, which should be sufficient for most
-applications.
+to 32 gigabytes (around four billion objects), which should be sufficient for most
+applications.  As of build 18 of Java SE 6, this flag is on by default
+based on the maximum heap size (option \code{-Xmx}).
 
 \subsubsection{Member Values}
 
