@@ -2,7 +2,7 @@
 
 \firstchar{F}ollowing Java, LingPipe uses Unicode character
 representations.  In this chapter, we describe the Unicode character
-set, discuss character encodings, and how strings and other character
+set, discuss character encodings, and show how strings and other character
 sequences are created and used in Java.
 
 
@@ -46,7 +46,7 @@ characters, we must make a choice in how to lay them out on a page.
 English, for instance, traditionally lays out a sequence of characters
 in left to right order horizontally across a page. 
 Arabic, on the other hand, lays out a sequence of
-characters on a page horizontally from right to left.  In contast,
+characters on a page horizontally from right to left.  In contrast,
 Japanese was traditionally set from top to bottom with the following
 character being under the preceding characters.
 
@@ -59,7 +59,7 @@ order their pages in the opposite direction.  Obviously, page order
 isn't relevant for digital documents rendered a page at a time, such
 as on e-book readers.
 
-Even with conventional layouts, it is not uncommon to see caligraphic
+Even with conventional layouts, it is not uncommon to see calligraphic
 writing or signage laid out in different directions.  It's not
 uncommon to see English written from top to bottom or diagonally from
 upper left to lower right.
@@ -92,7 +92,7 @@ character in the set a unique non-negative integer code point.  For
 instance, the English character 'A' (capital A) might be assigned the
 code point 65 and 'B' to code point 66, and so on.  Code points are
 conventionally written using hexadecimal notation, so we would
-typically use the hexadecmial notation 0x41 instead of the decimal
+typically use the hexadecimal notation 0x41 instead of the decimal
 notation 65 for capital A.
 
 The second step is to define a character encoding scheme that maps
@@ -138,7 +138,7 @@ Given that ASCII only uses 7 bits and bytes are 8 bits, the natural
 extension is to add another 128 characters to ASCII.  Latin1
 (officially named ISO-8859-1) did just this, adding common accented
 European characters to ASCII, as well as punctuation like upside down
-exclaimation points and question marks, French quote symbols, section
+exclamation points and question marks, French quote symbols, section
 symbols, a copyright symbol, and so on.  
 
 There are 256 code points in Latin1, and the encoding just uses the
@@ -189,7 +189,7 @@ decimal notation).
 One reason Unicode has been so widely adopted is that it contains
 almost all of the characters in almost all of the widely used
 character sets in the world.  It also happens to have done so in a
-thoughful and well-defined manner.
+thoughtful and well-defined manner.
 
 Conveniently, Unicode's first 256 code points (0--255) exactly match
 those of Latin1, and hence Unicode's first 128 code points (0--127)
@@ -404,7 +404,7 @@ marks for UTF encodings and some don't.
 
 The Unicode specification defines a number of character types and
 general categories of character.  These are useful in Java
-applications because characters may be examined programatically for
+applications because characters may be examined programmatically for
 their class membership and the classes may be used in regular
 expressions.
 
@@ -416,7 +416,7 @@ case, with the category ``Lu'' used for uppercase characters and
 ``Ll'' for lowercase.
 
 Unicode marks the directionality in which characters are typically
-wirtten using character types like ``R'' for right-to-left
+written using character types like ``R'' for right-to-left
 and ``L'' for left-to-right.
 
 We provide a sample program in \refsec{char-unicode-types} for
@@ -467,7 +467,7 @@ with grave accent), namely the sequence
 
 In general, a full canonical decomposition continues
 to decompose characters into their components until a sequence of
-non-decomposible characters is produced.  Furthermore, if there is
+non-decomposable characters is produced.  Furthermore, if there is
 more than one nonspacing mark (like \unicode{0300}), then they are
 sorted into a canonical order.
 
@@ -519,7 +519,45 @@ it again to the output), produces the same result as applying it
 once \ie{its an idemopotent transformation}. 
 
 We show how to convert character sequences to their canonical forms
-programatically using the ICU package in \refsec{icu-unicode-normalization}.
+programmatically using the ICU package in \refsec{icu-unicode-normalization}.
+
+\subsubsection{Consequences of Encoding Schemes}
+
+A file stored on disk is a sequence of bytes; data sent and received
+across a socket is a stream of bytes.  Without knowing the character set
+and encoding scheme used to generate these bytes, we cannot reliably
+interpret the data.
+The consequence of this is familiar to anyone
+who has had the unhappy experience of looking at
+a page full of question marks or illegible glyphs
+instead of the expected text in Arabic, Chinese,
+English, or Icelandic.
+In \refsec{encoding-detection} we explore methods
+that can (sometimes) detect the character encoding.
+
+Character sets overlap.
+In particular, the legacy character sets Latin-1 et al
+and Windows 1252 overlap with one another and all of them
+contain ASCII, as does Unicode.
+An application may specify the wrong character set or encoding
+and still behave properly provided that it only sees characters
+in the ASCII character set.
+
+For Unicode data, the choice of variable-width (UTF-8, UTF-16)
+or fixed-width (UTF-32) affects both the storage requirements
+and amount of computation necessary to process the data.
+For English texts, UTF-8 is the most space-efficient encoding.
+
+
+
+
+
+
+
+
+
+
+
 
 
 \section{Encoding Java Programs}
@@ -755,7 +793,7 @@ For many of these constants, there are corresponding methods.  For
 instance, the method \code{getDirectionality(char)} returns the
 directionality of a character as a byte value, which can then be tested
 against the possible values represented as static constants.  There
-are also useful methods for determining the category of a characer,
+are also useful methods for determining the category of a character,
 such as \code{isLetter(char)} and \code{isWhitespace(char)}.
 
 Because multiple Java \code{char} instances might be needed to
@@ -790,12 +828,14 @@ by name, writes out a key to the values produced by
 
 The code may be run from the Ant target \code{unicode-properties}.
 This target will print the key to the types, then the type of
-each character in a range specified by the properites 
+each character in a range specified by the properties 
 \code{low.hex} and \code{high.hex} (both inclusive).
 %
-\commandlinefollow{ant -Dlow.hex=0 -Dhigh.hex=FF unicode-properties}
+\commandlinefollow{cd \rootdir/src/java/chars}%
+\commandline{ant -Dlow.hex=0 -Dhigh.hex=FF unicode-properties}%
 \begin{verbatim}
 ID CD TYPE                     ID CD TYPE
+-- -- ----                     -- -- ----
  0 Cn UNASSIGNED               15 Cc CONTROL
                                16 Cf FORMAT
  1 Lu UPPERCASE_LETTER         18 Co PRIVATE_USE
@@ -832,6 +872,7 @@ instance of each type rather all 256 characters.
 %
 \begin{verbatim}
 CH   CD TYPE                    CH   CD TYPE
+--   -- ----                    --   -- ----
  0   Cc CONTROL                 41   Lu UPPERCASE_LETTER
 20   Zs SPACE_SEPARATOR         5E   Sk MODIFIER_SYMBOL
 21   Po OTHER_PUNCTUATION       5F   Pc CONNECTOR_PUNCTUATION
@@ -1077,7 +1118,7 @@ When constructing a string from bytes, a character encoding is used to
 convert the bytes into \code{char} values.  Typically character
 encodings are specified by name.  Any supported encoding or one of its
 aliases may be named; the list of available encodings may be accessed
-programatically and listed as shown in \refsec{supported-encodings}.
+programmatically and listed as shown in \refsec{supported-encodings}.
 
 If a character encoding is not specified, the platform's default is
 used, resulting in highly non-portable behavior.
@@ -1115,7 +1156,7 @@ escapes, as in
 
 In practice, string literals essentially create static constants for
 the strings.  Because strings are immutable, the value of string
-contstants including literals, will be shared.  Thus \code{"abc" ==
+constants including literals, will be shared.  Thus \code{"abc" ==
   "abc"} will evaluate to true because the two literals will denote
 reference identical strings.  This is carried out as if
 \code{intern()} had been called on constructed strings, as described
@@ -1457,8 +1498,9 @@ String builders are mutable, and hence support operations like
 \code{replace(int,int,String)}, which splice the characters of a
 string into the buffer in place of the specified character slice.
 There is also a \code{setLength(int)} method which changes the length
-of the charactr sequence, either shrinking or extending the underlying
-buffer as necessary.
+of the character sequence, either shrinking or extending the underlying
+buffer as necessary.  Calling \code{setLength(0)} resets
+the underlying buffer to a zero-length (empty) array.
 
 \subsection{Reversing Strings}
 
@@ -1485,7 +1527,7 @@ arguments.  Thus it's legal to write
 %
 \codeblock{FragmentsChars.3}
 %
-with the reslt that string \code{t} has a value equal to the
+with the result that string \code{t} has a value equal to the
 literal \code{"7ABCtrueCnull"}.
 
 In fact, this is exactly the behavior underlying Java's heavily
@@ -1712,7 +1754,7 @@ unmappable characters.  The options are determined by the values of
 class \code{CodingErrorAction} (also in \code{java.nio.charset}).%
 %
 \footnote{The error action class is the way type-safe enumerations used to
-be encoded before \code{enum}s were added diretly to the language, with
+be encoded before \code{enum}s were added directly to the language, with
 a private constructor and a set of static constant implementations.}%
 %
 The three actions allowed are to ignore unmappable characters (static
@@ -1745,7 +1787,7 @@ one character encoding serving as the default encoding.  Every
 compliant Java installation supports all of the UTF encodings of
 Unicode.  Other encodings, as specified by \code{Charset}
 implementations, may be added at the installation level, or
-implemented programatically within a JVM instance.
+implemented programmatically within a JVM instance.
 
 The supported encodings determine what characters can be used to write
 Java programs, as well as which character encoding objects are
@@ -1781,7 +1823,7 @@ The program first writes out the default encoding.  This is
 \code{ISO-8859-1} on Linux installs in the United States.
 After that, the program writes all of the encodings, with the official
 name followed by a list of aliases that are also recognized.  We
-ellided most of the output, because there are dozens of encodings
+elided most of the output, because there are dozens of encodings
 supported.
 
 
@@ -1836,7 +1878,7 @@ rather overloaded and confusing static factory method
 argument is \code{null}, which causes the normalizer to use ICU's
 definitions of normalization rather than importing definitions through
 an input stream.  The second argument, \code{"nfkc"} is an
-unfortunately named string contstant indicating that we'll use NFKC or
+unfortunately named string constant indicating that we'll use NFKC or
 NFKD normalization.  The third argument is the static constant
 \code{COMPOSE}, from the static nested class \code{Normalizer2.Mode},
 which says that we want to compose the output, hence producing NFKC.
@@ -1866,15 +1908,15 @@ Their normalized forms, \code{n1} and \code{n2}, are both the same as
 recomposes compound characters to the extent possible.
 
 
-\subsection{Encoding Detection}
+\subsection{Encoding Detection}\label{section:encoding-detection}
 
 Unfortunately, we are often faced with texts with unknown character
 encodings.  Even when character encodings are specified, say for an
 XML document, they can be wrong.  ICU does a good job at detecting the
 character encoding from a sequence of bytes, although it only supports
 a limited range of character encodings, not including the pesky
-Windows-1252, which is highly confusible with Latin1 and just as
-confuisble with UTF-8 as Latin1.  It's also problematic for Java use,
+Windows-1252, which is highly confusable with Latin1 and just as
+confusable with UTF-8 as Latin1.  It's also problematic for Java use,
 because the default Java install on Windows machines uses Windows-1252 as
 the default character encoding.
 
@@ -1900,7 +1942,7 @@ instance of \code{CharsetDetector} (in \code{com.ibm.icu.text}) using
 the no-arg constructor, set its declared encoding, and set its text to
 the byte array.  We then generate an array of matches using the
 \code{detecAll()} method on the detector.  These matches are instances
-of \code{CharsetMatch}, in the same pacakge.  
+of \code{CharsetMatch}, in the same package.  
 
 The rest of our the code just iterates through the matches and prints them.
 %
@@ -1979,7 +2021,7 @@ ICU.  Just create the transliterator and apply it to a string.
 \subsubsection{Built-In Transliterations}
 
 We first need to know the available transliterations, the identifiers
-of which are avaialble programatically.  We implement a \code{main()}
+of which are available programatically.  We implement a \code{main()}
 method in \code{ShowTransliterations} as follows
 %
 \codeblock{ShowTransliterations.1}
@@ -2052,7 +2094,7 @@ their deaccented forms across all the scripts in Unicode.  There
 are also conversions to hexadecimal representation; for instance
 \code{Any-Hex/Java} converts to hexadecimal \code{char} escapes
 suitable for inclusion in a Java program.  The normalizations are
-also avaialble through \code{Any-NFC} and so on. 
+also available through \code{Any-NFC} and so on. 
 
 \subsubsection{Transliterating}
 
@@ -2099,7 +2141,7 @@ the same as \stringmention{taxi cab} in Latin.
 To see how transliteration can be used for dumping out
 hex character values, consider
 %
-\commandlinefollow{ant -Dtext=abe -Dscheme=Any-Hex/Java transliterate}
+\commandlinefollow{ant -Dtext="abe" -Dscheme=Any-Hex/Java transliterate}
 \begin{verbatim}
 Input=abe
 Output=\u0061\u0062\u0065
@@ -2108,7 +2150,7 @@ Output=\u0061\u0062\u0065
 The output may be quoted as a string and fed into Java.  Translations
 are also reversible, so we can also do it the other way around,
 %
-\commandlinefollow{ant~-Dtext={\bk}u0061{\bk}u0062{\bk}u0065~-Dscheme=Hex/Java-Any~transliterate}
+\commandlinefollow{ant~-Dtext="{\bk}u0061{\bk}u0062{\bk}u0065"~-Dscheme=Hex/Java-Any~transliterate}
 \begin{verbatim}
 Input=\u0061\u0062\u0065
 Output=abe
