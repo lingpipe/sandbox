@@ -6,6 +6,10 @@ describing spans of Unicode text.  Given a regular expression (regex)
 and some text, basic regex functionality allows us to test whether a
 string matches the regex or find non-overlapping substrings of a
 string matching the regex.
+The example programs for this chapter are in the code directory:
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex}}
+
 
 \section{Matching and Finding}
 
@@ -65,9 +69,9 @@ string, but the outer vertical bars are always the ones dropped.
 The second main application of regular expressions is to find
 substrings of a string that match the regular expression.  The main
 method in our class \code{RegexFind} illustrates this.  We read in two
-command-line aguments into string variables \code{regex} and \code{text}
+command-line arguments into string variables \code{regex} and \code{text}
 as we did for \code{RegexMatch} in the previous section.  We begin
-by compling the pattern and creating a matcher for the text just
+by compiling the pattern and creating a matcher for the text just
 as in \code{RegexFind}.
 %
 \codeblock{RegexFind.1}
@@ -93,7 +97,7 @@ the same arguments as \code{regex-match}.
 Found |aa| at (0,2)    Found |aa| at (2,4)
 \end{verbatim}
 %
-As before, the vertical bars are delimeters, not part of the matching
+As before, the vertical bars are delimiters, not part of the matching
 substring.  The string \stringmention{aa} actually shows up in four
 distinct locations in \stringmention{aaaaab}, at spans (0,2), (1,3),
 (2,4), and (3,5).  Running find only returns two of them.  The matcher
@@ -110,7 +114,7 @@ matches \stringmention{aa}.
 
 The most basic regular expressions describe single characters.  Some
 characters have special meanings in regexes and thus need to be
-escaped for use in regular expresions.
+escaped for use in regular expressions.
 
 \subsection{Characters as Regexes}
 
@@ -225,7 +229,7 @@ reason to use classes rather than disjunctions is that they have
 \subsection{WildCards}\label{section:regex-wildcard}
 
 A singe period (\code{.}) is a regular expression that matches any
-single characer.  We may think of it as the universal character class.
+single character.  We may think of it as the universal character class.
 For instance, the regex \code{.} matches the string \stringmention{a},
 and \code{a.c} matches \stringmention{abc}.%
 %
@@ -380,7 +384,7 @@ attachment for character class operations is
 \end{center}
 %
 Thus the square brackets act like grouping parentheses for character
-classes.  Complementaton must be treated separately.  Complementation
+classes.  Complementation must be treated separately.  Complementation
 only applies to character groups or ranges, and must be closed within
 brackets before being combined with union or intersection or the scope
 may not be what you expect.  For instance, \code{[\^{}a[b-c]]} is
@@ -558,7 +562,7 @@ against \codeVar{A} is tried first.
 
 A regular expression \codeVar{x} may have the Kleene-star operator%
 %
-\footnote{Named after Stephen Kleene, who invented regular expressionsn
+\footnote{Named after Stephen Kleene, who invented regular expressions
 as a notation for his characterization of regular languages.}
 %
 applied to it to produce the regular expression \codeVar{A}\code{*}.
@@ -684,14 +688,14 @@ decomposed into \codeVar{m} or more strings each of which matches
 \section{Reluctant Quantifiers}
 
 There are a range of reluctant quantifiers that parallel the more
-typical greedy quantifiers.  For matching, the relunctant quantifiers
+typical greedy quantifiers.  For matching, the reluctant quantifiers
 behave just like their greedy counterparts, whereas for find
 operations, reluctant quantifiers try to match as little as possible.
 
 The reluctant quantifiers are written like the greedy quantifiers
 followed by a question mark.  For instance, \code{\codeVar{A}*?}  is
 the reluctant version of the Kleene star regex \code{\codeVar{A}*},
-\code{\codeVar{A}\{m,n\}?} is the reluctant variant of the range egex
+\code{\codeVar{A}\{m,n\}?} is the reluctant variant of the range regex
 \code{\codeVar{A}\{m,n\}}, and \code{\codeVar{A}??} is the reluctant
 variant of the optionality regex \code{\codeVar{A}?}.
 
@@ -1047,7 +1051,7 @@ matching behavior of the compiled pattern.
 character, including line terminators.  If this mode is not
 set, the wild card does not match line terminators.
 \\[4pt]
-\code{MULTLINE}
+\code{MULTILINE}
 & 8
 & Allows the begin-of-line (\code{\^{}}) and end-of-line (\code{\$}) to
 match internal line terminators.  If this is not set, they only
@@ -1108,7 +1112,7 @@ so we could further restrict to Unix newlines with
 \code{DOTALL~|~MULTILINE~|~UNIX\_LINES}.  
 
 Even stronger matching than canonical equivalence with unicode case
-folding can be achieved by writinger the regular expression using
+folding can be achieved by writing the regular expression using
 compatibility normal forms and using the ICU package to perform a
 compatibility decomposition on the input (see
 \refsec{unicode-normalization-forms}).
