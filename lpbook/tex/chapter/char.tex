@@ -4,6 +4,9 @@
 representations.  In this chapter, we describe the Unicode character
 set, discuss character encodings, and show how strings and other character
 sequences are created and used in Java.
+The example programs for this chapter are in the code directory:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars}}
 
 
 \section{Character Encodings}
@@ -521,7 +524,7 @@ once \ie{its an idemopotent transformation}.
 We show how to convert character sequences to their canonical forms
 programmatically using the ICU package in \refsec{icu-unicode-normalization}.
 
-\subsubsection{Consequences of Encoding Schemes}
+\subsubsection{Common Problems and Considerations}
 
 A file stored on disk is a sequence of bytes; data sent and received
 across a socket is a stream of bytes.  Without knowing the character set
@@ -536,7 +539,7 @@ In \refsec{encoding-detection} we explore methods
 that can (sometimes) detect the character encoding.
 
 Character sets overlap.
-In particular, the legacy character sets Latin-1 et al
+In particular, the Latin character sets
 and Windows 1252 overlap with one another and all of them
 contain ASCII, as does Unicode.
 An application may specify the wrong character set or encoding
@@ -820,8 +823,11 @@ the constant documentation for \code{java.lang.Character}.  There's a
 missing component to the implementation, which makes it hard to take a
 given \code{char} value (or code point) and find its Unicode
 properties.  To that end, we've written a utility class
-\code{UnicodeProperties} that displays properties of Unicode.  The
-code just enumerates the constants in \code{Character}, indexes them
+\code{UnicodeProperties} that displays properties of Unicode:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/UnicodeProperties.java}}
+%
+The code just enumerates the constants in \code{Character}, indexes them
 by name, writes out a key to the values produced by
 \code{Character.getType(char)} along with their standard abbreviations
 (as used in regular expressions) and names.
@@ -831,7 +837,7 @@ This target will print the key to the types, then the type of
 each character in a range specified by the properties 
 \code{low.hex} and \code{high.hex} (both inclusive).
 %
-\commandlinefollow{cd \rootdir/src/java/chars}%
+\commandlinefollow{cd \rootdir/src/chars}%
 \commandline{ant -Dlow.hex=0 -Dhigh.hex=FF unicode-properties}%
 \begin{verbatim}
 ID CD TYPE                     ID CD TYPE
@@ -1359,7 +1365,10 @@ method as \code{Double.toString(double)}.
 \subsection{Example Conversions}
 
 We wrote a simple program to illustrate encoding and decoding between
-strings and byte arrays.  
+strings and byte arrays:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/ByteToString.java}}
+
 %
 \codeblock{ByteToString.1}
 %
@@ -1793,9 +1802,13 @@ The supported encodings determine what characters can be used to write
 Java programs, as well as which character encoding objects are
 available to convert sequences of bytes to sequences of characters.
 
-We provide a class \code{com.lingpipe.book.char.SupportedEncodings} to
+We provide a program to
 display the default encoding and the complete range of other encodings
-supported.  The first part of the main pulls out the default encoding
+supported:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/SupportedEncodings.java}}
+%
+The first part of the main pulls out the default encoding
 using a static method of \code{java.nio.charset.Charset},
 %
 \codeblock{SupportedEncodings.1}
@@ -1868,6 +1881,10 @@ ICU implements all the Unicode normalization schemes (see
 \refsec{unicode-normalization-forms}).  The following code shows how to use NFKC,
 the normalization form that uses compatibility decomposition, followed
 by a canonical composition.
+The program is is in the code directory for this chapter:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/NormalizeUnicode.java}}
+
 %
 \codeblock{NormalizeUnicode.1}
 %
@@ -1920,9 +1937,12 @@ confusable with UTF-8 as Latin1.  It's also problematic for Java use,
 because the default Java install on Windows machines uses Windows-1252 as
 the default character encoding.
 
-We created a sample class \relpath{DetectEncoding}, which begins its
+We created an example class \code{DetectEncoding} which begins its
 \code{main()} method by extracting (and then displaying) the detectable
-character encodings,
+character encodings.
+The program is is in the code directory for this chapter:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/DetectEncoding.java}}
 %
 \codeblock{DetectEncoding.1}
 %
@@ -2021,8 +2041,14 @@ ICU.  Just create the transliterator and apply it to a string.
 \subsubsection{Built-In Transliterations}
 
 We first need to know the available transliterations, the identifiers
-of which are available programatically.  We implement a \code{main()}
-method in \code{ShowTransliterations} as follows
+of which are available programatically.  
+We created an example class \code{ShowTransliterations} which extracts and
+displays the detectable character encodings.
+The program is is in the code directory for this chapter:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/ShowTransliterations.java}}
+%
+We implement a \code{main()} method as follows:
 %
 \codeblock{ShowTransliterations.1}
 %
@@ -2101,7 +2127,12 @@ also available through \code{Any-NFC} and so on.
 The second demo class is \code{Transliterate}, which takes two command
 line arguments, a string to transliterate and a transliteration
 scheme, and prints the output as a string and as a list of \code{char}
-values.  The body of the \code{main()} method performs the
+values.
+The program is is in the code directory for this chapter:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/Transliterate.java}}
+%
+The body of the \code{main()} method performs the
 transliteration as follows.
 %
 \codeblock{Transliterate.1}
