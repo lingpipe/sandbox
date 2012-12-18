@@ -68,7 +68,11 @@ string, but the outer vertical bars are always the ones dropped.
 
 The second main application of regular expressions is to find
 substrings of a string that match the regular expression.  The main
-method in our class \code{RegexFind} illustrates this.  We read in two
+method in our class \code{RegexFind} illustrates this:
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexFind.java}}
+%
+We read in two
 command-line arguments into string variables \code{regex} and \code{text}
 as we did for \code{RegexMatch} in the previous section.  We begin
 by compiling the pattern and creating a matcher for the text just
@@ -91,7 +95,7 @@ for enumerating all the matches.
 As an example, we use the Ant target \code{regex-find}, which takes
 the same arguments as \code{regex-match}.
 %
-\commandlinefollow{ant -Dregex=aa -Dtext=aaaaab regex-find}
+\commandlinefollow{ant -Dregex="aa" -Dtext="aaaaab" regex-find}
 %
 \begin{verbatim}
 Found |aa| at (0,2)    Found |aa| at (2,4)
@@ -124,12 +128,12 @@ character.  For instance,
 \code{Pattern.compile("a").matcher("a").matches()} would evaluate to
 \code{true}.  Using our Ant match target, 
 %
-\commandlinefollow{ant -Dregex=b -Dtext=b regex-match}
+\commandlinefollow{ant -Dregex="b" -Dtext="b" regex-match}
 \begin{verbatim}
 Regex=|b|    Text=|b|    Matches=true
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex=b -Dtext=c regex-match}
+\commandlinefollow{ant -Dregex="b" -Dtext="c" regex-match}
 \begin{verbatim}
 Regex=|b|    Text=|c|    Matches=false
 \end{verbatim}
@@ -147,10 +151,10 @@ Java.  That is, \code{{\bk}u}\codeVar{hhhh} is a regular expression
 matching the character with Unicode code point
 \unicode{\codeVar{hhhh}}.  For example,
 %
-\commandlinefollow{ant -Dregex={\bk}u0041 -Dtext=A regex-match}
+\commandlinefollow{ant -Dregex="{\bk}u0041" -Dtext="A" regex-match}
 %
 \begin{verbatim}
-Regex=|\u002E|    Text=|.|    Matches=true
+Regex=|\u0041|    Text=|A|    Matches=true
 \end{verbatim}
 %
 Note that we did not have to escape the backslash for the shell
@@ -186,31 +190,36 @@ newline and \code{\bk\bk} for a backslash character.  Again, we have
 to be careful about distinguishing Java string escapes, which are used
 to create a regex, which itself may contain regex escapes.  
 
-To confuse matters, Java itself also uses a backslash for escapes, so
-that the character for backslash is written \code{'\bk\bk'} and so the
-regex \code{{\bk}n} must be written as the string literal
-\code{"\bk{\bk}n"}.  To create the regex \code{\bk\bk}, we need to use
-two backslash escapes in our string literal, writing
+Because Java itself also uses a backslash for escapes (see above),
+to specify a single backslash we write \code{\bk\bk} and 
+to specify an escape character that contains a backslash such as newline 
+\code{{\bk}n} we write \code{\bk{\bk}n}.  To create the regex \code{\bk\bk}, 
+we need to use two backslash escapes in our string literal, writing
 \code{Pattern.compile("\bk\bk\bk\bk")}.  
 
-This is all further confused by the command-line shell, which has its
-own escape sequences.  Our sample program reads a command from the
-command line, which is being supplied by Ant and set as a property on
-the command-line call to Ant.  For instance, consider this puzzler,
+This is further confused by the command-line shell.
+The shell itself is a scripting language with its own set of
+escape characters, one of which is the backslash.
+To invoke the regex-match program with a regex consisting 
+of the backslash literal, we need to set up the call \code{Pattern.compile("\bk\bk\bk\bk")}
+and match it against a text consisting of the backslash literal \code{\bk\bk}.
+We do this from the command line shell as follows:
 %
-\commandlinefollow{ant -Dregex="\bk\bk\bk\bk" -Dtext="\bk\bk" regex-match}
+\commandlinefollow{ant -Dregex='\bk\bk\bk\bk' -Dtext='\bk\bk' regex-match}
 %
 \begin{verbatim}
 Regex=|\\|    Text=|\|    Matches=true
 \end{verbatim}
 %
-On the command line, backslash is escaped as \code{\bk\bk}.%
+Usually we use double quotes to enclose the arguments and prevent
+the shell from expanding special characters, but \code{\bk"} is a valid escape
+sequence for the shell.  Instead we use single quotes
+so that everything within the single quotes is treated
+as a literal. Different implementations of the bash shell may
+parse the command line differently.  Try this on your machine
+using double quotes or no quotes around the arguments.
 %
-\footnote{Usually backslash doesn't need to be escaped because the
-following character isn't a valid escape; here, the following
-character is a quote (\code{"}), and \code{\bk"} is a valid escape
-sequence for the shell.}
-%
+
 Our Java program gets a value for \code{regex} consisting of a
 length-two string made up of two backslashes, and value for text
 consisting of a single backslash.  The match succeeds because the
@@ -233,7 +242,7 @@ single character.  We may think of it as the universal character class.
 For instance, the regex \code{.} matches the string \stringmention{a},
 and \code{a.c} matches \stringmention{abc}.%
 %
-\commandlinefollow{ant -Dregex=a.c -Dtext=abc regex-match}
+\commandlinefollow{ant -Dregex="a.c" -Dtext="abc" regex-match}
 \begin{verbatim}
 Regex=|a.c|    Text=|abc|    Matches=true
 \end{verbatim}
@@ -260,7 +269,7 @@ expression \code{{\bk}p\{\codeVar{X}\}} matches any unicode character
 belonging to the Unicode category \codeVar{X}.  For example,
 the class \code{Lu} picks out uppercase letters, so we have
 %
-\commandlinefollow{ant -Dregex={\bk}p\{Lu\} -Dtext=A regex-match}
+\commandlinefollow{ant -Dregex="{\bk}p\{Lu\}" -Dtext="A" regex-match}
 \begin{verbatim}
 Regex=|\p{Lu}|    Text=|A|    Matches=true
 \end{verbatim}
@@ -276,7 +285,7 @@ There are character classes built in for ASCII characters.  For
 instance, \code{{\bk}d} is for digits, \code{{\bk}s} for whitespace,
 and \code{{\bk}w} for alphanumeric characters.  For example,
 %
-\commandlinefollow{ant -Dregex={\bk}d -Dtext=7 regex-match}
+\commandlinefollow{ant -Dregex="{\bk}d" -Dtext="7" regex-match}
 \begin{verbatim}
 Regex=|\d|    Text=|7|    Matches=true
 \end{verbatim}
@@ -313,7 +322,7 @@ concatenation syntax.  For instance, \code{[aeiou]} is the character
 class picking out the ASCII vowels.  It is composed of the union of
 character class expressions \code{a}, \code{e}, \ldots, \code{u}.  
 %
-\commandlinefollow{ant -Dregex=[aeiou] -Dtext=i regex-match}
+\commandlinefollow{ant -Dregex="[aeiou]" -Dtext="i" regex-match}
 \begin{verbatim}
 Regex=|[aeiou]|    Text=|i|    Matches=true
 \end{verbatim}
@@ -325,7 +334,7 @@ The use of range notation may be used as shorthand for unions.
 For instance, \code{[0-9]} picks out the ASCII digits \charmention{0},
 \charmention{1}, \ldots, \charmention{9}.  For example,
 %
-\commandlinefollow{ant -Dregex="[I-P]" -Dtext=J regex-match}
+\commandlinefollow{ant -Dregex="[I-P]" -Dtext="J" regex-match}
 \begin{verbatim}
 Regex=|[I-P]|    Text=|J|    Matches=true
 \end{verbatim}
@@ -337,12 +346,12 @@ range or a sequence of character class primitives.  For instance,
 \code{[\^{}z]} represents the class of every character other than
 \charmention{z}.  
 %
-\commandlinefollow{ant -Dregex="[\^{}z]" -Dtext=z regex-match}
+\commandlinefollow{ant -Dregex="[\^{}z]" -Dtext="z" regex-match}
 \begin{verbatim}
 Regex=|[^z]|    Text=|z|    Matches=false
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex="[\^{}z]" -Dtext=a regex-match}
+\commandlinefollow{ant -Dregex="[\^{}z]" -Dtext="a" regex-match}
 \begin{verbatim}
 Regex=|[^z]|    Text=|a|    Matches=true
 \end{verbatim}
@@ -359,7 +368,7 @@ picking out the characters that are in the classes denoted by both
 \code{[[a-z]\&\&[\^{}aeiou]]} to pick out all lowercase ASCII
 characters other than the vowels,
 %
-\commandlinefollow{ant -Dregex="[[a-z]\&\&[\^{}aeiou]]" -Dtext=i regex-match}
+\commandlinefollow{ant -Dregex="[[a-z]\&\&[\^{}aeiou]]" -Dtext="i" regex-match}
 \begin{verbatim}
 Regex=|[[a-z]&&[^aeiou]]|    Text=|i|    Matches=false
 \end{verbatim}
@@ -417,7 +426,7 @@ variables, as in
 Regex=||    Text=||    Matches=true
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext=a regex-match}
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext="a" regex-match}
 \begin{verbatim}
 Regex=||    Text=|a|    Matches=false
 \end{verbatim}
@@ -434,7 +443,7 @@ matches vowels and a regex \code{0-9} that matches digits, we can put
 them together to produce a regex that matches a vowel followed by a
 digit.
 %
-\commandlinefollow{ant -Dregex=[aeiou][0-9] -Dtext=i7 regex-match}
+\commandlinefollow{ant -Dregex="[aeiou][0-9]" -Dtext="i7" regex-match}
 \begin{verbatim}
 Regex=|[aeiou][0-9]|    Text=|i7|    Matches=true
 \end{verbatim}
@@ -454,19 +463,17 @@ If \codeVar{X} and \codeVar{Y} are regular expressions, the regular
 expression \codeVar{x}\code{|}\codeVar{y} matches any string that
 matches either \codeVar{X} or \codeVar{Y} (or both).  For example,
 %
-\commandlinefollow{ant -Dregex="ab|cd" -Dtext=ab regex-match}
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext="ab" regex-match}
 \begin{verbatim}
-Regex=|ab|cd|
-Text=|ab|
-Matches=true
+Regex=|ab|cd|    Text=|ab|    Matches=true
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex="ab|cd" -Dtext=cd regex-match}
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext="cd" regex-match}
 \begin{verbatim}
 Regex=|ab|cd|    Text=|cd|    Matches=true
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex="ab|cd" -Dtext=bc regex-match}
+\commandlinefollow{ant -Dregex="ab|cd" -Dtext="bc" regex-match}
 \begin{verbatim}
 Regex=|ab|cd|    Text=|bc|    Matches=false
 \end{verbatim}
@@ -478,12 +485,12 @@ The order of disjunctions doesn't matter for matching (other than for
 efficiency), but it matters for the find operation.  For finds,
 disjunctions are evaluated left-to-right and the first match returned.
 %
-\commandlinefollow{ant -Dregex="ab|abc" -Dtext=abc regex-find}
+\commandlinefollow{ant -Dregex="ab|abc" -Dtext="abc" regex-find}
 \begin{verbatim}
 Found |ab| at (0,2)
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex="abc|ab" -Dtext=abc regex-find}
+\commandlinefollow{ant -Dregex="abc|ab" -Dtext="abc" regex-find}
 \begin{verbatim}
 Found |abc| at (0,3)
 \end{verbatim}
@@ -499,22 +506,6 @@ disjunctions.  In practice, disjunctions often fail earlier.  For
 instance, if there is no match for \code{a|b}, further
 disjunctions are not explored.  
 
-A simple pathological case can be created by concatenating instances
-of the regex \code{(|a)} and then matching a long string of \code{a}
-characters.  You can try it out yourself with
-%
-\commandline{ant -Dregex="(|a)(|a)...(|a)(|a)" -Dtext=aa...aa regex-find}
-%
-where the elipses are meant to indicate further copies of \code{a}.
-This expression will explore every branch of every disjunction.
-Around 25 or 26 copies of \code{(|a)} there are tens of millions of
-paths to explore, and with 30, there's over a billion.  You'll be
-waiting a while for an answer.  But if the building block is
-\code{(a|b)}, there's no problem, because each disjunction has to
-match \code{a}.
-%
-\commandline{ant -Dregex="(b|a)(b|a)...(b|a)(b|a)" -Dtext=aa...aa regex-find}
-
 \section{Greedy Quantifiers}
 
 There are operators for optionality or multiple instances that go
@@ -528,12 +519,12 @@ The simplest greedy quantifier is the optionality marker.  The regex
 \code{\codeVar{A}?} matches a string that matches \codeVar{A} or the
 empty string.  For example,
 %
-\commandlinefollow{ant -Dregex=a? -Dtext=a regex-match}
+\commandlinefollow{ant -Dregex="a?" -Dtext="a" regex-match}
 \begin{verbatim}
 Regex=|a?|    Text=|a|    Matches=true
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex=a? -Dtext={\bk}"{\bk}" regex-match}
+\commandlinefollow{ant -Dregex="a?" -Dtext={\bk}"{\bk}" regex-match}
 \begin{verbatim}
 Regex=|a?|    Text=||    Matches=true
 \end{verbatim}
@@ -542,7 +533,7 @@ The greediness of the basic optionality marker, which tries to match
 before trying to match the empty string, is illustrated using
 \code{find()},
 %
-\commandlinefollow{ant -Dregex=a? -Dtext=aa regex-find}
+\commandlinefollow{ant -Dregex="a?" -Dtext="aa" regex-find}
 \begin{verbatim}
 Found |a| at (0,1)    Found |a| at (1,2)    Found || at (2,2)
 \end{verbatim}
@@ -571,7 +562,7 @@ composed of a sequence of zero or more matches of \codeVar{A}.  For
 example, \code{[01]*} matches any sequence composed only of \code{0}
 and \code{1} characters,
 %
-\commandlinefollow{ant -Dregex="[01]*" -Dtext=00100100 regex-match}
+\commandlinefollow{ant -Dregex="[01]*" -Dtext="00100100" regex-match}
 \begin{verbatim}
 Regex=|[01]*|    Text=|00100100|    Matches=true
 \end{verbatim}
@@ -583,7 +574,7 @@ Using find, the standard Kleene-star operation is greedy in that it
 consumes as much as it can during a \code{find()} operation.  For
 example, consider
 %
-\commandlinefollow{ant -Dregex="[01]*" -Dtext=001a0100 regex-find}
+\commandlinefollow{ant -Dregex="[01]*" -Dtext="001a0100" regex-find}
 \begin{verbatim}
 Found |001| at (0,3)    Found || at (3,3)    Found |0100| at (4,8)
 Found || at (8,8)
@@ -610,14 +601,14 @@ exactly the same strings.
 Kleene star interacts with disjunction in the expected way.  For
 example, matching consumes an entire string, as with
 %
-\commandlinefollow{ant -Dregex="(ab|abc)*" -Dtext=abcab regex-match}
+\commandlinefollow{ant -Dregex="(ab|abc)*" -Dtext="abcab" regex-match}
 \begin{verbatim}
 Regex=|(ab|abc)*|    Text=|abcab|    Matches=true
 \end{verbatim}
 %
 while finding returns only an initial match, 
 %
-\commandlinefollow{ant -Dregex="(ab|abc)*" -Dtext=abcab regex-find}
+\commandlinefollow{ant -Dregex="(ab|abc)*" -Dtext="abcab" regex-find}
 \begin{verbatim}
 Found |ab| at (0,2)    Found || at (2,2)    Found |ab| at (3,5)
 Found || at (5,5)
@@ -627,7 +618,7 @@ This is a result of the greediness of the Kleene-star operator
 and the evaluation order of disjunctions.  If we reorder, we 
 get the whole string,
 %
-\commandlinefollow{ant -Dregex="(abc|ab)*" -Dtext=abcab regex-find}
+\commandlinefollow{ant -Dregex="(abc|ab)*" -Dtext="abcab" regex-find}
 \begin{verbatim}
 Found |abcab| at (0,5)    Found || at (5,5)
 \end{verbatim}
@@ -647,7 +638,7 @@ just like \code{\codeVar{A}\codeVar{A}*}.
 Use Kleene plus instead
 of star to remove those pesky empty string matches.  For instance, 
 %
-\commandlinefollow{ant -Dregex="(abc|ab)+" -Dtext=abcab regex-find}
+\commandlinefollow{ant -Dregex="(abc|ab)+" -Dtext="abcab" regex-find}
 \begin{verbatim}
 Found |abcab| at (0,5)
 \end{verbatim}
@@ -659,7 +650,7 @@ matches.  The regular expression \code{\codeVar{A}\{\codeVar{m}\}}
 matches any string that that may be decomposed into a sequence of
 \codeVar{m} strings, each of which matches \codeVar{A}.
 %
-\commandlinefollow{ant -Dregex="a\{3\}" -Dtext=aaa regex-match}
+\commandlinefollow{ant -Dregex="a\{3\}" -Dtext="aaa" regex-match}
 \begin{verbatim}
 Regex=|a{3}|    Text=|aaa|    Matches=true
 \end{verbatim}
@@ -672,7 +663,7 @@ and \codeVar{n} (inclusive) matches of \codeVar{A}.  The greediness
 comes in because it prefers to match as many instances as possible.
 For example,
 %
-\commandlinefollow{ant -Dregex="a\{2,3\}" -Dtext=aaaaa regex-find}
+\commandlinefollow{ant -Dregex="a\{2,3\}" -Dtext="aaaaa" regex-find}
 \begin{verbatim}
 Found |aaa| at (0,3)    Found |aa| at (3,5)
 \end{verbatim}
@@ -708,17 +699,17 @@ instance, we can think of \code{\codeVar{A}??} as
 Here we repeat some key examples of the previous section using reluctant
 quantifiers.
 %
-\commandlinefollow{ant -Dregex=a?? -Dtext=aa regex-find}
+\commandlinefollow{ant -Dregex="a??" -Dtext="aa" regex-find}
 \begin{verbatim}
 Found || at (0,0)    Found || at (1,1)    Found || at (2,2)
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex="(abc|ab)+?" -Dtext=abcab regex-find}
+\commandlinefollow{ant -Dregex="(abc|ab)+?" -Dtext="abcab" regex-find}
 \begin{verbatim}
 Found |abc| at (0,3)    Found |ab| at (3,5)
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex="a\{2,3\}?" -Dtext=aaaaa regex-find}
+\commandlinefollow{ant -Dregex="a\{2,3\}?" -Dtext="aaaaa" regex-find}
 \begin{verbatim}
 Found |aa| at (0,2)    Found |aa| at (2,4)
 \end{verbatim}
@@ -738,14 +729,14 @@ optionality and \code{*+} is greedy Kleene star.
 
 Consider the difference between a greedy Kleene star
 %
-\commandlinefollow{ant "-Dregex=[0-9]*1" -Dtext=1231 regex-match}
+\commandlinefollow{ant -Dregex="[0-9]*1" -Dtext="1231" regex-match}
 \begin{verbatim}
 Regex=|[0-9]*1|    Text=|1231|    Matches=true
 \end{verbatim}
 %
 which matches, and a possessive Kleene star,
 %
-\commandlinefollow{ant "-Dregex=[0-9]*+1" -Dtext=1231 regex-match}
+\commandlinefollow{ant -Dregex="[0-9]*+1" -Dtext="1231" regex-match}
 \begin{verbatim}
 Regex=|[0-9]*+1|    Text=|1231|    Matches=false
 \end{verbatim}
@@ -764,7 +755,7 @@ possessively.  That is, once \code{(?>\codeVar{A})} finds a match
 for \codeVar{A}, it does not allow backtracking.   We can see this
 with a pair of examples.
 %
-\commandlinefollow{ant -Dregex="(?>x+)xy" -Dtext=xxy regex-match}
+\commandlinefollow{ant -Dregex="(?>x+)xy" -Dtext="xxy" regex-match}
 \begin{verbatim}
 Regex=|(?>x+)xy|    Text=|xxy|    Matches=false
 \end{verbatim}
@@ -773,7 +764,7 @@ This doesn't match, because the \code{x+} matches both
 instances of \charmention{x} in the text being matched and doesn't
 allow backtracking.  Contrast this with
 %
-\commandlinefollow{ant -Dregex="(?>x+)y" -Dtext=xxy regex-match}
+\commandlinefollow{ant -Dregex="(?>x+)y" -Dtext="xxy" regex-match}
 \begin{verbatim}
 Regex=|(?>x+)y|    Text=|xxy|    Matches=true
 \end{verbatim}
@@ -782,8 +773,6 @@ The parentheses in this construction do not count for grouping
 (see \refsec{regex-groups}).  There is a similar construction
 \code{(?:\codeVar{A})} which is not possessive, and also does
 not count the parentheses for grouping.  
-
-
 
 
 \section{Non-Capturing Regexes}
@@ -802,12 +791,12 @@ The caret (\code{\^{}}) is a regular expression that matches the end
 of a line and the dollar sign (\code{\$}) a regular expression
 matching the beginning of a line.  For example, 
 %
-\commandlinefollow{ant -Dregex="\^{}abc\$" -Dtext=abc regex-match}
+\commandlinefollow{ant -Dregex="\^{}abc\$" -Dtext="abc" regex-match}
 \begin{verbatim}
 Regex=|^abc$|    Text=|abc|    Matches=true
 \end{verbatim}
 %
-\commandlinefollow{ant -Dregex=ab\$c -Dtext=abc regex-match}
+\commandlinefollow{ant -Dregex="ab\$c" -Dtext="abc" regex-match}
 \begin{verbatim}
 Regex=|ab$c|    Text=|abc|    Matches=false
 \end{verbatim}
@@ -832,12 +821,19 @@ are regexes \code{{\bk}A} for the beginning of the input and
 and end of the input no matter what the match mode is.  For
 instance,
 %
-\commandlinefollow{ant -Dregex={\bk}A(mnp){\bk}z -Dtext=mnp regex-group}
+\commandlinefollow{ant -Dregex="{\bk}A(mnp){\bk}z" -Dtext="mnp" regex-group}
 \begin{verbatim}
 regex=|\A(mnp)\z|    text=|mnp|
 Group  0=|mnp| at (0,3)    Group  1=|mnp| at (0,3)
 \end{verbatim}
 %
+Here we use the demp program \code{RegexGroup}:
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+%
+which shows the positions at which the grouping parentheses match.
+We go into more detail on grouping in \refsec{regex-groups}.
+
 
 \subsubsection{Word Boundaries}
 
@@ -846,7 +842,7 @@ non-word boundary, both without consuming any input.  Word boundaries
 are the usual punctuation and spaces and the begin and end of input.
 For example,
 %
-\commandlinefollow{ant -Dregex={\bk}b{\bk}w+{\bk}b -Dtext="John ran quickly." regex-find}
+\commandlinefollow{ant -Dregex="{\bk}b{\bk}w+{\bk}b" -Dtext="John ran quickly." regex-find}
 \begin{verbatim}
 Found |John| at (0,4)        Found |ran| at (5,8)    
 Found |quickly| at (9,16)
@@ -861,21 +857,23 @@ the positive lookahead and \code{(?!\codeVar{A})} the negative
 lookahead regular expression.  These match a context that either
 matches or doesn't match the specified regular expression.  They
 must be used following other regular expressions.  For instance,
-to find the instances of numbers preceding periods, we could
-use 
+to find the instances of numbers preceding periods, we could use:
 %
-\commandlinefollow{ant -Dregex="{\bk}d+(?={\bk}.)" -Dtext=12.2 regex-find}
+\commandlinefollow{ant -Dregex="{\bk}d+(?={\bk}.)" -Dtext="12.2" regex-find}
 \begin{verbatim}
 Found |12| at (0,2)
 \end{verbatim}
 %
-and to find those not preceding periods, 
+To find those not preceding periods, we could use:%
 %
-\commandlinefollow{ant -Dregex="{\bk}d+(?!{\bk}.)" -Dtext=12.2 regex-find}
+\footnote{Note the use of single quotes in order to prevent the shell from expanding the character '\code{!}' in the negative lookahead regular expression.}
+%
+\commandlinefollow{ant -Dregex='{\bk}d+(?!{\bk}.)' -Dtext="12.2" regex-find}
+%
 \begin{verbatim}
 Found |1| at (0,1)    Found |2| at (3,4)
 \end{verbatim}
-%
+
 In a real application, we would probably exclude numbers and periods
 in the negative lookahead, with a regex such as
 \code{{\bk}d+(?![{\bk}.{\bk}d])}.
@@ -894,7 +892,7 @@ thus may not contain the Kleene-star or Kleene-plus operations.
 For example, the following example finds sequences of digits that do
 not follow periods or other digits
 %
-\commandlinefollow{ant -Dregex="(?<![{\bk}.{\bk}d]){\bk}d+" -Dtext=12.32 regex-find}
+\commandlinefollow{ant -Dregex='(?<![{\bk}.{\bk}d]){\bk}d+' -Dtext="12.32" regex-find}
 \begin{verbatim}
 Found |12| at (0,2)
 \end{verbatim}
@@ -970,8 +968,11 @@ been a match or the last find did not succeed, attempting to retrieve
 groups or positions raises an illegal state exception.
 
 We provide a simple class \code{RegexGroup} to illustrate the workings
-of group extraction.  The work is done in the \code{main()} method
-by the code
+of group extraction:
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+%
+The work is done in the \code{main()} method by the code
 %
 \codeblock{RegexGroup.1}
 %
@@ -982,7 +983,7 @@ We set up the Ant target \code{regex-group} to call it, and test
 it in the usual way, using the example whose groups are numbered
 above.
 %
-\commandlinefollow{ant -Dregex=a(b(cd)(e)) -Dtext=abcde regex-group}
+\commandlinefollow{ant -Dregex="a(b(cd)(e))" -Dtext="abcde" regex-group}
 \begin{verbatim}
 regex=|a(b(cd)(e))|    text=|abcde|
 Group  0=|abcde| at (0,5)    Group  1=|bcde| at (1,5)
@@ -992,7 +993,7 @@ Group  2=|cd| at (2,4)       Group  3=|e| at (4,5)
 A more typical linguistic example would be to pull out names
 after the word \stringmention{Mr}, as in
 %
-\commandlinefollow{ant -Dregex=Mr(({\bk}s({\bk}p\{Lu\}{\bk}p\{L\}*))+) -Dtext="Mr J Smith" regex-group}
+\commandlinefollow{ant~-Dregex="Mr(({\bk}s({\bk}p\{Lu\}{\bk}p\{L\}*))+)"~-Dtext="Mr~J~Smith"~regex-group}
 \begin{verbatim}
 Group  0=|Mr J Smith| at (0,10)    Group  1=| J Smith| at (2,10)
 Group  2=| Smith| at (4,10)        Group  3=|Smith| at (5,10)
@@ -1126,7 +1127,8 @@ a runtime exception, \code{PatternSyntaxException} from the
 warning message.  For instance, here's what we see if we inadvertently
 add a right parenthesis to our regex.
 %
-\commandlinefollow{ant -Dregex=aa) -Dtext=aaab regex-find}
+\commandlinefollow{ant -Dregex="aa)" -Dtext="aaab" regex-find}
+%
 \begin{verbatim}
 Exception in thread "main" 
     java.util.regex.PatternSyntaxException:  
@@ -1138,8 +1140,11 @@ Exception in thread "main"
 
 A common usage pattern for regular expressions is to find instances of
 one pattern and replace them with another.  We provide a sample
-program \code{RegexReplace}, which illustrates replacement in
-its \code{main()} method,
+program \code{RegexReplace}:
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+%
+The \code{main()} method illustrates replacement.
 %
 \codeblock{RegexReplace.1}
 %
@@ -1151,7 +1156,9 @@ the first match.
 
 With the Ant target \code{regex-replace}, we can see this in action.
 %
-\commandlinefollow{ant -Dregex={\bk}d+ -Dreplacement=0 -Dtext="+1 (718) 290-9170" regex-replace}
+\commandlinefollow{ant -Dregex="{\bk}d+" -Dreplacement=0
+  -Dtext="+1~(718)~290-9170" regex-replace}
+
 \begin{verbatim}
 regex=|\d+|    replacement=|0|    
 text=|+1 (718) 290-9170|    result=|+0 (0) 0-0|
@@ -1167,14 +1174,21 @@ represents whatever matched group \codeVar{n} in the match.
 For instance, we can extract the version number from a jar and
 redisplay it using
 %
-\commandlinefollow{ant -Dregex=({\bk}w+){\bk}-([{\bk}d{\bk}.]+){\bk}.jar -Dreplacement="\$1.jar v\$2" -Dtext="foo-7.6.jar" regex-replace}
+\commandlinefollow{ant -Dregex="({\bk}w+){\bk}-([{\bk}d{\bk}.]+){\bk}.jar" -Dreplacement='{\bk}\$1.jar~v{\bk}\$2'
+ -Dtext="foo-7.6.jar" regex-replace}
+
 \begin{verbatim}
 regex=|(\w+)\-([\d\.]+)\.jar|    replacement=|$1.jar v$2|
 text=|foo-7.6.jar|               result=|foo.jar v7.6|
 \end{verbatim}
 %
 Note that we had to escape the literal hyphen and period characters in
-the regex.  The class \code{{\bk}w} is for word characters, which are
+the regex.  Furthermore, we had to use single quotes and escape the group
+reference \code{\$\codeVar{n}} in order to prevent the shell from interpreting
+the references.%
+\footnote{This is necessary for the Mac OS X Bash shell interpreter.}
+%
+The class \code{{\bk}w} is for word characters, which are
 alphanumerics and the underscore.  The example regexes are very
 fragile, and it is quite difficult to write more robust regexes.
 
@@ -1232,9 +1246,3 @@ the compilation flags are stored and the version read back in is an
 instance of \code{Pattern} behaving just like the original.  Often
 patterns do not need to be serialized because they're effectively
 singletons \ie{constants}.
-
-
-
-
-
-
