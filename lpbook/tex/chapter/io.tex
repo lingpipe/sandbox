@@ -23,26 +23,77 @@ structure.  To support streams of \code{char} values, Java provides
 stream from byte stream, the character encoding must be known.
 
 We are also interested in sequences of bytes that encode Java objects
-through serialization.  We use serialized objects to represent models
-and their components, such as tokenizers.  
-
+through serialization.  Serialization allows us save and reuse complex
+data objects such as language models and tokenizers that are necessary
+components of a sophisticated natural language processing system.
 
 \section{Files}
 
 Java provides the class \code{File} in the \code{java.io} package for
-representing files and directories on the local file system.
+representing the files and directories of a hierarchical file system.
 Underlyingly, an instance of \code{File} is nothing more than a string
 representing a path coupled with a convenient set of utility methods,
 some of which access the underlying file system.  
 
-\subsection{Relative vs.\ Absolute Paths}
+\subsection{File Pathnames}
+
+The \code{File} class operates over a system-independent
+view of hierarchical pathnames.
+A \techdef{pathname} consists of an optional prefix string
+followed by a sequence of zero or more path names.  
+
+For Unix-like file systems the prefix string is a forward slash (\code{/}).
+In Windows the prefix string is either a drive letter followed by
+a colon-backslash (\code{:\bk}), as in \code{C:\bk} or a 
+Universal Naming Convention (UNC) network path.
+UNC pathnames begin with two backslashes (\code{\bk\bk}) followed by the name of the
+computer or device on the network.%
+%
+\footnote{Technically, for UNC network pathnames, 
+the prefix string is comprised
+of the two backslashes (\code{\bk\bk}) and 
+the hostname is the first name in the sequence of path names.}
+%
+For example, \code{{\bk\bk}MONTAGUE} is the root of the shared files on the network
+computer named \code{MONTAGUE}.
+
+The last name in the sequence of path names is either a directory or file name.
+Of the preceding items in the sequence of path names, the first name
+in the sequence is either a directory or host name
+(in the case of Windows network path names).
+All intervening names are directory names.
 
 Files may be either relative or absolute.  An absolute path name
 provides a full description of where to find a file on the system in
 question.  A relative path picks out a file or directory starting from
-a root directory (the form of which will be operating system
-specific).  Relative paths may pick out different resources in
-different situations depending on the base directory.
+some other pathname.  By default the classes in the java.io package always
+resolve relative pathnames against the current user directory.
+This directory is named by the system property \code{user.dir},
+which is typically the directory in which the Java virtual machine was invoked.
+A consequence of this behavior is that the empty string (\code{""}) is
+a path that picks out this directory.
+
+\subsubsection{Windows vs.\ UNIX File Conventions}
+
+Due to the differing setup of the operating systems, \code{File}
+objects behave differently on different platforms.  In all cases, they
+respect the conventions of the file system on which they are run, but
+it requires some care to create portable code.
+
+The most critical difference is that in Windows, file names are not case
+sensitive.  Thus \code{FOO}, \code{foo}, and \code{Foo} will all pick
+out the same file.  
+
+The most prominent difference between the two operating systems is
+that Windows uses a backslash (\code{\bk}), whereas UNIX uses
+a forward slash (\code{/}) to separate directories and file names
+in a path.  The \code{File} class contains two fields: 
+\code{char separatorChar} and \code{String separator} where
+the String \code{File.separator} contains exactly the char
+\code{File.separatorChar} for convenience.
+For portable code, \code{File.separator} should be used when generating
+strings that will be interpreted as pathnames during subsequent processing
+on the same platform.
 
 The static method \code{File.listRoots()} provides an array of all of
 the available root directories.  We wrote a simple demo in the
@@ -56,59 +107,29 @@ Running it on my Windows machine returns
 \begin{verbatim}
 Root Directories
      C:\
-     E:\
+     D:\
+     Z:\
 \end{verbatim}
 %
-The root directories \code{C:\bk} and \code{E:\bk} correspond to my
-two drives, but they could also correspond to partitions of a single
-drive or a redundant array of independent disks (RAID), or even a
-section of memory acting like a disk drive.
+Windows platforms have a root directory for each active drive.
+The root directories \code{C:\bk} and \code{D:\bk} correspond to physical
+drives connected to my machine.  The root directory \code{Z:\bk} is a
+mapped network drive that has been mounted.
+\code{ListRoots} returns \code{Z:\bk} because it
+is syntactically indistinguishable from the pathname of a local file.
+File objects containing UNC pathnames are not returned by this method.
+The actual network storage device \code{{\bk\bk}ls-xl5de{\bk}share}
+that is mapped to drive \code{Z:\bk} is not returned by the
+\code{File.listRoots()} method.
 
-\subsubsection{Root of Relative Paths}
-
-In Java, relative paths are interpreted relative to the directory from
-which Java was called.  The same goes for Ant, except when a \code{basedir}
-attribute is set on the top-level \code{project} element.  
-
-A consequence of this behavior is that the empty string (\code{""}) is
-a path that picks out the directory from which Java was called.
-
-
-\subsection{Windows vs.\ UNIX File Conventions}
-
-Due to the differing setup of the operating systems, \code{File}
-objects behave differently on different platforms.  In all cases, they
-respect the conventions of the file system on which they are run, but
-it requires some care to create portable code or Ant tasks that involve
-files.
-
-On either Windows or UNIX, files are organized hierarchically into
-directories under one or more root directories.  Each file other
-than one of the root directories has a parent directory.  The most
-prominent difference between the two operating system flavors is
-that Windows uses a backslash (\code{\bk}), whereas UNIX uses
-a forward slash (\code{/}) to separate directories and file names
-in a path.
-
-In Unix, there is a single root directory for the file system, and
+In Unix, there is a single root directory for the file system, and 
 absolute path names will start with a forward slash (\code{/}).  
-
-In Windows, there may be more than one root directory.  Each root
-directory is written as a drive letter followed by a colon-backslash
-(\code{:\bk}), as in \code{C:\bk} for the root directory on the drive
-named \code{C}.  
-
-Windows also allows Universal Naming Convention (UNC) network paths,
-which begin with two backslashes (\code{\bk\bk}) followed by the name
-of the computer or device on the network.  For instance,
-\code{{\bk\bk}MONTAGUE} is the root of the shared files on the network
-computer named
-\code{MONTAGUE}.  Each networked Windows computer makes visible its 
-top-level shared files.  
-
-The biggest difference is that in Windows, file names are not case
-sensitive.  Thus \code{FOO}, \code{foo}, and \code{Foo} will all pick
-out the same file.  
+Running \code{list-roots} on a Mac OS X machine returns
+\begin{verbatim}
+Root Directories
+     /
+\end{verbatim}
+%
 
 
 \subsection{Constructing a \code{File}}
@@ -221,7 +242,7 @@ extension is here defined to mean the string after the final period
 (\code{.}) in the file's name.  This is purely a convention for naming
 files, which is especially useful in Windows or web browsers, where
 each extension may be associated with a program to open or view files
-with that extesnion.
+with that extension.
 
 A file extension filter takes a single string or multiple strings
 specified as an array or using variable length arguments.  The filter
@@ -253,7 +274,7 @@ filter implementing \code{FilenameFilter}.
 There are two static utility methods in the class \code{Files} in
 \code{com.aliasi.util} that break file names apart into their suffix
 and their base name.  The method \code{Files.extension(File)} returns
-the extesnion of a file, consisting of the text after the final
+the extension of a file, consisting of the text after the final
 period (\code{.}), or \code{null} if there is no period.  The method
 \code{baseName(File)} returns the base name of a file, which excludes
 the last period and extension.  For instance, a file named \code{io.tex}
@@ -355,7 +376,7 @@ The properties of a file may be modified using, for example,
 for everyone or just the owner of the file.  Similar methods
 are available for readability, writability and last modification date.
 
-Files may be ranemd using \code{renameTo(File)}, which returns \code{true}
+Files may be renamed using \code{renameTo(File)}, which returns \code{true}
 if it succeeds.  
 
 The method \code{mkdir()} creates the directory corresponding to the file.
@@ -382,7 +403,7 @@ zero.
 
 The temporariness of the file doesn't mean it'll
 be guaranteed to disappear.  It is a matter of whether you delete the
-file yourself or whether the operating system occassionally cleans out
+file yourself or whether the operating system occasionally cleans out
 the temp directory.
 
 Invoking the method \code{deleteOnExit()} on a file tells the
@@ -435,7 +456,7 @@ legal to write
 %
 \codeblock{FragmentsIo.5}
 %
-In general, you have to order the catches from more specific to mroe
+In general, you have to order the catches from more specific to more
 general.  If you try to catch the I/O exception before the file not
 found exception, the compiler will gripe that the file not found
 exception has already been caught.
@@ -490,7 +511,7 @@ the same as the number of bytes available.  For one thing, streams may
 represent terabytes of data, and \code{available()} only returns an
 integer.  More importantly, some streams may block waiting for more
 input.  For instance, the standard input (see \refsec{io-stdin-stdout} may
-block while waiting for user input and show no avaialable bytes, even
+block while waiting for user input and show no available bytes, even
 if bytes may later become available.  
 
 Because no bytes may be available without blocking, it's possible for
@@ -621,7 +642,7 @@ pass as an argument in the case of errors.
 The \code{Reader} abstract base class is to \code{char} data as
 \code{InputStream} is to \code{byte} data.  For instance,
 \code{read()} reads a single \code{char} coded as an \code{int}, with
--1 indicating the end of the streamstream.  There is a block reading
+-1 indicating the end of the stream.  There is a block reading
 method \code{read(char[])} that returns the number of values read,
 with -1 indicating end of stream, and a similar method taking a slice
 of an array of \code{char} values.  There is also a \code{skip(int)}
@@ -697,7 +718,7 @@ and \code{in} an instance of \code{InputStream} is
 %
 \codeblock{FragmentsIo.9}
 %
-The operations ellided in the middle may then use the reader to
+The operations elided in the middle may then use the reader to
 retrieve character-based data.  Instances may also be constructed from
 an instance of \code{CharSet} or with a \code{CharSetDecoder}, both of
 which are in \code{java.nio.charset}; the string-based method is just
@@ -753,7 +774,7 @@ substitutions to be carried out.
 
 Streaming access to files is handled by the subclasses
 \code{FileInputStream} and \code{FileOutputStream}, which
-extned the obvious base classes.  
+extend the obvious base classes.  
 
 \subsection{Constructing File Streams}
 
@@ -771,7 +792,7 @@ specifies whether or not to append.
 
 The constructors are declared to throw the checked exception
 \code{FileNotFoundException}, in package \code{java.io}, which is a
-subcclass of \code{IOException}.  
+subclass of \code{IOException}.  
 
 \subsection{Finalizers}
 
@@ -788,7 +809,7 @@ any case, the best the code can do is close all streams as soon as
 they are no longer needed, even in the face of exceptions.
 
 
-\subsection{File Descriptors}\label{section:io-file-descriptors}
+\subsection{File Descriptors}\label{section:id-file-descriptors}
 
 The \code{FileDescriptor} class in \code{java.io} provides an
 encapsulation of a file input or output stream.  Every time a file
@@ -1062,7 +1083,7 @@ essentially zipped archives, and are also implemented.
 
 \subsection{GZIP Input and Output Streams}\label{section:io-gzip}
 
-The GZIP input and output streams are constructed by wrapping anothr
+The GZIP input and output streams are constructed by wrapping another
 stream and optionally specifying a buffer size.  After construction,
 they behave just like any other stream. 
 
@@ -1193,7 +1214,7 @@ It uses the property \code{file.in.zip} to define the zipped archive's
 location.  The \code{mkdir} task makes a working directory in our
 build directory, which will be cleaned the next time the \code{clean}
 target is invoked.  The \code{echo} task writes text to a file with a
-specified encoding.  The ellided tasks write two more files.  We then
+specified encoding.  The elided tasks write two more files.  We then
 call the \code{zip} target, specifying the target file, the directory
 which is being zipped up, and the encoding to use for file names.
 
@@ -1211,7 +1232,7 @@ Building zip: c:\lpb\src\io\build\demo-archive.zip
 A \code{ZIPInputStream} is created, and then the archive is read entry
 by entry.  The method \code{getNextEntry()} returns the
 \code{ZIPEntry} object for the next entry to be read, or \code{null}
-if there ae no more entries.  For each entry, we read its
+if there are no more entries.  For each entry, we read its
 meta-information from the entry object and its data from the
 input stream.
 
@@ -1257,7 +1278,7 @@ getName()=hello.txt     isDirectory()=false
 Hello
 \end{verbatim}
 %
-We've moved lines together to save space and ellided the third entry
+We've moved lines together to save space and elided the third entry
 and part of the fourth.  Each division is for an entry, and the
 commands used to access the properties are printed.  For instance, the
 first entry is a directory named \code{abc/}, the second entry is an
@@ -1412,7 +1433,7 @@ of jar with extra meta-information.
 
 \subsection{Adding Resources to a Jar}
 
-Resources that will be accessed programatically are added to an
+Resources that will be accessed programmatically are added to an
 archive file just like any other file.  We provide an Ant target
 \code{example-resource-jar} which may be used to create a jar
 at the path picked out by the property \code{resource.jar}.  
@@ -1538,7 +1559,7 @@ constructors \code{PrintStream(File,String)} that writes to a file
 given a specified encoding, and
 \code{PrintStream(OutputStream,boolean,String)}, which prints to the
 specified output stream, optionally using auto-flushing, using a
-specified character encoding.  The othe methods are shorthands that
+specified character encoding.  The other methods are shorthands that
 allow some parameters to be dropped.
 
 \subsection{Exception Buffering}
@@ -1589,7 +1610,7 @@ The first \code{printf()} has the format string
 \code{"\%4s~\%4s~\%10s{\bk}n"}, which says to write the first string
 using 4 characters, the second string using 4 characters, and the
 third string using 10 characters; if they are too short, they align to
-the right, and if they are too long, they run over their alloted
+the right, and if they are too long, they run over their allotted
 space.  The second \code{printf()} uses \code{\%4d} for a four place
 integer (right aligned), and \code{\%4h} for a four-digit hexadecimal
 representation.  Note that auto-boxing (see \refsec{java-autoboxing})
@@ -1661,7 +1682,7 @@ example,
 %
 \codeblock{FragmentsIo.12}
 %
-sends anyting the program writes to the standard error stream to the
+sends anything the program writes to the standard error stream to the
 file \code{stdout.utf8.txt}, using the UTF-16BE character encoding
 to convert characters to bytes.
 
@@ -1680,7 +1701,7 @@ write an output
 %
 \codeblock{FragmentsIo.13}
 %
-If the file is non-null, an output stream for it is wrapepd
+If the file is non-null, an output stream for it is wrapped
 in a print stream, otherwise the standard output is used.
 The same can be done for input.
 
@@ -1826,13 +1847,13 @@ method to get an instance of \code{URLConnection} and calling its
 properties of the connection to be inspected and set.  
 
 Although the \code{URL} method \code{openConnection()} is declared to
-return a \code{URLConenction}, if the URL uses the HTTP protocol, the
+return a \code{URLConnection}, if the URL uses the HTTP protocol, the
 documentation specifies that a \code{HttpURLConnection} will be
 returned.  Thus the \code{URLConnection} may be cast to
 \code{HttpURLConnection} at run time.  The HTTP-based connection
 provides additional methods for manipulating HTTP headers and
 responses, such as content types, last-modified dates, character
-encodings, handling redirected web pages, fetching HTTP respose codes,
+encodings, handling redirected web pages, fetching HTTP response codes,
 managing timeouts and keep-alive times for the connection, and other
 intricacies of HTTP management.
 
@@ -1844,7 +1865,7 @@ general web services.
 \section{The Input Source Abstraction}\label{section:io-input-source}
 
 The class \code{InputSource}, in standard Java package
-\code{org.xml.sax}, provides an input abst\path{raction for XML documents}
+\code{org.xml.sax}, provides an input abstraction for XML documents
 with a rather awkward mutable implementation.  An input source
 specifies the source of its input as a URL, an input stream, or a
 reader.
@@ -1946,7 +1967,7 @@ wrapped in an object output stream and assigned to a variable of the
 interface type, \code{ObjectOutput}.  The object output is then used
 to write a file object using the \code{writeObject()} method from the
 \code{ObjectOutput} interface.  Next, a string is written using the
-\code{writeUTF(String)} method from the \code{DataOutput} intrface.
+\code{writeUTF(String)} method from the \code{DataOutput} interface.
 This does not write the string as an object, but using an efficient
 UTF-8-like encoding scheme.  Lastly, an integer is written; the
 \code{DataOutput} interface provides write methods for all of the
@@ -2021,7 +2042,7 @@ implement the \code{Serializable} interface or are declared to be
 reflection to write out each object and primitive member variable in
 turn.  
 
-The second requirement on a class for default serializabiilty is that
+The second requirement on a class for default serializabilty is that
 it must implement a public no-argument constructor.  If that is the
 case, reconstituting an object will also happen by reflection, first
 calling the no-argument constructor, then reading and setting all the
@@ -2050,7 +2071,7 @@ and the ability to create immutable objects without no-arg constructors.
 Our recommended approach to serialization is to use the serialization
 proxy pattern, which we describe in this section by example, with an
 implementation in \code{SerialProxied} defined here.  The class begins
-by declaring it implements \code{Serializable}, then definining two
+by declaring it implements \code{Serializable}, then defining two
 final member variables in a single two-argument constructor.
 %
 \codeblock{SerialProxied.1}
@@ -2130,7 +2151,7 @@ the \code{Externalizable} interface as public, so must be public here.%
 
 The read method first reads the serialized string and integer from the
 specified object input.  Then it uses these to construct a new
-\code{SerialProxied} instance based on the strnig and count and
+\code{SerialProxied} instance based on the string and count and
 assigns it to the object variable \code{mObj}.
 
 \subsubsection{The \code{readResolve()} Method}
@@ -2184,7 +2205,7 @@ To deal with line-based file formats, LingPipe provides the class
 \code{FileLineReader}, in the \code{com.aliasi.io} package.  This
 class extends \code{LineNumberReader} in \code{java.io}, which itself
 extends \code{BufferedReader}, so all the inherited methods are
-avaiable.  
+available.  
 
 For convenience, the \code{FileLineReader} class implements the
 \code{Iterable<String>} interface, with \code{iterator()} returning an
@@ -2195,7 +2216,7 @@ instance of \code{File}, the standard idiom for reading lines is
 %
 \codeblock{FragmentsIo.14}
 %
-The ellided code block will then perform some operation on each line.
+The elided code block will then perform some operation on each line.
 
 There are also static utility methods, \code{readLines()} and
 \code{readLinesArray()}, both taking a file and character encoding
@@ -2212,7 +2233,7 @@ in the \code{Files} class from the package \code{com.aliasi.util}.
 
 The \code{baseName(File)} and \code{extension(File)} methods split a
 file's name into the part before the last period (\code{.}) and the
-part after the alst period.  If there is no last period, the base name
+part after the last period.  If there is no last period, the base name
 is the entire file name.
 
 \subsubsection{File Manipulation}
@@ -2275,7 +2296,7 @@ bytes from the input stream returning them as an array.  The method
 
 The method \code{toCharArray(InputSource)} reads from an input source,
 using the reader if available, and if not, the input stream using
-either the specified character encoding or the platfrom default, and
+either the specified character encoding or the platform default, and
 barring that, reads from the input source's system identifier (URL).
 
 The method \code{toCharArray(InputStream,String)} reads an array of
@@ -2328,7 +2349,7 @@ as well as supporting the serialization proxy pattern.
 
 The abstract class \code{AbstractExternalizable} in package
 \code{com.aliasi.util} provides a base class for implementing the
-serializaion proxy pattern, as described in
+serialization proxy pattern, as described in
 \refsec{io-serialization-proxy}.  It is declared to implement
 \code{Externalizable}, and the \code{writeExternal(ObjectOutput)}
 method from that interface is declared to be abstract and thus must be
@@ -2379,7 +2400,7 @@ doesn't have access to the containing class's generic.  It is defined
 to extend the utility class \code{AbstractExternalizable}.  It also
 defines its own serial version UID.  It holds a final reference to a
 \code{NamedScoredList} for which it is the serialization proxy.  There
-is the requisit public no-argument constructor, as well as a
+is the requisite public no-argument constructor, as well as a
 constructor that sets the member variable to its argument.  The no-arg
 constructor is used for deserialization and the one-arg constructor
 for serialization.
@@ -2577,7 +2598,7 @@ o3.getClass()=class com.aliasi.spell.TrainSpellChecker
 \end{verbatim}
 %
 The output shows the result of calling the general object method
-\code{getClass()} on the varialbes of type \code{Object} read back in.
+\code{getClass()} on the variables of type \code{Object} read back in.
 This approach works in general for inspecting the class of a
 deserialized object.
 
