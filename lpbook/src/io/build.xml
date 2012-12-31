@@ -60,13 +60,22 @@
     </java>
   </target>
 
-
   <target name="file-properties"
           depends="jar">
     <java classname="com.lingpipe.book.io.FileProperties"
           classpath="${jar}"
           fork="true">
       <arg value="${file.in}"/>
+    </java>
+  </target>
+
+  <target name="filter-files"
+          depends="jar">
+    <java classname="com.lingpipe.book.io.FilterFiles"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${dir}"/>
+      <arg value="${sfx}"/>
     </java>
   </target>
 

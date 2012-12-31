@@ -89,8 +89,8 @@ that Windows uses a backslash (\code{\bk}), whereas UNIX uses
 a forward slash (\code{/}) to separate directories and file names
 in a path.  The \code{File} class contains two fields: 
 \code{char separatorChar} and \code{String separator} where
-the String \code{File.separator} contains exactly the char
-\code{File.separatorChar} for convenience.
+the latter \code{String} contains exactly the \code{char separatorChar}
+for convenience.
 For portable code, \code{File.separator} should be used when generating
 strings that will be interpreted as pathnames during subsequent processing
 on the same platform.
@@ -118,9 +118,9 @@ mapped network drive that has been mounted.
 \code{ListRoots} returns \code{Z:\bk} because it
 is syntactically indistinguishable from the pathname of a local file.
 File objects containing UNC pathnames are not returned by this method.
-The actual network storage device \code{{\bk\bk}ls-xl5de{\bk}share}
-that is mapped to drive \code{Z:\bk} is not returned by the
-\code{File.listRoots()} method.
+The name of the network storage device \code{{\bk\bk}ls-xl5de} whose
+code {share} partition is mapped to drive \code{Z:\bk}
+is not returned by the \code{File.listRoots()} method.
 
 In Unix, there is a single root directory for the file system, and 
 absolute path names will start with a forward slash (\code{/}).  
@@ -227,59 +227,47 @@ if the file's not a directory.  The files may also be listed
 by name using \code{list()}. 
 
 File listings may be filtered with an implementation of
-\code{FileFilter}, an interface in \code{java.io} specifying a single
+\code{FileFilter} which is passed in to the \code{listFiles} method.
+\code{FileFilter} is an interface in \code{java.io} specifying a single
 method \code{accept(File)} returning \code{true} if the file is
-acceptable.  An older interface, \code{FilenameFilter}, is also
-available for file name listings.
+acceptable.
 
+\subsubsection{Example Program to List and Filter the Files in a Directory}
 
-\subsubsection{LingPipe's \code{FileExtensionFilter}}\label{section:io-file-extension-filter}
-
-LingPipe provides a convenience class \code{FileExtensionFilter} in
-package \code{com.aliasi.io}, which implements Java's interface
-\code{FileFilter} based on the extension of a file.  A file's
-extension is here defined to mean the string after the final period
-(\code{.}) in the file's name.  This is purely a convention for naming
-files, which is especially useful in Windows or web browsers, where
-each extension may be associated with a program to open or view files
-with that extension.
-
-A file extension filter takes a single string or multiple strings
-specified as an array or using variable length arguments.  The filter
-will match files ending with any of the extensions.
-
-A file extension filter is configured with a flag indicating
-whether it should automatically accept directories or not, which
-is convenient for recursive descents through a file system.  The
-default for the unmarked constructors is to accept directories.
-
-File extension filters work on \code{File} objects through Java's
-\code{FileFilter} interface.  File extension filters do not implement
-the Java interface \code{FilenameFilter} because it produces an
-ambiguity when calling the methods on Java \code{File} objects
-\code{listFiles(FilenameFilter)} and \code{listFiles(FileFilter}).%
+The example program \code{FilterFiles} takes two arguments:
+the name of a directory and a file suffix. To find the total number of
+files in the directory, it invokes \code{listFiles()} with no arguments.
 %
-\footnote{In general, if there are methods \code{foo(A)} and
-  \code{foo(B)} in a class taking arguments specified by interfaces
-  \code{A} and \code{B}, and there is an object \code{x} that
-  implements both \code{A} and \code{B}, then you cannot write
-  \code{foo(x)}, because the compiler doesn't know which
-  implementation of \code{foo()} to use.}
+\codeblock{FilterFiles.1}
+% 
+To find only those files in the directory which end with the specified suffix,
+we define a class \code{SuffixFileFilter} which implements a \code{FileFilter}.
+A \code{SuffixFileFilter} object contains member variable \code{String mSfx}.
+The \code{accept} method returns \code{true} for filenames that 
+end in \code{mSfx} and \code{false} otherwise.
 %
-Although it's not usually necessary, if you need to filter files based
-on name, file extension filters implement a method
-\code{fileNameFilter()} which returns the corresponding file name
-filter implementing \code{FilenameFilter}.
-
-There are two static utility methods in the class \code{Files} in
-\code{com.aliasi.util} that break file names apart into their suffix
-and their base name.  The method \code{Files.extension(File)} returns
-the extension of a file, consisting of the text after the final
-period (\code{.}), or \code{null} if there is no period.  The method
-\code{baseName(File)} returns the base name of a file, which excludes
-the last period and extension.  For instance, a file named \code{io.tex}
-has extension \code{tex} and base name \code{io}, whereas \code{foo.bar.baz}
-has extension \code{baz} and base name \code{foo.bar}.
+\codeblock{FilterFiles.2}
+%
+To find only those files in the specified directory whose names 
+end with the specified suffix we first instantiate a 
+\code{SuffixFileFilter} and then pass that filter
+into the \code{listFiles(FileFilter filter)} method.
+%
+\codeblock{FilterFiles.3}
+%
+We use the Ant target \code{filter-files} and pass in the
+directory and suffix arguments as follows:
+%
+\commandlinefollow{ant -Ddir="/tmp" -Dsfx=".log" filter-files}
+%
+\begin{verbatim}
+directory name=|/tmp|
+12 files total
+2 files end with |.log|
+amt3.log
+swtag.log
+\end{verbatim}
+%
 
 
 \subsection{Exploring Partitions}
@@ -366,10 +354,7 @@ existed.
 
 The \code{delete()} method attempts to delete a file, returning
 \code{true} if it's successful.  If applied to a directory, \code{delete()}
-will only succeed if the directory is empty.  To get around this
-limitation, LingPipe includes a static utility method \code{removeRecursive(File)} 
-in the class \code{File} in package \code{com.aliasi.util}, which attempts
-to remove a file and all of its descendants.
+will only succeed if the directory is empty.
 
 The properties of a file may be modified using, for example,
 \code{setExecutable(boolean, boolean)} which attempts to make a file executable
@@ -622,20 +607,6 @@ try block may throw I/O exceptions.  To remove these, I/O exceptions
 may be caught in a block parallel to the \code{try} and
 \code{finally}.
 
-\subsection{LingPipe Quiet Close Utility}
-
-If a sequence of streams need to be closed, things get ugly quickly.
-LingPipe provides a utility method
-\code{Streams.closeQuietly(Closeable)} in \code{com.aliasi.util} that
-tests for null and swallows I/O exceptions for close operations.
-Basically, it's defined as follows.
-%
-\codeblock{FragmentsIo.8}
-%
-If you need to log stream closing exceptions, a similar method may
-be implemented with logging in the catch operation and a message to
-pass as an argument in the case of errors.
-
 
 \section{Readers}
 
@@ -868,13 +839,7 @@ the right curly bracket (\code{\}}).  We can infer that the file has
 \subsubsection{Copying from One File to Another}\label{section:io-copy-file}
 
 Our next sample program, \code{CopyFile}, copies the bytes in one file
-into another file and illustrates the use of array-based reads and
-writes.%
-%
-\footnote{The same functionality is available through the LingPipe
-static utility method \code{copyFile(File,File)} from the \code{Files}
-class in \code{com.aliasi.util}.}
-%
+into another file and illustrates the use of array-based reads and writes.
 After reading in the command-line arguments, the work is carried out by
 %
 \codeblock{CopyFile.1}
@@ -983,11 +948,7 @@ the file input or output streams.
 By this same line of reasoning, if a byte stream is converted to a
 character stream or vice versa, buffering is not required at both
 places.  Usually, the buffer is placed later in the chain, around the
-reader or writer, as in the following examples.%
-%
-\footnote{We use UTF-8 encoding so frequently that LingPipe provides the
-  static final string constant \code{Strings.UTF8} to use to specify
-  UTF-8 encodings.}
+reader or writer, as in the following examples.
 %
 \codeblock{FragmentsIo.1}
 %
@@ -2192,465 +2153,5 @@ we like here; it's only checked for consistency during serialization.
 
 We also need to insert the version ID constant into the nested static
 class \code{SerialProxied.Serializer}.
-
-
-\section{Lingpipe I/O Utilities}
-
-LingPipe provides a number of utilities for input and output,
-and we discuss the general-purpose ones in this section.  
-
-\subsection{The \code{FileLineReader} Class}\label{section:io-file-line-reader}
-
-To deal with line-based file formats, LingPipe provides the class
-\code{FileLineReader}, in the \code{com.aliasi.io} package.  This
-class extends \code{LineNumberReader} in \code{java.io}, which itself
-extends \code{BufferedReader}, so all the inherited methods are
-available.  
-
-For convenience, the \code{FileLineReader} class implements the
-\code{Iterable<String>} interface, with \code{iterator()} returning an
-\code{Iterator<String>} that iterates over the lines produced by the
-\code{readLine()} method inherited from \code{BufferedReader}.  Being
-iterable enables for-loop syntax, so that if \code{file} is an
-instance of \code{File}, the standard idiom for reading lines is
-%
-\codeblock{FragmentsIo.14}
-%
-The elided code block will then perform some operation on each line.
-
-There are also static utility methods, \code{readLines()} and
-\code{readLinesArray()}, both taking a file and character encoding
-name like the constructor, to read all of the lines of a file into
-either an array of type \code{String[]} or a list of type
-\code{List<String>}.
-
-\subsection{The \code{Files} Utility Class}
-
-Some standard file operations are implemented as static methods
-in the \code{Files} class from the package \code{com.aliasi.util}.
-
-\subsubsection{File Name Parsing}
-
-The \code{baseName(File)} and \code{extension(File)} methods split a
-file's name into the part before the last period (\code{.}) and the
-part after the last period.  If there is no last period, the base name
-is the entire file name.
-
-\subsubsection{File Manipulation}
-
-The method \code{removeDescendants(File)} removes all the files
-contained in the specified directory recursively.  The
-\code{removeRecursive(File)} method removes the descendants of a file
-and the file itself.  The \code{copy(File,File)} method
-copies the content of one file into another.
-
-\subsubsection{Bulk Reads and Writes}
-
-There are methods to read bytes, characters, or a string from a file,
-and corresponding methods to write.  The methods all pass on any I/O
-exceptions they encounter.
-
-The method \code{readBytesFromFile(File)} returns the array of bytes
-corresponding to the file's contents, whereas
-\code{writeBytesToFile(byte[],File)} writes the specified bytes to the
-specified file.
-
-The methods \code{readCharsFromFile(File,String)} and
-\code{writeCharsToFile(char[],File,String)} do the same thing for
-\code{char} values.  These methods both require the character encoding
-to be specified as the final argument.  There are corresponding
-methods for strings, \code{readFromFile(File,String)} and
-\code{writeStringToFile(String,File,String)}.  Together, we can
-use these methods to transcode from one encoding to another,
-%
-\codeblock{FragmentsIo.15}
-
-
-\subsection{The \code{Streams} Utility Class}
-
-The class \code{Streams} in the package \code{com.aliasi.io} provides
-static utility methods for dealing with byte and character streams.  
-
-\subsubsection{Quiet Close Methods}
-
-The method \code{closeQuietly(Closeable)} closes the specified
-closeable object, catching and ignoring any I/O exceptions raised
-by the close operation.  If the specified object is null, the
-quiet close method returns.
-
-The method \code{closeInputSource(InputSource)} closes the byte
-and character streams of the specified input source quietly, as
-if by the \code{closeQuietly()} method.
-
-\subsubsection{Bulk Reads}
-
-There are utility bulk read methods that buffer inputs and return them
-as an array.  Special utility methods are needed because the amount of
-data available or read from a stream is unpredictable.  Bulk writing,
-on the other hand, is built into output streams and writers
-themselves.
-
-The bulk read method \code{toByteArray(InputStream)} reads all of the
-bytes from the input stream returning them as an array.  The method
-\code{toCharArray(Reader)} does the same for \code{char} values.
-
-The method \code{toCharArray(InputSource)} reads from an input source,
-using the reader if available, and if not, the input stream using
-either the specified character encoding or the platform default, and
-barring that, reads from the input source's system identifier (URL).
-
-The method \code{toCharArray(InputStream,String)} reads an array of
-\code{char} values by reading bytes from the specified input stream
-and converts them to \code{char} values using the specified character
-encoding. 
-
-\subsubsection{Copying Streams}
-
-The method \code{copy(InputStream,OutputStream)} reads bytes from the
-specified input stream until the end of stream, writing what it finds
-to the output stream.  The \code{copy(Reader,Writer)} does the same
-thing for \code{char} value streams.
-
-\subsection{The \code{Compilable} Interface}\label{section:io-compilable}
-
-LingPipe defines the interface \code{Compilable} in the package
-\code{com.aliasi.util} for classes that define a compiled
-representation.  
-
-The \code{Compilable} interface has a single method,
-\code{compileTo(ObjectOutput)}, used for compiling an object to an
-object output stream.  Like all I/O interface methods, it's defined to
-throw an \code{IOException}.  The method is used just like the
-\code{writeExternal(ObjectOutput)} method from Java's
-\code{Externalizable} interface.  It is assumed that only whatever is
-written, deserialization will produce a single object that is the
-compiled form of the object that was compiled.
-
-Many of LingPipe's statistical models, such as language models,
-classifiers and HMMs have implementations that allow training data to
-be added incrementally.  The classes implementing these models are
-often declared to be both \code{Serializable} and \code{Compilable}.
-If they are serializable, the standard serialization followed by
-deserialization typically produces an object in the same state and
-of the same class as the one serialized.  If a model's compilable,
-a compilation followed by deserialization typically produces an
-object implementing the same model more efficiently, but without the
-ability to be updated with new training data. 
-
-
-\subsection{The \code{AbstractExternalizable} Class}\label{section:io-abstract-externalizable}
-
-LingPipe provides a dual-purpose class \code{AbstractExternalizable}
-in the package \code{com.aliasi.util}.  This class provides static
-utility methods for dealing with serializable and compilable objects,
-as well as supporting the serialization proxy pattern.
-
-\subsubsection{Base Class for Serialization Proxies}
-
-The abstract class \code{AbstractExternalizable} in package
-\code{com.aliasi.util} provides a base class for implementing the
-serialization proxy pattern, as described in
-\refsec{io-serialization-proxy}.  It is declared to implement
-\code{Externalizable}, and the \code{writeExternal(ObjectOutput)}
-method from that interface is declared to be abstract and thus must be
-implemented by a concrete subclass.  The method
-\code{readExternal(ObjectInput)} is implemented by
-\code{AbstractExternalizable}, as is the serialization method
-\code{readResolve()}.  The other abstract method that must be
-implemented is \code{read(ObjectInput)}, which returns an object.
-This method is called by \code{readExternal()} and the object it
-returns stored to be used as the return value for
-\code{readResolve()}.
-
-To see how to use this class as the base class for serialization
-proxies, we provide an example that parallels the one we implemented
-directly in \refsec{io-serialization-proxy}.  This time, we use
-a nested inner class that extends \code{AbstractExternalizable}.
-
-The class is constructed as follows.
-%
-\codeblock{NamedScoredList.1}
-%
-Note that the class is defined with a generic and declared to
-implement Java's \code{Serializable} interface.  Also note the
-explicit declaration of the serial version UID.  The constructor
-stores a copy of the input list, the string name, and the double
-score, as well as a new object which is not serializable itself.
-
-The two features making this class immutable also prevent it from
-being serializable.  First, there is no zero-argument constructor.
-Second, the member variables are declared to be final.  Adding a
-public zero-arg constructor and removing the final declarations would
-allow the class to be serialized in place.
-
-Instead, we use the \code{writeReplace()} method as before to
-return the object's serialization proxy, which is also declared
-to be generic and provided with the object itself through \code{this}.
-%
-\codeblock{NamedScoredList.2}
-
-The class \code{Externalizer} is declared as a nested static class
-as follows.
-%
-\codeblock{NamedScoredList.3}
-%
-Note that the generic argument is different; they can't be the same
-because this is a nested static class, not an inner class, so it
-doesn't have access to the containing class's generic.  It is defined
-to extend the utility class \code{AbstractExternalizable}.  It also
-defines its own serial version UID.  It holds a final reference to a
-\code{NamedScoredList} for which it is the serialization proxy.  There
-is the requisite public no-argument constructor, as well as a
-constructor that sets the member variable to its argument.  The no-arg
-constructor is used for deserialization and the one-arg constructor
-for serialization.
-
-The helper class requires two abstract methods to be overridden.
-The first is for writing the object, and gets called as soon as
-\code{writeReplace()} creates the proxy.
-%
-\codeblock{NamedScoredList.4}
-%
-This uses the contained instance \code{mAe} to access the data that
-needs to be written.  Here, it's an object, a string, and a double,
-each with their own write methods.  The class is defined to throw
-an I/O exception, and will almost always require this declaration
-because the write methods throw I/O exceptions.
-
-The second overridden method is for reading.  This just reverses
-the writing process, returning an object.
-%
-\codeblock{NamedScoredList.5}
-%
-We read in the list, using the generic on the class itself
-for casting purposes.  We then read in the string and double
-with the matching read methods on object inputs.  Finally, we
-return a new named scored list with the same generic.  This
-object is what's finally returned on deserialization.
-
-The \code{main()} method for the demo just creates an object
-and then serializes and deserializes it using the utility method.
-%
-\codeblock{NamedScoredList.6}
-
-This may be run using the Ant target \code{ae-demo}.
-%
-\commandlinefollow{ant ae-demo}
-\begin{verbatim}
-p1=NSL([a, b, c], foo, 1.4)     p2=NSL([a, b, c], foo, 1.4)
-\end{verbatim}
-
-\subsubsection{Serializing Singletons}
-
-This class makes it particularly easy to implement serialization for a
-singleton.  We provide an example in \code{SerializedSingleton}.  Following
-the usual singleton pattern, we have a private constructor and a public
-static constant,
-%
-\codeblock{SerializedSingleton.1}
-%
-We then have the usual definition of \code{writeReplace()}, and a
-particularly simple implementation of the serialization proxy itself,
-%
-\codeblock{SerializedSingleton.2}
-%
-If the nested static class had been declared public, we wouldn't have
-needed to define the public no-argument constructor.  The version ID
-is optional, but highly recommended for backward compatibility.
-
-To test that it works, we have a simple \code{main()} method,
-%
-\codeblock{SerializedSingleton.3}
-%
-which serializes and deserializes the instance using the 
-LingPipe utility in \code{AbstractExternalizable}, then tests
-for reference equality.
-
-We can run this code using the Ant target \code{serialized-singleton},
-which takes no arguments,
-%
-\commandlinefollow{ant serialized-singleton}
-\begin{verbatim}
-same=true
-\end{verbatim}
-
-\subsubsection{Serialization Proxy Utilities}
-
-The \code{AbstractExternalizable} class defines a number of static
-utility methods supporting serialization of arrays.  These methods
-write the number of members then each member of the array in turn.
-For instance, \code{writeInts(int[],ObjectOutput)} writes an array of
-integers to an object output and \code{readInts(ObjectInput)} reads
-and returns an integer array that was serialized using the
-\code{writeInts()} method.  There are similar methods for \code{double},
-\code{float}, and \code{String}.
-
-The method \code{compileOrSerialize(Object,ObjectOutput)} will attempt
-to compile the specified object if it is compilable, otherwise it
-will try to serialize it to the specified object output.  It will throw
-a \code{NotSerializableException} if the object is neither serializable
-nor compilable.  The method \code{serializeOrCompile(Object,ObjectOutput)}
-tries the operations in the opposite order, compiling only if the
-object is nor serializable.
-
-\subsubsection{General Serialization Utilities}
-
-The \code{AbstractExternalizable} class defines a number of
-general-purpose methods for supporting Java's serialization and 
-LingPipe's compilation.
-
-There are in-memory versions of compilation and serialization.  The
-method \code{compile(Compilable)} returns the result of compiling then
-deserializing an object. The method
-\code{serializeDeserialize(Serializable)} serializes and deserializes
-an object in memory.  These methods are useful for testing
-serialization and compilation.  These operations are carried out in
-memory, which requires enough capacity to store the original object, a
-byte array holding the serialized or compiled bytes, and the
-deserialized or compiled object itself.  The same operation may be
-performed with a temporary file in much less space because the
-original object may be garbage collected before deserialization and
-the bytes reside out of main memory.
-
-There are also utility methods for serializing or compiling to a file.
-The method \code{serializeTo(Serializable,File)} writes
-a serialized form of the object to the specified file.  The 
-\code{compileTo(Compilable,File)} does the same thing for compilable
-objects.
-
-To read serialized or compiled objects back in, the method
-\code{readObject(File)} reads a serialized object from a file and
-returns it.
-
-The method \code{readResourceObject(String)} reads an object from a
-resource with the specified absolute path name (see
-\refsec{io-resource-input} for information on resources including
-how to create them and put them on the classpath).  This method simply
-creates an input stream from the resource then wraps it in an object
-input stream for reading.  The
-\code{readResourceObject(Class<?>,String)} method reads a (possibly
-relative) resource relative to the specified class.  
-
-
-\subsection{Demos of Serialization and Compilation}
-
-In the demo classes \code{CompilationDemo} and
-\code{SerializationDemo}, we provide examples of how to serialize
-and deserialize a class.  Both classes are based on a simple
-\code{main()} command-line method and both use the same object
-to serialize and compile.
-
-
-\subsubsection{Object Construction}
-
-Suppose we have an instance of a class that's compilable, like
-\code{TrainSpellChecker} in LingPipe's \code{spell} package.  We will
-assume it is constructed using an appropriate language model \code{lm}
-and weighted edit distance \code{dist}, using the following code at
-the beginning of the main method of both demo classes.
-%
-\codeblock{CompilationDemo.0}
-%
-This code also provides it with a training example so it's not completely
-empty later (not that being empty would cause problems).
-
-\subsubsection{Serialization Demo}
-
-To serialize a file directly, we can use the following.
-%
-\codeblock{SerializationDemo.1}
-%
-We first create a file input stream, then wrap it in an object output
-stream, in both cases assigning to more general variables.  We then
-call \code{writeObject()} on the object output with the object to be
-serialized as an argument.  This is how all serialization works in
-Java at base.  If the object being passed in is not serializable, an
-\code{NotSerializableException} will be raised.  We then close the
-object output stream to ensure all bytes are written.  
-
-The complementary set of calls reads the object back in.  We create an
-input stream using the same file, wrap it in an object input, then
-call the \code{readObject()} method on the object input.  Finally, we
-cast to the appropriate class, \code{TrainSpellChecker}, and then
-close the object input.
-
-The same thing can be accomplished with the static utility methods
-\code{serializeTo()} and \code{readObject()}, both in
-\code{AbstractExternalizable}.
-%
-\codeblock{SerializationDemo.2}
-
-It is also possible to serialize and deserialize in memory, which
-is particularly useful for testing purposes.  The static utility
-method \code{serializeDeserialize()} carries this out, as follows.
-%
-\codeblock{SerializationDemo.3}
-
-We can run the demo using the Ant target \code{serialize-demo},
-as follows.
-%
-\commandlinefollow{ant serialize-demo}
-\begin{verbatim}
-tsc.getClass()=class com.aliasi.spell.TrainSpellChecker
-o1.getClass()=class com.aliasi.spell.TrainSpellChecker
-o2.getClass()=class com.aliasi.spell.TrainSpellChecker
-o3.getClass()=class com.aliasi.spell.TrainSpellChecker
-\end{verbatim}
-%
-The output shows the result of calling the general object method
-\code{getClass()} on the variables of type \code{Object} read back in.
-This approach works in general for inspecting the class of a
-deserialized object.
-
-
-\subsubsection{Compilation Demo}
-
-Assuming we have constructed a trained spell checker in variable
-\code{tsc} as shown above, we can use the following code to compile
-it.
-%
-\codeblock{CompilationDemo.1}
-%
-This involves creating an object output stream wrapping a file output
-stream, then calling \code{compileTo()} on the object being compiled
-with the object output as argument.  Make sure to close the stream so
-that everything's written.  
-
-After creating the object, we reverse the process by creating an
-object input that wraps a file input stream.  We then use the
-\code{readObject()} method on the object input to read an object,
-which we assign to variable \code{o1} of type \code{Object}.  We then
-cast the object to a compiled spell checker and make sure to close
-the object input.
-
-Exactly the same pair of operations can be carried out using the
-static utility methods \code{compileTo()} and \code{readObject()}
-with the following code.
-%
-\codeblock{CompilationDemo.2}
-%
-If you look at the implementation of these methods, they closely
-match what was written above, with the addition of buffering and
-more robust closes in finally blocks.
-
-If you don't need an on-disk representation, the single method
-\code{compile()} does the same thing in memory, though with more
-robust closes.
-%
-\codeblock{CompilationDemo.3}
-%
-
-If we run the demo, using the \code{compile-demo} Ant target, we see
-that the objects read back in are compiled spell checkers in each
-case.
-%
-\commandlinefollow{ant compile-demo}
-\begin{verbatim}
-tsc.getClass()=class com.aliasi.spell.TrainSpellChecker
-o1.getClass()=class com.aliasi.spell.CompiledSpellChecker
-o2.getClass()=class com.aliasi.spell.CompiledSpellChecker
-o3.getClass()=class com.aliasi.spell.CompiledSpellChecker
-\end{verbatim}
-
 
 
