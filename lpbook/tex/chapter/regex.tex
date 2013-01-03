@@ -16,7 +16,7 @@ The example programs for this chapter are in the code directory:
 Despite the rich functionality of regexes, Java's
 \code{java.util.regex} package contains only two classes,
 \code{Pattern} and \code{Matcher}.  An instance of \code{Pattern}
-provides an immutable representation of a regular expression.  An
+provides an immutable representation of a regular expression. An
 instance of \code{Matcher} represents the state of the matching of a
 regular expression against a string.
 
@@ -113,6 +113,25 @@ succeeding with the span (2,4).  Next, it starts looking at position
 4, but there is no substring starting on or after position 4 that
 matches \stringmention{aa}.
 
+
+\section{Empty Regex}\label{section:regex-empty}
+
+The simplest regular expression is the empty regular expression.  It
+only matches the empty string.  For example, the expression
+\code{Pattern.compile("").matcher("").matches()} evaluates to
+\code{true}.  Using our test code from the command-line proves tricky,
+because we have to escape the quotes if we want to assign environment
+variables, as in 
+%
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext={\bk}"{\bk}"  regex-match}
+\begin{verbatim}
+Regex=||    Text=||    Matches=true
+\end{verbatim}
+%
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext="a" regex-match}
+\begin{verbatim}
+Regex=||    Text=|a|    Matches=false
+\end{verbatim}
 
 \section{Character Regexes}
 
@@ -231,11 +250,28 @@ a single backslash.
 
 Regular expressions provide a range of built-in character classes
 based on ASCII or Unicode, as well as the ability to define new
-classes.  Each character class matches a set of characters.  The
-reason to use classes rather than disjunctions is that they have
+classes.  Each character class matches a set of characters.
 
+A familiar example of a character class is the \code{digits} class,
+which comprises the ASCII digits \{0,1,2,3,4,5,6,7,8,9\}.
+In Java this class can be specified either explicitly as \code{[0-9]}
+or by the pre-defined character class \code{{\bk}d}.
+We strongly recommend the use of the predefined classes whenever possible.
+They make your code easier to read and eliminate errors introduced by 
+incomplete or malformed definitions.
 
-\subsection{WildCards}\label{section:regex-wildcard}
+Application-specific character classes are specified as a set of
+character alternatives enclosed in brackets.
+For example, we can define a character class that matches both upper
+and lower case instances of the letter A as: \code{[aA]}.
+This syntax is confusing in that when enclosed by brackets, 
+the interpretation of the sequence \code{aA} is the 
+the set resulting from the union of these two atomic characters,
+which will match either \code{a} or \code{A} but not \code{aA},
+whereas without the brackets, the sequence \code{aA} represents
+their concatenation.
+
+\subsection{The WildCard as the Universal Character Class}\label{section:regex-wildcard}
 
 A singe period (\code{.}) is a regular expression that matches any
 single character.  We may think of it as the universal character class.
@@ -404,35 +440,11 @@ not equivalent to \code{[\^{}abc]}, but rather is equivalent to
 \section{Concatenation}
 
 As we saw in our early examples, characters may be concatenated
-together to form a regular expression that matches the string.  This
-is not the same operation as character classes, which confusingly
-uses the same notation.  
-
-\subsection{Empty Regex}
+together to form a regular expression that matches the string.
 
 With a list of characters (or strings) being concatenated, the
-boundary case is the concatenation of an empty list, which is why we
-start this section with a discussion of the empty regex.
-
-The simplest regular expression is the empty regular expression.  It
-only matches the empty string.  For example, the expression
-\code{Pattern.compile("").matcher("").matches()} evaluates to
-\code{true}.  Using our test code from the command-line proves tricky,
-because we have to escape the quotes if we want to assign environment
-variables, as in 
-%
-\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext={\bk}"{\bk}"  regex-match}
-\begin{verbatim}
-Regex=||    Text=||    Matches=true
-\end{verbatim}
-%
-\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext="a" regex-match}
-\begin{verbatim}
-Regex=||    Text=|a|    Matches=false
-\end{verbatim}
-
-
-\subsection{Concatenation}
+boundary case is the concatenation of an empty list
+(see \refsec{regex-empty}).
 
 Two regular expressions \codeVar{x} and \codeVar{y} may be
 concatenated to produce a compound regular expression \codeVar{xy}.
@@ -1035,7 +1047,87 @@ If the match index is out of bounds for the number of groups, matching
 fails without raising an exception.
 
 
-\section{Pattern Match Flags}\label{section:pattern-modes}
+\section{Find-and-Replace Operations}\label{section:regex-replace}
+
+A common usage pattern for regular expressions is to find instances of
+one pattern and replace them with another.  We provide a sample
+program \code{RegexReplace}:
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+%
+The \code{main()} method illustrates replacement.
+%
+\codeblock{RegexReplace.1}
+%
+The pattern and matcher are created as usual.  Then, we create
+a string by replacing all the matches of the pattern in the text
+provided to the matcher with the specified replacement.  We could
+also use \code{replaceFirst()} to return the result of only replacing
+the first match.
+
+With the Ant target \code{regex-replace}, we can see this in action.
+%
+\commandlinefollow{ant -Dregex="{\bk}d+" -Dreplacement=0
+  -Dtext="+1~(718)~290-9170" regex-replace}
+
+\begin{verbatim}
+regex=|\d+|    replacement=|0|    
+text=|+1 (718) 290-9170|    result=|+0 (0) 0-0|
+\end{verbatim}
+%
+We've replaced every sequence of digits with a zero.  
+
+A nice feature of replace operations is that they may reference
+pieces of the match by group number and use them in the replacement.
+An occurrence of \code{\$\codeVar{n}} in the replacement string
+represents whatever matched group \codeVar{n} in the match.
+
+For instance, we can extract the version number from a jar and
+redisplay it using
+%
+\commandlinefollow{ant -Dregex="({\bk}w+){\bk}-([{\bk}d{\bk}.]+){\bk}.jar" -Dreplacement='{\bk}\$1.jar~v{\bk}\$2'
+ -Dtext="foo-7.6.jar" regex-replace}
+
+\begin{verbatim}
+regex=|(\w+)\-([\d\.]+)\.jar|    replacement=|$1.jar v$2|
+text=|foo-7.6.jar|               result=|foo.jar v7.6|
+\end{verbatim}
+%
+Note that we had to escape the literal hyphen and period characters in
+the regex.  Furthermore, we had to use single quotes and escape the group
+reference \code{\$\codeVar{n}} in order to prevent the shell from interpreting
+the references.%
+\footnote{This is necessary for the Mac OS X Bash shell interpreter.}
+%
+The class \code{{\bk}w} is for word characters, which are
+alphanumerics and the underscore.  The example regexes are very
+fragile, and it is quite difficult to write more robust regexes.
+
+\subsubsection{How the \code{Matcher.replaceAll} method works }\label{section:regex-replaceAll}
+
+The following example comes from the Java SE 7 javadoc for the
+\code{Matcher.appendReplacement} method:
+%
+\codeblock{RegexFragments.2}
+%
+This code writes \code{one dog two dogs in the yard} to the standard-output stream.
+
+The \code{Matcher.replaceAll} method uses this same sequence of calls to
+the methods \code{find}, \code{appendReplacement}, and \code{appendTail}.
+As in the above example, a \code{StringBuffer} is used to store 
+the intermediate results.
+\code{StringBuffer} objects are thread-safe and therefore this operations
+incurs a certain amount of processing overhead due to synchronization.
+
+\section{Pattern Compilation}\label{section:pattern-compile}
+
+\code{Pattern} objects are immutable and therefore thread-safe.
+Since all of the state of the matching of a regular expression
+against a string resides in the \code{Matcher} object,
+many matchers can and should share a compiled \code{Pattern}
+since this reuse has the potential to improve program efficiency.
+
+\subsection{Pattern Match Flags}\label{section:pattern-modes}
 
 There are a set of flags, all represented as static integer constants
 in \code{Pattern}, which may be supplied to the pattern compiler
@@ -1119,7 +1211,7 @@ compatibility decomposition on the input (see
 \refsec{unicode-normalization-forms}).
 
 
-\section{Pattern Construction Exceptions}
+\subsection{Pattern Construction Exceptions}
 
 Attempting to compile a regular expression with a syntax error raises
 a runtime exception, \code{PatternSyntaxException} from the
@@ -1135,89 +1227,6 @@ Exception in thread "main"
     Unmatched closing ')' near index 1
 \end{verbatim}
 
-
-\section{Find-and-Replace Operations}\label{section:regex-replace}
-
-A common usage pattern for regular expressions is to find instances of
-one pattern and replace them with another.  We provide a sample
-program \code{RegexReplace}:
-%
-\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
-%
-The \code{main()} method illustrates replacement.
-%
-\codeblock{RegexReplace.1}
-%
-The pattern and matcher are created as usual.  Then, we create
-a string by replacing all the matches of the pattern in the text
-provided to the matcher with the specified replacement.  We could
-also use \code{replaceFirst()} to return the result of only replacing
-the first match.
-
-With the Ant target \code{regex-replace}, we can see this in action.
-%
-\commandlinefollow{ant -Dregex="{\bk}d+" -Dreplacement=0
-  -Dtext="+1~(718)~290-9170" regex-replace}
-
-\begin{verbatim}
-regex=|\d+|    replacement=|0|    
-text=|+1 (718) 290-9170|    result=|+0 (0) 0-0|
-\end{verbatim}
-%
-We've replaced every sequence of digits with a zero.  
-
-A nice feature of replace operations is that they may reference
-pieces of the match by group number and use them in the replacement.
-An occurrence of \code{\$\codeVar{n}} in the replacement string
-represents whatever matched group \codeVar{n} in the match.
-
-For instance, we can extract the version number from a jar and
-redisplay it using
-%
-\commandlinefollow{ant -Dregex="({\bk}w+){\bk}-([{\bk}d{\bk}.]+){\bk}.jar" -Dreplacement='{\bk}\$1.jar~v{\bk}\$2'
- -Dtext="foo-7.6.jar" regex-replace}
-
-\begin{verbatim}
-regex=|(\w+)\-([\d\.]+)\.jar|    replacement=|$1.jar v$2|
-text=|foo-7.6.jar|               result=|foo.jar v7.6|
-\end{verbatim}
-%
-Note that we had to escape the literal hyphen and period characters in
-the regex.  Furthermore, we had to use single quotes and escape the group
-reference \code{\$\codeVar{n}} in order to prevent the shell from interpreting
-the references.%
-\footnote{This is necessary for the Mac OS X Bash shell interpreter.}
-%
-The class \code{{\bk}w} is for word characters, which are
-alphanumerics and the underscore.  The example regexes are very
-fragile, and it is quite difficult to write more robust regexes.
-
-\section{String Regex Utilities}
-
-There are many utility methods in the \code{String} class that
-are based on regular expressions.  
-
-The method \code{matches(String)} returns \code{true} if the string
-matches the regex specified by the argument.  Given a regex \code{r},
-\code{matches(r)} is just shorthand for
-\code{Pattern.compile(r).matcher(this).matches()}.
-
-The method \code{replaceAll(String,String)}, which takes a string
-representing a regex and a replacement string, returns the result
-of replacing all the substrings in the string matching the regex
-with the replacement string.  Given a regex \code{r} and replacement
-\code{s}, \code{replaceAll(r,s)} is just shorthand for
-\code{Pattern.compile(r).matcher(this).replaceAll(s)}.  As such,
-the replacement may contain references to match groups.  There is also
-a corresponding \code{replaceFirst()} method.
-
-One of the more useful utilities is
-\code{split(String)}, which splits a string around the matches of
-a regular expression, returning an array as a result.  For instance,
-\code{"foo12bar177baz\".split({\bk}d+)} splits on digits, returning
-the string array \code{\{~"foo", "bar", "baz"~\}}.  Note that the
-matching numbers are removed.
-
 \section{Thread Safety, Serialization, and Reuse}
 
 \subsection{Thread Safety}
@@ -1227,18 +1236,6 @@ them concurrently in multiple threads.  Because instances of
 \code{Matcher} contain the state of the current match, it is not
 thread safe to use matchers concurrently without synchronization.
 
-\subsection{Reusing Matchers}
-
-Matchers may be reused.  The method \code{reset()} may be called on a
-matcher to reset it to behave as if it had just been constructed with
-its given pattern and character sequence.  The character sequence may
-be changed.  The pattern may also be changed on the fly, without
-changing the current position.  This may be useful if you alternately
-match first one pattern then another.  Although matchers may be
-reused, the typical usage pattern is to construct them for a text, use
-them once, then discard them.
-
-
 \subsection{Serialization}
 
 Patterns are serializable.  The string representing the pattern and
@@ -1246,3 +1243,73 @@ the compilation flags are stored and the version read back in is an
 instance of \code{Pattern} behaving just like the original.  Often
 patterns do not need to be serialized because they're effectively
 singletons \ie{constants}.
+
+\subsection{Reusing Matchers}
+
+Matchers may be reused, although the typical usage pattern
+is to construct them for a text, use them once, then discard them.
+When reusing matchers, the \code{reset()} method is called on a
+matcher to reset it to behave as if it had just been constructed with
+its given pattern and character sequence.
+The character sequence may
+be changed.  The pattern may also be changed on the fly, without
+changing the current position.  This may be useful if you alternately
+match first one pattern then another.
+
+\section{String Methods that Depend on Regexes}
+
+There are many utility methods in the \code{String} class that
+are based on regular expressions.  
+
+The method \code{matches(String)} returns \code{true} if the string
+matches the regex specified by the argument.  Given a regex \code{r},
+\code{matches(r)} is just shorthand for
+\code{Pattern.compile(r).matcher(this).matches()}.
+
+The methods \code{replaceAll(String,String)} takes
+two arguments:  a string representing a regex and a replacement string
+and returns the result
+of replacing all the substrings in the string matching the regex
+with the replacement string.
+Given a regex \code{r} and replacement
+\code{s}, \code{replaceAll(r,s)} is just shorthand for
+\code{Pattern.compile(r).matcher(this).replaceAll(s)}. As such,
+the replacement may contain references to match groups.  There is also
+a corresponding \code{replaceFirst()} method which is equivalent to
+\code{Pattern.compile(r).matcher(this).replaceFirst(s)}.
+
+One of the more useful utilities is
+\code{split(String)}, which splits a string around the matches of
+a regular expression, returning an array as a result.  For instance,
+\code{"foo12bar177baz\".split({\bk}d+)} splits on digits, returning
+the string array \code{\{~"foo", "bar", "baz"~\}}.  Note that the
+matching numbers are removed.
+Given a String regex \code{r},
+the call \code{split(r)} is equivalent to calling 
+\code{Pattern.compile(r).split(this,0)}.
+
+\subsection{Performance Considerations}
+
+The above \code{String} class utility methods all result in
+calls to the \code{Regex} class which first create and compile
+a new \code{Pattern} object as well as a \code{Matcher} object.
+As mentioned in \refsec{pattern-compile}, sharing and reuse of 
+a compiled \code{Pattern} object has the potential to
+improve program efficiency.
+
+This is most clearly seen in the case where we need to write
+a program to process a text file on a line-by-line basis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
