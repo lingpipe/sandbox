@@ -24,6 +24,7 @@
       <compilerarg value="-Xlint:all"/>
       <classpath refid="classpath"/>
       <src path="src/"/>
+      <exclude name="**/*Fragments.java"/>
     </javac>
     <jar destfile="${jar}">
       <fileset dir="build/classes"
@@ -83,5 +84,6 @@
                    regex-find,
                    regex-group,
                    regex-replace"/>
+
 
 </project>
