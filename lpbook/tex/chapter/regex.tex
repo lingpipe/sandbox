@@ -1106,7 +1106,7 @@ fragile, and it is quite difficult to write more robust regexes.
 \subsubsection{How the \code{Matcher.replaceAll} method works }\label{section:regex-replaceAll}
 
 The following example comes from the Java SE 7 javadoc for the
-\code{Matcher.appendReplacement} method:
+\code{Matcher.appendReplacement} method
 %
 \codeblock{RegexFragments.2}
 %
@@ -1256,49 +1256,75 @@ be changed.  The pattern may also be changed on the fly, without
 changing the current position.  This may be useful if you alternately
 match first one pattern then another.
 
-\section{String Methods that Depend on Regexes}
+\section{String Methods that Use Regexes}
 
 There are many utility methods in the \code{String} class that
-are based on regular expressions.  
+are based on regular expressions.   
 
 The method \code{matches(String)} returns \code{true} if the string
-matches the regex specified by the argument.  Given a regex \code{r},
-\code{matches(r)} is just shorthand for
-\code{Pattern.compile(r).matcher(this).matches()}.
+matches the regex specified by the argument. 
+The call \code{str.matches(regex)} yields exactly the same result as the expression
+\code{Pattern.matches(regex, str).}
 
-The methods \code{replaceAll(String,String)} takes
-two arguments:  a string representing a regex and a replacement string
-and returns the result
+The method \code{replaceAll(String,String)} takes as arguments
+a string representing a regex and a replacement string.
+It returns the result
 of replacing all the substrings in the string matching the regex
 with the replacement string.
-Given a regex \code{r} and replacement
-\code{s}, \code{replaceAll(r,s)} is just shorthand for
-\code{Pattern.compile(r).matcher(this).replaceAll(s)}. As such,
-the replacement may contain references to match groups.  There is also
-a corresponding \code{replaceFirst()} method which is equivalent to
-\code{Pattern.compile(r).matcher(this).replaceFirst(s)}.
+The call \code{str.replaceAll(regex, repl)} yields exactly the same result as the expression
+\code{Pattern.compile(regex).matcher(str).replaceAll(repl)}.
+Therefore the replacement may contain references to match groups.%
+%
+\footnote{ 
+If the replacement string contains backslashes (\bk) and
+dollar signs (\$) that are intended to be treated as literal
+replacements they must be quoted.  Therefore to replace all forward
+slashes in \code{String  str} with a backslash we write
+\code{str.replaceAll("/","{\bk}{\bk}{\bk}{\bk}")}.
+}
+%
+There is also a corresponding \code{replaceFirst(String,String)} method.
+The call \code{str.replaceFirst(regex, repl)} yields exactly the same result as the expression
+\code{Pattern.compile(regex).matcher(str).replaceFirst(repl)}.
 
-One of the more useful utilities is
-\code{split(String)}, which splits a string around the matches of
-a regular expression, returning an array as a result.  For instance,
+One of the more useful utilities is \code{split(String)}, which splits
+a string around the matches of a regular expression, returning an
+array as a result.  For example,
 \code{"foo12bar177baz\".split({\bk}d+)} splits on digits, returning
 the string array \code{\{~"foo", "bar", "baz"~\}}.  Note that the
 matching numbers are removed.
-Given a String regex \code{r},
-the call \code{split(r)} is equivalent to calling 
-\code{Pattern.compile(r).split(this,0)}.
 
-\subsection{Performance Considerations}
+The method \code{split(String,int)}
+takes a second \code{int} parameter that limits the number of
+times the pattern is applied and therefore controls the length of the
+resulting array.  If the limit \code{n} is greater than zero then
+the pattern will be applied at most \code{n - 1} times, the array's length
+will be no greater than \code{n}, and the array's last entry will contain all
+input beyond the last matched delimiter. If \code{n} is less than zero
+then the pattern will be applied as many times as possible and the array can
+have any length. If \code{n} is zero then the pattern will be applied as many
+times as possible, the array can have any length, and trailing empty
+strings will be discarded.  
 
-The above \code{String} class utility methods all result in
-calls to the \code{Regex} class which first create and compile
-a new \code{Pattern} object as well as a \code{Matcher} object.
-As mentioned in \refsec{pattern-compile}, sharing and reuse of 
-a compiled \code{Pattern} object has the potential to
-improve program efficiency.
+The method \code{split(String)} is shorthand for for \code{split(String,0)}.
+The call \code{str.split(regex,n)} yields the same result as the expression
+\code{Pattern.compile(regex).split(str,n)}. 
+Therefore the call \code{str.split(regex)} 
+is equivalent to 
+\code{Pattern.compile(regex).split(str,0)}.
 
-This is most clearly seen in the case where we need to write
-a program to process a text file on a line-by-line basis.
+In the OpenJDK reference implementation of the \code{String} class,
+the methods \code{matches}, \code{replaceAll}, \code{replaceFirst},
+and \code{split} all call the corresponding methods in the pattern class
+directly.
+Here is the implementation of the one-arg and two-arg \code{String.split} methods
+%
+\codeblock{RegexFragments.3}
+%
+Each call to the \code{String.split} requires creating and compiling
+a new \code{Pattern} object as well as a \code{Matcher}.
+
+
 
 
 
