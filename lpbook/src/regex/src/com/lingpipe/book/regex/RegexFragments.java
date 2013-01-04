@@ -33,6 +33,7 @@ class RegexFragments {
         public String[] split(String regex, int limit) {
             return Pattern.compile(regex).split(this, limit);
         }
+    /*x*/
     }
 
 }
