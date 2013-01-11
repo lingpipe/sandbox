@@ -1,0 +1,203 @@
+\chapter{Character Data and the Web}\label{chapter:web}
+
+In this chapter we examine the intersection of Java character encoding 
+and web technologies by showing the processing steps involved 
+in sending data via HTTP between Java programs.
+How is character data sent via HTTP?
+Unask the question: character data isn't sent via HTTP; \emph{bytes} are sent via HTTP.
+It is up to the client and server programs to map these bytes to characters.
+As we stated in \refsec{section:char-problems},
+data sent and received across a socket is a stream of bytes.
+Without knowing the character set and encoding scheme used to generate
+these bytes, we cannot reliably interpret the data.
+
+The example programs for this chapter are in the code directory:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/http}}
+%
+For some of these examples you will need to have a local web server and servlet container.
+We use the Apache Tomcat 7 running as a standalone web server.
+See the instructions on downloading and installing Tomcat in section \refsec{into-tomcat}.
+These examples use classes in the Java APIs \code{javax.servlet} and \code{javax.servlet.http}.
+Implementations of these APIs are not distributed as part of the Java 7 core distribution.
+Instead we use the implementation provided by Tomcat.
+To compile these classes, then, we need to edit the build.xml file and set the
+property \code{\charmention{\$}tomcat\_home} accordingly.
+
+\section{The HTTP Protocol}
+
+The HTTP protocol is used to send data between web servers and clients.
+Web browers are but one kind of client.
+Data can be sent between many web services.
+Data interchange formats developed for data feeds include XML formats such as
+RSS, ATOM, as well as JSON, the Javascript Object Notation.
+
+An HTTP message consists of a header and an optional message body.
+HTTP/1.1 is version of protocol in common use today.
+
+The header consists of a series of fields.
+A field is a key-value pair in clear text format separated by a colon character
+and terminated by a carriage-return line-feed (CR-LF).
+A field may have multiple values, in which case the values are separated by spaces,
+therefore a value may not contain spaces.
+The key must be ASCII text.
+Non-ASCII values are allowed provided they are encoded.%
+%
+\footnote{See Internet Engineering Task Force (IETF) RFC 5987 for details.}
+%
+The header is terminated by a blank field, that is, two consecutive CR-LF sequences.
+
+The header fields of interest are the \code{Content-Type} field, which specifies
+the MIME-type of the data in the body, and the \code{Content-Length} field which
+specifies the number of bytes in the body.
+The HTTP/1.1 protocol specifies that if the \code{Content-Type} is missing from the header,
+then the character encoding is ISO-8859-1, (Latin-1, see \refsec{latin1}).
+
+The message body, if any, follows the header.  If the message includes a body, then
+the header should include both a \code{Content-Type} and \code{Content-Length} field.
+
+The \code{java.net} package contains classes used to implement networking applications.
+We start by using \code{java.net.URL} and \code{java.net.URLConnection} objects
+to send and recieve HTTP requests and responses via the example class \code{EchoHttpHeader}.
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/webchars/EchoHttpHeader.java}}
+%
+\codeblock{EchoHttpHeader.1}
+%
+First we create a URL object from the first command-line argument.
+If the argument doesn't start with a known protocal such as
+\code{http}, \code{ftp}, \code{file}, \code{jar}, or if it is null,
+the constructor will throw a \code{MalformedURLException}.
+Next we create an \code{URLConnection} by calling the \code{openConnection()}
+method on the \code{URL} object.
+Despite its name, this method doesn't connect to the specified website, it just
+creates a URLConnection object, to which setup parameters and and general 
+request properties can be modified and added.
+When the \code{connect()} method is invoked, the request is sent and the remote object
+becomes available.  
+%
+\codeblock{EchoHttpHeader.2}
+%
+The method \code{getHeaderFields} parses the HTTP header into a map of
+field names to values.
+The first line of the HTTP header is the Status-Line which gives the
+HTTP-version, status-code, and  reason-phrase, e.g.
+\code{HTTP/1.1 200 OK}.
+When we run this program with the wikipedia home page as the URL,
+it returns the following headers
+%
+\commandlinefollow{ant -Durl="http://www.wikipedia.org" http-headers}
+\begin{verbatim}
+field name: null	value: HTTP/1.0 200 OK 
+field name: Age	value: 2
+field name: Content-Length	value: 46388
+field name: Last-Modified	value: Fri, 21 Dec 2012 11:10:33 GMT
+field name: X-Cache-Lookup	values : HIT from cp1013.eqiad.wmnet:...
+field name: Connection	value: keep-alive
+field name: Server	value: Apache
+field name: X-Cache	values : HIT from cp1013.eqiad.wmnet, MISS ...
+field name: Cache-Control	value: s-maxage=3600, must-revalidate, ...
+field name: X-Content-Type-Options	value: nosniff
+field name: Date	value: Thu, 10 Jan 2013 23:25:36 GMT
+field name: Vary	value: Accept-Encoding
+field name: Content-Type	value: text/html; charset=utf-8
+\end{verbatim}
+%
+This page is the universal wikipedia page which consists of links to all
+the language specific-wikipedias.
+Next we request the Japanese wikipedia hompage:
+%
+\commandlinefollow{ant -Durl="http://ja.wikipedia.org" http-headers}
+\begin{verbatim}
+field name: null	value: HTTP/1.0 200 OK 
+field name: Age	value: 67
+field name: Content-Language	value: ja
+field name: Content-Length	value: 85505
+field name: Last-Modified	value: Thu, 10 Jan 2013 15:15:07 GMT
+field name: Connection	value: keep-alive
+field name: X-Cache-Lookup	values : MISS from cp1005.eqiad.wmn ...
+field name: X-Cache	values : MISS from cp1005.eqiad.wmnet, HIT ...
+field name: Server	value: Apache
+field name: X-Content-Type-Options	value: nosniff
+field name: Cache-Control	value: private, s-maxage=0, max-age=0, ...
+field name: Date	value: Thu, 10 Jan 2013 23:03:04 GMT
+field name: Vary	value: Accept-Encoding,Cookie
+field name: Content-Type	value: text/html; charset=UTF-8
+\end{verbatim}
+%
+The field \code{Content-Language} is specified for the Japanese home page
+but not for the universal Wikipedia page.  The contents of these pages are different
+and this is reflected in the different values for the \code{Content-Length} field.
+Both pages have the same Content-Type value: \code{text/html; charset=UTF-8}.
+Using a Unicode charset means that almost all widely used characters in most of the
+worlds languages can be used.
+On my browser, most of the wikipedia languages display in thier proper font, excepting
+Dhivehi, Gutisk, and a few others.
+
+The example class \code{EchoHttpBody} retrieve the bytes from the message body and
+uses the \code{charset} parameter in the \code{Content-Type} field to convert them
+to characters.  
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/webchars/EchoHttpBody.java}}
+%
+This program reads in the URL from the command line and creates a \code{URLConnection},
+as in the previous example.
+%
+\codeblock{EchoHttpBody.2}
+%
+The convenience method \code{URLConnection.getContentType
+
+
+
+
+
+
+
+
+
+
+\section{Data interchange formats}
+
+
+
+
+XML and JSON are common machine and human readable text data interchange formats. 
+The purpose of text data interchange formats is not to frustrate the programmer,
+rather it is to overcome the problem of proprietary data formats.
+
+When natural language texts are represented as structured documents,
+must first recover the document structure as well as the text contents.
+This processing may be done either by treating the document as an object
+which is fully constructed in memor, the DOM (Document Object Model) approach,
+or a streaming approach in which subparts of the documents are processed as
+they are encountered.  The streaming approach is the one we consider here.
+
+event-based parsing using callbacks.
+parsers keep track of markup, data
+events are when markup is encountered
+
+Applications implement handlers 
+
+
+\section{XML}
+
+Java and XML book.
+
+SAX is a streaming interface for XML, which means that applications using SAX receive event notifications about the XML document being processed an element, and attribute, at a time in sequential order starting at the top of the document, and ending with the closing of the ROOT element. This means that it’s extremely efficient at processing XML in linear time without placing too many demands upon system memory.
+
+
+\section{JSON}
+
+simple json
+
+\section{HTML}
+
+Processing HTML is challenging because although standards
+have been developed for HTML, they are often not met.
+Therefore applications which mine HTML documents for text data
+must be able to handle ill-formed HTML.
+When we need to extract text data from an HTML document,
+we use the NekoHTML parser.
+
+http://nekohtml.sourceforge.net/
+

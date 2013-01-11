@@ -181,7 +181,7 @@ fixed-width two-byte encoding of each character.  Using two bytes
 allows up to $2^{16} = 65,536$ characters, which is enough for most
 of the commonly used Chinese characters.
 
-\subsection{Unicode}
+\subsection{Unicode}\label{section:unicode}
 
 Unicode is the de facto standard for character sets of all kinds.  The
 latest version is Unicode 5.2, and it contains over 1,000,000 distinct
@@ -524,7 +524,7 @@ once \ie{its an idemopotent transformation}.
 We show how to convert character sequences to their canonical forms
 programmatically using the ICU package in \refsec{icu-unicode-normalization}.
 
-\subsubsection{Common Problems and Considerations}
+\subsubsection{Common Problems and Considerations}\label{section:char-problems}
 
 A file stored on disk is a sequence of bytes; data sent and received
 across a socket is a stream of bytes.  Without knowing the character set
@@ -550,18 +550,6 @@ For Unicode data, the choice of variable-width (UTF-8, UTF-16)
 or fixed-width (UTF-32) affects both the storage requirements
 and amount of computation necessary to process the data.
 For English texts, UTF-8 is the most space-efficient encoding.
-
-
-
-
-
-
-
-
-
-
-
-
 
 \section{Encoding Java Programs}
 
@@ -1694,15 +1682,10 @@ position.  Then when we call \code{toString()}, we get the values
 between zero and the limit, namely all the characters we appended.
 The call to \code{toString()} does not modify the buffer.
 
-
-
-
 \subsection{Thread Safety}
 
 Buffers maintain state and are not synchronized for thread safety.
 Read-write synchronization would be sufficient.
-
-
 
 \section{\code{Charset} Class}
 
@@ -2226,8 +2209,4 @@ Output=deja
 
 
 % ARABIC \begin{center} \RL{^gu.hA wa-.himAruhu} \end{center}
-
-
-
-
 

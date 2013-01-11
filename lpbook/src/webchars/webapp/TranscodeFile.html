@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+  <BODY>
+    <H1>Transcode Form Data</H1>
+    <P>
+      This form returns a page containing the contents of the input file,
+      transcoded using the specified output encoding.
+    <P>
+      To fill out this form:
+    <OL>
+      <LI> Choose the the input file to upload.
+      <LI> Choose the input file character encoding.
+      <LI> Choose the character encoding for the output page.
+    </OL>
+    <P>
+    <HR>
+    <BLOCKQUOTE>
+      <FORM action="/charencodings/TranscodeFileServlet" 
+	method="POST" enctype="multipart/form-data">
+	<TABLE border="0" cellspacing="5" cellpadding="5">
+	    <TR>
+	      <TD colspan="2" align="LEFT">
+		Upload input file:&nbsp&nbsp;<INPUT type="file" name="text" size="60">
+	      </TD>
+	    </TR>
+	    <TR>
+	      <TD align="LEFT">
+		Choose the input file character encoding:<br>
+		<SELECT name="request-charset">
+		  <OPTION value="ascii"> ascii
+		  <OPTION value="UTF-8" selected="selected"> UTF-8
+		  <OPTION value="ISO-8859-1"> ISO-8859-1 (Latin-1)
+		  <OPTION value="Big5"> Big5 (Chinese Traditional)
+		  <OPTION value="EUC-JP"> EUC-JP (Japanese)
+		  <OPTION value="Shift_JIS"> Shift_JIS (Japanese)
+		  <OPTION value="EUC-KR"> EUC-KR (Korean)
+		  <OPTION value="UTF-16"> UTF-16
+		</SELECT>
+	      </TD>
+	      <TD align="RIGHT">
+		Choose the output character encoding:<br>
+		<SELECT name="response-charset">
+		  <OPTION value="ascii"> ascii
+		  <OPTION value="UTF-8" selected="selected"> UTF-8
+		  <OPTION value="ISO-8859-1"> ISO-8859-1 (Latin-1)
+		  <OPTION value="Big5"> Big5 (Chinese Traditional)
+		  <OPTION value="EUC-JP"> EUC-JP (Japanese)
+		  <OPTION value="Shift_JIS"> Shift_JIS (Japanese)
+		  <OPTION value="EUC-KR"> EUC-KR (Korean)
+		  <OPTION value="UTF-16"> UTF-16
+		</SELECT>
+	      </TD>
+	    </TR>
+	    <TR>
+	      <TD colspan="2" align="LEFT">
+		<INPUT type ="submit" value ="Submit">
+	      </TD>
+	    </TR>
+	</TABLE>
+      </FORM> 
+    </BLOCKQUOTE>
+    <HR>
+  </BODY>
+</HTML>
+
+
+
+
+
+
+
+
+
+
+
+
