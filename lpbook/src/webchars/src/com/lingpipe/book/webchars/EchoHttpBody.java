@@ -23,56 +23,56 @@ import java.util.regex.Pattern;
 public class EchoHttpBody {
 
     public static void main(String[] args) {
-	try {
-	    System.out.println("URL: "+args[0]);
-	    /*x EchoHttpBody.1 */
-	    URL url = new URL(args[0]);
-	    URLConnection connection 
-		= (URLConnection)url.openConnection();
-	    connection.connect();
-	    /*x*/
+        try {
+            System.out.println("URL: "+args[0]);
+            /*x EchoHttpBody.1 */
+            URL url = new URL(args[0]);
+            URLConnection connection 
+                = (URLConnection)url.openConnection();
+            connection.connect();
+            /*x*/
             System.out.println("successful connection");
 
-	    /*x EchoHttpBody.2 */
-	    String charset = "ISO-8859-1";
-	    String contentType = 
-		 connection.getContentType();
-	    if (contentType != null) {
-		Pattern pattern = Pattern.compile(".*charset=(.*)");
-		Matcher matcher = pattern.matcher(contentType);
-		if (matcher.matches()) { 
-		    charset = matcher.group(1);
-		}
-	    }
-	    /*x*/
-	    System.out.println("Content-Type: " + contentType);
-	    System.out.println("charset: " + charset);
+            /*x EchoHttpBody.2 */
+            String charset = "ISO-8859-1";
+            String contentType = 
+                connection.getContentType();
+            if (contentType != null) {
+                Pattern pattern = Pattern.compile(".*charset=(.*)");
+                Matcher matcher = pattern.matcher(contentType);
+                if (matcher.matches()) { 
+                    charset = matcher.group(1);
+                }
+            }
+            /*x*/
+            System.out.println("Content-Type: " + contentType);
+            System.out.println("charset: " + charset);
 
-	    /*x EchoHttpBody.3 */
-	    InputStream in = connection.getInputStream();
-	    ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-	    int b;
-	    while ((b = in.read()) != -1) {
-		bytesOut.write((byte)b);
-	    }
-	    in.close();
-	    byte[] respBytes = bytesOut.toByteArray();
-	    bytesOut.close();
+            /*x EchoHttpBody.3 */
+            InputStream in = connection.getInputStream();
+            ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+            int b;
+            while ((b = in.read()) != -1) {
+                bytesOut.write((byte)b);
+            }
+            in.close();
+            byte[] respBytes = bytesOut.toByteArray();
+            bytesOut.close();
             String respString = new String(respBytes,charset);
-	    /*x*/
+            /*x*/
 
             System.out.println("HTTP Response body:");
-	    /*x EchoHttpBody.4 */
-	    OutputStreamWriter charsetWriter
-		= new OutputStreamWriter(System.out, charset);
-	    PrintWriter out
-		= new PrintWriter(charsetWriter, true);
-	    out.println(respString);
-	    /*x*/
+            /*x EchoHttpBody.4 */
+            OutputStreamWriter charsetWriter
+                = new OutputStreamWriter(System.out, charset);
+            PrintWriter out
+                = new PrintWriter(charsetWriter, true);
+            out.println(respString);
+            /*x*/
 
         } catch (Exception ex){
-	    System.err.println(ex.getMessage());
-	    ex.printStackTrace();
+            System.err.println(ex.getMessage());
+            ex.printStackTrace();
         }
 
     }
