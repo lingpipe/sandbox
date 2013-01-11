@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+  <BODY>
+    <H1>Transcode Form Data</H1>
+    <P>
+      This form returns a page which prints the input text using the output encoding specified.
+    <P>
+      To fill out this form:
+    <OL>
+      <LI> Choose the input character encoding.
+      <LI> Check that the browser's character encoding matches the input character encoding.
+      <LI> Choose the character encoding for the output page.
+      <LI> Enter input data into the text box below.
+    </OL>
+    <P>
+    <HR>
+    <BLOCKQUOTE>
+      <FORM action="/charencodings/TranscodingServlet" method="POST">
+	<TABLE border="0" cellspacing="5" cellpadding="5">
+	    <TR>
+	      <TD colspan="2" align="LEFT">
+		Enter text here:<br>
+		<TEXTAREA name="text" rows="3" cols="60"></textarea>
+	      </TD>
+	    </TR>
+	    <TR>
+	      <TD align="LEFT">
+		Choose the input character encoding:<br>
+		<SELECT name="request-charset">
+		  <OPTION value="ascii"> ascii
+		  <OPTION value="UTF-8" selected="selected"> UTF-8
+		  <OPTION value="ISO-8859-1"> ISO-8859-1 (Latin-1)
+		  <OPTION value="Big5"> Big5 (Chinese Traditional)
+		  <OPTION value="EUC-JP"> EUC-JP (Japanese)
+		  <OPTION value="Shift_JIS"> Shift_JIS (Japanese)
+		  <OPTION value="EUC-KR"> EUC-KR (Korean)
+		  <OPTION value="UTF-16"> UTF-16
+		</SELECT>
+	      </TD>
+	      <TD align="RIGHT">
+		Choose the output character encoding:<br>
+		<SELECT name="response-charset">
+		  <OPTION value="ascii"> ascii
+		  <OPTION value="UTF-8" selected="selected"> UTF-8
+		  <OPTION value="ISO-8859-1"> ISO-8859-1 (Latin-1)
+		  <OPTION value="Big5"> Big5 (Chinese Traditional)
+		  <OPTION value="EUC-JP"> EUC-JP (Japanese)
+		  <OPTION value="Shift_JIS"> Shift_JIS (Japanese)
+		  <OPTION value="EUC-KR"> EUC-KR (Korean)
+		  <OPTION value="UTF-16"> UTF-16
+		</SELECT>
+	      </TD>
+	    </TR>
+	    <TR>
+	      <TD colspan="2" align="LEFT">
+		<INPUT type ="submit" value ="Submit">
+	      </TD>
+	    </TR>
+	</TABLE>
+      </FORM> 
+    </BLOCKQUOTE>
+    <HR>
+  </BODY>
+</HTML>
+
+
+
+
+
+
+
+
+
+
+
+

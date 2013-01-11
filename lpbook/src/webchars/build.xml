@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/lp-book-webchars-${version}.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+    <pathelement location="../../lib/servlet-api.jar"/>
+    <pathelement location="../../lib/commons-fileupload-1.1.1.jar" />
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+<!--      <compilerarg value="-Xlint:all"/> -->
+      <classpath refid="classpath"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="http-headers" depends="jar"
+   description="show HTTP response headers">
+    <java classname="com.lingpipe.book.webchars.EchoHttpHeader"
+        fork="true">
+      <classpath refid="classpath"/>
+      <arg value ="${url}"/>
+    </java>
+  </target>
+
+  <target name="http-body" depends="jar"
+   description="show HTTP response body">
+    <java classname="com.lingpipe.book.webchars.EchoHttpBody"
+        fork="true">
+      <classpath refid="classpath"/>
+      <arg value ="${url}"/>
+    </java>
+  </target>
+
+  <property name="app.name" value="charencoding"/>
+  <target name="war"
+          depends="jar"
+          description="bundle app into .war file">
+    <mkdir dir="build/war"/>
+    <copy todir="build/war/">
+      <fileset dir="webapp"/>
+    </copy>
+    <copy todir="build/war/WEB-INF">
+      <fileset dir="webapp/WEB-INF" casesensitive="yes">
+        <filename name="**/*.properties"/>
+      </fileset>
+    </copy>
+    <mkdir dir="build/war/WEB-INF/lib"/>
+    <copy todir="build/war/WEB-INF/lib">
+      <fileset file="${jar}"/>
+      <fileset dir="webapp/WEB-INF/lib" casesensitive="yes">
+        <filename name="**/*.jar"/>
+      </fileset>
+    </copy>
+    <jar destfile="build/${app.name}.war">
+      <fileset dir="build/war"/>
+    </jar>
+  </target>
+
+</project>
+
+
+
+

@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+  <BODY>
+    <H1>Echo Text</H1>
+    <P>
+      This form returns a page which contains the text input data, using the specified encoding.
+    <P>
+      To fill out this form:
+    <OL>
+      <LI> Choose the input character encoding.
+      <LI> Check that the browser's character encoding matches the input character encoding.
+      <LI> Enter input data into the text box below.
+    </OL>
+    <P>
+    <HR>
+    <BLOCKQUOTE>
+      <FORM action="/charencodings/EchoTextServlet" method="POST">
+	Enter text here:<br>
+	<TEXTAREA name="text" rows="3" cols="60"></textarea>
+	<P>
+	  Choose the input character encoding:<br>
+	  <SELECT name="request-charset">
+	    <OPTION value="ascii"> ascii
+	    <OPTION value="UTF-8" selected="selected"> UTF-8
+	    <OPTION value="ISO-8859-1"> ISO-8859-1 (Latin-1)
+	    <OPTION value="Big5"> Big5 (Chinese Traditional)
+	    <OPTION value="EUC-JP"> EUC-JP (Japanese)
+	    <OPTION value="Shift_JIS"> Shift_JIS (Japanese)
+	    <OPTION value="EUC-KR"> EUC-KR (Korean)
+	    <OPTION value="UTF-16"> UTF-16
+	  </SELECT>
+	<P>
+	  <INPUT type ="submit" value ="Submit">
+      </FORM> 
+    </BLOCKQUOTE>
+    <HR>
+  </BODY>
+</HTML>
+
+
+
+
+
+
+
+
+
+
+

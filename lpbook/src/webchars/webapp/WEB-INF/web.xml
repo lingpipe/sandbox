@@ -1,0 +1,17 @@
+<web-app>
+<display-name>Char Encodings Demo Web Application</display-name>
+<description>
+	Servlets used to demonstrate the Ins and Outs of Character Encodings.
+</description>
+
+<servlet>
+ <servlet-name>EchoRequestServlet</servlet-name>
+ <servlet-class>com.lingpipe.book.webchars.EchoRequestServlet</servlet-class>
+</servlet>
+
+<servlet-mapping>
+ <servlet-name>EchoRequestServlet</servlet-name>
+ <url-pattern>/EchoRequestServlet</url-pattern>
+</servlet-mapping>
+
+</web-app>
