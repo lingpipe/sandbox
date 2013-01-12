@@ -1520,8 +1520,16 @@ constructors \code{PrintStream(File,String)} that writes to a file
 given a specified encoding, and
 \code{PrintStream(OutputStream,boolean,String)}, which prints to the
 specified output stream, optionally using auto-flushing, using a
-specified character encoding.  The other methods are shorthands that
-allow some parameters to be dropped.
+specified character encoding.  
+The other constructors are shorthands that allow the parameters for
+character encoding and auto-flushing to be dropped, in which case
+the default character encoding is the default charset for the instance
+of the JVM in which the code is running and the default auto-flush
+value is \code{false}.
+
+\subsection{System.out is a Print Stream}\label{section:system-out}
+
+
 
 \subsection{Exception Buffering}
 
