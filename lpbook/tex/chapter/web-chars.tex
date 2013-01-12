@@ -46,15 +46,21 @@ Non-ASCII values are allowed provided they are encoded.%
 \footnote{See Internet Engineering Task Force (IETF) RFC 5987 for details.}
 %
 The header is terminated by a blank field, that is, two consecutive CR-LF sequences.
+The message body, if any, follows the header.
 
-The header fields of interest are the \code{Content-Type} field, which specifies
-the MIME-type of the data in the body, and the \code{Content-Length} field which
-specifies the number of bytes in the body.
+The header fields of interest are the \code{Content-Length} and \code{Content-Type} fields.
+The \code{Content-Length} field specifies the number of bytes in the body.
+The \code{Content-Type} header consists of a MIME type optionally followed by 
+a semi-colon followed by parameters of the form \code{attribute=value}.
+The following example is taken from the HTTP/1.1 specification.
+\begin{verbatim}
+Content-Type: text/html; charset=ISO-8859-4
+\end{verbatim}
+This example specifies that message body is HTML encoded using
+ISO-8859-4, the Latin-4 encoding set.
 The HTTP/1.1 protocol specifies that if the \code{Content-Type} is missing from the header,
-then the character encoding is ISO-8859-1, (Latin-1, see \refsec{latin1}).
-
-The message body, if any, follows the header.  If the message includes a body, then
-the header should include both a \code{Content-Type} and \code{Content-Length} field.
+the default MIME type is text/plain and the default
+character encoding is ISO-8859-1, Latin-1 (see \refsec{latin1}).
 
 The \code{java.net} package contains classes used to implement networking applications.
 We start by using \code{java.net.URL} and \code{java.net.URLConnection} objects
@@ -87,7 +93,7 @@ When we run this program with the wikipedia home page as the URL,
 it returns the following headers
 %
 \commandlinefollow{ant -Durl="http://www.wikipedia.org" http-headers}
-\begin{verbatim}
+\begin{verbatim} 
 field name: null	value: HTTP/1.0 200 OK 
 field name: Age	value: 2
 field name: Content-Length	value: 46388
@@ -134,6 +140,7 @@ worlds languages can be used.
 On my browser, most of the wikipedia languages display in thier proper font, excepting
 Dhivehi, Gutisk, and a few others.
 
+We use the header information to process the message body.
 The example class \code{EchoHttpBody} retrieve the bytes from the message body and
 uses the \code{charset} parameter in the \code{Content-Type} field to convert them
 to characters.  
@@ -141,14 +148,50 @@ to characters.
 \displ{\filepath{src/regex/src/com/lingpipe/book/webchars/EchoHttpBody.java}}
 %
 This program reads in the URL from the command line and creates a \code{URLConnection},
-as in the previous example.
+as in the previous example.  Next it looks for the \code{Content-Type} field and
+parses out the charset name.
 %
 \codeblock{EchoHttpBody.2}
 %
-The convenience method \code{URLConnection.getContentType
+The convenience method \code{URLConnection.getContentType()} returns the entire contents
+of the \code{Content-Type} field.
+We use a simple regex to extract the value of the charset parameter.
+If no header field is present or the charset parameter is not specified
+then the encoding defaults to Latin-1.
+%
+\codeblock{EchoHttpBody.3}
+%
+Next we read in the bytes from the body and convert them to a string
+using the specified charset to correctly map bytes to characters.
+%
+\codeblock{EchoHttpBody.4}
+%
+In order to write this string to the terminal we need to use a \code{java.io.Writer}
+that has the same character encoding as that of the string.
+We construct one using Java's \code{Standard.out}, which is a \code{PrintStream}
+that writes to the standard output stream.
+The resulting \code{PrintWriter} will print the characters correctly.
+Whether or not they display correctly depends on the characteristics of the terminal program
+and the available fonts.
+
+To demonstrate, we use this program to fetch the French Wikipedia home page.
+Using a Mac terminal.app that is configured to 
 
 
 
+
+
+
+\begin{verbatim}
+URL: http://fr.wikipedia.org
+Content-Type: text/html; charset=UTF-8
+charset: UTF-8
+HTTP Response body:
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" class="client-nojs">
+<head>
+<title>Wikipédia, l'encyclopédie libre</title>
+\end{verbatim}
 
 
 
