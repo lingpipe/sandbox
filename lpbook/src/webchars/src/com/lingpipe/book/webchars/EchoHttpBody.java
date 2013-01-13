@@ -31,7 +31,6 @@ public class EchoHttpBody {
                 = (URLConnection)url.openConnection();
             connection.connect();
             /*x*/
-            System.out.println("successful connection");
 
             /*x EchoHttpBody.2 */
             String charset = "ISO-8859-1";
