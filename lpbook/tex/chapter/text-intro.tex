@@ -88,7 +88,6 @@ Although it's possible to get Python, Perl, Emacs, \TeX\ and \LaTeX,
 and so on, we typically install these packages directly rather than
 as part of Cygwin.
 
-
 \subsubsection{Archive and Compression Tools}
 
 In order to unpack data and library distributions, you need to be able
@@ -526,7 +525,7 @@ properties on the command line.  Our second demo uses this facility
 to provide a customized greeting.
 %
 \commandlinefollow{ant -Dfirst=Bobby -Dlast=C hello-name}
-\begin{verbatim}
+\begin{verbatim} 
 Hello, Bobby C.
 \end{verbatim}
 %
@@ -583,6 +582,71 @@ command-line arguments varies in the body of its \code{main()} method,
 As a convention, we assign the command-line arguments read
 from the array \code{args} to a sequence of named variables.  
 We then use these same names in the Ant properties (see \refsec{intro-ant-properties}).
+
+\section{Multi-Lingual Hello World Example}\label{section:console}
+
+In order to make sure that the shell console display and Ant are
+configured to use UTF-8 as the default character encoding, we have written
+a simple test program called \code{Toast.java} that prints toasts in many
+languages to standard output, using the UTF-8 character encodings.
+In \refchap{char} we will go over this code.
+Right now our only goal is to use this program to determine whether or not
+Ant is sending UTF-8 output to the terminal window and to see whether or not
+the terminal has the fonts available to properly display these characters.
+\commandlinefollow{ant make-toast}
+\begin{verbatim}
+Before we drink, we say a toast 
+in English: cheers  
+in French:  santé
+in Norwegian: skål
+...
+\end{verbatim}
+Executing this ant task from the command line will result in a mix of
+English, French, Norwegian, Russian, Japanese, and Korean characters
+printed on standard out.
+
+If the output instead consists of a mix of english characters and question marks
+then the Ant program is not using UTF-8 as its default encoding.  Ant cannot handle
+characters outside of the default character set and instead it replaces them with
+a question mark, as in the following example.
+\begin{verbatim}
+Before we drink, we say a toast 
+in English: cheers  
+in French:  sant??
+in Norwegian: sk??l
+in Russian: ???? ????????????
+in Japanese: ??????
+in Korean: ??????
+\end{verbatim} 
+To correct this, we need to set the \code{ANT\_OPTS} environment variable
+\begin{verbatim} 
+export ANT\_OPTS="-Dfile.encoding=UTF-8"
+\end{verbatim}
+The Ant \code{make-toast} task creates a file \code{toast.txt} in the 
+\filepath{com/lingpipe/book/intro} directory.
+Once the \code{ANT\_OPTS} environment variable is set, the output of the Ant
+\code{make-toast} task should match the result
+\commandlinefollow{cat toast.txt}
+\begin{verbatim}
+Before we drink, we say a toast
+in English: cheers
+in French:  santé
+...
+\end{verbatim}
+
+If the output consists of a mix of english characters and special characters,
+such as foreign currency symbols ({\textyen})  or the copyright symbol ({\copyright}),
+then is it likely that the terminal display has the wrong character encoding.
+
+For the Mac terminal.app, choose the \code{Preferences} option under
+the Terminal menu.  From the \code{Settings} panel select the \code{Advanced} tab.
+Make sure that the character encoding is set to Unicode (UTF-8).
+On cygwin, right-click on the top menu bar and select \code{Options\ldots}.
+Choose the \code{Text} submenu and make sure that that character set is UTF-8.
+
+If the display is set to UTF-8 and the European langauges display correctly but
+not all of the Russian, Japanese, or Korean symbols display, then it is likely
+that the fonts needed to display these characters are missing.
 
 \section{Introduction to Ant}
 
