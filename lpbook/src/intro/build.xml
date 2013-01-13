@@ -34,6 +34,17 @@
     </java>
   </target>
 
+  <target name="make-toast"
+          depends="jar">
+    <java classname="com.lingpipe.book.intro.Toast"
+          classpath="${jar}"
+          fork="true">
+    </java>
+    <concat>
+      <fileset file="toast.txt"/>
+    </concat>
+  </target>
+
   <property name="first" value="Foo"/>
   <property name="last" value="Bar"/>
   <target name="hello-name"
