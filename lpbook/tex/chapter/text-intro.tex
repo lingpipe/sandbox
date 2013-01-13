@@ -22,11 +22,11 @@ and indirectly with the web server and web brower.  How do we generate a web pag
 that says ``Hello World'' in Japanese?  What is required 
 for the Japanese characters to display correctly in the browser?
 
-It is a very short step from these simple examples to building a web service
+It is not a big step from writing these simple examples to building a web service
 that aggregates news feeds from around the world and indexes them for keyword search.
-In this book we aim to give you the information you need to do this by working
-through the details of how character data is encoded/decoded into bytes and how
-this data is sent and retrieved to and from the operating system.
+In this book we aim to give you the knowledge you need to do this by working
+through the details of how character data is encoded into bytes and how
+this data is sent to and retrieved from the operating system.
 
 \section{Tools of the Trade}
 
@@ -39,6 +39,9 @@ conditions.  After describing and motivating our choice of each tool,
 we'll provide downloading and installation instructions.
 Not all of these tools are needed to run every example
 and when possible, we discuss alternatives.
+Because we are interested in displaying character data in languages
+other than English, we need to configure these tools to use the
+UTF-8 character encoding (which we will explain in detail in \refchap{char}).
 
 We use a unix-like command-line shell to present and run our examples
 via the Apache Ant build tool, in keeping with our own development
@@ -213,9 +216,7 @@ of the Java programming language.  We will focus on a few aspects of
 Java that are particularly crucial for processing textual language
 data, such as character and string representations, input and output
 streams and character encodings, regular expressions, parsing HTML and
-XML markup, etc.  In explaining LingPipe's design, we will also delve
-into greater detail on general features of Java such as concurrency,
-generics, floating point representations, and the collection package.
+XML markup, and data interchange protocols.
 
 This book is based on the latest currently supported standard edition
 of the Java platform (Java SE), which is version 7.  You will need the
@@ -333,6 +334,7 @@ to put the {\tt bin} subdirectory of the top-level directory into the
 {\tt PATH} environment variable so that Ant may be executed from the
 command line.
 
+Ant itself runs as a Java process.
 Ant requires the {\tt JAVA\_HOME} environment variable to be set to
 the path above the {\tt bin} directory containing the Java
 executables.  Ant's installation instructions suggest setting the {\tt
@@ -368,9 +370,7 @@ integrated development environment (IDE).  IDEs offer advantages such
 as automatic method, class and constant completion, easily
 configurable text formatting, stepwise debuggers, and automated tools
 for code generation and refactoring.
-
-LingPipe development may be carried out through an IDE.  The two most
-popular IDEs for Java are Eclipse and NetBeans.
+The two most popular IDEs for Java are Eclipse and NetBeans.
 
 \subsubsection{Eclipse IDE}
 
