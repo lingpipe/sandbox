@@ -2,14 +2,7 @@
 
 In this chapter we examine the intersection of Java character encoding 
 and web technologies by showing the processing steps involved 
-in sending data via HTTP between Java programs.
-How is character data sent via HTTP?
-Unask the question: character data isn't sent via HTTP; \emph{bytes} are sent via HTTP.
-It is up to the client and server programs to map these bytes to characters.
-As we stated in \refsec{section:char-problems},
-data sent and received across a socket is a stream of bytes.
-Without knowing the character set and encoding scheme used to generate
-these bytes, we cannot reliably interpret the data.
+in sending character data via HTTP between Java programs.
 
 The example programs for this chapter are in the code directory:
 %
@@ -24,7 +17,17 @@ Instead we use the implementation provided by Tomcat.
 To compile these classes, then, we need to edit the build.xml file and set the
 property \code{\charmention{\$}tomcat\_home} accordingly.
 
+
 \section{The HTTP Protocol}
+
+How is character data sent via HTTP?
+This is a misleading question.
+Character data isn't sent via HTTP; \emph{bytes} are sent via HTTP.
+It is up to the client and server programs to map these bytes to characters.
+As we stated in \refsec{char-probs},
+data sent and received across a socket is a stream of bytes.
+Without knowing the character set and encoding scheme used to generate
+these bytes, we cannot reliably interpret the data.
 
 The HTTP protocol is used to send data between web servers and clients.
 Web browers are but one kind of client.
@@ -170,19 +173,12 @@ In order to write this string to the terminal we need to use a \code{java.io.Wri
 that has the same character encoding as that of the string.
 We construct one using Java's \code{Standard.out}, which is a \code{PrintStream}
 that writes to the standard output stream.
-The resulting \code{PrintWriter} will print the characters correctly.
-Whether or not they display correctly depends on the characteristics of the terminal program
-and the available fonts.
+The resulting \code{PrintWriter} will print the characters correctly,
+provided that Ant and the terminal display are correctly configured (see \refsec{ant-console-config-utf8}).
 
 To demonstrate, we use this program to fetch the French Wikipedia home page.
-Using a Mac terminal.app that is configured to 
-
-
-
-
-
-
-\begin{verbatim} 
+\commandlinefollow{ant -Durl="http://fr.wikipedia.org" http-body}
+\begin{verbatim}  
 URL: http://fr.wikipedia.org
 Content-Type: text/html; charset=UTF-8
 charset: UTF-8
@@ -191,18 +187,17 @@ HTTP Response body:
 <html lang="fr" dir="ltr" class="client-nojs">
 <head>
 <title>Wikipédia, l'encyclopédie libre</title>
+<meta charset="UTF-8" />
+<meta name="generator" content="MediaWiki 1.21wmf6" />
 \end{verbatim}
+The first four lines of output are diagnostics printed by the \code{EchoHttpBody} program itself.
+The remaining lines are the beginning of the French Wikipedia homepage,
+which is an HTML document.
 
 
+\section{Common MIME Types for Character Data}
 
-
-
-
-
-\section{Data interchange formats}
-
-
-
+The HTTP \code{Content-Type} header specifies the content type of the message body.
 
 XML and JSON are common machine and human readable text data interchange formats. 
 The purpose of text data interchange formats is not to frustrate the programmer,
@@ -228,11 +223,6 @@ Java and XML book.
 
 SAX is a streaming interface for XML, which means that applications using SAX receive event notifications about the XML document being processed an element, and attribute, at a time in sequential order starting at the top of the document, and ending with the closing of the ROOT element. This means that it’s extremely efficient at processing XML in linear time without placing too many demands upon system memory.
 
-
-\section{JSON}
-
-simple json
-
 \section{HTML}
 
 Processing HTML is challenging because although standards
@@ -243,4 +233,12 @@ When we need to extract text data from an HTML document,
 we use the NekoHTML parser.
 
 http://nekohtml.sourceforge.net/
+
+
+
+
+\section{JSON}
+
+simple json
+
 
