@@ -1529,6 +1529,19 @@ value is \code{false}.
 
 \subsection{System.out is a Print Stream}\label{section:system-out}
 
+\code{System.out} is a \code{PrintStream} stream that corresponds to the Unix standard out (\code{stdout}) device.
+The javadoc specifies that all characters printed by a \code{PrintStream} are converted
+into bytes \emph{using the platform's default character encoding} (emphasis added).
+This may be problemtic when using \code{stdout} for monitoring or debugging.%
+%
+\footnote{Debug by \code{printf} is surprisingly effective.}
+%
+In order to ensure that data sent to the console is correctly encoded we wrap \code{System.out} in an
+\code{OutputStreamWriter} and explicitly specify the character encoding.  Then we create a new \code{PrintWriter}
+that preserves the character encoding and has the same functionality as \code{System.out}.
+%
+\codeblock{FragmentsIo.16}
+%
 
 
 \subsection{Exception Buffering}

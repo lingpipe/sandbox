@@ -472,7 +472,7 @@ Total time: 2 seconds
 \end{verbatim}
 %
 First, Ant echoes the name of the build file, here
-\filepath{/Users/lpbook/src/intro/build.xml}.  When Ant is
+\filepath{\$BOOK/src/intro/build.xml}.  When Ant is 
 invoked without specifying a particular build file, it uses the
 \filepath{build.xml} in the directory from which it was called.  
 
@@ -583,16 +583,16 @@ As a convention, we assign the command-line arguments read
 from the array \code{args} to a sequence of named variables.  
 We then use these same names in the Ant properties (see \refsec{intro-ant-properties}).
 
-\section{Multi-Lingual Hello World Example}\label{section:console}
+\section{Multi-Lingual Hello World Example}\label{section:ant-console-config-utf8}
 
 In order to make sure that the shell console display and Ant are
 configured to use UTF-8 as the default character encoding, we have written
 a simple test program called \code{Toast.java} that prints toasts in many
 languages to standard output, using the UTF-8 character encodings.
-In \refchap{char} we will go over this code.
-Right now our only goal is to use this program to determine whether or not
-Ant is sending UTF-8 output to the terminal window and to see whether or not
-the terminal has the fonts available to properly display these characters.
+In later chapters we cover the techniques used in this program.
+For now we'll just use this program to see if
+Ant is sending UTF-8 output to the terminal window and if the
+terminal is expecting to get UTF-8 encoded data.
 \commandlinefollow{ant make-toast}
 \begin{verbatim}
 Before we drink, we say a toast 
