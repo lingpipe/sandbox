@@ -120,7 +120,7 @@ the only thing you need to know about a character encoding in order
 to convert data in that encoding to Unicode is the name of the
 character encoding.
 
-\subsubsection{ASCII}
+\subsubsection{ASCII}\label{section:ascii}
 
 ASCII is a character encoding consisting of a small character set of
 128 code points.  Being designed by computer scientists, the numbering
@@ -197,6 +197,13 @@ thoughtful and well-defined manner.
 Conveniently, Unicode's first 256 code points (0--255) exactly match
 those of Latin1, and hence Unicode's first 128 code points (0--127)
 exactly match those of ASCII.
+However \emph{not all ASCII characters are legal Unicode characters}.
+This is because the first 32 ASCII codes (hex values in the range 00--1F) 
+were originally intended not to
+represent printable information, but rather to control devices such as printers
+or magnetic tapes whereas Unicode is designed to represent characters.
+Of the ASCII control characters only tab (hex value 09), carriage return (hex value 0A), 
+and linefeed (hex value 0D) are valid Unicode characters.
 
 Unicode code points are conventionally displayed in text using a
 hexadecimal representation of their code point padded to at least four
@@ -350,14 +357,19 @@ values between \unicode{0800} and \unicode{FFFF} with three bytes,
 and values between \unicode{10000} and \unicode{10FFFF} with four bytes.
 
 
-\subsubsection{Non-Overlap Principle}
+\subsubsection{Non-Overlap Principle}\label{section:utf-nonoverlap}
 
 The UTF-8 and UTF-16 encoding schemes obey what the Unicode Consortium
 calls the ``non-overlap principle.''  Technically, the leading,
 continuing and trailing code units (bytes in UTF-8, pairs of bytes in
 UTF-16) overlap.  Take UTF-8 for example.  Bytes starting with
 \code{0} are singletons, encoding a single character in the range 
-\unicode{0000} to \unicode{007F}.  Bytes starting with \code{110}
+\unicode{0000} to \unicode{007F}%
+%
+\footnote{This is the range of the ASCII character encoding, therefore
+the ASCII characters are represented by a single byte in UTF-8.}
+%
+Bytes starting with \code{110}
 are the leading byte in a two-byte sequence representing a character
 in the range \unicode{0080} to \unicode{07FF}.  Similarly, bytes
 starting with \code{1110} represent the leading byte in a three-byte
