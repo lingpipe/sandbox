@@ -1,4 +1,4 @@
-\chapter{Character Data and the Web}\label{chapter:web}
+\chapter{Character Data and the Web}\label{chap:web}
 
 In this chapter we examine the intersection of Java character encoding 
 and web technologies by showing the processing steps involved 
@@ -8,17 +8,8 @@ The example programs for this chapter are in the code directory:
 %
 \displ{\filepath{src/chars/src/com/lingpipe/book/http}}
 %
-For some of these examples you will need to have a local web server and servlet container.
-We use the Apache Tomcat 7 running as a standalone web server.
-See the instructions on downloading and installing Tomcat in section \refsec{into-tomcat}.
-These examples use classes in the Java APIs \code{javax.servlet} and \code{javax.servlet.http}.
-Implementations of these APIs are not distributed as part of the Java 7 core distribution.
-Instead we use the implementation provided by Tomcat.
-To compile these classes, then, we need to edit the build.xml file and set the
-property \code{\charmention{\$}tomcat\_home} accordingly.
 
-
-\section{The HTTP Protocol}
+\section{The HTTP Protocol}\label{section:http}
 
 How is character data sent via HTTP?
 This is a misleading question.
@@ -98,38 +89,39 @@ it returns the following headers
 \commandlinefollow{ant -Durl="http://www.wikipedia.org" http-headers}
 \begin{verbatim} 
 field name: null	value: HTTP/1.0 200 OK 
-field name: Age	value: 2
+field name: Age	value: 30
 field name: Content-Length	value: 46388
-field name: Last-Modified	value: Fri, 21 Dec 2012 11:10:33 GMT
-field name: X-Cache-Lookup	values : HIT from cp1013.eqiad.wmnet:...
+field name: Last-Modified	value: Fri, 21 Dec ...
+field name: X-Cache-Lookup	values : HIT from ...
 field name: Connection	value: keep-alive
 field name: Server	value: Apache
-field name: X-Cache	values : HIT from cp1013.eqiad.wmnet, MISS ...
-field name: Cache-Control	value: s-maxage=3600, must-revalidate, ...
+field name: X-Cache	values : HIT from cp1017.eqia...
+field name: Cache-Control	value: s-maxage=3600, ...
 field name: X-Content-Type-Options	value: nosniff
-field name: Date	value: Thu, 10 Jan 2013 23:25:36 GMT
+field name: Date	value: Tue, 15 Jan 2013 21:13:43 GMT
 field name: Vary	value: Accept-Encoding
 field name: Content-Type	value: text/html; charset=utf-8
 \end{verbatim}
 %
 This page is the universal wikipedia page which consists of links to all
 the language specific-wikipedias.
-Next we request the Japanese wikipedia hompage:
+
+Next we request the Japanese wikipedia hompage
 %
 \commandlinefollow{ant -Durl="http://ja.wikipedia.org" http-headers}
 \begin{verbatim}
 field name: null	value: HTTP/1.0 200 OK 
-field name: Age	value: 67
+field name: Age	value: 139
 field name: Content-Language	value: ja
-field name: Content-Length	value: 85505
-field name: Last-Modified	value: Thu, 10 Jan 2013 15:15:07 GMT
+field name: Content-Length	value: 86186
+field name: Last-Modified	value: Tue, 15 Jan 2013 ...
 field name: Connection	value: keep-alive
-field name: X-Cache-Lookup	values : MISS from cp1005.eqiad.wmn ...
-field name: X-Cache	values : MISS from cp1005.eqiad.wmnet, HIT ...
+field name: X-Cache-Lookup	values : MISS from cp1003.eqia...
+field name: X-Cache	values : MISS from cp1003.eqiad.wmnet, ...
 field name: Server	value: Apache
 field name: X-Content-Type-Options	value: nosniff
-field name: Cache-Control	value: private, s-maxage=0, max-age=0, ...
-field name: Date	value: Thu, 10 Jan 2013 23:03:04 GMT
+field name: Cache-Control	value: private, s-maxage=0, ...
+field name: Date	value: Tue, 15 Jan 2013 21:13:05 GMT
 field name: Vary	value: Accept-Encoding,Cookie
 field name: Content-Type	value: text/html; charset=UTF-8
 \end{verbatim}
@@ -195,13 +187,94 @@ The remaining lines are the beginning of the French Wikipedia homepage,
 which is an HTML document.
 
 
-\section{Common MIME Types for Character Data}
+\section{MIME Types and the  \code{charset} Parameter}
 
-The HTTP \code{Content-Type} header specifies the content type of the message body.
+MIME types are specified as type/subtype pairs optionally, followed by a parameter. 
+MIME type \code{text/*} allows the \code{charset} parameter and includes type/subtypes:
+\begin{verbatim} 
+text/plain 
+text/html
+text/xml
+\end{verbatim}
+The MIME-type standard (see \url{http://www.ietf.org/rfc/rfc2046.txt}) specifies
+that the default \code{charset} parameter for type \code{text} is ASCII (see \refsec{ascii}).
 
-XML and JSON are common machine and human readable text data interchange formats. 
-The purpose of text data interchange formats is not to frustrate the programmer,
-rather it is to overcome the problem of proprietary data formats.
+The type \code{text/xml} is a legacy type; for XML data the type 
+\code{application/xml} is preferred. 
+Data in a defined dialect of XML is specified accordingly.
+For example, RSS feed data should be of type \code{application/rss+xml}.
+Examples of MIME-types for XML and dialects of XML include:
+\begin{verbatim}  
+application/xml
+application/rss+xml 
+application/xhtml+xml 
+\end{verbatim}  
+The \code{application/xml} and \code{+xml} MIME types can take an
+optional charset parameter.  If none is present it is up to the application
+to infer or guess the character encoding used based on rules laid out
+in the XML 1.0 Recommendation.  See \url{http://www.w3.org/TR/REC-xml/#sec-guessing}.
+
+\subsection{MIME Type \code{application/x-www-form-urlencoded}}\label{section:urlencoding}
+
+URL encoding, also called percent encoding, is used to encode both form data and URIs which
+contain reserved or non-ascii characters.
+The set of \emph{reserved characters} consists of the punctuation marks
+\mbox{\code{\! *  ' ( ) ; : @ \& = \$ , / ? \# {[} {]} }}
+all of which have special meaning in a URL.
+The set of \emph{unreserved characters} consists of the ASCII characters A--Z, a--z, 0--9,
+and the punctuation marks dash, underscore, period, and tilde (\textasciitilde{}).
+The reserved characters and all other characters must be converted to UTF-8
+and each byte of the UTF-8 representation
+is encoded separately as a percent sign followed by the hex value of that byte
+(which ranges from {\bk}x00 to {\bk}xFF).
+Because the percent character itself is meaningful, if the percent character occurs in the
+data then it too is URL encoded as \code{\%25}.
+
+For example, the French wikipedia contains an index page named \mbox{Sp{\'e}cial:Toutes\_les\_pages}.
+The link in the HTML to this page is encoded as
+\begin{verbatim}
+http://fr.wikipedia.org/wiki/Sp%C3%A9cial:Toutes_les_pages
+\end{verbatim}
+Were this link to be encoded again, the result would be
+\begin{verbatim}
+http://fr.wikipedia.org/wiki/Sp%25C3%25A9cial:Toutes_les_pages
+\end{verbatim}
+
+
+\section{XML}
+
+In this section we focus on processing text data in XML documents.
+There are many good books XML processing.
+We particularly recommend \emph{Java and XML} by McLaughlin et.al.
+published by O'Reilly.
+
+\subsection{XML Encoding Declaration}
+
+The character encoding used for the XML document is of primary importance.
+It is specified in the opening XML declaration, e.g.
+\begin{verbatim} 
+<?xml version="1.0" encoding="UTF-8" ?>
+\end{verbatim} 
+The encoding declaration is optional.  If omitted, the default is UTF-8.
+
+As we saw in \refsec{unicode}, not all Unicode characters are legal XML characters.
+ASCII control characters are not legal Unicode, excepting tab, carriage return, and linefeed.
+XML also disallows some Unicode characters in the surrogate code blocks.
+XML documents which have been created from legacy data encoded in Latin-1 (ISO-8859-1)
+or Windows-1252 may sometimes violate this constraint and will result in the parser
+throwing some kind of exception, especially if the encoding declaration is missing
+from the opening XML declaration.
+
+
+
+\subsection{Parsing XML content}
+
+JAXP: standard API.  using this API in code allows interoperability with multiple XML parsers.
+
+\subsubsection{InputSource}
+
+
+\subsubsection{DOM and SAX}
 
 When natural language texts are represented as structured documents,
 must first recover the document structure as well as the text contents.
@@ -210,18 +283,22 @@ which is fully constructed in memor, the DOM (Document Object Model) approach,
 or a streaming approach in which subparts of the documents are processed as
 they are encountered.  The streaming approach is the one we consider here.
 
+
+
+SAX is a streaming interface for XML, which means that applications using SAX receive event notifications about the XML document being processed an element, and attribute, at a time in sequential order starting at the top of the document, and ending with the closing of the ROOT element. This means that it’s extremely efficient at processing XML in linear time without placing too many demands upon system memory.
+
+
+\subsection{SAX example}
+
+
 event-based parsing using callbacks.
 parsers keep track of markup, data
 events are when markup is encountered
 
 Applications implement handlers 
 
+\subsection{Escapes for XML reserved characters}
 
-\section{XML}
-
-Java and XML book.
-
-SAX is a streaming interface for XML, which means that applications using SAX receive event notifications about the XML document being processed an element, and attribute, at a time in sequential order starting at the top of the document, and ending with the closing of the ROOT element. This means that it’s extremely efficient at processing XML in linear time without placing too many demands upon system memory.
 
 \section{HTML}
 
@@ -234,11 +311,13 @@ we use the NekoHTML parser.
 
 http://nekohtml.sourceforge.net/
 
-
-
+\subsection{Escapes for HTML reserved characters}
 
 \section{JSON}
 
+MIME-type application/json
+
 simple json
 
+\subsection{Escapes for JSON reserved characters}
 

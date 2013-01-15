@@ -6,10 +6,9 @@ other programming languages) is ``hello world.''
 \codeblock{HelloWorld.1}
 %
 This is a very simple example of text processing, but not a trivial one.
-The Java program generates text characters; the Unix shell and the underlying
-operating system display these on the screen.
-What is necessary in order to correctly generate and display
-text in a language other than English?
+The Java program generates text characters and sends them to an output device,
+in this example, the terminal.
+What is necessary in order to generate and display text in a language other than English?
 How do we greet the world in Japanese?
 
 The HTML equivalent of our ``hello world'' program is a file containing
@@ -22,7 +21,7 @@ and indirectly with the web server and web brower.  How do we generate a web pag
 that says ``Hello World'' in Japanese?  What is required 
 for the Japanese characters to display correctly in the browser?
 
-It is not a big step from writing these simple examples to building a web service
+It is not a big step from understanding these simple examples to building a web service
 that aggregates news feeds from around the world and indexes them for keyword search.
 In this book we aim to give you the knowledge you need to do this by working
 through the details of how character data is encoded into bytes and how
@@ -30,8 +29,7 @@ this data is sent to and retrieved from the operating system.
 
 \section{Tools of the Trade}
 
-Before writing ``hello world'' 
-we'll take some time to explain the tools we'll be using or that
+First we'll take some time to explain the tools we'll be using or that
 you might want to use for program development.
 All of these tools are open source and freely
 available, though under a perplexing array of licensing terms and
