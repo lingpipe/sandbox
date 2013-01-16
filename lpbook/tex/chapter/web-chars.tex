@@ -304,35 +304,26 @@ end element: foo
 end document
 \end{verbatim}
 
-XML elements may contain text interleaved with other elements,
-as in this schematic example of a paragraph in XHTML
+XML elements may contain text interleaved with other elements.
 \begin{verbatim}
-<p> tok1 <b> tok2 </b> tok3 <b> tok4 tok5 </b> tok6 </p>
+<?xml version="1.0"?>
+<!DOCTYPE foo SYSTEM "foo.dtd">
+<foo> tok1 <bar> tok2 </bar> tok3 <bar> tok4 tok5 </bar> tok6 </foo>
 \end{verbatim}
-
-The events reported in parsing this paragraph are
+An event-based parser reports the following events:
 \begin{verbatim}
-start element: p
+start element: foo
 characters: " tok1 " 
-start element: b 
+start element: bar
 characters: " tok2 "  
-end element: b 
+end element: bar 
 characters: " tok3 "   
-start element: b
+start element: bar
 characters: " tok4 tok5 " 
-end element: b 
+end element: bar 
 characters: " tok6 "  
-end element: p
+end element: foo
 \end{verbatim}
-
-
-\subsubsection{InputSource}
-
-
-
-
-
-
 
 
 \subsection{SAX example}
