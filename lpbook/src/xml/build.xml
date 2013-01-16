@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/lp-book-xml-${version}.jar"/>
+
+  <path id="classpath">
+    <pathelement location="${jar}"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+      <classpath refid="classpath"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="print-xml-char-content" depends="jar">
+    <java classname="com.lingpipe.book.xml.PrintXmlCharContent"
+        fork="true">
+      <classpath refid="classpath"/>
+      <arg value ="${url}"/>
+    </java>
+  </target>
+
+</project>
+
+
+
+
