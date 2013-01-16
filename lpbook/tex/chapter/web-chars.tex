@@ -271,34 +271,63 @@ from the opening XML declaration.
 An XML document consists of a single top-level element which contains
 nested XML elements.  
 
+\subsubsection{DOM and SAX APIs for XML}
+
+The DOM (Document Object Model) approach to XML maps the XML document into a tree structure
+and then navigates that tree.  
+Once fully constructed, any part of the tree can be accessed and the structure of 
+the tree itself can be modified.
+Building the DOM tree for large documents can require considerable system resources.
+
+SAX, the Simple API for Java, is an event-based sequential access
+parser API.  It is a streaming interface.  Applications using SAX
+receive event notifications about the XML document being processed as each
+element and attribute are encountered in sequential order starting at the
+top of the document, and ending with the closing of the ROOT
+element. The application must implement handlers to deal with the different events.
+SAX parsers can process XML in
+linear time without placing too many demands upon system memory.
+
+Here is the ``Hello World'' XML document
+\begin{verbatim}
+<?xml version="1.0"?>
+<!DOCTYPE foo SYSTEM "foo.dtd">
+<foo><bar>Hello, world!</bar></foo>
+\end{verbatim}
+
+An event-based parser treats this as a series of linear events
+that are reported to the calling application as
+\begin{verbatim}
+start document
+start element: foo
+start element: bar
+characters: "Hello, world!"
+end element: bar
+end element: foo
+end document
+\end{verbatim}
+
 XML elements may contain text interleaved with other elements,
 as in this schematic example of a paragraph in XHTML
 \begin{verbatim}
 <p> tok1 <b> tok2 </b> tok3 <b> tok4 tok5 </b> tok6 </p>
 \end{verbatim}
 
-\subsubsection{DOM and SAX for XML}
+The events reported in parsing this paragraph are
+\begin{verbatim}
+start element: p
+characters: " tok1 " 
+start element: b 
+characters: " tok2 "  
+end element: b 
+characters: " tok3 "   
+start element: b
+characters: " tok4 tok5 " 
+end element: b 
+characters: " tok6 "  
+end element: p
+\end{verbatim}
 
-The XML DOM (Document Object Model) can be used
-to represent the entire XML document as a tree by using DOM parser for XML.
-Once fully constructed, any part of the tree can be accessed and the structure of
-the tree can be modified. A DOM tree is a heavy object and parsing and
-constructing very large documents can be very expensive.
-
-The normalized DOM tree for the <p> example above element will contain
-five child nodes:  text node (" tok1 "), entity node (<b>), text node (" tok3 "),
-entity node (<b>), text node (" tok6 ").
-
-SAX, the Simple API for Java, is an event-based sequential access
-parser API.  It is a streaming interface.  Applications using SAX
-receive event notifications about the XML document being processed an
-element, and attribute, at a time in sequential order starting at the
-top of the document, and ending with the closing of the ROOT
-element. This means that it’s extremely efficient at processing XML in
-linear time without placing too many demands upon system memory.
-
-The SAX parser throws the following events:
-start element "p", start element "b", end element "b", start element "b", end element "b", end element "p".
 
 \subsubsection{InputSource}
 
