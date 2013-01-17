@@ -216,33 +216,32 @@ in the XML 1.0 Recommendation.  See \url{http://www.w3.org/TR/REC-xml/#sec-guess
 
 \subsection{MIME Type \code{application/x-www-form-urlencoded}}\label{section:urlencoding}
 
-URL encoding, also called percent encoding, is used to encode both form data
-and URIs which contain reserved or non-ascii characters.
-The set of \emph{reserved characters} consists of those punctuation marks which
-have a special meaning in a URL:
-\mbox{\code{\! *  ' ( ) ; : @ \& = \$ , / ? \# {[} {]} }}
-The set of \emph{unreserved characters} consists of the ASCII characters A--Z, a--z, 0--9,
-and the punctuation marks dash, underscore, period, and tilde (\textasciitilde{}).
-The reserved characters and all other characters must be converted to UTF-8
-and then each byte of the UTF-8 representation is encoded separately.
-The encoding for the byte value is a percent sign followed by the 
-hex value of that byte.  The encoded byte will be in the range 00 to FF.
-Thus the encoded byte can be expressed using the unreserved characters,
-specifically the digits 0--9 and letters A--F.
+The MIME type \code{application/x-www-form-urlencoded}
+is so named because it is the default encoding used by the browser
+to send a POST request from a web form element.
+This encoding allows URLs that contain non-ASCII characters to be sent via an HTTP request.
+
+A URL encoded string contains only alphanumeric ASCII characters plus the characters
+hyphen, underscore, period, and asterisk. 
+The percent character is allowed 
+but is interpreted as the start of a special escaped sequence.
+To encode a string, spaces are converted to '+' and
+all other characters are converted by taking their byte value
+(the UTF-8 character encoding is recommended)
+and converting each byte to the sequence \emph{\%xy} where \emph{xy} correspond to the
+two-digit hex value of the 8 bits.
 Because the percent character is meaningful,
-if the is occurs in the data, 
-it too is URL encoded as \code{\%25}.
+if it occurs in the data it will be URL encoded as \code{\%25}.
 
-For example, the French wikipedia contains an index page named \mbox{Sp{\'e}cial:Toutes\_les\_pages}.
-The link in the HTML to this page is encoded as
-\begin{verbatim}
-http://fr.wikipedia.org/wiki/Sp%C3%A9cial:Toutes_les_pages
-\end{verbatim}
-Were this link to be encoded again, the result would be
-\begin{verbatim}
-http://fr.wikipedia.org/wiki/Sp%25C3%25A9cial:Toutes_les_pages
-\end{verbatim}
-
+The \code{Java.net} package contains two convenience classes, \code{URLEncoder}
+and \code{URLDecoder} which provide static methods to encode and decode strings.
+The example class \code{EncodeDecodeUrl} simple encodes and decodes the string
+\emph{\'{A} votre sant\'{e}}.
+%
+\displ{\filepath{src/webchars/src/com/lingpipe/book/webchars/EncodeDecodeUrl.java}}
+%
+\codeblock{EncodeDecodeUrl.1}
+%
 
 
 
