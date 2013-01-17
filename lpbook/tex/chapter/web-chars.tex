@@ -1,4 +1,4 @@
-\chapter{Character Data and the Web}\label{chap:web}
+\chapter{Character Data for the Web}\label{chap:web}
 
 In this chapter we examine the intersection of Java character encoding 
 and web technologies by showing the processing steps involved 
@@ -60,7 +60,7 @@ The \code{java.net} package contains classes used to implement networking applic
 We start by using \code{java.net.URL} and \code{java.net.URLConnection} objects
 to send and recieve HTTP requests and responses via the example class \code{EchoHttpHeader}.
 %
-\displ{\filepath{src/regex/src/com/lingpipe/book/webchars/EchoHttpHeader.java}}
+\displ{\filepath{src/webchars/src/com/lingpipe/book/webchars/EchoHttpHeader.java}}
 %
 \codeblock{EchoHttpHeader.1}
 %
@@ -140,7 +140,7 @@ The example class \code{EchoHttpBody} retrieve the bytes from the message body a
 uses the \code{charset} parameter in the \code{Content-Type} field to convert them
 to characters.  
 %
-\displ{\filepath{src/regex/src/com/lingpipe/book/webchars/EchoHttpBody.java}}
+\displ{\filepath{src/webchars/src/com/lingpipe/book/webchars/EchoHttpBody.java}}
 %
 This program reads in the URL from the command line and creates a \code{URLConnection},
 as in the previous example.  Next it looks for the \code{Content-Type} field and
@@ -216,19 +216,22 @@ in the XML 1.0 Recommendation.  See \url{http://www.w3.org/TR/REC-xml/#sec-guess
 
 \subsection{MIME Type \code{application/x-www-form-urlencoded}}\label{section:urlencoding}
 
-URL encoding, also called percent encoding, is used to encode both form data and URIs which
-contain reserved or non-ascii characters.
-The set of \emph{reserved characters} consists of the punctuation marks
+URL encoding, also called percent encoding, is used to encode both form data
+and URIs which contain reserved or non-ascii characters.
+The set of \emph{reserved characters} consists of those punctuation marks which
+have a special meaning in a URL:
 \mbox{\code{\! *  ' ( ) ; : @ \& = \$ , / ? \# {[} {]} }}
-all of which have special meaning in a URL.
 The set of \emph{unreserved characters} consists of the ASCII characters A--Z, a--z, 0--9,
 and the punctuation marks dash, underscore, period, and tilde (\textasciitilde{}).
 The reserved characters and all other characters must be converted to UTF-8
-and each byte of the UTF-8 representation
-is encoded separately as a percent sign followed by the hex value of that byte
-(which ranges from {\bk}x00 to {\bk}xFF).
-Because the percent character itself is meaningful, if the percent character occurs in the
-data then it too is URL encoded as \code{\%25}.
+and then each byte of the UTF-8 representation is encoded separately.
+The encoding for the byte value is a percent sign followed by the 
+hex value of that byte.  The encoded byte will be in the range 00 to FF.
+Thus the encoded byte can be expressed using the unreserved characters,
+specifically the digits 0--9 and letters A--F.
+Because the percent character is meaningful,
+if the is occurs in the data, 
+it too is URL encoded as \code{\%25}.
 
 For example, the French wikipedia contains an index page named \mbox{Sp{\'e}cial:Toutes\_les\_pages}.
 The link in the HTML to this page is encoded as
@@ -241,6 +244,8 @@ http://fr.wikipedia.org/wiki/Sp%25C3%25A9cial:Toutes_les_pages
 \end{verbatim}
 
 
+
+
 \section{XML}
 
 In this section we focus on processing text data in XML documents.
@@ -248,33 +253,86 @@ There are many good books XML processing.
 We particularly recommend \emph{Java and XML} by McLaughlin et.al.
 published by O'Reilly.
 
-\subsection{XML Encoding Declaration}
+\subsection{XML Character Encoding}
 
 The character encoding used for the XML document is of primary importance.
 It is specified in the opening XML declaration, e.g.
 \begin{verbatim} 
 <?xml version="1.0" encoding="UTF-8" ?>
-\end{verbatim} 
-The encoding declaration is optional.  If omitted, the default is UTF-8.
+\end{verbatim}  
+The encoding declaration is optional.
+The default character encoding is UTF-8.
+
+When XML is sent as the body of an HTTP message, the HTTP \code{Content-Type} 
+header should match the declared encoding.  If the HTTP \code{Content-Type} header
+is unspecified, the message body encoding defaults to Latin-1.  
+
+XML was designed for Unicode data.
+Even if the document's declared encoding is Latin-1 (ISO-8859-1),
+the document can contain any legal Unicode character.
+Characters outside of the declared encoding can be represented 
+via that characters numerical character refernce (NCR), see below.
+
+\subsubsection{Allowed Characters}
 
 As we saw in \refsec{unicode}, not all Unicode characters are legal XML characters.
 ASCII control characters are not legal Unicode, excepting tab, carriage return, and linefeed.
 XML also disallows some Unicode characters in the surrogate code blocks.
-XML documents which have been created from legacy data encoded in Latin-1 (ISO-8859-1)
-or Windows-1252 may sometimes violate this constraint and will result in the parser
-throwing some kind of exception, especially if the encoding declaration is missing
-from the opening XML declaration.
+XML documents which have been created from non-UTF data, such as legacy data
+encoded in Latin-1 (ISO-8859-1) or Windows-1252, 
+may sometimes contain characters that fall outside of the allowed values.
+This is likely to cause a parser error, especially if the legacy character encoding
+is not declared in the opening XML declaration.
+
+
+\subsubsection{Character Escaping}\label{section:xml-escape-codes}
+
+The XML syntax markers cannot be used as regular characters in text; 
+use the following set of predefined entities instead:
+\code{\&lt;} for < (open tag), \code{\&gt;} for > (close tag), \code{\&amp;} for \&,
+\code{\&apos;} for ' (single quote), and \code{\&quot} for " (double quote).
+
+All permitted Unicode characters may be represented with a numeric character reference.
+The numerical character reference is the value of the Unicode code point
+expressed in either in decimal or hex, 
+prefixed by ampersand and followed by a semicolon.
+Decimal values start with \# (hashcode), hexidecimal values start with \#x.
+For example, the Greek capital letter Sigma has Unicode code point U+03A3
+(hex value 3A3, decimal value 931).  In XML (and HTML) this is written as either
+\code{\&\#931;}, \code{\&\#0931;}, \code{\&\#3A3;},  or \code{\&\#03A3;}.
+
+\subsubsection{PCDATA and CDATA}
+
+PCDATA stands for \emph{Parsed Character Data}.
+CDATA is character data is not parsed by the XML processor.
+CDATA is terminated by ]].  If this sequence occurs, it must be placed outside of
+the CDATA section.  If more CDATA follows, then a new CDATA section is opened.
+
+CDATA is not what you think.  CDATA only allows the characters in the declared encoding.
+Document declared with encoding Latin-1 can may still contain Unicode chars outside of Latin-1
+in PCDATA section but not in CDATA section.
+
+
+\subsection{Generating Character data for XML}
+
+In order to generate valid character data for XML 
+to generate XML with valid character data (PCDATA, CDATA):
+a. declare encoding
+b. escape XML reserved characters
+c. check for illegal characters
 
 
 \subsection{DOM and SAX APIs for XML}
 
 An XML document consists of a single top-level element which contains
-nested XML elements.  
+nested XML elements.   There are two approaches to processing XML:
+DOM and SAX.
+
 The DOM (Document Object Model) approach to XML maps the XML document into a tree structure
 and then navigates that tree.  
 Once fully constructed, any part of the tree can be accessed and the structure of 
 the tree itself can be modified.
-Building the DOM tree for large documents can require considerable system resources.
+The DOM tree for large documents will require large amounts of memory.
 
 SAX, the Simple API for Java, is an event-based sequential access
 parser API.  It is a streaming interface.  Applications using SAX
@@ -283,7 +341,7 @@ element and attribute are encountered in sequential order starting at the
 top of the document, and ending with the closing of the ROOT
 element. The application must implement handlers to deal with the different events.
 SAX parsers can process XML in
-linear time without placing too many demands upon system memory.
+linear time and is memory efficient.
 
 Here is the ``Hello World'' XML document
 \begin{verbatim}
@@ -304,38 +362,83 @@ end element: foo
 end document
 \end{verbatim}
 
-XML elements may contain text interleaved with other elements.
+\subsection{SAX Example: Trace Events and Get Characters}
+
+The example class \code{TraceSaxEvents} illustrates 
+how the SAX parser/handler pattern works.
+It uses the parsers and handlers in the
+\code{org.xml.sax} package to report on parsing events and it
+echos all characters found in the elements in that document.
+%
+\displ{\filepath{src/webchars/src/com/lingpipe/book/webchars/TraceSaxEvents.java}}
+% 
+First we create a class \code{TraceHandler}.
+%
+\codeblock{TraceSaxEvents.1}
+%
+The class \code{org.sax.xml.helpers.DefaultHandler} provides default implementations
+for the callback methods in the core SAX2 handler classes.
+The \code{TraceHandler} class overrides the methods 
+\code{startDocument, endDocument, startElement, endElement, characters}
+so that these events are reported to the console.
+The \code{characters} method prints the characters enclosed by
+the vertical bar (|) character.
+%
+\codeblock{TraceSaxEvents.2}
+%
+We use the \code{XMLReaderFactory} to get an \code{XMLReader}.
+We set the XMLReader's content handler to an new instance
+of \code{TraceHandler}.
+The XMLReader parses the input.
+The handler's callback methods are called as the parser encounters
+XML markup.
+
+Xml elements may contain text interleaved with other elements.
+We have included a small example file with this chapter,
+%
+\displ{\filepath{src/webchars/foo.xml}}
 \begin{verbatim}
 <?xml version="1.0"?>
-<!DOCTYPE foo SYSTEM "foo.dtd">
-<foo> tok1 <bar> tok2 </bar> tok3 <bar> tok4 tok5 </bar> tok6 </foo>
+<foo> 
+ tok1 
+ <bar> tok2 </bar>  tok3 
+ <bar> tok4 
+           tok5 </bar>
+</foo>
+\end{verbatim} 
+Here is the output from running \code{TraceSaxEvents} on this file
+\begin{verbatim} 
+startDocument
+startElement: foo
+characters: | 
+ to|
+characters: |k1 
+ |
+startElement: bar
+characters: | tok2 |
+endElement: bar
+characters: |  tok3 
+ |
+startElement: bar
+characters: | tok4 
+           tok5 |
+endElement: bar
+characters: |
+|
+endElement: foo
+endDocument
 \end{verbatim}
-An event-based parser reports the following events:
-\begin{verbatim}
-start element: foo
-characters: " tok1 " 
-start element: bar
-characters: " tok2 "  
-end element: bar 
-characters: " tok3 "   
-start element: bar
-characters: " tok4 tok5 " 
-end element: bar 
-characters: " tok6 "  
-end element: foo
-\end{verbatim}
+The XMLReader parses data from the InputSource as it becomes available.
+There are two consecutive callbacks to the \code{characters} method to
+retrieve the initial content which includes whitespace, the string \emph{tok1},
+another space plus a newline.
+All character and whitespace that are outside of XML markup tags are returned
+by the \code{characters} method.
 
 
-\subsection{SAX example}
 
 
-event-based parsing using callbacks.
-parsers keep track of markup, data
-events are when markup is encountered
 
-Applications implement handlers 
-
-\subsection{Escapes for XML reserved characters}
 
 
 \section{HTML}
