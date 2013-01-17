@@ -58,9 +58,9 @@
     </java>
   </target>
 
-  <target name="xml-chars" depends="jar"
+  <target name="url-encode" depends="jar"
    description="show HTTP response body">
-    <java classname="com.lingpipe.book.webchars.GetXmlCharacters"
+    <java classname="com.lingpipe.book.webchars.EncodeDecodeUrl"
         fork="true">
       <classpath refid="classpath"/>
       <arg value ="${url}"/>
