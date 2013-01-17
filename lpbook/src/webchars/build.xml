@@ -9,8 +9,6 @@
 
   <path id="classpath">
     <pathelement location="${jar}"/>
-    <pathelement location="../../lib/servlet-api.jar"/>
-    <pathelement location="../../lib/commons-fileupload-1.1.1.jar" />
   </path>
 
   <target name="clean">
@@ -51,29 +49,22 @@
     </java>
   </target>
 
-  <property name="app.name" value="charencoding"/>
-  <target name="war"
-          depends="jar"
-          description="bundle app into .war file">
-    <mkdir dir="build/war"/>
-    <copy todir="build/war/">
-      <fileset dir="webapp"/>
-    </copy>
-    <copy todir="build/war/WEB-INF">
-      <fileset dir="webapp/WEB-INF" casesensitive="yes">
-        <filename name="**/*.properties"/>
-      </fileset>
-    </copy>
-    <mkdir dir="build/war/WEB-INF/lib"/>
-    <copy todir="build/war/WEB-INF/lib">
-      <fileset file="${jar}"/>
-      <fileset dir="webapp/WEB-INF/lib" casesensitive="yes">
-        <filename name="**/*.jar"/>
-      </fileset>
-    </copy>
-    <jar destfile="build/${app.name}.war">
-      <fileset dir="build/war"/>
-    </jar>
+  <target name="trace-sax" depends="jar"
+   description="show HTTP response body">
+    <java classname="com.lingpipe.book.webchars.TraceSaxEvents"
+        fork="true">
+      <classpath refid="classpath"/>
+      <arg value ="${url}"/>
+    </java>
+  </target>
+
+  <target name="xml-chars" depends="jar"
+   description="show HTTP response body">
+    <java classname="com.lingpipe.book.webchars.GetXmlCharacters"
+        fork="true">
+      <classpath refid="classpath"/>
+      <arg value ="${url}"/>
+    </java>
   </target>
 
 </project>
