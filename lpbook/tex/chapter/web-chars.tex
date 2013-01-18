@@ -170,7 +170,7 @@ provided that Ant and the terminal display are correctly configured (see \refsec
 
 To demonstrate, we use this program to fetch the French Wikipedia home page.
 \commandlinefollow{ant -Durl="http://fr.wikipedia.org" http-body}
-\begin{verbatim}  
+\begin{verbatim}   
 URL: http://fr.wikipedia.org
 Content-Type: text/html; charset=UTF-8
 charset: UTF-8
@@ -235,14 +235,24 @@ if it occurs in the data it will be URL encoded as \code{\%25}.
 
 The \code{Java.net} package contains two convenience classes, \code{URLEncoder}
 and \code{URLDecoder} which provide static methods to encode and decode strings.
-The example class \code{EncodeDecodeUrl} simple encodes and decodes the string
-\emph{\'{A} votre sant\'{e}}.
+The example class \code{EncodeDecodeUrl} encodes and decodes string.
 %
 \displ{\filepath{src/webchars/src/com/lingpipe/book/webchars/EncodeDecodeUrl.java}}
 %
 \codeblock{EncodeDecodeUrl.1}
 %
-
+We construct the string literal \emph{\'{A} votre sant\'{e}} using the hexadecimal
+representation of the Unicode code points for the non-ASCII characters.
+We use the static method \code{URLEncoder.encode} to create a URL-encoded version
+and then decode that.  Finally we print out all three strings, using a
+\code{PrintWriter} whose character encoding is UTF-8.
+%
+\commandlinefollow{ant url-encode}
+\begin{verbatim}  
+string: À votre santé!
+url encoded: %C3%80+votre+sant%C3%A9%21
+decoded: À votre santé!
+\end{verbatim}
 
 
 \section{XML}
@@ -262,15 +272,19 @@ It is specified in the opening XML declaration, e.g.
 The encoding declaration is optional.
 The default character encoding is UTF-8.
 
-When XML is sent as the body of an HTTP message, the HTTP \code{Content-Type} 
-header should match the declared encoding.  If the HTTP \code{Content-Type} header
-is unspecified, the message body encoding defaults to Latin-1.  
-
 XML was designed for Unicode data.
-Even if the document's declared encoding is Latin-1 (ISO-8859-1),
+Even if the document's declared encoding is a 
+legacy encoding such as Latin-1 (ISO-8859-1),
 the document can contain any legal Unicode character.
 Characters outside of the declared encoding can be represented 
 via that characters numerical character refernce (NCR), see below.
+
+When XML is sent as the body of an HTTP message, the HTTP \code{Content-Type} 
+header should match the declared encoding.  If the HTTP \code{Content-Type} header
+is unspecified, the message body encoding defaults to Latin-1.
+If the body is decoded using the wrong charset then either the message may be
+corrupted or an exception may be thrown.
+
 
 \subsubsection{Allowed Characters}
 
@@ -302,6 +316,11 @@ For example, the Greek capital letter Sigma has Unicode code point U+03A3
 
 \subsubsection{PCDATA and CDATA}
 
+An XML document contains a single top-level element.
+Within this element, text is either character data or markup.
+The markup consists of the angle brackets (<>) and the names inside them.
+Character data is the text between the tags.
+
 PCDATA stands for \emph{Parsed Character Data}.
 CDATA is character data is not parsed by the XML processor.
 CDATA is terminated by ]].  If this sequence occurs, it must be placed outside of
@@ -312,16 +331,17 @@ Document declared with encoding Latin-1 can may still contain Unicode chars outs
 in PCDATA section but not in CDATA section.
 
 
-\subsection{Generating Character data for XML}
+\subsubsection{Generating XML}
 
-In order to generate valid character data for XML 
-to generate XML with valid character data (PCDATA, CDATA):
-a. declare encoding
-b. escape XML reserved characters
-c. check for illegal characters
+Use an XML library to generate the document, covered in next section.
+This will take care of everything, but can be heavy to use.
+If generating a document on an ad-hoc basis, always declare
+the character encoding and use existing libraries to properly
+escape all text used as either attributes of contents of all elements.
+Apache Commons, Google code.
 
 
-\subsection{DOM and SAX APIs for XML}
+\subsection{DOM and SAX APIs for XML}\label{xml-dom-sax}
 
 An XML document consists of a single top-level element which contains
 nested XML elements.   There are two approaches to processing XML:
