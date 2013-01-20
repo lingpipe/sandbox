@@ -316,20 +316,28 @@ For example, the Greek capital letter Sigma has Unicode code point U+03A3
 
 \subsubsection{PCDATA and CDATA}
 
-An XML document contains a single top-level element.
+An XML document must contain a single top-level element.
 Within this element, text is either character data or markup.
 The markup consists of the angle brackets (<>) and the names inside them.
-Character data is the text between the tags.
+All text that is not markup is character data.
 
 PCDATA stands for \emph{Parsed Character Data}.
-CDATA is character data is not parsed by the XML processor.
-CDATA is terminated by ]].  If this sequence occurs, it must be placed outside of
-the CDATA section.  If more CDATA follows, then a new CDATA section is opened.
+By default, XML processors parse all text in an XML document
+in order to find markup and entity references.
 
-CDATA is not what you think.  CDATA only allows the characters in the declared encoding.
-Document declared with encoding Latin-1 can may still contain Unicode chars outside of Latin-1
-in PCDATA section but not in CDATA section.
+CDATA is unparsed character data within an XML element.
+A CDATA section starts with \code{<!CDATA[} and ends with \code{]]>}.
+Nested CDATA sections are not allowed.  The sequence \code{]]>}
+Is always interpreted as the close of a CDATA section.
+If this sequence occurs in the text itself, it must be placed outside
+of the CDATA section and if more text follows, then a new CDATA section is opened.
 
+CDATA sections may be useful in situations where the contents of
+an element contain many instances of the XML syntax markers, for example, when the
+contents are a Javascript or HTML fragments.  In a CDATA sections, these characters can
+be used directly, instead of using entity references.  However, because the CDATA
+contents are unparsed, no entity references can be used.  Thus the contents of the
+CDATA section are restricted to only the legal XML characters in the declared encoding.
 
 \subsubsection{Generating XML}
 
@@ -462,7 +470,15 @@ by the \code{characters} method.
 
 \section{HTML}
 
-Processing HTML is challenging because although standards
+HTML character encoding.
+
+\subsection{Escapes for HTML reserved characters}
+
+HTML markup, HTML escapes.
+
+\subsection{Parsing HTML}
+
+Parsing HTML documents is challenging because although standards
 have been developed for HTML, they are often not met.
 Therefore applications which mine HTML documents for text data
 must be able to handle ill-formed HTML.
@@ -471,7 +487,6 @@ we use the NekoHTML parser.
 
 http://nekohtml.sourceforge.net/
 
-\subsection{Escapes for HTML reserved characters}
 
 \section{JSON}
 
