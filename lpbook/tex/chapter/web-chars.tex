@@ -298,12 +298,19 @@ This is likely to cause a parser error, especially if the legacy character encod
 is not declared in the opening XML declaration.
 
 
-\subsubsection{Character Escaping}\label{section:xml-escape-codes}
+\subsubsection{Characters and Entity References}\label{section:xml-entity-refs}
 
+XML entity references are be used in place of characters, either as a way of
+escaping reserved characters that would otherwise be interpreted as markup,
+or when the character symbol is not available.
 The XML syntax markers cannot be used as regular characters in text; 
 use the following set of predefined entities instead:
 \code{\&lt;} for < (open tag), \code{\&gt;} for > (close tag), \code{\&amp;} for \&,
 \code{\&apos;} for ' (single quote), and \code{\&quot} for " (double quote).
+
+Many other characters have named entity references.  The full list of 
+entity definitions for characters is maintained by the W3C and is available here
+\urldisplay{http://www.w3.org/TR/xml-entity-names/}.
 
 All permitted Unicode characters may be represented with a numeric character reference.
 The numerical character reference is the value of the Unicode code point
@@ -314,17 +321,15 @@ For example, the Greek capital letter Sigma has Unicode code point U+03A3
 (hex value 3A3, decimal value 931).  In XML (and HTML) this is written as either
 \code{\&\#931;}, \code{\&\#0931;}, \code{\&\#3A3;},  or \code{\&\#03A3;}.
 
-\subsubsection{PCDATA and CDATA}
+\subsubsection{Parsed and Unparsed Character Data}\label{xml-pcdata-cdata}
 
 An XML document must contain a single top-level element.
 Within this element, text is either character data or markup.
 The markup consists of the angle brackets (<>) and the names inside them.
 All text that is not markup is character data.
 
-PCDATA stands for \emph{Parsed Character Data}.
 By default, XML processors parse all text in an XML document
 in order to find markup and entity references.
-
 CDATA is unparsed character data within an XML element.
 A CDATA section starts with \code{<!CDATA[} and ends with \code{]]>}.
 Nested CDATA sections are not allowed.  The sequence \code{]]>}
@@ -338,15 +343,6 @@ contents are a Javascript or HTML fragments.  In a CDATA sections, these charact
 be used directly, instead of using entity references.  However, because the CDATA
 contents are unparsed, no entity references can be used.  Thus the contents of the
 CDATA section are restricted to only the legal XML characters in the declared encoding.
-
-\subsubsection{Generating XML}
-
-Use an XML library to generate the document, covered in next section.
-This will take care of everything, but can be heavy to use.
-If generating a document on an ad-hoc basis, always declare
-the character encoding and use existing libraries to properly
-escape all text used as either attributes of contents of all elements.
-Apache Commons, Google code.
 
 
 \subsection{DOM and SAX APIs for XML}\label{xml-dom-sax}
@@ -462,19 +458,58 @@ another space plus a newline.
 All character and whitespace that are outside of XML markup tags are returned
 by the \code{characters} method.
 
+\subsection{DOM Example: Encode Characters for XML}
 
-
-
-
+Use an XML library to generate the document.
+This will take care of everything, but can be heavy to use.
+If generating a document on an ad-hoc basis, always declare
+the character encoding and use existing libraries to properly
+escape all text used as either attributes of contents of all elements.
+Apache Commons, Google code.
 
 
 \section{HTML}
 
-HTML character encoding.
+HTML was designed for documents sent via HTTP from web servers
+to web browsers (or other web client, collectively known as User-Agent programs).
+Bytes are sent via HTTP; characters are displayed by the browser.
 
-\subsection{Escapes for HTML reserved characters}
+The browser determines the character encoding.
+The browser can use the \code{charset} parameter on the
+\code{Content-Type} header field of the HTTP response
+from the web server or it can try to get the encoding information
+from the \code{meta} tags in the \code{head} section of the HTML document
+or it can try to determine the encoding heuristically
+(see \refsec{encoding-detection}).
+The user can always override the chosen character encoding 
+via controls on the browser.
 
-HTML markup, HTML escapes.
+HTML meta-tags are used either to emulate the use of the HTTP response header, 
+or to embed additional metadata within the HTML document.
+These tags have the form \code{<meta http-equiv="foo" content="bar">}.
+The tags
+\begin{verbatim}
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+\end{verbatim}
+emulate the \code{charset} parameter of the \code{Content-Type} header field.
+
+\subsection{HTML Character and Entity References}
+
+As in XML, the characters that are syntax markers cannot be used directly
+in text and the corresponding predefined entities must be used instead:
+\code{\&lt;} for < (open tag), \code{\&gt;} for > (close tag), \code{\&amp;} for \&,
+\code{\&apos;} for ' (single quote), and \code{\&quot} for " (double quote).
+
+The HTML specification defines a large set of character entity references:
+\urldisplay{http://www.w3.org/TR/html4/sgml/entities.html}
+\urldisplay{http://www.w3.org/TR/html5/syntax.html\#named-character-references}
+
+Numeric character references may also be used.
+The numerical character reference is the value of the Unicode code point
+expressed in either in decimal or hex, 
+prefixed by ampersand and followed by a semicolon.
+See \refsec{xml-entity-refs}.
 
 \subsection{Parsing HTML}
 
@@ -494,5 +529,10 @@ MIME-type application/json
 
 simple json
 
-\subsection{Escapes for JSON reserved characters}
+Escapes for JSON reserved characters.
+
+\subsection{Parsing JSON}
+
+\subsection{Generating JSON}
+
 
