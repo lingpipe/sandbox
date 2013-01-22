@@ -1705,7 +1705,7 @@ The call to \code{toString()} does not modify the buffer.
 Buffers maintain state and are not synchronized for thread safety.
 Read-write synchronization would be sufficient.
 
-\section{\code{Charset} Class}
+\section{\code{Charset} Class}\label{section:charset}
 
 Conversions between sequences of bytes and sequences of characters are
 carried out by three related classes in the \code{java.nio.charset}
@@ -1740,7 +1740,7 @@ malformed input and unmappable characters, possibly defining
 replacement values. So if you must have Morse code, it's possible to
 support it directly.  
 
-\subsection{Decoding and Encoding with a \code{Charset}}
+\subsection{Decoding and Encoding with a \code{Charset}}\label{section:charset-encoder}
 
 Once a \code{Charset} is obtained, its methods \code{newEncoder()} and
 \code{newDecoder()} may be used to get fresh instances of
