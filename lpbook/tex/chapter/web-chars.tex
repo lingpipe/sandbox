@@ -87,7 +87,7 @@ When we run this program with the wikipedia home page as the URL,
 it returns the following headers
 %
 \commandlinefollow{ant -Durl="http://www.wikipedia.org" http-headers}
-\begin{verbatim} 
+\begin{verbatim}  
 field name: null	value: HTTP/1.0 200 OK 
 field name: Age	value: 30
 field name: Content-Length	value: 46388
@@ -460,13 +460,90 @@ by the \code{characters} method.
 
 \subsection{DOM Example: Encode Characters for XML}
 
-Use an XML library to generate the document.
-This will take care of everything, but can be heavy to use.
-If generating a document on an ad-hoc basis, always declare
-the character encoding and use existing libraries to properly
-escape all text used as either attributes of contents of all elements.
-Apache Commons, Google code.
+The example class \code{JDomGenerateXml} generates an XML document
+which contains text content in several languages.
+The character encoding is specified by the user.
+Depending on the specified encoding, different subsets of the
+character data must be be escaped.
+%
+\displ{\filepath{src/webchars/src/com/lingpipe/book/webchars/JDomGenerateXml.java}}
+%
+This program uses the open-source API JDOM2 from \url{http://www.jdom.org}
+to create a document and write it out to disk.
+The JDOM2 jarfile is included in the subdirectory of the \code{src/webchars/lib}.
+%
+\codeblock{JDomGenerateXml.2}
+%
+We construct an XML document in a top-down fashion by first creating
+the root XML element and adding it to a new XML document.
+The top-level element of this document is a \code{<toast\_set>}.
+It contains multiple \code{<toast>} elements which have 
+an attribute named \code{lang} and whose text content consists
+of a toast in the language.
+%
+\codeblock{JDomGenerateXml.1}
+%
+These toasts are specified as Java Strings using Unicode escapes 
+for all non-ascii characters.
+%
+\codeblock{JDomGenerateXml.3}
+%
+We add toasts in English, French, Russian, and Korean.
+%
+\codeblock{JDomGenerateXml.4}
+%
+This program takes two command line arguments.
+The first argument, \code{args[0]}, specifies the character encoding,
+and the second specifies the name of the output file.
+The \code{org.jdom2.output.XMLOutputter} outputs the contents of an
+XML document as a stream of bytes.
+A \code{org.jdom2.output.Format} object controls
+the encoding used to do this conversion.
+The method \code{setEncoding(String encoding)} overrides the default
+encoding.
+The encoding argument is also used to set the character encoding on 
+the \code{OutputStreamWriter} that the \code{XMLOutputter} is writing to.
+This is necessary because a \code{Writer} configuration cannot be queried
+or controlled by the \code{XMLOutputter}.
 
+\code{Format.getPrettyFormat()} returns a new Format object that
+performs whitespace beautification with 2-space indents, uses the
+UTF-8 encoding, doesn't expand empty elements, includes the
+declaration and encoding, and uses the default entity escape strategy.
+An escape strategy encapsulates the logic that determines
+which characaters should be formatted as character entities.
+The set of syntax markers are always formatted as character entities
+(see \refsec{xml-entity-refs}).  The method \code{canEncode} in class
+\code{java.nio.charset.CharsetEncoder} is used to identify characters
+whose Unicode code point is not mapped into a character in the specified encoding
+(see \refsec{charset-encoder}).
+
+To see how entities are escaped under different encodings
+we run \code{JDomGenerateXML} three times via the ant task \code{gen-xml}
+to generate files encoded as UTF-8, ASCII, and Cyrillic.
+%
+\commandlinefollow{ant gen-xml -Dencoding="UTF-8" -Dfile="enc-utf8.xml"}
+\commandlinefollow{ant gen-xml -Dencoding="ASCII" -Dfile="enc-ascii.xml"}
+\commandline{ant gen-xml -Dencoding="KOI-8" -Dfile="enc-koi8.xml"}
+
+\reffig{xml-escapes} shows
+these three output files displayed in the emacs text editor.
+Emacs has the fonts to display all characters and diacritics in
+the Roman, Cyrillic, and Korean alphabets.
+In the UTF-8 file, none of the characters have been escaped, because
+UTF-8 contains character mappings for all Unicode code points.
+In the ASCII file, all non-ASCII characters have been escaped.
+The KOI-8 encoding contains characters corresponding to
+the code points for ASCII and Cyrillic characters
+but not \'{e} or any of the glyphs for Korean.
+
+\begin{figure}
+%\begin{center}
+\includegraphics[width=5.0in]{pngs/xmlencodings.png}
+%\end{center}%
+\vspace*{-18pt}
+\caption{Entity escapes for different encodings.}\label{fig:xml-escapes}
+\end{figure}
 
 \section{HTML}
 
@@ -494,6 +571,9 @@ The tags
 \end{verbatim}
 emulate the \code{charset} parameter of the \code{Content-Type} header field.
 
+Return to HTML example:  Hello World, Hello World Japan. 
+Examine browser, override heading.
+
 \subsection{HTML Character and Entity References}
 
 As in XML, the characters that are syntax markers cannot be used directly
@@ -511,10 +591,7 @@ expressed in either in decimal or hex,
 prefixed by ampersand and followed by a semicolon.
 See \refsec{xml-entity-refs}.
 
-\subsection{Hello World for HTML}
-
-Return to HTML example:  Hello World, Hello World Japan.
-Examine browser, override heading.
+Next to HTML example:  toast_ncr.html - using NCR escapes always works
 
 \subsection{Parsing HTML}
 

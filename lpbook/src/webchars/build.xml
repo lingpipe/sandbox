@@ -9,6 +9,7 @@
 
   <path id="classpath">
     <pathelement location="${jar}"/>
+    <pathelement location="lib/jdom-2.0.4.jar"/>
   </path>
 
   <target name="clean">
@@ -64,6 +65,16 @@
         fork="true">
       <classpath refid="classpath"/>
       <arg value ="${url}"/>
+    </java>
+  </target>
+
+  <target name="gen-xml" depends="jar"
+   description="generate xml">
+    <java classname="com.lingpipe.book.webchars.JDomGenerateXml"
+        fork="true">
+      <classpath refid="classpath"/>
+      <arg value ="${encoding}"/>
+     <arg value ="${file}"/>
     </java>
   </target>
 
