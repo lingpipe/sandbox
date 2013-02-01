@@ -6,12 +6,23 @@ describing spans of Unicode text.  Given a regular expression (regex)
 and some text, basic regex functionality allows us to test whether a
 string matches the regex or find non-overlapping substrings of a
 string matching the regex.
+
+We start with the classes and methods in package \code{java.util.regex}
+and build a series of short example programs.
+Then we cover the syntax for regular expressions in Java using
+our example programs to show how different constructions behave.
+Our discussion of regular expressions is limited.
+We recommend 
+\emph{Matering Regular Expressions, 3rd Edition} by Jeffrey E.F. Friedl,
+O'Reilly and Associates, 2006, for a comprehensive treatment of
+regular expressions in theory and practice.
+
 The example programs for this chapter are in the code directory:
 %
 \displ{\filepath{src/regex/src/com/lingpipe/book/regex}}
 
 
-\section{Matching and Finding}
+\section{The \code{java.util.regex} Package}\label{section:java-util-regex}
 
 Despite the rich functionality of regexes, Java's
 \code{java.util.regex} package contains only two classes,
@@ -20,7 +31,7 @@ provides an immutable representation of a regular expression. An
 instance of \code{Matcher} represents the state of the matching of a
 regular expression against a string.
 
-\subsection{Matching Entire Strings}
+\subsection{Matching Entire Strings}\label{section:exact-match-regex}
 
 It's easiest to start with an example of using a regular expression
 for matching, which we wrote as a the example class \code{RegexMatch}:
@@ -39,8 +50,13 @@ pattern we just created.  Finally, we assign a boolean variable
 on the matcher.  And then we print out the result.
 
 Regular expressions may consist of strings, in which case they
-simply carry out exact string matching.  For example, the regex
-\code{aab} does not match the string \stringmention{aabb}.  
+simply carry out exact string matching.  
+We use simple strings as the regex for the examples in this section.
+In the following sections we go through the regex syntax
+and re-run these programs with more powerful regexes.
+
+To test our program, we try to match the regex
+\code{aab} against string \stringmention{aabb}.
 There is an Ant target \code{regex-match} which feeds the command-line
 arguments to our program.  For the example at hand, we have
 %
@@ -49,6 +65,8 @@ arguments to our program.  For the example at hand, we have
 Regex=|aab|    Text=|aabb|    Matches=false
 \end{verbatim}
 %
+The test fails because there isn't an exact match
+against the entire string.
 On the other hand, the regex \code{abc} does match
 the string \stringmention{abc}.
 %
@@ -113,6 +131,50 @@ succeeding with the span (2,4).  Next, it starts looking at position
 4, but there is no substring starting on or after position 4 that
 matches \stringmention{aa}.
 
+\subsection{Find-and-Replace Operations}\label{section:regex-replace}
+
+A common usage pattern for regular expressions is to find instances of
+one pattern and replace them with another.  We provide a sample
+program \code{RegexReplace}:
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+%
+The \code{main()} method illustrates replacement.
+%
+\codeblock{RegexReplace.1}
+%
+The pattern and matcher are created as usual.  Then, we create
+a string by replacing all the matches of the pattern in the text
+provided to the matcher with the specified replacement.  We could
+also use \code{replaceFirst()} to return the result of only replacing
+the first match.
+
+With the Ant target \code{regex-replace}, we can see this in action.
+%
+\commandlinefollow{ant -Dregex="a" -Dreplacement=z -Dtext="abc abc" regex-replace}
+\commandlinefollow{ant -Dregex="{\bk}d+" -Dreplacement=0
+  -Dtext="+1~(718)~290-9170" regex-replace}
+\begin{verbatim}
+regex=|a|       replacement=|z|
+text=|abc abc|  result=|zbc zbc|
+\end{verbatim}
+%
+\subsubsection{How the \code{Matcher.replaceAll} method works }\label{section:regex-replaceAll}
+
+The following example comes from the Java SE 7 javadoc for the
+\code{Matcher.appendReplacement} method
+%
+\codeblock{RegexFragments.2}
+%
+This code writes \code{one dog two dogs in the yard} to the standard-output stream.
+
+The \code{Matcher.replaceAll} method uses this same sequence of calls to
+the methods \code{find}, \code{appendReplacement}, and \code{appendTail}.
+As in the above example, a \code{StringBuffer} is used to store 
+the intermediate results.
+\code{StringBuffer} objects are thread-safe and therefore this operations
+incurs a certain amount of processing overhead due to synchronization.
+
 
 \section{Empty Regex}\label{section:regex-empty}
 
@@ -131,6 +193,21 @@ Regex=||    Text=||    Matches=true
 \commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext="a" regex-match}
 \begin{verbatim}
 Regex=||    Text=|a|    Matches=false
+\end{verbatim}
+The empty regex matches everywhere in a string, as the following example shows.
+%
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext="aa" regex-find}
+\begin{verbatim} 
+Found || at (0,0)
+Found || at (1,1)
+Found || at (2,2)
+\end{verbatim} 
+The replacing the empty regex inserts the replacement between every
+existing character in a string.
+\commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dreplacement=z -Dtext="aa" regex-replace}
+\begin{verbatim}
+regex=||   replacement=|z|
+text=|aa|  result=|zazaz|
 \end{verbatim}
 
 \section{Character Regexes}
@@ -163,7 +240,7 @@ string denoting the regex.  For instance, we may write
 that matches the character \unicode{00E9}, \unicodedesc{latin small e
   with acute}, which would be written as \charmention{\'e}.
 
-\subsection{Unicode Escapes}
+\subsubsection{Unicode Escapes}
 
 Arbitrary unicode characters may be escaped in the same way as in
 Java.  That is, \code{{\bk}u}\codeVar{hhhh} is a regular expression
@@ -202,7 +279,7 @@ as \code{Patten.compile(".")}, and matches any character, whereas
 the latter uses a regex escape, and only matches the period
 character.
 
-\subsection{Other Escapes}
+\subsubsection{Other Escapes}
 
 There are also other built-in escapes, such as \code{{\bk}n} for
 newline and \code{\bk\bk} for a backslash character.  Again, we have
@@ -216,13 +293,23 @@ to specify an escape character that contains a backslash such as newline
 we need to use two backslash escapes in our string literal, writing
 \code{Pattern.compile("\bk\bk\bk\bk")}.  
 
-This is further confused by the command-line shell.
+Running this example from the command-line is problematic.
 The shell itself is a scripting language with its own set of
 escape characters, one of which is the backslash.
+Usually we use double quotes to enclose the arguments and prevent
+the shell from expanding special characters, but \code{\bk"} is a valid escape
+sequence for the shell which means that the closing double quotes on the
+command line arguments aren't interpreted correctly.
+We use single quotes instead because
+the shell treats all text enclosed by single quotes as a literal.%
+%
+\footnote{Different implementations of the bash shell
+parse the command line differently.  Try this on your machine
+using double quotes or no quotes around the arguments.}
+
 To invoke the regex-match program with a regex consisting 
 of the backslash literal, we need to set up the call \code{Pattern.compile("\bk\bk\bk\bk")}
 and match it against a text consisting of the backslash literal \code{\bk\bk}.
-We do this from the command line shell as follows:
 %
 \commandlinefollow{ant -Dregex='\bk\bk\bk\bk' -Dtext='\bk\bk' regex-match}
 %
@@ -230,15 +317,6 @@ We do this from the command line shell as follows:
 Regex=|\\|    Text=|\|    Matches=true
 \end{verbatim}
 %
-Usually we use double quotes to enclose the arguments and prevent
-the shell from expanding special characters, but \code{\bk"} is a valid escape
-sequence for the shell.  Instead we use single quotes
-so that everything within the single quotes is treated
-as a literal. Different implementations of the bash shell may
-parse the command line differently.  Try this on your machine
-using double quotes or no quotes around the arguments.
-%
-
 Our Java program gets a value for \code{regex} consisting of a
 length-two string made up of two backslashes, and value for text
 consisting of a single backslash.  The match succeeds because the
@@ -262,14 +340,24 @@ incomplete or malformed definitions.
 
 Application-specific character classes are specified as a set of
 character alternatives enclosed in brackets.
-For example, we can define a character class that matches both upper
-and lower case instances of the letter A as: \code{[aA]}.
-This syntax is confusing in that when enclosed by brackets, 
-the interpretation of the sequence \code{aA} is the 
-the set resulting from the union of these two atomic characters,
-which will match either \code{a} or \code{A} but not \code{aA},
-whereas without the brackets, the sequence \code{aA} represents
-their concatenation.
+For example, \code{[aA]} specifies the character class that matches
+both the upper and lower case letter A.
+This syntax is confusing because within the square brackets
+\code{aA} is interpreted as 
+the set resulting from the union of these two atomic characters
+but outside of this context the \code{aA} is interpreted as
+the concatenation of these two characters.
+Trying to do an exact match between the regex and \code{[aA]}
+and the string \code{aA} fails.
+%
+\commandlinefollow{ant -Dregex="[aA]" -Dtext="aA" regex-match}
+\begin{verbatim}
+Regex=|[aA]|    Text=|aA|    Matches=false
+\end{verbatim}
+%
+Because character classes may appear within other character classes,
+these alternatives need not be single characters.
+We discuss compound character classes later in this section.
 
 \subsection{The WildCard as the Universal Character Class}\label{section:regex-wildcard}
 
@@ -342,7 +430,7 @@ have their described behavior when interpreted over all of Unicode.
 For example, there are whitespaces in Unicode that don't match
 \code{{\bk}s} and digits that don't match \code{{\bk}d}.
 
-\subsection{Compound Character Classes}
+\section{Compound Character Classes}\label{section:compound-char-classes}
 
 Character classes may be built up from single characters and/or other
 character classes using set operations like union, intersection, and
@@ -422,26 +510,30 @@ attachment for character class operations is
 \\
 3 & Range & \code{0-9}
 \\
-4 & Union & \code{ab}, \code{[0-9][ab]}, 
+4 & Union & \code{ace}
 \\
-5 & Intersection & \code{[[a-z]\&\&[\^{}aeiou]]}
+5 & Intersection & \code{a-z\&\&[\^{}aeiou]}
 \end{tabular}
 \end{center}
 %
 Thus the square brackets act like grouping parentheses for character
-classes.  Complementation must be treated separately.  Complementation
+classes.
+As mentioned earlier, within square brackets \code{union} is implicit
+whereas otherwise contatenation is implicit.
+
+Complementation must be treated separately.  Complementation
 only applies to character groups or ranges, and must be closed within
 brackets before being combined with union or intersection or the scope
-may not be what you expect.  For instance, \code{[\^{}a[b-c]]} is
-not equivalent to \code{[\^{}abc]}, but rather is equivalent to
-\code{[[\^{}a][b-c]]}.
+may not be what you expect.  For instance, \code{[\^{}a[c-e]]} is
+not equivalent to \code{[\^{}acde]}, but rather is equivalent to
+\code{[[\^{}a][c-e]]} and can be specified this way to avoid confusion.
 
 
-\section{Concatenation}
 
-As we saw in our early examples, characters may be concatenated
-together to form a regular expression that matches the string.
+\section{Concatenating Regexes}
 
+The regexes in our very first examples consisted of concatenated characters,
+as we saw in \refsec{exact-match-regex} using regexes such as\code{aab}.
 With a list of characters (or strings) being concatenated, the
 boundary case is the concatenation of an empty list
 (see \refsec{regex-empty}).
@@ -518,6 +610,22 @@ disjunctions.  In practice, disjunctions often fail earlier.  For
 instance, if there is no match for \code{a|b}, further
 disjunctions are not explored.  
 
+\section{Parentheses for Scoping}
+
+If \codeVar{A} is a regular expression, \code{(\codeVar{A})} is a
+regular expression that matches exactly the same strings as
+\codeVar{A}.  Note that parentheses come in matched pairs, and
+each picks out the unique subexpression \codeVar{A} it wraps.
+
+Parentheses play the usual role of grouping in regular expressions,
+and may be used to disambiguate what would otherwise be misparsed.
+For instance, the expression \code{(a|b)c} is very different than
+\code{a|(bc)}, but the expressions \code{gray|grey} and
+\code{gr(a|e)y} are equivalent.
+
+Parentheses also play the role of identifying the subexpressions
+they wrap.  This is covered in \refsec{regex-groups}.
+
 \section{Greedy Quantifiers}
 
 There are operators for optionality or multiple instances that go
@@ -543,7 +651,7 @@ Regex=|a?|    Text=||    Matches=true
 
 The greediness of the basic optionality marker, which tries to match
 before trying to match the empty string, is illustrated using
-\code{find()},
+\code{regex-find},
 %
 \commandlinefollow{ant -Dregex="a?" -Dtext="aa" regex-find}
 \begin{verbatim}
@@ -759,7 +867,7 @@ characters of the input, \code{123}.  The possessive quantifier, once
 it has matched \code{1231}, does not let it go, and the overall match
 fails.
 
-\subsection{Independent Group Possessive Marker}
+\subsection{Independent Group Possessive Marker}\label{section:group-possess-marker}
 
 If \codeVar{A} is a regex, then \code{(?>\codeVar{A})} is a regex that
 matches the same thing as \codeVar{A}, but groups the first match
@@ -782,22 +890,163 @@ Regex=|(?>x+)y|    Text=|xxy|    Matches=true
 \end{verbatim}
 
 The parentheses in this construction do not count for grouping
-(see \refsec{regex-groups}).  There is a similar construction
-\code{(?:\codeVar{A})} which is not possessive, and also does
-not count the parentheses for grouping.  
+(see \refsec{regex-groups}).
 
 
-\section{Non-Capturing Regexes}
+\section{Parentheses, Groups, and Capturing}\label{section:regex-groups}
+
+Parentheses come in matched pairs, and
+each picks out the unique subexpression \codeVar{A} it wraps.
+The pairs of parentheses in a regular expression are numbered
+from left to right, beginning with 1. 
+There is an implicit pair of parentheses around the entire pattern, 
+with group number 0.  
+The following example shows how this numbering works:
+%
+\begin{verbatim}
+ a(b(cd)(e))
+0 1 2   3
+\end{verbatim}
+%
+We have lined up the identifier of each parentheses group with the opening paren.
+Group 1 is \code{b(cd)(e)},
+group 2 is \code{cd}, and group 3 is \code{e}.  
+The entire expression is group 0.
+
+The identities of the groups are used for pulling out substring matches.
+They are also used as back references in regexes (see
+\refsec{regex-back-references}) and for replace operations
+based on regexes (see
+\refsec{regex-replace}). 
+
+The \code{Matcher} class contains the method
+\code{group(int)} which picks out the subsequence of match captured by the
+specified group number.
+The \code{group()} method is equivalent to \code{group(0)}.
+The start and end position of a group may also be
+retrieved, using \code{start(int)} and \code{end(int)}.
+The methods \code{start()}, and \code{end()} 
+are just shorthand for
+\code{start(0)}, and \code{end(0)}.
+If there hasn't been a match or the last find did not succeed, attempting to retrieve
+groups or positions raises an illegal state exception.
+
+The example class \code{RegexGroup} builds on \code{RegexMatch}
+in that it takes a pattern and a string as arguments and looks for a match.
+If the string matches the pattern, it prints out all capturing groups.
+%
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+%
+\codeblock{RegexGroup.1}
+%
+When we use this program to match the string \code{abcde} against the pattern \code{a(b(cd)(e))},
+the result corresponds to our numbering above.
+%
+\commandlinefollow{ant -Dregex="a(b(cd)(e))" -Dtext="abcde" regex-group}
+\begin{verbatim}
+Group: 0 captures: |abcde| at (0,5)
+Group: 1 captures: |bcde| at (1,5)
+Group: 2 captures: |cd| at (2,4)
+Group: 3 captures: |e| at (4,5)
+\end{verbatim}
+%
+
+A typical linguistic example would be to look for the word \stringmention{Mr}
+and try to get the following name.
+We consider a few examples and concoct the following regex:
+\code{Mr(({\bk}s({\bk}p\{Lu\}{\bk}p\{L\}*))+)}.
+This regex specifies that after the \stringmention{Mr} we expect to find
+a series of initials or proper names.
+The innermost regex \code{({\bk}p\{Lu\}{\bk}p\{L\}*)}, group 3,
+specifies an upper-case letter followed by zero or more letters.
+Group 2 consists of whitespace followed by group 3.
+Group 1 consists of one or more of these.
+%
+\commandlinefollow{ant -Dregex="Mr(({\bk}s({\bk}p\{Lu\}{\bk}p\{L\}*))+)" -Dtext="Mr~J~Smith" regex-group}
+\begin{verbatim}
+Group: 0 captures: |Mr J Smith| at (0,10)
+Group: 1 captures: | J Smith| at (2,10)
+Group: 2 captures: | Smith| at (4,10)
+Group: 3 captures: |Smith| at (5,10
+\end{verbatim}
+%
+The captured input associated with a group is always the subsequence that the group most recently matched.
+Therefore, in this example, group 3 matches just the surname
+and group 2 matches the surname and the whitespace immediately preceeding it.
+Try running this example with the text \stringmention{Mr JJ John Jacob Jingleheimer Smith}.
+
+This regex is relatively brittle.
+A more complex regex would deal with the extra leading space, 
+allow optional periods after the \stringmention{Mr} with the
+appropriate escape, and also deal with periods in names.
+Matching complicated patterns with regexes is a tricky business.
+
+\subsection{References to Capturing Groups}\label{section:regex-back-references}
+
+The regex \code{\bk\codeVar{n}}\, is a back reference to the match of
+the \codeVar{n}-th capturing group before it.  We can use matching
+references to find pairs of duplicate words in text.  For instance,
+consider
+%
+\commandlinefollow{ant -Dregex="({\bk}d+).*({\bk}1)" -Dtext="10 out of 10" regex-group}
+\begin{verbatim}
+Group: 1 captures: |10| at (0,2)
+Group: 2 captures: |10| at (10,12)
+\end{verbatim}
+% 
+The regex \code{{\bk}1} will match whatever matched group 1.  
+Group 1 is \code{({\bk}d+)} and group 2 is \code{({\bk}1)}; both
+match the expression \stringmention{10}, only at different places.
+The text \stringmention{9 out of 10} doesn't match.
+\commandlinefollow{ant -Dregex="({\bk}d+).*({\bk}1)" -Dtext="9 out of 10" regex-group}
+%
+\begin{verbatim} 
+Regex=|(\d+).*(\1)|
+Text=|9 out of 10|
+Not matched
+\end{verbatim}
+%
+If the match index is out of bounds for the number of groups, matching
+fails without raising an exception.
+
+Capturing groups can be referenced from within the \code{Matcher.replaceAll}
+method.
+The sequence \code{\${n}} references the \codeVar{n}-th capturing group
+in the current match.%
+%
+\footnote{Therefore any occurances of the character \stringmention{\$}
+in the string argument to \code{replaceAll} must be escaped.}
+%
+\codeblock{RegexFragments.4}
+%
+In the linguistic example above, this could be used to change the text
+\stringmention{Mr J J Smith} to \stringmention{Smith}.
+
+\subsection{Named References}\label{section:regex-named-references}
+
+As of Java 7,
+a capturing group can be assigned a name
+so that it can be back-referenced later by name instead of by number.
+The regex \code{(?<NAME>\codeVar{A})} specifies a capturing group with name \codeVar{NAME}
+that matches regex \codeVar{A}.
+Group names must start with a letter and may only contain ASCII letters and digits.
+
+The regex \code{{\bk}{\bk}k<NAME>} can be used to reference this group within the regex.
+The sequence \code{\$\{NAME\}} references the named group in the \code{replaceAll} method.
+
+
+\section{Non-Capturing Regexes}\label{section:non-capturing-regex}
 
 Some regexes match virtual positions in an input without consuming any
 text themselves.  
-
-\subsection{Boundary Matchers}
-
 Boundary matchers match specific sequences, but do not consume any
 input themselves.  
+Non-capturing groups are enclosed by parenthesis but these parentheses
+aren't counted by the \code{Matcher.groupCount} method, nor can they
+be referenced.
 
-\subsubsection{Begin- and End-of-Line Matchers}
+
+\subsection{Begin- and End-of-Line Matchers}
 
 The caret (\code{\^{}}) is a regular expression that matches the end
 of a line and the dollar sign (\code{\$}) a regular expression
@@ -820,97 +1069,12 @@ These begin-of-line and end-of-line regexes do not match new lines
 inside of strings unless the \code{MULTILINE} flag is set (see
 \refsec{pattern-modes}).  By default, these regexes match new-line
 sequences for any platform (Unix, Macintosh, or Windows) and many more
-(see \refsec{regex-lines} for the full set of line terminators).  If
+(see the table below).  If
 the
 \code{UNIX\_LINES} flag is set, they only match Unix newlines (see
 \refsec{pattern-modes}).
 
-\subsubsection{Begin and End of Input}
-
-Because begin-of-line and end-of-line have variable behavior, there
-are regexes \code{{\bk}A} for the beginning of the input and
-\code{{\bk}z} for the end of the input.  These will match the begin
-and end of the input no matter what the match mode is.  For
-instance,
-%
-\commandlinefollow{ant -Dregex="{\bk}A(mnp){\bk}z" -Dtext="mnp" regex-group}
-\begin{verbatim}
-regex=|\A(mnp)\z|    text=|mnp|
-Group  0=|mnp| at (0,3)    Group  1=|mnp| at (0,3)
-\end{verbatim}
-%
-Here we use the demp program \code{RegexGroup}:
-%
-\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
-%
-which shows the positions at which the grouping parentheses match.
-We go into more detail on grouping in \refsec{regex-groups}.
-
-
-\subsubsection{Word Boundaries}
-
-The regex \code{{\bk}b} matches a word boundary and \code{{\bk}B} a
-non-word boundary, both without consuming any input.  Word boundaries
-are the usual punctuation and spaces and the begin and end of input.
-For example,
-%
-\commandlinefollow{ant -Dregex="{\bk}b{\bk}w+{\bk}b" -Dtext="John ran quickly." regex-find}
-\begin{verbatim}
-Found |John| at (0,4)        Found |ran| at (5,8)    
-Found |quickly| at (9,16)
-\end{verbatim}
-
-
-\subsection{Positive and Negative Lookahead}
-
-Often you want to match something only if it occurs in a given
-context.  If \codeVar{A} is a regex, then \code{(?=\codeVar{A})} is
-the positive lookahead and \code{(?!\codeVar{A})} the negative
-lookahead regular expression.  These match a context that either
-matches or doesn't match the specified regular expression.  They
-must be used following other regular expressions.  For instance,
-to find the instances of numbers preceding periods, we could use:
-%
-\commandlinefollow{ant -Dregex="{\bk}d+(?={\bk}.)" -Dtext="12.2" regex-find}
-\begin{verbatim}
-Found |12| at (0,2)
-\end{verbatim}
-%
-To find those not preceding periods, we could use:%
-%
-\footnote{Note the use of single quotes in order to prevent the shell from expanding the character '\code{!}' in the negative lookahead regular expression.}
-%
-\commandlinefollow{ant -Dregex='{\bk}d+(?!{\bk}.)' -Dtext="12.2" regex-find}
-%
-\begin{verbatim}
-Found |1| at (0,1)    Found |2| at (3,4)
-\end{verbatim}
-
-In a real application, we would probably exclude numbers and periods
-in the negative lookahead, with a regex such as
-\code{{\bk}d+(?![{\bk}.{\bk}d])}.
-
-One reason the lookahead is nice is that further finds can match
-the material that the lookahead matched.
-
-\subsection{Positive and Negative Lookbehind}\label{section:regex-lookbehind}
-
-There are backward-facing variants of the positive and negative
-lookahead constructs, \code{(?<=\codeVar{X})} and 
-\code{(?<!\codeVar{X})}.  These are more limited in that the
-regular expression \codeVar{X} must expand to a simple sequence, and
-thus may not contain the Kleene-star or Kleene-plus operations.
-
-For example, the following example finds sequences of digits that do
-not follow periods or other digits
-%
-\commandlinefollow{ant -Dregex='(?<![{\bk}.{\bk}d]){\bk}d+' -Dtext="12.32" regex-find}
-\begin{verbatim}
-Found |12| at (0,2)
-\end{verbatim}
-%
-
-\subsection{Line Terminators and Unix Lines}\label{section:regex-lines}
+\subsubsection{Line Terminators and Unix Lines}\label{section:regex-lines}
 
 \begin{center}
 \begin{tabular}{lll}
@@ -932,192 +1096,151 @@ Found |12| at (0,2)
 \end{center}
 
 
-\section{Parentheses for Grouping}\label{section:regex-groups}
+\subsection{Begin and End of Input}
 
-Parentheses play the usual role of grouping in regular expressions,
-and may be used to disambiguate what would otherwise be misparsed.
-For instance, the expression \code{(a|b)c} is very different than
-\code{a|(bc)}.
-
-Parentheses also play the role of identifying the subexpressions
-they wrap.  
-
-If \codeVar{A} is a regular expression, \code{(\codeVar{A})} is a
-regular expression that matches exactly the same strings as
-\codeVar{A}.  Note that parentheses come in matched pairs, and
-each picks out the unique subexpression \codeVar{A} it wraps.
-
-The pairs of parentheses in a regular expression are numbered
-from left to right, beginning with 1.  For example, we've written
-a very simple regex with the identifier of each parentheses group
-on the next line
+Because begin-of-line and end-of-line have variable behavior, there
+are regexes \code{{\bk}A} for the beginning of the input and
+\code{{\bk}z} for the end of the input.  These will match the begin
+and end of the input no matter what the match mode is.  For
+instance,
 %
+\commandlinefollow{ant -Dregex="{\bk}A(mnp){\bk}z" -Dtext="mnp" regex-group}
 \begin{verbatim}
- a(b(cd)(e))
-0 1 2   3
+regex=|\A(mnp)\z|    text=|mnp|
+Group  0=|mnp| at (0,3)    Group  1=|mnp| at (0,3)
 \end{verbatim}
 %
-There is an implicit pair of parentheses around the entire pattern,
-with group number 0.  Group 1 is \code{b(cd)(e)},
-group 2 is \code{cd}, and group 3 is \code{e}.  
-
-The identities of the groups are useful for pulling out substring
-matches (this section), using back references in regexes (see
-\refsec{regex-back-references}) and replace operations based on regexes (see
-\refsec{regex-replace}). 
-
-After a match or a find operation, the substring of the match that
-matched each group is available from the matcher with a method
-\code{group(int)}, where the argument indicates which group's match
-is returned.  The start and end position of a group may also be
-retrieved, using \code{start(int)} and \code{end(int)}.  The total
-number of groups in the regex is available through the method
-\code{groupCount()}.  The methods
-\code{group()}, \code{start()}, and \code{end()} we used earlier to
-retrieve the match of the entire string are just shorthand for
-\code{group(0)}, \code{start(0)}, and \code{end(0)}.  If there hasn't
-been a match or the last find did not succeed, attempting to retrieve
-groups or positions raises an illegal state exception.
-
-We provide a simple class \code{RegexGroup} to illustrate the workings
-of group extraction:
+Here we use the demp program \code{RegexGroup}:
 %
 \displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
 %
-The work is done in the \code{main()} method by the code
-%
-\codeblock{RegexGroup.1}
-%
-Here we call \code{matcher.match()}, which requires a match of the
-entire text.  
+which shows the positions at which the grouping parentheses match.
+We go into more detail on grouping in \refsec{regex-groups}.
 
-We set up the Ant target \code{regex-group} to call it, and test
-it in the usual way, using the example whose groups are numbered
-above.
+\subsection{Word Boundaries}
+
+The regex \code{{\bk}b} matches a word boundary and \code{{\bk}B} a
+non-word boundary, both without consuming any input.  Word boundaries
+are the usual punctuation and spaces and the begin and end of input.
+For example,
 %
-\commandlinefollow{ant -Dregex="a(b(cd)(e))" -Dtext="abcde" regex-group}
+\commandlinefollow{ant -Dregex="{\bk}b{\bk}w+{\bk}b" -Dtext="John ran quickly." regex-find}
 \begin{verbatim}
-regex=|a(b(cd)(e))|    text=|abcde|
-Group  0=|abcde| at (0,5)    Group  1=|bcde| at (1,5)
-Group  2=|cd| at (2,4)       Group  3=|e| at (4,5)
+Found |John| at (0,4)        Found |ran| at (5,8)    
+Found |quickly| at (9,16)
 \end{verbatim}
-%
-A more typical linguistic example would be to pull out names
-after the word \stringmention{Mr}, as in
-%
-\commandlinefollow{ant~-Dregex="Mr(({\bk}s({\bk}p\{Lu\}{\bk}p\{L\}*))+)"~-Dtext="Mr~J~Smith"~regex-group}
-\begin{verbatim}
-Group  0=|Mr J Smith| at (0,10)    Group  1=| J Smith| at (2,10)
-Group  2=| Smith| at (4,10)        Group  3=|Smith| at (5,10)
-\end{verbatim}
-%
-Group 1 corresponds to the name, but note that we have an extra
-leading space.  We can get rid of that with a more complex regex, and
-we could also allow optional periods after \stringmention{Mr} with the
-appropriate escape, and also deal with periods in names.  Matching
-complicated patterns with regexes is a tricky business.
 
-\subsection{Non-Capturing Group}
+\subsection{Non-Capturing Groups}
 
-It is possible to use parentheses without capturing.  If \codeVar{X}
+Non-capturing regexes are enclosed by parenthesis 
+but the parentheses aren't counted as capturing groups. 
+In all cases the opening parenthesis is immediately followed by a question mark.
+Note that named capturing groups (see \refsec{regex-named-references}) begin with
+a question mark; all other groups that begin with a question mark are non-capturing.
+The regex \code{(?>\codeVar{A})} is one example,
+(see \refsec{group-possess-marker}).
+
+If \codeVar{X}
 is a regex, then \code{(?:\codeVar{X})} matches the same things as
-\codeVar{X}, but the parentheses are not treated as capturing.
-
-
-\section{Back References}\label{section:regex-back-references}
-
-The regex \code{\bk\codeVar{n}}\, is a back reference to the match of
-the \codeVar{n}-th capturing group before it.  We can use matching
-references to find pairs of duplicate words in text.  For instance,
-consider
+\codeVar{X}, but the parentheses are not treated as capturing and so
+they aren't counted by the method \code{groupCount()}.
+To see this, we return to the run the \code{match-group} example in \refsec{regex-groups}.
+We change the expression changing \code{a(b(cd)(e))} to
+to \code{a(b(?:cd)(e))} to
 %
-\commandlinefollow{ant -Dregex="({\bk}d+).*({\bk}1)" -Dtext="12 over 12" regex-group}
+\commandlinefollow{ant -Dregex="a(b(?:cd)(e))" -Dtext="abcde" regex-group}
 \begin{verbatim}
-Group  0=|12 over 12| at (0,10)    Group  1=|12| at (0,2)
-Group  2=|12| at (8,10)
+Regex=|a(b(?:cd)(e))|
+Text=|abcde|
+Group: 0 captures: |abcde| at (0,5)
+Group: 1 captures: |bcde| at (1,5)
+Group: 2 captures: |e| at (4,5)
 \end{verbatim}
 %
-The regex \code{{\bk}1} will match whatever matched group 1.  
-Group 1 is \code{({\bk}d+)} and group 2 is \code{({\bk}1)}; both
-match the expression \stringmention{12}, only at different places.
-You can see that the text \stringmention{12 over 13} would not
-have matched.  
 
-If the match index is out of bounds for the number of groups, matching
-fails without raising an exception.
+\subsection{Positive and Negative Lookahead}
 
+Often you want to match something only if it occurs in a given
+context.  If \codeVar{A} is a regex, then \code{(?=\codeVar{A})} is
+the positive lookahead and \code{(?!\codeVar{A})} the negative
+lookahead regular expression.  These match a context that either
+matches or doesn't match the specified regular expression.  They
+must be used following other regular expressions.
 
-\section{Find-and-Replace Operations}\label{section:regex-replace}
-
-A common usage pattern for regular expressions is to find instances of
-one pattern and replace them with another.  We provide a sample
-program \code{RegexReplace}:
+One reason to use lookahead is that further finds can match
+the material that the lookahead matched; this material is beyond
+the offset returned by the \code{Matcher.end} method.
+The example class \code{RegexFindVerbose} shows how a matcher consumes
+the input string.
 %
-\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexFindVerbose.java}}
 %
-The \code{main()} method illustrates replacement.
+\codeblock{RegexFindVerbose.1}
 %
-\codeblock{RegexReplace.1}
-%
-The pattern and matcher are created as usual.  Then, we create
-a string by replacing all the matches of the pattern in the text
-provided to the matcher with the specified replacement.  We could
-also use \code{replaceFirst()} to return the result of only replacing
-the first match.
+We use the methods \code{Matcher.appendReplacement} and \code{appendTail}
+(see \refsec{regex-replaceAll}) to get the input string from the
+matcher, using a \code{StringBuffer} for intermediate storage.
+We reset the length of the buffer to zero before the calling the
+\code{appendTail} method, so that the only text we collect is the
+text that has not yet been consumed by the matcher.
 
-With the Ant target \code{regex-replace}, we can see this in action.
+If we want to find instances of numbers preceding periods, we specify
 %
-\commandlinefollow{ant -Dregex="{\bk}d+" -Dreplacement=0
-  -Dtext="+1~(718)~290-9170" regex-replace}
-
+\commandlinefollow{ant -Dregex="{\bk}d+(?={\bk}.)" -Dtext="12.3 45.6" regex-find-verbose}
 \begin{verbatim}
-regex=|\d+|    replacement=|0|    
-text=|+1 (718) 290-9170|    result=|+0 (0) 0-0|
+Regex=|\d+(?=\.)|
+Text=|12.3 45.6|
+matched: |12| at (0,2)
+remaining: |.3 45.6|
+matched: |45| at (5,7)
+remaining: |.6|
 \end{verbatim}
 %
-We've replaced every sequence of digits with a zero.  
-
-A nice feature of replace operations is that they may reference
-pieces of the match by group number and use them in the replacement.
-An occurrence of \code{\$\codeVar{n}} in the replacement string
-represents whatever matched group \codeVar{n} in the match.
-
-For instance, we can extract the version number from a jar and
-redisplay it using
+How does this work?
+Positive lookahead finds the period.  The matcher has only \emph{looked} ahead.
+If we change this regex to \code{\bk}d+({\bk}.) (without positive lookahead),
+we see that the match includes the period.
 %
-\commandlinefollow{ant -Dregex="({\bk}w+){\bk}-([{\bk}d{\bk}.]+){\bk}.jar" -Dreplacement='{\bk}\$1.jar~v{\bk}\$2'
- -Dtext="foo-7.6.jar" regex-replace}
-
+\commandlinefollow{ant -Dregex="{\bk}d+({\bk}.)" -Dtext="12.3 45.6" regex-find-verbose}
 \begin{verbatim}
-regex=|(\w+)\-([\d\.]+)\.jar|    replacement=|$1.jar v$2|
-text=|foo-7.6.jar|               result=|foo.jar v7.6|
+Regex=|\d+(\.)|
+Text=|12.3 45.6|
+matched: |12.| at (0,3)
+remaining: |3 45.6|
+matched: |45.| at (5,8)
+remaining: |6|
+\end{verbatim}
+
+To find numbers not preceding periods, we could use:%
+%
+\footnote{Note the use of single quotes in order to prevent the shell from expanding the character '\code{!}' in the negative lookahead regular expression.}
+%
+\commandlinefollow{ant -Dregex='{\bk}d+(?!{\bk}.)' -Dtext="12.3" regex-find}
+%
+\begin{verbatim}
+Found |1| at (0,1)    Found |3| at (3,4)
+\end{verbatim}
+
+\subsection{Positive and Negative Lookbehind}\label{section:regex-lookbehind}
+
+There are backward-facing variants of the positive and negative
+lookahead constructs, \code{(?<=\codeVar{X})} and 
+\code{(?<!\codeVar{X})}.  These are more limited in that the
+regular expression \codeVar{X} must expand to a simple sequence, and
+thus may not contain the Kleene-star or Kleene-plus operations.
+
+For example, the following example finds sequences of digits that do
+not follow periods or digits.
+%
+\commandlinefollow{ant -Dregex='(?<![{\bk}.{\bk}d+]){\bk}d+'-Dtext="12.3 .45 67" regex-find}
+\begin{verbatim} 
+Found |12| at (0,2)
+Found |67| at (9,11)
 \end{verbatim}
 %
-Note that we had to escape the literal hyphen and period characters in
-the regex.  Furthermore, we had to use single quotes and escape the group
-reference \code{\$\codeVar{n}} in order to prevent the shell from interpreting
-the references.%
-\footnote{This is necessary for the Mac OS X Bash shell interpreter.}
-%
-The class \code{{\bk}w} is for word characters, which are
-alphanumerics and the underscore.  The example regexes are very
-fragile, and it is quite difficult to write more robust regexes.
-
-\subsubsection{How the \code{Matcher.replaceAll} method works }\label{section:regex-replaceAll}
-
-The following example comes from the Java SE 7 javadoc for the
-\code{Matcher.appendReplacement} method
-%
-\codeblock{RegexFragments.2}
-%
-This code writes \code{one dog two dogs in the yard} to the standard-output stream.
-
-The \code{Matcher.replaceAll} method uses this same sequence of calls to
-the methods \code{find}, \code{appendReplacement}, and \code{appendTail}.
-As in the above example, a \code{StringBuffer} is used to store 
-the intermediate results.
-\code{StringBuffer} objects are thread-safe and therefore this operations
-incurs a certain amount of processing overhead due to synchronization.
+In this example, the regular expression specifies a compound character class
+which consists of either a single period or any sequence of digits.
+The greedy quantifier \code{+} attaches to the character class \code{{\bk}d}.
 
 \section{Pattern Compilation}\label{section:pattern-compile}
 
@@ -1227,6 +1350,8 @@ Exception in thread "main"
     Unmatched closing ')' near index 1
 \end{verbatim}
 
+
+
 \section{Thread Safety, Serialization, and Reuse}
 
 \subsection{Thread Safety}
@@ -1326,6 +1451,39 @@ a new \code{Pattern} object as well as a \code{Matcher}.
 
 
 
+
+
+\section{Regexes for Ad-Hoc Parsing}\label{section:adhoc-parser}
+
+It is tempting to use Regexes to process files that have SGML-style markup.
+Examples.
+
+
+A nice feature of replace operations is that they may reference
+pieces of the match by group number and use them in the replacement.
+An occurrence of \code{\$\codeVar{n}} in the replacement string
+represents whatever matched group \codeVar{n} in the match.
+
+For instance, we can extract the version number from a jar and
+redisplay it using
+%
+\commandlinefollow{ant -Dregex="({\bk}w+){\bk}-([{\bk}d{\bk}.]+){\bk}.jar" -Dreplacement='{\bk}\$1.jar~v{\bk}\$2'
+ -Dtext="foo-7.6.jar" regex-replace}
+
+\begin{verbatim}
+regex=|(\w+)\-([\d\.]+)\.jar|    replacement=|$1.jar v$2|
+text=|foo-7.6.jar|               result=|foo.jar v7.6|
+\end{verbatim}
+%
+Note that we had to escape the literal hyphen and period characters in
+the regex.  Furthermore, we had to use single quotes and escape the group
+reference \code{\$\codeVar{n}} in order to prevent the shell from interpreting
+the references.%
+\footnote{This is necessary for the Mac OS X Bash shell interpreter.}
+%
+The class \code{{\bk}w} is for word characters, which are
+alphanumerics and the underscore.  The example regexes are very
+fragile, and it is quite difficult to write more robust regexes.
 
 
 
