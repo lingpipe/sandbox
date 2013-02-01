@@ -36,4 +36,15 @@ class RegexFragments {
     /*x*/
     }
 
+    void four() {
+        String regex = "Mr((\\s(\\p{Lu}\\p{L}*))+)";
+        String text = "My name is Mr JJ John Jacob Jingleheimer Smith";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(text);
+        System.out.println(text);
+        while (matcher.find()) {
+            /*x RegexFragments.4 */
+            matcher.replaceAll("$3");
+            /*x*/
+    }
 }
