@@ -110,8 +110,10 @@ match starting on or after the end position of the previous calls.
 Thus the loop structure in the program above is the standard idiom
 for enumerating all the matches.  
 
-As an example, we use the Ant target \code{regex-find}, which takes
-the same arguments as \code{regex-match}.
+To run examples, we use the Ant target \code{regex-find}.
+Like \code{regex-match}, it takes a regex and a text string as arguments.
+We find the regex \code{aa} in the string \stringmention{aaaaab} (five \stringmention{a}s
+followed by one \stringmention{b}).
 %
 \commandlinefollow{ant -Dregex="aa" -Dtext="aaaaab" regex-find}
 %
@@ -137,7 +139,7 @@ A common usage pattern for regular expressions is to find instances of
 one pattern and replace them with another.  We provide a sample
 program \code{RegexReplace}:
 %
-\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexGroup.java}}
+\displ{\filepath{src/regex/src/com/lingpipe/book/regex/RegexReplace.java}}
 %
 The \code{main()} method illustrates replacement.
 %
@@ -149,11 +151,10 @@ provided to the matcher with the specified replacement.  We could
 also use \code{replaceFirst()} to return the result of only replacing
 the first match.
 
-With the Ant target \code{regex-replace}, we can see this in action.
+The Ant target \code{regex-replace} takes three arguments:
+a regex, a replacements string, and a text string.
 %
 \commandlinefollow{ant -Dregex="a" -Dreplacement=z -Dtext="abc abc" regex-replace}
-\commandlinefollow{ant -Dregex="{\bk}d+" -Dreplacement=0
-  -Dtext="+1~(718)~290-9170" regex-replace}
 \begin{verbatim}
 regex=|a|       replacement=|z|
 text=|abc abc|  result=|zbc zbc|
@@ -161,17 +162,15 @@ text=|abc abc|  result=|zbc zbc|
 %
 \subsubsection{How the \code{Matcher.replaceAll} method works }\label{section:regex-replaceAll}
 
-The following example comes from the Java SE 7 javadoc for the
-\code{Matcher.appendReplacement} method
+The \code{Matcher.replaceAll} method is a convenience method that makes
+repeated calls to the methods \code{find}, \code{appendReplacement}, and \code{appendTail}.
+The Java SE 7 javadoc provides the following example
 %
 \codeblock{RegexFragments.2}
 %
 This code writes \code{one dog two dogs in the yard} to the standard-output stream.
 
-The \code{Matcher.replaceAll} method uses this same sequence of calls to
-the methods \code{find}, \code{appendReplacement}, and \code{appendTail}.
-As in the above example, a \code{StringBuffer} is used to store 
-the intermediate results.
+These methods use a \code{StringBuffer} to store the intermediate results.
 \code{StringBuffer} objects are thread-safe and therefore this operations
 incurs a certain amount of processing overhead due to synchronization.
 
@@ -198,11 +197,9 @@ The empty regex matches everywhere in a string, as the following example shows.
 %
 \commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dtext="aa" regex-find}
 \begin{verbatim} 
-Found || at (0,0)
-Found || at (1,1)
-Found || at (2,2)
+Found || at (0,0)    Found || at (1,1)    Found || at (2,2)
 \end{verbatim} 
-The replacing the empty regex inserts the replacement between every
+Replacing the empty regex inserts the replacement string between every
 existing character in a string.
 \commandlinefollow{ant -Dregex={\bk}"{\bk}" -Dreplacement=z -Dtext="aa" regex-replace}
 \begin{verbatim}
@@ -265,7 +262,6 @@ in regexes representing wildcards (see \refsec{regex-wildcard}).
 Regex=|\u002E|    Text=|.|    Matches=true
 \end{verbatim}
 %
-
 In a Java program, we'd still have to write
 \code{Pattern.compile("{\bk}{\bk}u002E")}.  
 
@@ -438,11 +434,13 @@ negation.
 
 The syntax for compound character classes uses brackets around a
 character class expression.  The atomic character class expressions
-are single characters like \code{a}, and the character class escapes
-like \code{{\bk}p\{Lu\}} matches any uppercase Unicode letter character.
+are single characters like \code{a} or character class set names
+like \code{{\bk}p\{Lu\}} (any uppercase Unicode letter character).
 
-Character classes may be unioned, which confusingly uses a
-concatenation syntax.  For instance, \code{[aeiou]} is the character
+Character classes may be unioned within the brackets using a
+concatenation syntax.  This can be confusing, especially in complex
+regular expressions contain both character classes and compound regexes.
+For instance, \code{[aeiou]} is the character
 class picking out the ASCII vowels.  It is composed of the union of
 character class expressions \code{a}, \code{e}, \ldots, \code{u}.  
 %
@@ -901,6 +899,12 @@ The pairs of parentheses in a regular expression are numbered
 from left to right, beginning with 1. 
 There is an implicit pair of parentheses around the entire pattern, 
 with group number 0.  
+The identities of the groups are used for pulling out substring matches.
+They are also used as back references in regexes (see
+\refsec{regex-back-references}) and for replace operations
+based on regexes (see
+\refsec{regex-replace}). 
+
 The following example shows how this numbering works:
 %
 \begin{verbatim}
@@ -912,12 +916,6 @@ We have lined up the identifier of each parentheses group with the opening paren
 Group 1 is \code{b(cd)(e)},
 group 2 is \code{cd}, and group 3 is \code{e}.  
 The entire expression is group 0.
-
-The identities of the groups are used for pulling out substring matches.
-They are also used as back references in regexes (see
-\refsec{regex-back-references}) and for replace operations
-based on regexes (see
-\refsec{regex-replace}). 
 
 The \code{Matcher} class contains the method
 \code{group(int)} which picks out the subsequence of match captured by the
@@ -1019,8 +1017,10 @@ in the string argument to \code{replaceAll} must be escaped.}
 %
 \codeblock{RegexFragments.4}
 %
-In the linguistic example above, this could be used to change the text
+In the linguistic example above, this statement changes
 \stringmention{Mr J J Smith} to \stringmention{Smith}.
+In general, this construction is used to mask or omit all
+of the matched text save for specific substrings.
 
 \subsection{Named References}\label{section:regex-named-references}
 
@@ -1228,6 +1228,7 @@ lookahead constructs, \code{(?<=\codeVar{X})} and
 \code{(?<!\codeVar{X})}.  These are more limited in that the
 regular expression \codeVar{X} must expand to a simple sequence, and
 thus may not contain the Kleene-star or Kleene-plus operations.
+They must be used preceeding other regular expressions.
 
 For example, the following example finds sequences of digits that do
 not follow periods or digits.
