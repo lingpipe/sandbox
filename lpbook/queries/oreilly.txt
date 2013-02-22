@@ -1,43 +1,46 @@
-"Text Processing in Java" focusses on the core Java classes and
-technologies needed to process natural language text data.
-As the amount of both public domain and proprietary unstructured text data
-increases, so do the opportunities for novel text-mining applications.
-This book is aimed at Java programmers involved in this enterprise,
-whether they are looking to take deep text processing to the next
-level or just trying to eliminate mojibake (character problems).
+Dear O'Reilly editors,
 
-This book covers the nitty gritty details of bytes, characters, strings, 
-code points, Unicode and legacy character encodings.
-It presents appropriate classes and methods from the java.io and java.nio packages
-needed to safely, correctly, and efficiently transform character data
-to bytes and back again.
-Understanding these details is key to using Java's
-Localization/Internationalization features.
-It also covers normalization of character data using the ICU 
-(International Components for Unicode) normalization package.
-Normalizing character encodings is necessary for
-sorting and indexing and data deduplication.
-The chapter on regular expressions provides a comprehensive overview
-of the  syntax and use of regular expressions,
-including character classes, operator scope and precedence, quantification,
-grouping and references,  lookahead and lookbehind.
-Complex regular expressions can be used to create powerful
-ad-hoc parsers to munge text data from one format to another.
-Of particular importance is character data sent via HTTP.
-The chapter on character data and the web covers encodings and how
-to properly parse and generate character data for XML, HTML, and JSON.
-Finally, it covers use of Lucene and Solr, two extremely powerful and
-widely used applications for search and indexing.
+Text Processing in Java focuses on the core Java classes and technologies
+needed to process natural language text data.  This book is written for
+anyone producing, managing, or consuming text data.  As the amount of
+public domain and proprietary unstructured text data increases, so do
+opportunities for new applications.  Also increasing are opportunities for
+data corruption, in Japanese called 'mojibake' (character problems),
+in German 'Buchstabensalat' (letter salad), and in Serbian 'dubre' (trash).
 
-This book compliments existing books on Java programming because
-its focus is always on processing character data.  It pulls together
-information that is scattered across javadocs, blog posts, and threads on
-StackOverflow but strips out distracting, problem specific details.
-Among the O'Reilly books that it complements are:
-XML and Java
-Java Servlets
-Localization/Internationalization
-Mastering Regular Expressions.
+This book lays out the fundamentals of encoding, decoding, and processing
+character data in Java.  It is precise, explicit, and provides copious
+examples as well as a suite of programs that can be used as diagnostics
+for the forensic study of character data.  It starts with the internal
+representation of characters in Java as Unicode code points and shows how
+these are encoded in UTF-8, -16, -32, and legacy character encodings.
+It covers the classes and methods from the java.io and java.nio packages
+that convert text data to raw bytes and back again.  It shows how to
+normalize character data using the ICU (International Components for
+Unicode) package in order to ensure proper sorting, indexing, and data
+deduplication.  It provides the background needed to use Java's
+localization and internationalization features.  The chapter on regular
+expressions shows how to write regexes for Unicode character data and how
+and when and which characters must be escaped.  Complex regular
+expressions can be used to create ad-hoc parsers to munge text data from
+one format to another.  The chapter on text data and the web covers the
+HTTP protocol, how to specify encodings, and how to parse, generate, and
+escape character data in XML, HTML, and JSON formats using open-source
+APIs.  It concludes with chapters on Lucene and Solr, the Apache search
+engine written in Java.  Each chapter comes with a set of executable
+programs that are simple, self-contained, and take a debug-by-printf
+approach in reporting the state of the inputs before, during, and/or
+after processing.
 
+This book compliments existing books on Java programming because of
+its in-depth focus on the precise details of character data processing.
+It would be a good companion to the O'Reilly books
+Localization/Internationalization, XML and Java, Java Servlets, and
+Mastering Regular Expressions.  It provides up-to-date information on
+Java 7.  It pulls together information that is scattered across javadocs,
+blog posts, and threads on StackOverflow but strips out distracting,
+problem-specific details.
 
+Sincerely,
 
+Mitzi Morris and Bob Carpenter (co-authors)
