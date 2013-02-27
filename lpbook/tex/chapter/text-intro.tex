@@ -14,30 +14,27 @@ How do we greet the world in Japanese?
 The HTML equivalent of our ``hello world'' program is a file containing
 HTML that is viewed via a web brower.
 \begin{verbatim}
-<html><body>  Hello World  </body></html>
+<html><body>  Hello, World! </body></html>
 \end{verbatim}
 A Java program that creates this file interacts directly with the file system
 and indirectly with the web server and web brower.  How do we generate a web page 
 that says ``Hello World'' in Japanese?  What is required 
 for the Japanese characters to display correctly in the browser?
 
-In this book we take the time to answer these questions thoroughly
-because understanding how character data is encoded into bytes and
-how this data is sent to and retrieved from the operating system is
-a prerequisite for building systems that do any kind of text data processing.
-Natuaral language processing applications interpret characters and strings
-as meaningful texts in a language.  ``hello world'' 
+In this book we answer these questions by writing short, 
+self-contained programs that carry out basic operations on text data
+and report the state of the data before, during, and/or
+after processing.
 
-
-
-
-
-
-
-
-
-
-
+Understanding how character data is encoded into bytes and
+how this data is sent to and retrieved from the operating system
+is a prerequisite for building natural language processing applications.
+Natural language processing (NLP) tasks over text data
+include recognizing the language(s) used,
+breaking the text into consituent sentences, phrases, words, and indexing
+the text for search.
+This book shows how to use existing open-source packages to
+build robust, scalable applications for natural language text data.
 
 
 \section{Tools of the Trade}
