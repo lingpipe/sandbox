@@ -1,4 +1,4 @@
-\chapter{Getting Started}
+\chapter{Getting Started}\label{chap:getting-started}
 
 \firstchar{T}he canonical first program in Java (and many
 other programming languages) is ``hello world.''
@@ -12,44 +12,44 @@ What is necessary in order to generate and display text in a language other than
 How do we greet the world in Japanese?
 
 The HTML equivalent of our ``hello world'' program is a file containing
-HTML that is viewed via a web brower.
+HTML that is viewed via a web brower, \code{HelloWorld.html}
 \begin{verbatim}
-<html><body>  Hello World </body></html>
+<html><body>  Hello, World! </body></html>
 \end{verbatim}
 A Java program that creates this file interacts directly with the file system
 and indirectly with the web server and web brower.  How do we generate a web page 
 that says ``Hello World'' in Japanese?  What is required 
 for the Japanese characters to display correctly in the browser?
 
-In this book we answer these questions by writing short, 
-self-contained programs that carry out basic operations on text data
-and report the state of the data before, during, and/or
-after processing.
+We answer these questions with a series example programs,
+included with this book.
+These programs are as simple and self-contained as possible.
+They report the state of the data before, during, and/or after processing.
 
-Understanding how character data is encoded into bytes and
-how this data is sent to and retrieved from the operating system
-is a prerequisite for building natural language processing applications.
-Natural language processing (NLP) tasks over text data
+Being able to process text data correctly and efficiently is a prerequisite
+for building robust, scalable natural language processing applications.
+Natural language processing applications over text data include
 include recognizing the language(s) used,
 breaking the text into consituent sentences, phrases, words, and indexing
 the text for search.
-This book shows how to use existing open-source packages to
-build robust, scalable applications for natural language text data.
+For example, how do we process a set of web pages
+which includes \code{HelloWorld.html} so that a search for the word ``hello''
+will return this page as one of the results?
+In this book we show how to use the Apache Lucene and Solr APIs to do this.
 
-
-\section{Tools of the Trade}
+\section{The Tools We Use}
 
 First we'll take some time to explain the tools we'll be using or that
 you might want to use for program development.
-All of these tools are open source and freely
-available, though under a perplexing array of licensing terms and
-conditions.  After describing and motivating our choice of each tool,
+After describing and motivating our choice of each tool,
 we'll provide downloading and installation instructions.
-Not all of these tools are needed to run every example
-and when possible, we discuss alternatives.
-Because we are interested in displaying character data in languages
-other than English, we need to configure these tools to use the
-UTF-8 character encoding (which we will explain in detail in \refchap{char}).
+Not all of these tools are needed to run every example.
+
+We favor the \stringmention{printf debugging} technique, 
+whereby trace statements are used to record the flow of processing.
+This technique takes its name from the \code{printf} statement in C.
+In Java, we rely on the \code{System.out.println} method,
+as in the \code{HelloWorld.java} example above.
 
 We use a unix-like command-line shell to present and run our examples
 via the Apache Ant build tool, in keeping with our own development
@@ -63,6 +63,7 @@ In this book, we use the so-called ``Bourne Again Shell'' (bash) for
 Unix-style commands.  Bash is the default shell in Cygwin on Windows,
 the Mac OS X, and for Linux, and is also available for Solaris.
 
+There are several terminal programs for Linux.
 On the Mac, this is the Terminal.app under Applications/Utilities.
 
 If you're working in Windows (XP, Vista or 7), we recommend the 
@@ -214,10 +215,6 @@ Java files are:
 
 \subsection{Java Standard Edition 7}
 
-We chose Java as the basis for LingPipe because we felt it
-provided the best tradeoff among efficiency, usability, portability,
-and library availability.
-
 The presentation here assumes the reader has a basic working knowledge
 of the Java programming language.  We will focus on a few aspects of
 Java that are particularly crucial for processing textual language
@@ -358,18 +355,6 @@ You can test whether Ant is installed with
 Apache Ant version 1.8.1 compiled on April 30 2010
 \end{verbatim}
 
-
-\subsection{Tomcat}\label{section:intro-tomcat}
-
-Tomcat can be downloaded from
-%
-\urldisplay{http://tomcat.apache.org}.
-%
-Tomcat is is an Apache project, and as such, is subject to the Apache license,
-%
-\urldisplay{http://ant.apache.org/license.html}
-%
-
 \subsection{Integrated Development Environment}
 
 Many people prefer to write (and compile and debug) code in an
@@ -436,10 +421,11 @@ critical to ensure the code in the distribution and in the book match.
 
 \section{Hello World Example}
 
-In this section, we provide a very simple hello world program.  If you
-can run it, you'll be all set to jump into the next chapter and get
-started with the real examples.  We'll also take this opportunity to
-walk through a simple Ant build file.
+In this section, we provide a very simple hello world program
+and use Ant to compile and run it.
+This program is in the code directory:
+%
+\displ{\filepath{src/intro/src/com/lingpipe/book/intro/HelloWorld.java}}
 
 \subsection{Running the Example}
 
@@ -455,14 +441,20 @@ into the subdirectory \code{/src/intro},
 %
 Note that we have italicized the commands issued by the user.
 %
-We then run the demo using Ant.  In this case, the target is \code{hello},
-invoked by
+\commandlinefollow{ls}
+\begin{verbatim}
+build.xml	demo.properties	src
+\end{verbatim}
+%
+We use Ant to run the demo and Ant uses the file \code{build.xml}.
+An Ant build.xml file contains zero or more targets elements.
+We start by invokng the \code{hello} target.
 %
 \commandline{ant hello}
+% 
+This produces the following output
 %
-which produces the following output
-%
-\begin{verbatim}
+\begin{verbatim} 
 Buildfile: /Users/lpbook/src/intro/build.xml
 
 jar:
@@ -525,27 +517,6 @@ target invocation would be displayed in this book as
 Hello World
 \end{verbatim}
 
-\subsection{Hello with Arguments}
-
-Often we need to supply arguments to programs from the command
-line.  The easiest way to do this with Ant is by setting the
-properties on the command line.  Our second demo uses this facility
-to provide a customized greeting.
-%
-\commandlinefollow{ant -Dfirst=Bobby -Dlast=C hello-name}
-\begin{verbatim} 
-Hello, Bobby C.
-\end{verbatim}
-%
-Each argument to a program corresponds to a named property, here
-\code{first} and \code{last}.  In general, properties are specified
-\code{-D\codeVar{key}=\codeVar{val}}.%
-%
-\footnote{Depending on your shell, this may also require varying
-  amounts of quoting and/or escaping special characters.  For example,
-  keys or values with spaces typically require double quotes on
-  Windows.}
-
 
 \subsection{Code Walkthrough}\label{section-intro-hello-code}
 
@@ -582,79 +553,38 @@ system output.  As usual, Java provides a handle to the system output
 through the public static variable \code{out} of type
 \code{java.io.PrintStream} in the \code{java.lang.System} class.
 
-The more complex program \code{HelloName} that takes two
-command-line arguments varies in the body of its \code{main()} method, 
+\subsection{Hello with Arguments}
+
+Often we need to supply arguments to programs from the command line.  
+Our second demo \code{HelloName} takes two 
+command-line arguments  
+to provide a customized greeting.
+The easiest way to do this with Ant is by setting the
+properties on the command line.
+%
+\commandlinefollow{ant -Dfirst=Bobby -Dlast=C hello-name}
+\begin{verbatim} 
+Hello, Bobby C.
+\end{verbatim}
+%
+\code{HelloName} varies from \code{HelloWorld}
+in the body of its \code{main()} method
 %
 \codeblock{HelloName.1}
+%
+Each argument to a program corresponds to a named property, here
+\code{first} and \code{last}.  In general, properties are specified
+\code{-D\codeVar{key}=\codeVar{val}}.%
+%
+\footnote{Depending on your shell, this may also require varying
+  amounts of quoting and/or escaping special characters.  For example,
+  keys or values with spaces typically require double quotes on
+  Windows.}
 %
 As a convention, we assign the command-line arguments read
 from the array \code{args} to a sequence of named variables.  
 We then use these same names in the Ant properties (see \refsec{intro-ant-properties}).
 
-\section{Multi-Lingual Hello World Example}\label{section:ant-console-config-utf8}
-
-In order to make sure that the shell console display and Ant are
-configured to use UTF-8 as the default character encoding, we have written
-a simple test program called \code{Toast.java} that prints toasts in many
-languages to standard output, using the UTF-8 character encodings.
-In later chapters we cover the techniques used in this program.
-For now we'll just use this program to see if
-Ant is sending UTF-8 output to the terminal window and if the
-terminal is expecting to get UTF-8 encoded data.
-\commandlinefollow{ant make-toast}
-\begin{verbatim}
-Before we drink, we say a toast 
-in English: cheers  
-in French:  santé
-in Norwegian: skål
-...
-\end{verbatim}
-Executing this ant task from the command line will result in a mix of
-English, French, Norwegian, Russian, Japanese, and Korean characters
-printed on standard out.
-
-If the output instead consists of a mix of english characters and question marks
-then the Ant program is not using UTF-8 as its default encoding.  Ant cannot handle
-characters outside of the default character set and instead it replaces them with
-a question mark, as in the following example.
-\begin{verbatim}
-Before we drink, we say a toast 
-in English: cheers  
-in French:  sant??
-in Norwegian: sk??l
-in Russian: ???? ????????????
-in Japanese: ??????
-in Korean: ??????
-\end{verbatim} 
-To correct this, we need to set the \code{ANT\_OPTS} environment variable
-\begin{verbatim} 
-export ANT\_OPTS="-Dfile.encoding=UTF-8"
-\end{verbatim}
-The Ant \code{make-toast} task creates a file \code{toast.txt} in the 
-\filepath{com/lingpipe/book/intro} directory.
-Once the \code{ANT\_OPTS} environment variable is set, the output of the Ant
-\code{make-toast} task should match the result
-\commandlinefollow{cat toast.txt}
-\begin{verbatim}
-Before we drink, we say a toast
-in English: cheers
-in French:  santé
-...
-\end{verbatim}
-
-If the output consists of a mix of english characters and special characters,
-such as foreign currency symbols ({\textyen})  or the copyright symbol ({\copyright}),
-then is it likely that the terminal display has the wrong character encoding.
-
-For the Mac terminal.app, choose the \code{Preferences} option under
-the Terminal menu.  From the \code{Settings} panel select the \code{Advanced} tab.
-Make sure that the character encoding is set to Unicode (UTF-8).
-On cygwin, right-click on the top menu bar and select \code{Options\ldots}.
-Choose the \code{Text} submenu and make sure that that character set is UTF-8.
-
-If the display is set to UTF-8 and the European langauges display correctly but
-not all of the Russian, Japanese, or Korean symbols display, then it is likely
-that the fonts needed to display these characters are missing.
 
 \section{Introduction to Ant}
 
@@ -989,7 +919,7 @@ The attributes and elements of the Ant \code{java} task code up the
 command-line arguments to the java executable.
 The command-line equivalent of the \code{hello} task would be:
 %
-\begin{verbatim}
+\begin{verbatim} 
 java -cp build/lp-book-intro-4.0.jar com.lingpipe.book.intro.HelloWorld
 \end{verbatim}
 %
