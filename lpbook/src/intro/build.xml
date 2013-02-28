@@ -28,7 +28,8 @@
   </target>
 
   <target name="hello"
-          depends="jar">
+          depends="jar"
+          description="run HelloWorld">
     <java classname="com.lingpipe.book.intro.HelloWorld"
           classpath="${jar}"
           fork="true">
@@ -40,6 +41,7 @@
     <java classname="com.lingpipe.book.intro.Toast"
           classpath="${jar}"
           fork="true">
+      <jvmarg value="-Dfile.encoding=UTF-8"/>
     </java>
     <concat>
       <fileset file="toast.txt"/>

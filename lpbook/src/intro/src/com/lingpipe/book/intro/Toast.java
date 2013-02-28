@@ -20,19 +20,14 @@ public class Toast {
     public static void main(String[] args) 
         throws IOException {
 
-        OutputStream outStream 
-	    = new FileOutputStream("toast.txt");
-        OutputStreamWriter outWriter 
-	    = new OutputStreamWriter(outStream,"UTF-8");
-        PrintWriter out 
-	    = new PrintWriter(outWriter,true);
-	out.println("Before we drink, we say a toast");
-	out.println("in English: " + CHEERS);
-	out.println("in French:  " + SANTE);
-	out.println("in Norwegian: " + SKOL);
-	out.println("in Russian: " + NAZDROV);
-	out.println("in Japanese: " + KANPAI);
-	out.println("in Korean: " + GAMBAE);
-	out.close();
+        System.out.println("encoding: " 
+                           + System.getProperty("file.encoding"));
+	System.out.println("Before we drink, we say a toast");
+	System.out.println("in English: " + CHEERS);
+	System.out.println("in French:  " + SANTE);
+	System.out.println("in Norwegian: " + SKOL);
+	System.out.println("in Russian: " + NAZDROV);
+	System.out.println("in Japanese: " + KANPAI);
+	System.out.println("in Korean: " + GAMBAE);
     }
 }
