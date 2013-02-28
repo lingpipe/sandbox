@@ -1,0 +1,127 @@
+\chapter{Text Forensics}\label{chap:forensics}
+
+\firstchar{W}hen software fails to render text correctly
+pinpointing the source of error can be surprisingly difficult.
+If the text displayed is a series of random glyphs or a string of
+question marks or fuzzy boxes, is this due to program error,
+improper environment configuration, or is the system unable to
+display the text due to missing fonts?
+
+The example programs for this chapter are in the code directory:
+%
+\displ{\filepath{src/intro/src/com/lingpipe/book/intro}}
+
+
+
+\section{Text in the Unix Shell}
+
+Programs run from the command line interact with the Unix shell.
+\code{HelloWorld.java} calls the \code{System.out.println} method
+which converts a string of characters to a stream of bytes that are written to the Unix virtual device \code{stdout}.
+%
+\codeblock{HelloWorld.1}
+%
+The shell maps these bytes to characters according to some \stringmention{character encoding}.
+The operating system uses sets of installed fonts to display these characters.
+If the font is missing or a character isn't defined for the specified font,
+then the missing character glyph is displayed instead.
+
+There are several possible points of failure:  
+\begin{itemize}
+\item Programmer error when specifying the argument to \code{System.out.println}.%
+\item The println argument may not be able to convert all characters in the string to bytes.%
+\item The shell may not be able to convert bytes to characters.%
+\item The OS may be missing the font for one or more characters.%
+\end{itemize}
+
+In \refchap{getting-started} we learned
+how to move into the subdirectory \code{/src/intro},
+create a jarfile with Ant, and run the code directly from the jarfile
+%
+\commandlinefollow{cd \$BOOK/src/intro}
+\commandlinefollow{ant jar}
+\commandline{java -cp build/lp-book-intro-4.0.jar com.lingpipe.book.intro.HelloWorld}
+%
+
+
+
+\section{Text in a Web Browser}
+
+
+\section{Multi-Lingual Hello World Example}\label{section:ant-console-config-utf8}
+
+We are always interacting with our program via at least one intermediate program.
+We are interacting with the Unix shell when we run programs from the command line,
+either indirectly via Ant or directly via the \code{java} command.
+Our demo programs send a stream of bytes to the Unix virtual devices
+\code{stdout} and \code{stderr}. 
+The shell maps these bytes to characters.
+This mapping is determined by the \stringmention{character encoding} of the shell.
+The operating system uses sets of installed fonts to display these characters.
+If the font is missing or a character isn't defined for the specified font,
+then the missing character glyph is displayed instead.
+
+
+In order to make sure that the shell console display and Ant are
+configured to use UTF-8 as the default character encoding, we have written
+a simple test program called \code{Toast.java} that prints toasts in many
+languages to standard output.
+In later chapters we cover the techniques used in this program.
+For now we'll just use this program to see if
+Ant is sending UTF-8 output to the terminal window and if the
+terminal is expecting to get UTF-8 encoded data.
+\commandlinefollow{ant make-toast}
+\begin{verbatim}
+Before we drink, we say a toast 
+in English: cheers  
+in French:  santé
+in Norwegian: skål
+...
+\end{verbatim}
+Executing this ant task from the command line will result in a mix of
+English, French, Norwegian, Russian, Japanese, and Korean characters
+printed on standard out.
+
+If the output instead consists of a mix of english characters and question marks
+then the Ant program is not using UTF-8 as its default encoding.  Ant cannot handle
+characters outside of the default character set and instead it replaces them with
+a question mark, as in the following example.
+\begin{verbatim}
+Before we drink, we say a toast 
+in English: cheers  
+in French:  sant??
+in Norwegian: sk??l
+in Russian: ???? ????????????
+in Japanese: ??????
+in Korean: ??????
+\end{verbatim} 
+To correct this, we need to set the \code{ANT\_OPTS} environment variable
+\begin{verbatim} 
+export ANT\_OPTS="-Dfile.encoding=UTF-8"
+\end{verbatim}
+The Ant \code{make-toast} task creates a file \code{toast.txt} in the 
+\filepath{com/lingpipe/book/intro} directory.
+Once the \code{ANT\_OPTS} environment variable is set, the output of the Ant
+\code{make-toast} task should match the result
+\commandlinefollow{cat toast.txt}
+\begin{verbatim}
+Before we drink, we say a toast
+in English: cheers
+in French:  santé
+...
+\end{verbatim}
+
+If the output consists of a mix of english characters and special characters,
+such as foreign currency symbols ({\textyen})  or the copyright symbol ({\copyright}),
+then is it likely that the terminal display has the wrong character encoding.
+
+For the Mac terminal.app, choose the \code{Preferences} option under
+the Terminal menu.  From the \code{Settings} panel select the \code{Advanced} tab.
+Make sure that the character encoding is set to Unicode (UTF-8).
+On cygwin, right-click on the top menu bar and select \code{Options\ldots}.
+Choose the \code{Text} submenu and make sure that that character set is UTF-8.
+
+If the display is set to UTF-8 and the European langauges display correctly but
+not all of the Russian, Japanese, or Korean symbols display, then it is likely
+that the fonts needed to display these characters are missing.
+
