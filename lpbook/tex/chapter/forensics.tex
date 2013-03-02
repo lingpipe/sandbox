@@ -15,33 +15,100 @@ The example programs for this chapter are in the code directory:
 
 \section{Text in the Unix Shell}
 
+To pinpoint the source of error, we need to be able test individual
+components of an application.
+A simple test procedure is to output the corrupted text
+to a logfile or to standard out, a technique known as \stringmention{printf debugging}.
+But if these tests fail, we need to rule out the possibility that the point of
+failure is outside of the program, either in the tool we use to view the
+contents of the logfile or stdout.
+
 Programs run from the command line interact with the Unix shell.
-\code{HelloWorld.java} calls the \code{System.out.println} method
-which converts a string of characters to a stream of bytes that are written to the Unix virtual device \code{stdout}.
+A minimal example is \code{HelloWorld.java} example from \refchap{getting-started}.
+We have modified this example so that it prints out the Japanese equivalent.%
 %
-\codeblock{HelloWorld.1}
+\footnote{The unicode characters for Japanese are taken from
+O'Reilly's \title{Java Servlet Programming}, example 12-7.}
 %
-The shell maps these bytes to characters according to some \stringmention{character encoding}.
+\codeblock{HelloWorldJp.1}
+%
+\code{System.out} is a \code{java.io.PrintStream} (see \refsec{io-printstream-format}).
+The call to the \code{println(String)} method converts the string argument into 
+a stream of bytes that are written to the shell's standard output stream \code{stdout}.
+The terminal program in which the shell is running maps 
+these bytes to characters according to its character encoding.
 The operating system uses sets of installed fonts to display these characters.
+
+Problems can arise at each step and there may be more than one problem.
+\begin{enumerate}
+\item The string argument to \code{System.out.println} may contain characters which 
+either malformed or unmappable outside of the platform's default character encoding.
+These will be replaced by the contents of the replacement byte array.
+The initial replacement byte array value is \code{\{ (byte)'?'\}}.
+\item The terminal program may have the wrong character encoding specified.
+\item The OS may be missing the font for one or more characters.
 If the font is missing or a character isn't defined for the specified font,
 then the missing character glyph is displayed instead.
+\end{enumerate}
 
-There are several possible points of failure:  
-\begin{itemize}
-\item Programmer error when specifying the argument to \code{System.out.println}.%
-\item The println argument may not be able to convert all characters in the string to bytes.%
-\item The shell may not be able to convert bytes to characters.%
-\item The OS may be missing the font for one or more characters.%
-\end{itemize}
 
-In \refchap{getting-started} we learned
-how to move into the subdirectory \code{/src/intro},
-create a jarfile with Ant, and run the code directly from the jarfile
+
+Every instance of the Java virtual machine has a default charset,
+which may or may not be one of the standard charsets. The default
+charset is determined during virtual-machine startup and typically
+depends upon the locale and charset being used by the underlying
+operating system.
+The JVM stores this information in the Java environment variable named \code{file.encoding}.
+The demo class \code{GetDefaultEncoding} 
+calls \code{System.getProperty(String)} to inspect this variable.
+%
+\codeblock{GetDefaultEncoding.1}
+%
+The ant task \code{get-encoding} compiles and runs this program.
+On my MacBook running Mac OS X the output is
+\commandlinefollow{ant get-encoding}
+\begin{verbatim}
+encoding: US-ASCII
+\end{verbatim}
+
+
+
+
+
+
+To combat the first problem, we 
+
+
+The terminal program may have the wrong character encoding specified.
+These must be configured using controls on the application itself.
+On the Mac Terminal.app the character encoding control is reached from the
+Preferences/Settings/Advanced panel.
+
+
+We apply these perscriptions to troubleshoot \code{HelloWorldJp}.
+To compile the jarfile and then run the program
+we first move into the
+the subdirectory \code{/src/intro},
+then create a jarfile with Ant,
+and finally invoke the java executible
 %
 \commandlinefollow{cd \$BOOK/src/intro}
 \commandlinefollow{ant jar}
-\commandline{java -cp build/lp-book-intro-4.0.jar com.lingpipe.book.intro.HelloWorld}
+\commandlinefollow{java -cp build/intro-4.0.jar com.lingpipe.book.intro.HelloWorldJp}
 %
+\begin{verbatim} 
+?????
+\end{verbatim}
+%
+
+
+
+
+
+On cygwin, this is controled by the Options menu item.
+
+
+via the menu item Options (Cygwin)/Properties(Mac OSX) controls.
 
 
 
@@ -61,7 +128,6 @@ The operating system uses sets of installed fonts to display these characters.
 If the font is missing or a character isn't defined for the specified font,
 then the missing character glyph is displayed instead.
 
-
 In order to make sure that the shell console display and Ant are
 configured to use UTF-8 as the default character encoding, we have written
 a simple test program called \code{Toast.java} that prints toasts in many
@@ -71,7 +137,7 @@ For now we'll just use this program to see if
 Ant is sending UTF-8 output to the terminal window and if the
 terminal is expecting to get UTF-8 encoded data.
 \commandlinefollow{ant make-toast}
-\begin{verbatim}
+\begin{verbatim} 
 Before we drink, we say a toast 
 in English: cheers  
 in French:  santé

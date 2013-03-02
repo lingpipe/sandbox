@@ -5,7 +5,7 @@
             value="4.0"/>
 
   <property name="jar"
-            value="build/lp-book-intro-${version}.jar"/>
+            value="build/intro-${version}.jar"/>
 
   <target name="clean">
     <delete dir="build"/>
@@ -36,7 +36,15 @@
     </java>
   </target>
 
-  <target name="make-toast"
+  <target name="get-encoding"
+          depends="jar">
+    <java classname="com.lingpipe.book.intro.GetDefaultEncoding"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+
+  <target name="toast"
           depends="jar">
     <java classname="com.lingpipe.book.intro.Toast"
           classpath="${jar}"
