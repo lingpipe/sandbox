@@ -65,18 +65,10 @@ calls \code{System.getProperty(String)} to inspect this variable.
 \codeblock{GetDefaultEncoding.1}
 %
 The ant task \code{get-encoding} compiles and runs this program.
-On my MacBook running Mac OS X the output is
-\commandlinefollow{ant get-encoding}
-\begin{verbatim}
-encoding: US-ASCII
-\end{verbatim}
+On Mac running OS X the encoding is \code{US-ASCII}
+while on Windows running XP the output is \code{cp1257}.
 
 
-
-
-
-
-To combat the first problem, we 
 
 
 The terminal program may have the wrong character encoding specified.
@@ -101,14 +93,6 @@ and finally invoke the java executible
 \end{verbatim}
 %
 
-
-
-
-
-On cygwin, this is controled by the Options menu item.
-
-
-via the menu item Options (Cygwin)/Properties(Mac OSX) controls.
 
 
 
