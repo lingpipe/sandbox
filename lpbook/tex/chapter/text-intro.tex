@@ -461,8 +461,7 @@ jar:
     [mkdir] Created dir: /Users/lpbook/src/intro/build/classes
     [javac] Compiling 2 source files to /Users/lpbook/src/intro/
 build/classes
-      [jar] Building jar: /Users/lpbook/src/intro/build/lp-book-
-intro-4.0.jar
+      [jar] Building jar: /Users/lpbook/src/intro/build/intro-4.0.jar
 
 hello:
      [java] Hello World
@@ -496,7 +495,7 @@ In this example, the \code{mkdir} task makes a new directory, here the
 Java compiler, here compiling a single source file into the
 newly created directory.  The \code{jar} task builds the Java
 library into the build subdirectory \code{build} in file
-\code{lp-book-intro-4.0.jar}.  Moving onto the \code{hello} target,
+\code{intro-4.0.jar}.  Moving onto the \code{hello} target,
 the \code{java} task runs a command-line Java program, in this
 case printing the output of the hello world program.
 
@@ -662,7 +661,7 @@ The properties define constant values for reuse.  Here, we have
             value="4.0"/>
 
   <property name="jar"
-            value="build/lp-book-intro-${version}.jar"/>
+            value="build/intro-${version}.jar"/>
 \end{verbatim}
 %
 The first property definition defines a property \code{version} with
@@ -920,7 +919,7 @@ command-line arguments to the java executable.
 The command-line equivalent of the \code{hello} task would be:
 %
 \begin{verbatim} 
-java -cp build/lp-book-intro-4.0.jar com.lingpipe.book.intro.HelloWorld
+java -cp build/intro-4.0.jar com.lingpipe.book.intro.HelloWorld
 \end{verbatim}
 %
 
