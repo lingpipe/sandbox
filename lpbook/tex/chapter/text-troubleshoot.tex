@@ -1,4 +1,4 @@
-\chapter{Text Forensics}\label{chap:forensics}
+\chapter{Troubleshooting Text}\label{chap:text-trouble}
 
 \firstchar{W}hen software fails to render text correctly
 pinpointing the source of error can be surprisingly difficult.
@@ -7,26 +7,27 @@ question marks or fuzzy boxes, is this due to program error,
 improper environment configuration, or is the system unable to
 display the text due to missing fonts?
 
+
 The example programs for this chapter are in the code directory:
 %
 \displ{\filepath{src/intro/src/com/lingpipe/book/intro}}
 
+\section{Verifying the Contents of a String}
 
-
-\section{Text in the Unix Shell}
-
-The example program \code{ByteToString.java}
-(from \refsec{example-conversions})
-uses the methods \code{dumpString(String)}
-to display the hex values for the characters and bytes
-in a string.
-\code{dumpBytes(byte[])}.
+The first step in troubleshooting text that fails to render correctly
+is to verify that the underlying character sequence is correct.
+In  \refsec{example-conversions}, the
+demo class \code{ByteToString.java} contains 
+methods \code{dumpString(String)} and \code{dumpBytes(byte[])}.
 %
 \codeblock{ByteToString.2}
 %
-It is always possible to view the hex values in a terminal window.
+Since the hex values contain only ASCII characters, it is always possible
+to examine the contents of a string this way.
 Once we have verified that the data is correct, we can
 troubleshoot the rendering process itself.
+
+\section{Text in the Unix Shell}
 
 Programs run from the command line interact with the Unix shell.
 We have modified the \code{HelloWorld.java} example from \refchap{getting-started}
