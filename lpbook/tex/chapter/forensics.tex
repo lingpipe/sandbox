@@ -15,17 +15,22 @@ The example programs for this chapter are in the code directory:
 
 \section{Text in the Unix Shell}
 
-To pinpoint the source of error, we need to be able test individual
-components of an application.
-A simple test procedure is to output the corrupted text
-to a logfile or to standard out, a technique known as \stringmention{printf debugging}.
-But if these tests fail, we need to rule out the possibility that the point of
-failure is outside of the program, either in the tool we use to view the
-contents of the logfile or stdout.
+The example program \code{ByteToString.java}
+(from \refsec{example-conversions})
+uses the methods \code{dumpString(String)}
+to display the hex values for the characters and bytes
+in a string.
+\code{dumpBytes(byte[])}.
+%
+\codeblock{ByteToString.2}
+%
+It is always possible to view the hex values in a terminal window.
+Once we have verified that the data is correct, we can
+troubleshoot the rendering process itself.
 
 Programs run from the command line interact with the Unix shell.
-A minimal example is \code{HelloWorld.java} example from \refchap{getting-started}.
-We have modified this example so that it prints out the Japanese equivalent.%
+We have modified the \code{HelloWorld.java} example from \refchap{getting-started}
+so that it prints out the Japanese equivalent of ``Hello World.''%
 %
 \footnote{The unicode characters for Japanese are taken from
 O'Reilly's \title{Java Servlet Programming}, example 12-7.}
@@ -50,6 +55,9 @@ The initial replacement byte array value is \code{\{ (byte)'?'\}}.
 If the font is missing or a character isn't defined for the specified font,
 then the missing character glyph is displayed instead.
 \end{enumerate}
+
+
+
 
 
 

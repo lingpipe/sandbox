@@ -1368,7 +1368,7 @@ to strings.  For instance, \code{valueOf(double)} converts a
 double-precision floating point value to a string using the same
 method as \code{Double.toString(double)}.
 
-\subsection{Example Conversions}
+\subsection{Example Conversions}\label{section:example-conversions}
 
 We wrote a simple program to illustrate encoding and decoding between
 strings and byte arrays:
@@ -1392,7 +1392,7 @@ character encoding \code{decode}.  Either of these methods may raise
 an exception if the specified encoding is not supported, so the 
 \code{main()} method is declared to throw an
 \code{UnsupportedEncodingException}, imported from \code{java.io}.
-The rest of the code just prints the relevant characters and bytes.
+The rest of the code prints the characters and bytes.
 
 There is an Ant target \code{byte-to-string} that's configured to take
 two arguments consisting of the names of the character encodings.  The
