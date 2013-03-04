@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ASCII"?>
+<project>
+
+  <property name="version"
+            value="4.0"/>
+
+  <property name="jar"
+            value="build/intro-${version}.jar"/>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete file="toast.txt"/>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="build/classes"/>
+    <javac debug="yes"
+           debuglevel="source,lines,vars"
+           destdir="build/classes"
+           includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
+      <src path="src/"/>
+    </javac>
+    <jar destfile="${jar}">
+      <fileset dir="build/classes"
+               includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="hello"
+          depends="jar"
+          description="run HelloWorld">
+    <java classname="com.lingpipe.book.intro.HelloWorld"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+
+  <target name="get-encoding"
+          depends="jar">
+    <java classname="com.lingpipe.book.intro.GetDefaultEncoding"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+
+  <target name="toast"
+          depends="jar">
+    <java classname="com.lingpipe.book.intro.Toast"
+          classpath="${jar}"
+          fork="true">
+      <jvmarg value="-Dfile.encoding=UTF-8"/>
+    </java>
+    <concat>
+      <fileset file="toast.txt"/>
+    </concat>
+  </target>
+
+  <property name="first" value="Foo"/>
+  <property name="last" value="Bar"/>
+  <target name="hello-name"
+          depends="jar">
+    <java classname="com.lingpipe.book.intro.HelloName"
+          classpath="${jar}"
+          fork="true">
+      <arg value="${first}"/>
+      <arg value="${last}"/>
+    </java>
+  </target>
+
+  <target name="run"
+          depends="hello,
+                   hello-name"/>
+
+</project>
