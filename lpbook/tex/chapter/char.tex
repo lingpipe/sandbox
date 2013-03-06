@@ -811,9 +811,9 @@ reflecting 2 or 4 bytes in UTF-16).  The methods
 if the \code{char} represents the first or second half of the UTF-16
 representation of a code point above \unicode{FFFF}.  
 
-The method \code{charPointAt(char[],int)} determines the code point
+The method \code{codePointAt(char[],int)} determines the code point
 that starts at the specified index int he array of \code{char}.  The
-method \code{charPointCount(char[],int,int)} returns the number of
+method \code{codePointCount(char[],int,int)} returns the number of
 code points encoded by the specified \code{char} array slice.
 
 \subsection{Demo: Exploring Unicode Types}\label{section:char-unicode-types}
@@ -1010,12 +1010,12 @@ include strings and string builders, which we describe in the next
 sections.
 
 The character sequence interface specifies a method \code{length()}
-that returns the number of characters in the sequence.  
+that returns the number of 16-bit characters in the sequence.  
 
 The method \code{charAt(int)} may be used to return the character at a
-specified position in the string.  Like arrays, positions are numbered
+specified position.  Like arrays, positions are numbered
 starting from zero.  Thus the method must be passed an integer in the
-range from zero (inclusive) to the length of the string (exclusive).
+range from zero (inclusive) to the length of the sequence (exclusive).
 Passing an index that's out of range raises an
 \code{IndexOutOfBoundsException}, which is also in the
 \code{java.lang} package.
@@ -1101,13 +1101,13 @@ valid Unicode code points.  This constructor will throw an
 \code{IllegalArgumentException} if there are illegal code points in
 the sequence.
 
-\subsubsection{From \code{char} Values}
+\subsubsection{From \code{char} Values}\label{section:string-construct-chars}
 
 When constructing a string from an array of characters or another
 string or character sequence, the characters are just copied into the
 new array.  There is no checking to ensure that the sequence of
-\code{char} values is a legal UTF-16 sequence.  Thus we never know if
-a string is well-formed Unicode.
+\code{char} values is a legal UTF-16 sequence.  Thus we don't know if
+the newly constructed string is well-formed Unicode.
 
 A string may also be constructed from another string.  In this case, a
 deep copy is created with its own fresh underlying array.  this may
@@ -1159,12 +1159,6 @@ written the above replacing \code{F} and \code{e} with Unicode
 escapes, as in
 %
 \codeblock{FragmentsChars.16}
-
-In \refsec{console} we constructed several such strings
-in program \filepath{src/intro/com/lingpipe/book/intro/Toast.xml}.
-%
-\codeblock{Toast.1}
-%
 
 In practice, string literals essentially create static constants for
 the strings.  Because strings are immutable, the value of string
@@ -1310,6 +1304,12 @@ code points coded by the specified range of underlying characters.  It
 is up to the user to get the boundaries correct.
 
 \subsection{Testing String Validity}
+
+As observed in section \refsec{string-construct-chars}, it is possible
+to create strings from sequences of chars that themselves aren't a legal UTF-16 sequence
+in which case the string will not be well-formed Unicode.
+
+
 
 LingPipe provides a static utility method
 \code{isValidUTF16(CharSequence)} in the \code{Strings} class in
