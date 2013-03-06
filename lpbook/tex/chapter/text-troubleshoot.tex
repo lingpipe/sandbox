@@ -15,15 +15,16 @@ The example programs for this chapter are in the code directory:
 
 The first step in troubleshooting text that fails to render correctly
 is to verify that the underlying character sequence is correct.
+To bypass the rendering problems, we 
+
 The demo class \code{ByteToString} in \refsec{example-conversions}
-contains the methods 
-\code{dumpBytes(byte[])}  and \code{dumpString(String)}.
+contains the method \code{dumpString(String)}
+which displays the hex value of the chars in a string.
+Since hex codes consist of ASCII characters, they can always
+be displayed in a file viewer or terminal window.
 %
 \codeblock{ByteToString.2}
 %
-Since hex codes can be written using simple ASCII characters,
-there is never a problem dumping this information to a file or
-terminal window.
 Once we have verified that the data is correct, we can
 troubleshoot the rendering process itself.
 

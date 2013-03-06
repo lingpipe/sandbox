@@ -30,12 +30,14 @@ public class ByteToString {
         dumpString(t);
     }
 
-    /*x ByteToString.2 */
+    /*x ByteToString.3 */
     static void dumpBytes(byte[] bs) {
         for (byte b : bs)
             System.out.printf("%4h  ",b >= 0 ? b : 256+b);
         System.out.println();
     }
+    /*x*/
+    /*x ByteToString.2 */
     static void dumpString(String s) {
         for (char c : s.toCharArray())
             System.out.printf("%4s  ",Integer.toHexString(c));
