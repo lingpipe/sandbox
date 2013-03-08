@@ -14,9 +14,12 @@ The example programs for this chapter are in the code directory:
 \section{Verifying the Contents of a String}
 
 The first step in troubleshooting text that fails to render correctly
-is to verify that the underlying character sequence is correct.
-To bypass the rendering problems, we 
+is to verify that the text itself is well-formed.
+To bypass the rendering problems, we treat the String as a sequence of bytes.
+In \refsec{valid-utf16} we saw how to check that
+the contents of in a string are a valid sequence of UTF-16 byte pairs.
 
+Next it is wise to check what it is that we're trying to render.
 The demo class \code{ByteToString} in \refsec{example-conversions}
 contains the method \code{dumpString(String)}
 which displays the hex value of the chars in a string.
@@ -25,7 +28,7 @@ be displayed in a file viewer or terminal window.
 %
 \codeblock{ByteToString.2}
 %
-Once we have verified that the data is correct, we can
+Once we have verified that the data is good data, we can
 troubleshoot the rendering process itself.
 
 \section{Text in the Unix Shell}
