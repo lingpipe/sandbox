@@ -211,6 +211,34 @@ digits with initial zeroes, prefixed by \code{U+}.  For instance, code
 point 65 (hex 0x41), which represents capital A in ASCII, Latin1 and
 Unicode, is conventionally written \unicode{0041} for Unicode.
 
+\subsubsection{Unicode Planes: the Basic Multilingual Plane and Supplementary Planes}\label{section:unicode-planes}
+
+All unicode code points are in the range 0x0 to 0x10FFFF.
+These are logically divided into 17 \stringmention{planes}
+where each plane consists of 65,536 characters ($2^{16}$ = $16^4$).
+If we express all unicode code points as a 6-digit hex value
+then the first two digits give us the Unicode plane.
+For example, if we write capital A as \unicode{000041}, we 
+see that it is in code plane 0 (0x00).
+The highest unicode code point (0x10FFFF) is in code plane 16 (0x10)
+thus we have a total of 17 code planes altogether.
+
+Plane 0 is known as the \stringmention{Basic Multilingual Plane} (BMP).
+It consists of codepoints in the range 0x0 to 0xFFFF, although not all
+values in this range are legal codepoints.
+The BMP contains characters for almost all modern languages
+and a large number of symbols and special characters.
+The code points in the BMP can be represented in 16 bits or less.
+
+Planes 1 through 17 are known at \stringmention{Supplementary Planes}.
+Plane 1 is known at the \stringmention{Supplementary Multilingual Plane} (SMP).
+It is used for historical scripts such as Linear B and symbols including
+Mathamatical symbols and game symbols such as domino and Mahjong tiles.
+Plane 2 is known as the \stringmention{Supllementary Idiographic Plane} (SIP).
+It is used for Chinese, Japanese, and Korean (CJK) ideographs
+that weren't included in the BMP.
+The planes above code plane 2 are not currently in use.
+
 \subsubsection{Unicode Transformation Formats}
 
 The problem with having over a million characters is that it would
@@ -269,13 +297,70 @@ Because there are two bytes involved, their order must be defined.  As
 with UTF-32, UTF-16BE is the big-endian order and UTF-16LE the
 little-endian order.
 
-In UTF-16, code points below \unicode{10000} are represented using a
-pair of bytes using the natural unsigned encodings.  For instance, our
+In UTF-16, code points below \unicode{10000}, i.e. 
+code points in the Basic Multilingual Plane (BMP, see \refsec{unicode-planes}),
+are represented using a pair of bytes using the natural
+unsigned encodings.  For instance, our
 old friend \unicode{0041} (capital A) is represented in big endian as
 the sequence of bytes \code{0x00}, \code{0x41}.
 
-Code points at or above \unicode{10000} are represented using four
-bytes arranged in two pairs.  Calculating the two pairs of bytes
+Code points from the Supplementary Planes
+are represented using four bytes arranged in two pairs called \stringmention{Surrogate Pairs}.
+The constants 110110 and 110111 are used to indicate the two halves of the pair.
+The hex value of the leading half of a surrogate pair will range 
+from 0xD800 \mbox{(code{0b11011011 00000000})} to 0xDBFF
+and the hex value of the trailing half of a surrogate pair will range from 0xDC00 to 0xDFFF
+\mbox{(code{0b11011111 11111111})}.
+In order to distinguish pairs of bytes which are members of a surrogate pairs and other
+pairs of bytes, the values 0xD800 through 0xDFFF are exluded from the BMP.
+Given this, any 16-bit sequence starting with 110110 is the leading half of a
+surrogate pair, and any sequence starting with 110111 is the trailing
+half of a surrogate pair.  
+Any other sequence of initial bits means a
+16-bit encoding of the code point.  
+Since the ranges for the lead surrogates, trail surrogates, and valid BMP characters
+are disjoint, searches are simplified: it is not possible for part of one character
+to match a different part of another character.
+Furthermore, it is possible to determine
+by looking at a pair of bytes whether we have a whole character, the
+first half of a character represented as a surrogate pair, or the
+second half of a character represented as a pair.
+
+Code points from the Supplementary Planes are in the range 0x10000 to 0x10FFFF.
+The binary encoding of the code point 0x10FFFF is
+\mbox{\code{0b100001111111111111111}}, which is 21 bits long.
+All values less than this require at most 20 bits.
+The UTF-16 encoding scheme is designed so that
+all code points in the supplementary planes can be represented using 20 bits
+which are split between the two pairs of bytes such that
+of the 16 bits in each pair of bytes, the first 6 bits encode information about which
+member of the surrogate pair it is, and the remaining 10 bits encode the code point information.
+
+We use the following table to visualize the encoding of code points from the BMP and supplementary planes.%
+%
+\footnote{Adapted from {\it Unicode Standard Version 5.2}, Table 3-5.}
+%
+\begin{center}
+\begin{tabular}{rr}
+\tblhead{Code Point Bits} & \tblhead{UTF-16 Bytes} 
+\\ \hline
+\code{xxxxxxxx xxxxxxxx} & \code{xxxxxxxx xxxxxxxx}
+\\ 
+\code{000\emph{uuuuu} xxxxxxxx xxxxxxxx} & \code{110110\emph{ww} \emph{ww}xxxxxx 110111xx xxxxxxxx}
+\end{tabular}
+\end{center}
+%
+Here \code{wwww} = \code{uuuuu} - 1 (interpreted as numbers then
+recoded as bits).  The first line indicates is that if the value fits
+in 16 bits, those 16 bits are used as is.  Note that this
+representation is only possible because not all code points between 0
+and $2^{16}-1$ are legal.  The second line indicates that if we have a
+code point above \unicode{10000}, we strip off the high-order five
+bits uuuuu and subtract one from it to get four bits wwww; again, this
+is only possible because of the size restriction on uuuuu.  Then,
+distribute these bits in order across the four bytes shown on the right.  
+
+Calculating the two pairs of bytes
 involves bit-twiddling.  For instance, given an integer code point
 \code{codepoint}, the following code
 calculates the four bytes.
@@ -288,45 +373,13 @@ their FAQ at
 %
 \codeblock{FragmentsChars.6}
 %
-Going the other way around, given the four bytes (as integer
-variables), we can calculate the code point with the following code.
-%
-\codeblock{FragmentsChars.7}
+Happily, The Java \code{Character} class provides static methods
+that do this bit twiddling for us.
+The static method \code{isSupplementaryCodePoint(int)} 
+can be used to identify supplemental code points. 
+The static methods \code{highSurrogate(int)} and 
+\code{lowSurrogate(int)} return the specified byte pairs.
 
-Another way to view this transformation is through the following
-table.%
-%
-\footnote{Adapted from {\it Unicode Standard Version 5.2}, Table 3-5.}
-%
-\begin{center}
-\begin{tabular}{rr}
-\tblhead{Code Point Bits} & \tblhead{UTF-16 Bytes} 
-\\ \hline
-\code{xxxxxxxx xxxxxxxx} & \code{xxxxxxxx xxxxxxxx}
-\\ 
-\code{000uuuuuxxxxxxxxxxxxxxxx} & \code{110110ww wwxxxxxx 110111xx xxxxxxxx}
-\end{tabular}
-\end{center}
-%
-Here \code{wwww} = \code{uuuuu} - 1 (interpreted as numbers then
-recoded as bits).  The first line indicates is that if the value fits
-in 16 bits, those 16 bits are used as is.  Note that this
-representation is only possible because not all code points between 0
-and $2^{16}-1$ are legal.  The second line indicates that if we have a
-code point above \unicode{10000}, we strip off the high-order five
-bits uuuuu and subtract one from it to get four bits wwww; again, this
-is only possible because of the size restriction on uuuuu.  Then,
-distribute these bits in order across the four bytes shown on the
-right.  The constants 110110 and 110111 are used to indicate what are
-known as surrogate pairs.
-
-Any 16-bit sequence starting with 110110 is the leading half of a
-surrogate pair, and any sequence starting with 110111 is the trailing
-half of a surrogate pair.  Any other sequence of initial bits means a
-16-bit encoding of the code point.  Thus it is possible to determine
-by looking at a pair of bytes whether we have a whole character, the
-first half of a character represented as a surrogate pair, or the
-second half of a character represented as a pair.
 
 \subsubsection{UTF-8}\label{section:utf-8}
 
@@ -618,14 +671,22 @@ through the semicolon character (\charmention{;}), which is
 As popular as Unicode is, it's not widely enough supported in
 components like text editors and not widely enough understood among
 engineers.  Writing your programs in any character encoding other than
-ASCII is thus highly error prone.  Our recommendation, which we follow
-in LingPipe, is to write your Java programs in ASCII, using the full
+ASCII is thus highly error prone.  Our recommendation
+is to write your Java programs in ASCII, using the full
 \code{{\bk}u}\codeVar{xxxx} form of non-ASCII characters.
 
 
 \section{\code{char} Primitive Type}\label{section:char-primitive}
 
-Java's primitive \code{char} data type is essentially a 16-bit (two
+Java's primitive \code{char} data type 
+is a single 16-bit Unicode character in the range
+\unicode{0000} to \unicode{FFFF}.
+For Unicode code points below \unicode{FFFF}, 
+a \code{char} transparently contains the value of that code point.
+Unicode code points above \unicode{FFFF} are encoded as a 
+sequence of two \code{char}s, (see \refsec{utf-16}).
+
+A \code{char} is essentially a 16-bit (two
 byte) unsigned integer. Thus a \code{char} can hold values between 0
 and $2^16-1 = 65535$.  Furthermore, arithmetic over \code{char} types
 works like an unsigned 16-bit representation, including casting a
@@ -649,8 +710,6 @@ to assign the variable \code{c} to the character \charmention{\`a},
 \unicode{00E0}, use
 %
 \codeblock{FragmentsChars.11}
-\begin{verbatim}
-\end{verbatim}
 %
 Equivalently, because values of type \code{char} act like unsigned
 short integers, it's possible to directly assign integer values
@@ -658,7 +717,7 @@ to them, as in
 %
 \codeblock{FragmentsChars.12}
 %
-The expression \code{{\bk}0x00E0} is an integer literal in hexadecimal
+The expression \code{0x00E0} is an integer literal in hexadecimal
 notation.  In general, the compiler will infer which kind of integer
 is intended.  
 
@@ -759,7 +818,7 @@ disadvantages of having Unicode code points that require multiple
 characters.
 
 
-\section{\code{Character} Class}
+\section{\code{Character} Class}\label{section:character-class}
 
 Just like for the numerical types, there is a class,
 \code{Character}, used to box an underlying primitive
@@ -785,6 +844,28 @@ The \code{Character} class supports a wide range of Unicode-sensitive
 static utility constants and methods in addition to the factory method
 \code{valueOf()}.
 
+There are a number of utility methods for detecting and encoding
+supplemental code points, (see \refsec{unicode-planes} and \refsec{utf-16}).
+The static method \code{charCount(int)} returns the number of \code{char} values
+required to represent the code point (so the value will be 1 or 2,
+reflecting 2 or 4 bytes in UTF-16).  
+The static method \code{Character.toChars(int)} does the conversion.
+The methods
+\code{isLowSurrogate(char)} and \code{isHighSurrogate(char)} determine
+if the \code{char} represents the first or second half of the UTF-16
+representation of a code point above \unicode{FFFF}.  
+
+For a code point with \code{int} value \code{x}, if
+\begin{verbatim} 
+isSupplementaryCodePoint(x)
+\end{verbatim} 
+is true, then the following expressions are also true:
+\begin{verbatim}
+isHighSurrogate(highSurrogate(x))
+isLowSurrogate(lowSurrogate(x))
+toCodePoint(highSurrogate(x), lowSurrogate(x)) == x
+\end{verbatim} 
+
 For each of the Unicode categories, there is a constant, represented
 using a byte, because the class predates enums.  For instance, the
 general category ``Pe'' in the Unicode specification is represented by
@@ -799,17 +880,11 @@ against the possible values represented as static constants.  There
 are also useful methods for determining the category of a character,
 such as \code{isLetter(char)} and \code{isWhitespace(char)}.
 
-Because multiple Java \code{char} instances might be needed to
-represent a code point, there are also methods operating on code
+Because a code point may require a pair of \code{char} instances,
+there are also methods operating on code
 points directly using integer (primitive \code{int}) arguments.  For
 instance, \code{isLetter(int)} is the same as \code{isLetter(char)}
-but generalized to arbitrary code points.  The method
-\code{charCount(int)} returns the number of \code{char} values
-required to represent the code point (so the value will be 1 or 2,
-reflecting 2 or 4 bytes in UTF-16).  The methods
-\code{isLowSurrogate(char)} and \code{isHighSurrogate(char)} determine
-if the \code{char} represents the first or second half of the UTF-16
-representation of a code point above \unicode{FFFF}.  
+but generalized to arbitrary code points.  
 
 The method \code{codePointAt(char[],int)} determines the code point
 that starts at the specified index int he array of \code{char}.  The
@@ -1303,21 +1378,44 @@ the length of a string in unicode code points, there is the method
 code points coded by the specified range of underlying characters.  It
 is up to the user to get the boundaries correct.
 
-\subsection{Testing String Validity}
+\subsection{Testing String Validity}\label{section:valid-utf16}
 
 As observed in section \refsec{string-construct-chars}, it is possible
 to create strings from sequences of chars that themselves aren't a legal UTF-16 sequence
 in which case the string will not be well-formed Unicode.
-
-
-
-LingPipe provides a static utility method
-\code{isValidUTF16(CharSequence)} in the \code{Strings} class in
-the \code{com.aliasi.util} package.  This method checks that every
+Therefore we have written the utility class
+\code{ValidateUtf16} to do this validation:
+%
+\displ{\filepath{src/chars/src/com/lingpipe/book/chars/ValidateUtf16.java}}
+%
+\codeblock{ValidateUtf16.1}
+%
+It provides a static utility method \code{isValidUTF16(CharSequence)} 
+which checks that every
 high surrogate UTF-16 \code{char} value is followed by a low surrogate
 UTF-16 value.  Surrogacy is defined as by Java's
 \code{Character.isHighSurrogate()} and
 \code{Character.isLowSurrogate()} methods (see \refsec{char-character-utils}).
+
+We test this method on a String constructed from
+a pair of \code{char}s which correspond to
+a Unicode code point in the supplemental plane.
+%
+\codeblock{ValidateUtf16.2}
+%
+We expect this test to succeed.
+Then we swap the order of the chars and run this test again.
+%
+\codeblock{ValidateUtf16.3}
+%
+We expect this test to fail.
+The code may be run from the Ant target \code{validate-utf16}. 
+%
+\commandline{ant validate-utf16}%
+\begin{verbatim}
+UTF-16 chars in s: [ d841 df0e ], s is valid string: true
+UTF-16 chars in s: [ df0e d841 ], s is valid string: false
+\end{verbatim}
 
 
 \subsection{Interning Canonical Representations}\label{section:string-intern}

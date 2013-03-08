@@ -56,6 +56,14 @@
     </java>
   </target>
 
+  <target name="validate-utf16"
+          depends="jar">
+    <java classname="com.lingpipe.book.chars.ValidateUtf16"
+          classpath="${jar}"
+          fork="true">
+    </java>
+  </target>
+
 
   <target name="detect-encoding"
           depends="jar">

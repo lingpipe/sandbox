@@ -58,6 +58,7 @@ class FragmentsChars {
         int byte3 = trail >>> 8;
         int byte4 = trail & 0xFF;
         /*x*/
+
     }
 
     void abc2() {
@@ -70,9 +71,9 @@ class FragmentsChars {
         /*x FragmentsChars.7 */
         int lead = byte1 << 8 | byte2;
         int trail = byte3 << 8 | byte4;
+        /*x*/
 
         int codepoint = (lead << 10) + trail + SURROGATE_OFFSET;
-        /*x*/
     }
 
     void abc3() {
