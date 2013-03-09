@@ -122,7 +122,6 @@ class FragmentsChars {
         }
     }
 
-
     void abc7() {
         /*x FragmentsChars.15 */
         String name = "Fred";
@@ -171,6 +170,12 @@ class FragmentsChars {
 
     void abc12() {
         /*x FragmentsChars.20 */
+        String s = "abc";
+        for (int i = 0; i < s.length(); ) {
+            int codepoint = s.codePointAt(i);
+            // Do something with codepoint.
+            i += Character.charCount(codepoint);
+        }
         /*x*/
     }
 
