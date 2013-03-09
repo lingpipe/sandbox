@@ -19,7 +19,7 @@ lower case characters) used in English to the tens of thousands of
 characters used in Chinese.
 
 
-\subsection{What is a Character?}
+\subsubsection{What is a Character?}
 
 Precise definitions of characters in human writing systems is a
 notoriously tricky business.  
@@ -85,7 +85,7 @@ The Hangul script used for Korean is a compound phonemic system often
 involving multiple glyphs overlaid to form syllabic units.
 
 
-\subsection{Coded Sets and Encoding Schemes}
+\section{Coded Sets and Encoding Schemes}
 
 Eventually, we need to represent sequences of characters as sequences
 of bytes.  There are two components to a full character encoding.
@@ -108,34 +108,34 @@ of code points, then encoding these code points into a sequence of
 bytes.
 
 
-\subsection{Legacy Character Encodings}
+\section{Legacy Character Encodings}
 
 We consider in this section some widely used character encodings, but
-because there are literally hundreds of them in use, we can't be
-exhaustive.  
+because there are literally hundreds of them in use, we can't be exhaustive.  
+The characters in these and many other character sets are part of Unicode.
+In Java the only thing you need to know about a character encoding
+in order to convert data in that encoding to Unicode is its name.
 
-The characters in these and many other character sets are part of
-Unicode.  Because LingPipe and Java both work with Unicode, typically
-the only thing you need to know about a character encoding in order
-to convert data in that encoding to Unicode is the name of the
-character encoding.
 
-\subsubsection{ASCII}\label{section:ascii}
+\subsection{ASCII}\label{section:ascii}
 
 ASCII is a character encoding consisting of a small character set of
 128 code points.  Being designed by computer scientists, the numbering
 starts at 0, so the code points are in the range 0--127 (inclusive).
 Each code point is then encoded as the corresponding single unsigned
 byte with the same value.  It includes characters for the standard
-keys of an American typewriter, and also some ``characters''
-representing abstract typesetting notions such as line feeds and
-carriage returns as well as terminal controls like ringing the
-``bell''.
+keys of an American typewriter.
+
+The ASCII codes 0-31 are the
+control characters.  These are not characters, per se, but rather
+control signals sent to attached devices such as printers and tape drives.
+The control characters include line feed, backspace, ring margin bell,  
+and data transmission controls.
 
 The term ``ASCII'' is sometimes used informally to refer to character
 data in general, rather than the specific ASCII character encoding.
 
-\subsubsection{Latin1 and the Other Latins}\label{section:latin1}
+\subsection{Latin1 and the Other Latins}\label{section:latin1}
 
 Given that ASCII only uses 7 bits and bytes are 8 bits, the natural
 extension is to add another 128 characters to ASCII.  Latin1
@@ -165,14 +165,14 @@ Latin3 (ISO-8859-1) for Turkish, Maltese and Esperanto, up through
 Latin16 (ISO-8859-16) for other Eastern European languages, new styles
 of Western European languages and Irish Gaelic.  
 
-\subsubsection{Windows 1252}
+\subsection{Windows 1252}
 
 Microsoft Windows, insisting on doing things its own way, uses a
 character set known as Windows-1252, which is almost identical to Latin1,
 but uses code points 128--159 as graphical characters, such as curly
 quotes, the euro and yen symbols, and so on.
 
-\subsubsection{Big5 and GB(K)}
+\subsection{Big5 and GB(K)}
 
 The Big5 character encoding is used for traditional Chinese scripts
 and the GB (more recently GBK) for simplified Chinese script.  Because
@@ -181,37 +181,36 @@ fixed-width two-byte encoding of each character.  Using two bytes
 allows up to $2^{16} = 65,536$ characters, which is enough for most
 of the commonly used Chinese characters.
 
-\subsection{Unicode}\label{section:unicode}
+\section{Unicode}\label{section:unicode}
 
-Unicode is the de facto standard for character sets of all kinds.  The
-latest version is Unicode 5.2, and it contains over 1,000,000 distinct
-characters drawn from hundreds of languages (technically, it assumes
-all code points are in the range 0x0 to 0x10FFFF (0 to 1,114,111 in
-decimal notation).
+Unicode is the de facto standard for character sets of all kinds.  
+It contains over 1,000,000 distinct characters drawn from hundreds of languages.
+Technically, it assigns characters to code points 
+in the range 0x0 to 0x10FFFF (0 to 1,114,111 in decimal notation).
 
 One reason Unicode has been so widely adopted is that it contains
 almost all of the characters in almost all of the widely used
 character sets in the world.  It also happens to have done so in a
 thoughtful and well-defined manner.
 
-Conveniently, Unicode's first 256 code points (0--255) exactly match
+Unicode's first 256 code points (0--255) exactly match
 those of Latin1, and hence Unicode's first 128 code points (0--127)
 exactly match those of ASCII.
 However \emph{not all ASCII characters are legal Unicode characters}.
-This is because the first 32 ASCII codes (hex values in the range 00--1F) 
+This is because the first 32 ASCII codes (0x00 through 0x1F) 
 were originally intended not to
 represent printable information, but rather to control devices such as printers
 or magnetic tapes whereas Unicode is designed to represent characters.
-Of the ASCII control characters only tab (hex value 09), carriage return (hex value 0A), 
-and linefeed (hex value 0D) are valid Unicode characters.
+Of the ASCII control characters only tab (0x09), carriage return (0x0A), 
+and linefeed (0x0D) are valid Unicode characters.
 
 Unicode code points are conventionally displayed in text using a
 hexadecimal representation of their code point padded to at least four
 digits with initial zeroes, prefixed by \code{U+}.  For instance, code
-point 65 (hex 0x41), which represents capital A in ASCII, Latin1 and
+point 65 (0x41), which represents capital A in ASCII, Latin1 and
 Unicode, is conventionally written \unicode{0041} for Unicode.
 
-\subsubsection{Unicode Planes: the Basic Multilingual Plane and Supplementary Planes}\label{section:unicode-planes}
+\subsection{Unicode Planes: the Basic Multilingual Plane and Supplementary Planes}\label{section:unicode-planes}
 
 All unicode code points are in the range 0x0 to 0x10FFFF.
 These are logically divided into 17 \stringmention{planes}
@@ -239,16 +238,21 @@ It is used for Chinese, Japanese, and Korean (CJK) ideographs
 that weren't included in the BMP.
 The planes above code plane 2 are not currently in use.
 
-\subsubsection{Unicode Transformation Formats}
+\subsection{UTF: Unicode Transformation Formats}
+
+Unicode assigns characters to code points.  The Unicode Transformation
+Formats map these code points to a sequence of bytes.
 
 The problem with having over a million characters is that it would
 require three bytes to store each character ($2^{24} = 16,777,216$).
 This is very wasteful for encoding languages based on Latin characters
-like Spanish or English.
+like Spanish or English, which have code points below 256 and therefore
+can fit into a single byte.  They are also problematic in that a 3-byte
+sequence takes up 1.5 words on 32-bit machines but less than a word
+on 64-bit machines.
 
 There are three standard encodings for Unicode code points that are
-specified in the Unicode standard, UTF-8, UTF-16, and UTF-32 (``UTF''
-stands for ``Unicode transformation format'').%
+specified in the Unicode standard, UTF-8, UTF-16, and UTF-32.%
 %
 \footnote{There are also non-standard encodings of (subsets of) 
 Unicode, like Apache Lucene's and the one in Java's
@@ -257,7 +261,7 @@ Unicode, like Apache Lucene's and the one in Java's
 The numbers represent the coding size; UTF-8 uses single bytes,
 UTF-16 pairs of bytes, and UTF-32 quadruples of bytes.
 
-\subsubsection{UTF-32}
+\subsection{UTF-32}
 
 The UTF-32 encoding is fixed-width, meaning each character occupies
 the same number of bytes (in this case, 4).  As with ASCII and
@@ -287,7 +291,7 @@ endian, Motorola's PowerPC is big endian.  Some hardware, such
 as Sun Sparc, Intel Itanium and the ARM, is called bi-endian, because
 endianness may be switched.
 
-\subsubsection{UTF-16}\label{section:utf-16}
+\subsection{UTF-16}\label{section:utf-16}
 
 The UTF-16 encoding is variable length, meaning that different code
 points use different numbers of bytes.  For UTF-16, each character is
@@ -380,7 +384,7 @@ The static methods \code{highSurrogate(int)} and
 \code{lowSurrogate(int)} return the specified byte pairs.
 
 
-\subsubsection{UTF-8}\label{section:utf-8}
+\subsection{UTF-8}\label{section:utf-8}
 
 UTF-8 works in much the same way as UTF-16 (see the previous section),
 only using single bytes as the minimum code size.  We
@@ -409,7 +413,7 @@ values between \unicode{0800} and \unicode{FFFF} with three bytes,
 and values between \unicode{10000} and \unicode{10FFFF} with four bytes.
 
 
-\subsubsection{Non-Overlap Principle}\label{section:utf-nonoverlap}
+\subsection{Non-Overlap Principle}\label{section:utf-nonoverlap}
 
 The UTF-8 and UTF-16 encoding schemes obey what the Unicode Consortium
 calls the ``non-overlap principle.''  Technically, the leading,
@@ -440,9 +444,8 @@ next two contain 6 bits apiece, for a total of 16 bits of information.
 For a four-byte UTF-8 sequence, the first byte contains 3 bits and the
 next three contain 6 bits, for a total of 21 bits of information.%
 %
-\footnote{In theory, UTF-8 has a larger range that UTF-16, but in practice,
-the Unicode standard limits the maximum code point to 0x10FFFF, which
-can be represented in UTF-16}
+\footnote{In theory, UTF-8 can represent twice as many code points as UTF-16.
+In practice, the Unicode standard limits the maximum code point to 0x10FFFF.}
 %
 
 The non-overlap principle means that it is possible to reconstruct
@@ -457,7 +460,7 @@ is never a subsequence of the bytes making up another character.  This
 makes applications like search more robust.
 
 
-\subsubsection{Byte Order Marks}\label{section:byte-order-marks}
+\subsection{Byte Order Marks}\label{section:byte-order-marks}
 
 In the encoding schemes which are not explicitly marked as being
 little or big endian, namely UTF-32, UTF-16 and UTF-8, it is also
@@ -483,7 +486,26 @@ Any text processor dealing with Unicode needs to handle the byte order
 marks.  Some text editing packages automatically insert byte-order
 marks for UTF encodings and some don't.
 
-\subsubsection{Character Types and Categories}\label{section:unicode-categories}
+\subsection{Noncharacters}\label{section:noncharacters}
+
+Unicode specifies 66 codes points as non-characters, including
+the last two code points in each plane, U+FFFE, U+FFFF, U+1FFFE, U+1FFFF
+and so forth.
+Note that the code point U+FFFE has the
+reverse binary sequence of the byte order mark (U+FEFF). 
+If this is found in some text, it is an indication that
+it was processed using the wrong byte-order.
+
+Software implementations are therefore free to use these code points for internal use.
+In Java, the interface \code{java.text.CharacterIterator} defines the constant \code{DONE}
+%
+\codeblock{FragmentsChars.21}
+%
+Because this value should not occur in any valid Unicode 
+string, it is used as the value returned when the iterator 
+has reached either the end or the beginning of the text. 
+
+\subsection{Character Types and Categories}\label{section:unicode-categories}
 
 The Unicode specification defines a number of character types and
 general categories of character.  These are useful in Java
@@ -505,7 +527,7 @@ and ``L'' for left-to-right.
 We provide a sample program in \refsec{char-unicode-types} for
 exploring the types of properties in Java.
 
-\subsubsection{Normalization Forms}\label{section:unicode-normalization-forms}
+\subsection{Normalization Forms}\label{section:unicode-normalization-forms}
 
 In order to aid text processing efforts, such as search, Unicode
 defines several notions of normalization.  These are defined in great
@@ -604,7 +626,7 @@ once \ie{its an idemopotent transformation}.
 We show how to convert character sequences to their canonical forms
 programmatically using the ICU package in \refsec{icu-unicode-normalization}.
 
-\subsubsection{Common Problems and Considerations}\label{section:char-probs}
+\subsection{Encoding Problems and Considerations}\label{section:char-probs}
 
 A file stored on disk is a sequence of bytes; data sent and received
 across a socket is a stream of bytes.  Without knowing the character set
@@ -669,10 +691,10 @@ by using escapes.  In a Java program, the sequence
 \unicode{\codeVar{xxxx}}, where \codeVar{xxxx} is a hexadecimal
 encoded value padded to four characters with leading zeroes.
 
-For instance, instead of writing
-
-\codeblock{FragmentsChars.8}
+For example, instead of writing
 %
+\codeblock{FragmentsChars.8}
+% 
 we could write
 %
 \codeblock{FragmentsChars.9}
@@ -693,13 +715,12 @@ is to write your Java programs in ASCII, using the full
 
 \section{\code{char} Primitive Type}\label{section:char-primitive}
 
-Java's primitive \code{char} data type 
-is a single 16-bit Unicode character in the range
-\unicode{0000} to \unicode{FFFF}.
-For Unicode code points below \unicode{FFFF}, 
+Java's primitive \code{char} data type stores Unicode characters in UTF-16.
+A \code{char} is 16-bits.
+For Unicode code points below \unicode{FFFF},  
 a \code{char} transparently contains the value of that code point.
 Unicode code points above \unicode{FFFF} are encoded as a 
-sequence of two \code{char}s, (see \refsec{utf-16}).
+sequence of two \code{char}s using the UTF-16 encoding, (see \refsec{utf-16}).
 
 A \code{char} is essentially a 16-bit (two
 byte) unsigned integer. Thus a \code{char} can hold values between 0
@@ -2372,5 +2393,11 @@ Output=deja
 \end{verbatim}
 
 
-% ARABIC \begin{center} \RL{^gu.hA wa-.himAruhu} \end{center}
+\section{Ordering Strings: Sorting and Collation}
+
+how to sort with strings
+
+how to sort with Collations
+
+Collations and ICU
 

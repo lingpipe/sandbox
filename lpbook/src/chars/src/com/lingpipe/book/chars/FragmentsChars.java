@@ -179,5 +179,10 @@ class FragmentsChars {
         /*x*/
     }
 
+   void abc13() {
+       /*x FragmentsChars.21 */
+       public static final char DONE = '\uFFFF';
+        /*x*/
+   }
 
 }
