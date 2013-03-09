@@ -1114,6 +1114,11 @@ sections.
 
 The character sequence interface specifies a method \code{length()}
 that returns the number of 16-bit characters in the sequence.  
+Because lengths are instances of \code{int}, they are only allowed to be as
+long as the longest positive \code{int} value, $2^{32-1} - 1$, which
+is approximately 2 billion.  Any longer sequence of characters needs
+to be streamed \eg{with a \code{Reader} or \code{Writer}} or scanned
+\eg{with a \code{RandomAccessFile}}.
 
 The method \code{charAt(int)} may be used to return the character at a
 specified position.  Like arrays, positions are numbered
@@ -1130,20 +1135,6 @@ we can loop
 %
 \codeblock{FragmentsChars.14}
 %
-Because lengths are instances of \code{int}, are only allowed to be as
-long as the longest positive \code{int} value, $2^{32-1} - 1$, which
-is approximately 2 billion.  Any longer sequence of characters needs
-to be streamed \eg{with a \code{Reader} or \code{Writer}} or scanned
-\eg{with a \code{RandomAccessFile}}.
-
-\subsubsection{Iterating over Code Points in a CharSequence}\label{section:iterate-by-code-points}
-
-for (var charIndex = 0, nChars = s.length(), codepoint;
-     charIndex < nChars;
-     charIndex += Character.charCount(codepoint)) {
-  codepoint = s.codePointAt(charIndex);
-  // Do something with codepoint.
-}
 
 \subsubsection{Creating Subsequences}
 
@@ -1427,12 +1418,15 @@ Therefore we have written the utility class
 %
 \codeblock{ValidateUtf16.1}
 %
-It provides a static utility method \code{isValidUTF16(CharSequence)} 
-which checks that every
+The static utility method \code{isValidUTF16(CharSequence)} 
+checks that every
 high surrogate UTF-16 \code{char} value is followed by a low surrogate
-UTF-16 value.  Surrogacy is defined as by Java's
+UTF-16 value and that every low surrogate is preceded by a high surrogate.
+Surrogacy is defined as by Java's
 \code{Character.isHighSurrogate()} and
 \code{Character.isLowSurrogate()} methods (see \refsec{char-character-utils}).
+It uses the method \code{Character.isValidCodePoint(int)} to check
+the code point values.
 
 We test this method on a String constructed from
 a pair of \code{char}s which correspond to
@@ -1454,6 +1448,24 @@ and see that this is indeed what happens.
 UTF-16 chars in s: [ d841 df0e ], s is valid string: true
 UTF-16 chars in s: [ df0e d841 ], s is valid string: false
 \end{verbatim}
+
+\subsection{Iterating over Code Points}\label{section:iterate-by-code-points}
+
+The conventional \code{for} loop can be used to iterate over
+the \code{chars} in a \code{String} or \code{CharSequence}.
+%
+\codeblock{FragmentsChars.14}
+%
+To iterate through the code points in a \code{String},
+we use the method \code{codePointAt(int)}.
+%
+\codeblock{FragmentsChars.20}
+%
+This variant uses the static utility method \code{Character.charCount(int)}
+to increment the index into the String's underlying \code{char} array
+instead of the simple increment operator.
+
+
 
 
 \subsection{Interning Canonical Representations}\label{section:string-intern}
