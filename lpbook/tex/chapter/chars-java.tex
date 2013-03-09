@@ -308,9 +308,8 @@ Code points from the Supplementary Planes
 are represented using four bytes arranged in two pairs called \stringmention{Surrogate Pairs}.
 The constants 110110 and 110111 are used to indicate the two halves of the pair.
 The hex value of the leading half of a surrogate pair will range 
-from 0xD800 \mbox{(code{0b11011011 00000000})} to 0xDBFF
-and the hex value of the trailing half of a surrogate pair will range from 0xDC00 to 0xDFFF
-\mbox{(code{0b11011111 11111111})}.
+from 0xD800 to 0xDBFF
+and the hex value of the trailing half of a surrogate pair will range from 0xDC00 to 0xDFFF.
 In order to distinguish pairs of bytes which are members of a surrogate pairs and other
 pairs of bytes, the values 0xD800 through 0xDFFF are exluded from the BMP.
 Given this, any 16-bit sequence starting with 110110 is the leading half of a
@@ -327,8 +326,8 @@ first half of a character represented as a surrogate pair, or the
 second half of a character represented as a pair.
 
 Code points from the Supplementary Planes are in the range 0x10000 to 0x10FFFF.
-The binary encoding of the code point 0x10FFFF is
-\mbox{\code{0b100001111111111111111}}, which is 21 bits long.
+The binary representation of code point 0x10FFFF is 
+\mbox{\code{100001111111111111111}}, which is 21 bits long.
 All values less than this require at most 20 bits.
 The UTF-16 encoding scheme is designed so that
 all code points in the supplementary planes can be represented using 20 bits
@@ -429,11 +428,27 @@ starting with \code{1110} represent the leading byte in a three-byte
 sequence, and \code{11110} the leading byte in a four-byte sequence.
 Any bytes starting with \code{10} are continuation bytes.
 
-What this means in practice is that it is possible to reconstruct
+If we look at the total number of bits that contain code point information,
+we see that for a singleton byte this is 7 because 
+the first bit is 0, identitfying the sequence type,
+and the remaining 7 bits contain code point information.
+For a two-byte UTF-8 sequence, the first byte contains 5 bits of
+code point information and the second byte contains 6 bits since
+the first two bits must be \code{10}, for a total of 11 bits worth of information.
+For a three-byte UTF-8 sequence, the first byte contains 4 bits, and the
+next two contain 6 bits apiece, for a total of 16 bits of information.
+For a four-byte UTF-8 sequence, the first byte contains 3 bits and the
+next three contain 6 bits, for a total of 21 bits of information.%
+%
+\footnote{In theory, UTF-8 has a larger range that UTF-16, but in practice,
+the Unicode standard limits the maximum code point to 0x10FFFF, which
+can be represented in UTF-16}
+%
+
+The non-overlap principle means that it is possible to reconstruct
 characters locally, without going back to the beginning of a file.
 At most, if a byte starts with \code{10} you have to look back
 up to three bytes to find the first byte in the sequence.
-
 Furthermore, the corruption of a byte is localized so that the rest of
 the stream doesn't get corrupted if one byte is corrupted.
 
@@ -846,6 +861,15 @@ static utility constants and methods in addition to the factory method
 
 There are a number of utility methods for detecting and encoding
 supplemental code points, (see \refsec{unicode-planes} and \refsec{utf-16}).
+In Java, code points about 0xFFFF are encoded as a pair of \code{chars}.
+Givan an array of \code{char}, there is not necessarily a one-to-one
+correspondance between the encoded characters in the text
+and the \code{char} elements of the array.
+The method \code{codePointCount(char[],int,int)} returns the number of 
+code points encoded by the specified \code{char} array slice.
+The method \code{codePointAt(char[],int)} determines the code point
+that starts at the specified index int he array of \code{char}.  
+
 The static method \code{charCount(int)} returns the number of \code{char} values
 required to represent the code point (so the value will be 1 or 2,
 reflecting 2 or 4 bytes in UTF-16).  
@@ -866,6 +890,11 @@ isLowSurrogate(lowSurrogate(x))
 toCodePoint(highSurrogate(x), lowSurrogate(x)) == x
 \end{verbatim} 
 
+\subsection{Unicode Character Categories and Properties}\label{section:char-unicode-cats}
+
+Every Unicode character is assigned a general category and subcategory.
+The general categories are: letter, mark, number, punctuation, symbol, 
+or control (for formatting or non-graphical character).
 For each of the Unicode categories, there is a constant, represented
 using a byte, because the class predates enums.  For instance, the
 general category ``Pe'' in the Unicode specification is represented by
@@ -873,6 +902,9 @@ the constant \code{END\_PUNCTUATION} and the general category of
 mathematical symbols, ``Sm'' in Unicode, is represented by the
 constant \code{MATH\_SYMBOL}.
 
+Unicode also assigns character properties to each code point.
+The are used by processes such as finding line breaks,
+laying out script direction, or applying controls.
 For many of these constants, there are corresponding methods.  For
 instance, the method \code{getDirectionality(char)} returns the
 directionality of a character as a byte value, which can then be tested
@@ -886,10 +918,6 @@ points directly using integer (primitive \code{int}) arguments.  For
 instance, \code{isLetter(int)} is the same as \code{isLetter(char)}
 but generalized to arbitrary code points.  
 
-The method \code{codePointAt(char[],int)} determines the code point
-that starts at the specified index int he array of \code{char}.  The
-method \code{codePointCount(char[],int,int)} returns the number of
-code points encoded by the specified \code{char} array slice.
 
 \subsection{Demo: Exploring Unicode Types}\label{section:char-unicode-types}
 
@@ -1107,6 +1135,15 @@ long as the longest positive \code{int} value, $2^{32-1} - 1$, which
 is approximately 2 billion.  Any longer sequence of characters needs
 to be streamed \eg{with a \code{Reader} or \code{Writer}} or scanned
 \eg{with a \code{RandomAccessFile}}.
+
+\subsubsection{Iterating over Code Points in a CharSequence}\label{section:iterate-by-code-points}
+
+for (var charIndex = 0, nChars = s.length(), codepoint;
+     charIndex < nChars;
+     charIndex += Character.charCount(codepoint)) {
+  codepoint = s.codePointAt(charIndex);
+  // Do something with codepoint.
+}
 
 \subsubsection{Creating Subsequences}
 
@@ -1409,7 +1446,8 @@ Then we swap the order of the chars and run this test again.
 \codeblock{ValidateUtf16.3}
 %
 We expect this test to fail.
-The code may be run from the Ant target \code{validate-utf16}. 
+We run this code using the Ant target \code{validate-utf16}
+and see that this is indeed what happens.
 %
 \commandline{ant validate-utf16}%
 \begin{verbatim}
@@ -1592,9 +1630,7 @@ that pose a computational bottleneck, this is usually an acceptable
 behavior.
 
 In cases where character sequence arguments suffice, this allows us to
-bypass the construction of a string altogether.  Thus many of
-LingPipe's methods accept character sequence inputs without first
-converting to strings.
+bypass the construction of a string altogether.
 
 \subsection{Unicode Support}
 
