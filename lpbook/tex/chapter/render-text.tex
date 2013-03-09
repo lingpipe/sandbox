@@ -1,8 +1,8 @@
-\chapter{Troubleshooting Text}\label{chap:text-trouble}
+\chapter{Rendering Text}\label{chap:render}
 
 \firstchar{W}hen software fails to render text correctly
 pinpointing the source of error can be surprisingly difficult.
-If the text displayed is a series of random glyphs or a string of
+If the program outputs a series of random glyphs or a string of
 question marks or fuzzy boxes, is this due to program error,
 improper environment configuration, or is the system unable to
 display the text due to missing fonts?
@@ -11,23 +11,27 @@ The example programs for this chapter are in the code directory:
 %
 \displ{\filepath{src/diags/src/com/lingpipe/book/diags}}
 
-\section{Verifying the Contents of a String}
+\section{Validating and Verifying the Data}
 
 The first step in troubleshooting text that fails to render correctly
 is to verify that the text itself is well-formed.
-To bypass the rendering problems, we treat the String as a sequence of bytes.
-In \refsec{valid-utf16} we saw how to check that
-the contents of in a string are a valid sequence of UTF-16 byte pairs.
+The example class ValidateUtf16 (see \refsec{valid-utf16})
+checks that a \code{CharSequence}
+consists of a valid sequence of UTF-16 byte pairs.
 
-Next it is wise to check what it is that we're trying to render.
-The demo class \code{ByteToString} in \refsec{example-conversions}
-contains the method \code{dumpString(String)}
-which displays the hex value of the chars in a string.
-Since hex codes consist of ASCII characters, they can always
-be displayed in a file viewer or terminal window.
+The next step is to examine the actual text.
+The example class  \code{ByteToString} (see \refsec{example-conversions})
+contains the method \code{dumpString(String)} 
+which displays the hex value of the chars in a string. 
 %
 \codeblock{ByteToString.2}
 %
+Since hex codes consist of ASCII characters, they can always  
+be displayed in a file viewer or terminal window.  
+
+
+
+
 Once we have verified that the data is good data, we can
 troubleshoot the rendering process itself.
 
