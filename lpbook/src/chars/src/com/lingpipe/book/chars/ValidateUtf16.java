@@ -13,7 +13,7 @@ public class ValidateUtf16 {
     public static boolean isValidUtf16(CharSequence cs) {
         for (int i = 0; i < cs.length(); ++i) {
             char c = cs.charAt(i);
-            if (Character.isLowSurrogate(c))
+            if (Character.isLowSurrogate(c)) 
                 return false;
             if (!Character.isHighSurrogate(c)) {
                 int codePoint = Character.codePointAt(cs,i);
@@ -22,8 +22,7 @@ public class ValidateUtf16 {
                 continue;
             }
             ++i;
-            if (i >= cs.length()) 
-                return false;
+            if (i >= cs.length()) return false;
             char c2 = cs.charAt(i);
             if (!Character.isLowSurrogate(c2))
                 return false;
